@@ -1,5 +1,4 @@
 import { Navbar } from "@/components/Navbar";
-import { DotBackground } from "@/components/DotBackground";
 import { HeroSection } from "@/components/HeroSection";
 import { OverviewSection } from "@/components/OverviewSection";
 import { AboutSection } from "@/components/AboutSection";
@@ -12,17 +11,19 @@ import { Footer } from "@/components/Footer";
 export default function Home() {
   return (
     <>
-      <DotBackground />
       <Navbar />
       <main>
-        <HeroSection />
-        <OverviewSection />
-        <AboutSection />
-        <SkillsSection />
-        <ProjectsSection />
-        <EducationSection />
-        <ContactSection />
-        <Footer />
+        {/* chanhdai-style: centered column with side border lines */}
+        <div className="page-wrapper">
+          <HeroSection />
+          <OverviewSection />
+          <AboutSection />
+          <SkillsSection />
+          <ProjectsSection />
+          <EducationSection />
+          <ContactSection />
+          <Footer />
+        </div>
       </main>
     </>
   );

@@ -1,62 +1,86 @@
 "use client";
 import { useReveal } from "./useReveal";
 
-const skills = [
-  { category: "Frontend", items: ["React.js", "Next.js", "TypeScript", "JavaScript", "Tailwind CSS", "HTML5", "CSS3"] },
-  { category: "Backend", items: ["Node.js", "Express.js", "REST APIs"] },
-  { category: "Databases", items: ["MongoDB", "MySQL"] },
-  { category: "GenAI / AI", items: ["LLM APIs", "LangChain", "RAG", "Vector Database"] },
-  { category: "Languages", items: ["Python", "Java", "C++"] },
-  { category: "Tools", items: ["Git", "GitHub", "VS Code", "Vercel", "Postman"] },
+const SKILLS = [
+  {
+    category: "Frontend",
+    items: ["React.js", "Next.js", "TypeScript", "JavaScript", "Tailwind CSS", "HTML5", "CSS3"],
+  },
+  {
+    category: "Backend",
+    items: ["Node.js", "Express.js", "REST APIs", "GraphQL"],
+  },
+  {
+    category: "Databases",
+    items: ["MongoDB", "MySQL", "PostgreSQL"],
+  },
+  {
+    category: "GenAI / AI",
+    items: ["LLM APIs", "LangChain", "RAG", "Vector DB", "OpenAI", "Gemini"],
+  },
+  {
+    category: "Languages",
+    items: ["Python", "Java", "C++", "TypeScript"],
+  },
+  {
+    category: "Tools",
+    items: ["Git", "GitHub", "VS Code", "Vercel", "Postman", "Docker"],
+  },
 ];
 
-const all = [...skills.flatMap(s => s.items), ...skills.flatMap(s => s.items)];
+const ALL_SKILLS = [...SKILLS.flatMap(s => s.items), ...SKILLS.flatMap(s => s.items)];
 
 export function SkillsSection() {
   const { ref, visible } = useReveal();
 
   return (
-    <section id="skills" style={{ maxWidth: 680, margin: "0 auto", padding: "0 24px 48px" }}>
-      <div className="section-sep" />
-      <div
+    <>
+      <div className="section-separator" />
+      <section
+        id="skills"
         ref={ref}
         style={{
-          paddingTop: 40,
+          padding: "32px 0 40px",
           opacity: visible ? 1 : 0,
           transform: visible ? "none" : "translateY(14px)",
-          transition: "opacity 0.5s ease, transform 0.5s ease",
+          transition: "opacity 0.55s var(--expo-out), transform 0.55s var(--expo-out)",
+          borderBottom: "1px solid var(--line)",
         }}
       >
-        <p className="section-heading">Stack</p>
+        <p className="section-label">Tech Stack</p>
 
         {/* Marquee strip */}
-        <div style={{
-          overflow: "hidden", marginBottom: 28,
-          mask: "linear-gradient(90deg,transparent,black 8%,black 92%,transparent)",
-          WebkitMask: "linear-gradient(90deg,transparent,black 8%,black 92%,transparent)",
-        }}>
+        <div className="marquee-track marquee-fade" style={{ marginBottom: 28 }}>
           <div className="marquee-inner">
-            {all.map((s, i) => (
-              <span key={i} className="tag" style={{ whiteSpace: "nowrap", flexShrink: 0, cursor: "default" }}>{s}</span>
+            {ALL_SKILLS.map((s, i) => (
+              <span key={i} className="tag" style={{ cursor: "default" }}>{s}</span>
             ))}
           </div>
         </div>
 
-        {/* Grid of categories */}
-        <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
-          {skills.map((cat, i) => (
+        {/* Category grid */}
+        <div style={{ display: "flex", flexDirection: "column" }}>
+          {SKILLS.map((cat, i) => (
             <div
               key={cat.category}
               style={{
-                display: "flex", gap: 16, padding: "12px 0",
-                borderBottom: i < skills.length - 1 ? "1px solid var(--border)" : "none",
+                display: "flex",
+                gap: 20,
+                padding: "13px 0",
+                borderBottom: i < SKILLS.length - 1 ? "1px solid var(--border)" : "none",
                 alignItems: "flex-start",
                 opacity: visible ? 1 : 0,
                 transform: visible ? "none" : "translateY(8px)",
-                transition: `opacity 0.4s ease ${0.05 * i}s, transform 0.4s ease ${0.05 * i}s`,
+                transition: `opacity 0.4s var(--expo-out) ${0.06 * i}s, transform 0.4s var(--expo-out) ${0.06 * i}s`,
               }}
             >
-              <span style={{ fontSize: 12, color: "var(--text-muted)", minWidth: 80, flexShrink: 0, paddingTop: 3 }}>
+              <span
+                style={{
+                  fontSize: 11, color: "var(--text-muted)", minWidth: 80,
+                  flexShrink: 0, paddingTop: 3, fontFamily: "'Geist Mono', monospace",
+                  letterSpacing: "0.03em", textTransform: "uppercase",
+                }}
+              >
                 {cat.category}
               </span>
               <div style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>
@@ -67,7 +91,7 @@ export function SkillsSection() {
             </div>
           ))}
         </div>
-      </div>
-    </section>
+      </section>
+    </>
   );
 }
