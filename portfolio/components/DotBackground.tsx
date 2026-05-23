@@ -2,21 +2,21 @@
 import { useEffect, useRef } from "react";
 
 export function DotBackground() {
-  const spotlightRef = useRef<HTMLDivElement>(null);
+  const spotRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      if (!spotlightRef.current) return;
-      spotlightRef.current.style.background = `radial-gradient(600px circle at ${e.clientX}px ${e.clientY}px, rgba(139,92,246,0.10) 0%, transparent 70%)`;
+    const move = (e: MouseEvent) => {
+      if (!spotRef.current) return;
+      spotRef.current.style.background = `radial-gradient(700px circle at ${e.clientX}px ${e.clientY}px, rgba(96,165,250,0.055) 0%, transparent 65%)`;
     };
-    window.addEventListener("mousemove", handleMouseMove, { passive: true });
-    return () => window.removeEventListener("mousemove", handleMouseMove);
+    window.addEventListener("mousemove", move, { passive: true });
+    return () => window.removeEventListener("mousemove", move);
   }, []);
 
   return (
     <>
-      <div className="dot-bg" aria-hidden="true" />
-      <div ref={spotlightRef} className="dot-spotlight" aria-hidden="true" />
+      <div className="dot-grid" aria-hidden />
+      <div ref={spotRef} className="dot-spotlight" aria-hidden />
     </>
   );
 }
