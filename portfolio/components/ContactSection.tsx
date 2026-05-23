@@ -133,7 +133,7 @@ export function ContactSection() {
                   value={form.name}
                   onChange={e => setForm({ ...form, name: e.target.value })}
                   required
-                  className="field-input"
+                  className="field-input" suppressHydrationWarning
                 />
               </div>
               <div>
@@ -150,7 +150,7 @@ export function ContactSection() {
                   value={form.email}
                   onChange={e => setForm({ ...form, email: e.target.value })}
                   required
-                  className="field-input"
+                  className="field-input" suppressHydrationWarning
                 />
               </div>
             </div>
@@ -169,7 +169,7 @@ export function ContactSection() {
                 onChange={e => setForm({ ...form, message: e.target.value })}
                 required
                 rows={4}
-                className="field-input"
+                className="field-input" suppressHydrationWarning
                 style={{ resize: "vertical" }}
               />
             </div>
@@ -180,7 +180,7 @@ export function ContactSection() {
               </p>
               <button
                 type="submit"
-                className={`btn-primary ${sent ? "sent" : ""}`}
+                className={`btn-primary ${sent ? "sent" : ""}`} suppressHydrationWarning
                 disabled={loading}
                 style={{ opacity: loading ? 0.7 : 1 }}
               >

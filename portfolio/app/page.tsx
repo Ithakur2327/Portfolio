@@ -1,6 +1,5 @@
 import { Navbar } from "@/components/Navbar";
 import { HeroSection } from "@/components/HeroSection";
-import { OverviewSection } from "@/components/OverviewSection";
 import { AboutSection } from "@/components/AboutSection";
 import { SkillsSection } from "@/components/SkillsSection";
 import { ProjectsSection } from "@/components/ProjectsSection";
@@ -13,10 +12,8 @@ export default function Home() {
     <>
       <Navbar />
       <main>
-        {/* chanhdai-style: centered column with side border lines */}
         <div className="page-wrapper">
           <HeroSection />
-          <OverviewSection />
           <AboutSection />
           <SkillsSection />
           <ProjectsSection />

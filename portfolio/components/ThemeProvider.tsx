@@ -1,44 +1,29 @@
 "use client";
 import { createContext, useContext, useEffect, useState } from "react";
 
-type Theme = "light" | "dark" | "system";
+type Theme = "light" | "dark";
 const ThemeContext = createContext<{ theme: Theme; setTheme: (t: Theme) => void }>({
-  theme: "system",
+  theme: "dark",
   setTheme: () => {},
 });
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>("system");
-  const [mounted, setMounted] = useState(false);
+  const [theme, setThemeState] = useState<Theme>("dark");
 
+  // On mount: read localStorage and apply class
   useEffect(() => {
-    setMounted(true);
-    const stored = (localStorage.getItem("theme") as Theme) || "system";
-    setThemeState(stored);
+    const stored = localStorage.getItem("theme") as Theme | null;
+    const resolved = stored === "light" ? "light" : "dark";
+    setThemeState(resolved);
+    document.documentElement.classList.toggle("dark", resolved === "dark");
   }, []);
 
-  useEffect(() => {
-    if (!mounted) return;
-    const root = document.documentElement;
+  const setTheme = (t: Theme) => {
+    setThemeState(t);
+    document.documentElement.classList.toggle("dark", t === "dark");
+    localStorage.setItem("theme", t);
+  };
 
-    const apply = (t: Theme) => {
-      const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-      const isDark = t === "dark" || (t === "system" && prefersDark);
-      root.classList.toggle("dark", isDark);
-    };
-
-    apply(theme);
-    localStorage.setItem("theme", theme);
-
-    const mq = window.matchMedia("(prefers-color-scheme: dark)");
-    const handler = () => { if (theme === "system") apply("system"); };
-    mq.addEventListener("change", handler);
-    return () => mq.removeEventListener("change", handler);
-  }, [theme, mounted]);
-
-  const setTheme = (t: Theme) => setThemeState(t);
-
-  if (!mounted) return <>{children}</>;
   return (
     <ThemeContext.Provider value={{ theme, setTheme }}>
       {children}
