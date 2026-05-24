@@ -67,7 +67,7 @@ a { color: inherit; text-decoration: none; }
 .page-wrapper {
   max-width: 1060px;
   margin: 0 auto;
-  padding: 0;
+  padding: 52px 0 0 0;
   /* chanhdai-style: side border lines */
   border-left: 1px solid var(--line);
   border-right: 1px solid var(--line);
