@@ -3,8 +3,8 @@ import { useEffect, useRef } from "react";
 
 export function DotBackground() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const mouse     = useRef({ x: -9999, y: -9999 });
-  const raf       = useRef<number>(0);
+  const mouseRef  = useRef({ x: -9999, y: -9999 });
+  const rafRef    = useRef<number>(0);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -12,77 +12,73 @@ export function DotBackground() {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    /* ── exact props from chanhdai DotGridSpotlight API ─── */
-    const spacing         = 24;    // grid gap
-    const baseRadius      = 1.0;   // dot size at rest
-    const activeRadius    = 3.0;   // dot size at cursor
-    const interactionRadius = 120; // influence area
-    const activeMaxAlpha  = 0.50;  // brightest alpha near cursor
-    const activeMinAlpha  = 0.05;  // dimmest alpha (rest state)
-
-    /* lerp speed — chanhdai uses CSS transition, we simulate it */
-    const LERP = 0.08;
+    const GAP        = 14;    // bahut tight grid
+    const DOT_R_BASE = 0.8;   // tiny dot
+    const DOT_R_PEAK = 1.4;   // barely grow — no blinking
+    const ALPHA_REST = 0.08;  // dim at rest
+    const ALPHA_PEAK = 0.28;  // subtle, not bright
+    const REACH      = 120;
+    const LERP_IN    = 0.09;
+    const LERP_OUT   = 0.05;
 
     let cols = 0, rows = 0;
-    let curR  : Float32Array;
-    let curA  : Float32Array;
+    let dotR: Float32Array;
+    let dotA: Float32Array;
 
     const init = () => {
-      canvas.width  = window.innerWidth;
-      canvas.height = window.innerHeight;
-      cols  = Math.ceil(canvas.width  / spacing) + 2;
-      rows  = Math.ceil(canvas.height / spacing) + 2;
-      curR  = new Float32Array(cols * rows).fill(baseRadius);
-      curA  = new Float32Array(cols * rows).fill(activeMinAlpha);
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      canvas.width        = window.innerWidth  * dpr;
+      canvas.height       = window.innerHeight * dpr;
+      canvas.style.width  = window.innerWidth  + "px";
+      canvas.style.height = window.innerHeight + "px";
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      cols = Math.ceil(window.innerWidth  / GAP) + 2;
+      rows = Math.ceil(window.innerHeight / GAP) + 2;
+      dotR = new Float32Array(cols * rows).fill(DOT_R_BASE);
+      dotA = new Float32Array(cols * rows).fill(ALPHA_REST);
     };
     init();
     window.addEventListener("resize", init);
 
-    const onMove = (e: MouseEvent) => {
-      mouse.current = { x: e.clientX, y: e.clientY };
-    };
-    window.addEventListener("mousemove", onMove, { passive: true });
+    const onMove  = (e: MouseEvent) => { mouseRef.current = { x: e.clientX, y: e.clientY }; };
+    const onLeave = ()               => { mouseRef.current = { x: -9999, y: -9999 }; };
+    window.addEventListener("mousemove",  onMove,  { passive: true });
+    window.addEventListener("mouseleave", onLeave);
 
     const tick = () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      const { x: mx, y: my } = mouse.current;
+      ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+      const { x: mx, y: my } = mouseRef.current;
       const dark = document.documentElement.classList.contains("dark");
       const rgb  = dark ? "255,255,255" : "0,0,0";
 
       for (let r = 0; r < rows; r++) {
         for (let c = 0; c < cols; c++) {
-          const px  = c * spacing;
-          const py  = r * spacing;
+          const px  = c * GAP;
+          const py  = r * GAP;
           const idx = r * cols + c;
-
           const dist = Math.sqrt((px - mx) ** 2 + (py - my) ** 2);
-
-          /* 0→1 influence, smoothstep */
-          const raw    = Math.max(0, 1 - dist / interactionRadius);
-          const smooth = raw * raw * (3 - 2 * raw);
-
-          const targetR = baseRadius  + (activeRadius - baseRadius)   * smooth;
-          const targetA = activeMinAlpha + (activeMaxAlpha - activeMinAlpha) * smooth;
-
-          /* smooth lerp both radius and alpha */
-          curR[idx] += (targetR - curR[idx]) * LERP;
-          curA[idx] += (targetA - curA[idx]) * LERP;
-
+          const t    = Math.max(0, 1 - dist / REACH);
+          const s    = t * t * (3 - 2 * t);
+          const tR = DOT_R_BASE + (DOT_R_PEAK - DOT_R_BASE) * s;
+          const tA = ALPHA_REST + (ALPHA_PEAK - ALPHA_REST) * s;
+          const sp = tR > dotR[idx] ? LERP_IN : LERP_OUT;
+          dotR[idx] += (tR - dotR[idx]) * sp;
+          dotA[idx] += (tA - dotA[idx]) * sp;
           ctx.beginPath();
-          ctx.arc(px, py, curR[idx], 0, Math.PI * 2);
-          ctx.fillStyle = `rgba(${rgb},${curA[idx].toFixed(4)})`;
+          ctx.arc(px, py, dotR[idx], 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(${rgb},${dotA[idx].toFixed(4)})`;
           ctx.fill();
         }
       }
-
-      raf.current = requestAnimationFrame(tick);
+      rafRef.current = requestAnimationFrame(tick);
     };
     tick();
 
     return () => {
-      cancelAnimationFrame(raf.current);
-      window.removeEventListener("resize", init);
-      window.removeEventListener("mousemove", onMove);
+      cancelAnimationFrame(rafRef.current);
+      window.removeEventListener("resize",     init);
+      window.removeEventListener("mousemove",  onMove);
+      window.removeEventListener("mouseleave", onLeave);
     };
   }, []);
 
@@ -90,12 +86,7 @@ export function DotBackground() {
     <canvas
       ref={canvasRef}
       aria-hidden
-      style={{
-        position     : "fixed",
-        inset        : 0,
-        zIndex       : 0,
-        pointerEvents: "none",
-      }}
+      style={{ position: "fixed", inset: 0, zIndex: 0, pointerEvents: "none", display: "block" }}
     />
   );
 }
