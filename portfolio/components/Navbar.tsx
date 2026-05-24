@@ -140,8 +140,7 @@ export function Navbar() {
           maxWidth: 1060, margin: "0 auto", padding: "0 16px",
           height: 52,
           display: "flex", alignItems: "center", justifyContent: "space-between",
-          borderLeft: "1px solid rgba(255,255,255,0.06)",
-          borderRight: "1px solid rgba(255,255,255,0.06)",
+          
         }}>
 
           {/* Logo */}

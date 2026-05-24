@@ -25,7 +25,7 @@ export function DotBackground() {
     if (!ctx) return;
 
     // chanhdai defaults
-    const spacing         = 6;   // tighter than default 10 for full-page feel
+    const spacing         = 5;   // tighter than default 10 for full-page feel
     const baseRadius      = 1;
     const activeRadius    = 2;
     const interactionRadius = 140;
