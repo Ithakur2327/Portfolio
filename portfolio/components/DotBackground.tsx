@@ -11,7 +11,7 @@ function DotCanvas({ dotColor, activeDotColor }: { dotColor: string; activeDotCo
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    const SPACING = 6;
+    const SPACING = 5;
     let w = 0, h = 0, raf: number | null = null;
     const mouse = { x: -9999, y: -9999, active: false };
 
