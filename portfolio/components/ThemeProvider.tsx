@@ -1,7 +1,7 @@
 "use client";
 import { createContext, useContext, useEffect, useState } from "react";
 
-type Theme = "light" | "dark";
+export type Theme = "dark" | "light";
 
 const ThemeContext = createContext<{ theme: Theme; setTheme: (t: Theme) => void }>({
   theme: "dark",
@@ -10,17 +10,12 @@ const ThemeContext = createContext<{ theme: Theme; setTheme: (t: Theme) => void 
 
 function applyTheme(t: Theme) {
   const root = document.documentElement;
-  if (t === "dark") {
-    root.classList.add("dark");
-    root.classList.remove("light");
-    root.style.background = "#09090b";
-    root.style.colorScheme = "dark";
-  } else {
-    root.classList.add("light");
-    root.classList.remove("dark");
-    root.style.background = "#ffffff";
-    root.style.colorScheme = "light";
-  }
+  root.classList.remove("dark", "light");
+  root.classList.add(t);
+  root.setAttribute("data-theme", t);
+  root.style.colorScheme = t;
+  // Background applied via CSS, not inline
+  root.style.background = "";
 }
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
@@ -41,7 +36,6 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem("theme", t);
   };
 
-  // Prevent flash — render children even before mount
   return (
     <ThemeContext.Provider value={{ theme, setTheme }}>
       {children}
