@@ -12,8 +12,10 @@ export default function Home() {
     <>
       <Navbar />
       <main>
+        {/* HeroSection is full-width — outside page-wrapper */}
+        <HeroSection />
+        {/* Rest of content inside page-wrapper */}
         <div className="page-wrapper">
-          <HeroSection />
           <AboutSection />
           <SkillsSection />
           <ProjectsSection />

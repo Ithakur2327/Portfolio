@@ -476,6 +476,6 @@ a { color: inherit; text-decoration: none; }
   .desktop-nav { display: none !important; }
   .page-wrapper { padding: 0; }
 }
-/* Base page background */
+/* Base page background — canvas dot grid handles actual bg */
 html { background: #09090b; }
-html:not(.dark) { background: #ffffff; }
+html.light { background: #f8f8f8; }
