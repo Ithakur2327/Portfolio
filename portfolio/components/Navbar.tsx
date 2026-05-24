@@ -1,18 +1,18 @@
 "use client";
-import { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useTheme } from "./ThemeProvider";
 
 const NAV_LINKS = [
-  { label: "About",     href: "#about" },
-  { label: "Skills",    href: "#skills" },
-  { label: "Projects",  href: "#projects" },
+  { label: "About",     href: "#about"     },
+  { label: "Skills",    href: "#skills"    },
+  { label: "Projects",  href: "#projects"  },
   { label: "Education", href: "#education" },
-  { label: "Contact",   href: "#contact" },
+  { label: "Contact",   href: "#contact"   },
 ];
 
 function SunIcon() {
   return (
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <circle cx="12" cy="12" r="5"/>
       <line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
       <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
@@ -23,7 +23,7 @@ function SunIcon() {
 }
 function MoonIcon() {
   return (
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
     </svg>
   );
@@ -31,18 +31,14 @@ function MoonIcon() {
 
 export function Navbar() {
   const { theme, setTheme } = useTheme();
-  const [scrolled, setScrolled] = useState(false);
+  const [scrolled, setScrolled]         = useState(false);
   const [activeSection, setActiveSection] = useState("");
-  const prevScrolled = useRef(false);
+  const [mounted, setMounted]           = useState(false);
+
+  useEffect(() => { setMounted(true); }, []);
 
   useEffect(() => {
-    const onScroll = () => {
-      const s = window.scrollY > 60;
-      if (s !== prevScrolled.current) {
-        prevScrolled.current = s;
-        setScrolled(s);
-      }
-    };
+    const onScroll = () => setScrolled(window.scrollY > 80);
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
@@ -57,107 +53,82 @@ export function Navbar() {
     return () => obs.disconnect();
   }, []);
 
-  const toggleTheme = () => setTheme(theme === "dark" ? "light" : "dark");
-  const isDark = theme === "dark";
+  const isDark = mounted ? theme === "dark" : true;
+  const toggleTheme = () => setTheme(isDark ? "light" : "dark");
 
   return (
     <>
       <style>{`
-        .logo-wrap {
+        /* ── Logo ─────────────────────────────────── */
+        .logo-area {
           position: relative;
-          width: 38px;
-          height: 38px;
+          width: 44px;
+          height: 44px;
           flex-shrink: 0;
         }
 
-        /* I.. text — no box, just raw text */
-        .logo-text {
-          position: absolute;
-          inset: 0;
-          display: flex;
-          align-items: center;
-          justify-content: center;
+        /* <I> text — shown when NOT scrolled */
+        .logo-i {
+          position: absolute; inset: 0;
+          display: flex; align-items: center; justify-content: center;
           font-family: 'Geist Mono', monospace;
-          font-size: 17px;
-          font-weight: 900;
+          font-size: 15px; font-weight: 900;
           color: #fafafa;
-          letter-spacing: -0.06em;
-          /* start visible */
+          letter-spacing: -0.04em;
           opacity: 1;
-          transform: translateY(0px) scale(1);
-          transition:
-            opacity  0.5s cubic-bezier(0.16, 1, 0.3, 1),
-            transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-          will-change: transform, opacity;
-          pointer-events: none;
-          user-select: none;
+          transform: scale(1) translateY(0);
+          transition: opacity 0.45s cubic-bezier(0.16,1,0.3,1),
+                      transform 0.45s cubic-bezier(0.16,1,0.3,1);
         }
-        .logo-text.hide {
+        .logo-i.hide {
           opacity: 0;
-          transform: translateY(-10px) scale(0.8);
+          transform: scale(0.7) translateY(-8px);
         }
 
-        /* IT avatar circle */
+        /* Avatar circle — shown when scrolled */
         .logo-avatar {
-          position: absolute;
-          inset: 0;
-          display: flex;
-          align-items: center;
-          justify-content: center;
+          position: absolute; inset: 0;
+          display: flex; align-items: center; justify-content: center;
           border-radius: 50%;
           background: linear-gradient(135deg, #27272a 0%, #52525b 100%);
           border: 1.5px solid #3f3f46;
           font-family: 'Geist Mono', monospace;
-          font-size: 11px;
-          font-weight: 800;
+          font-size: 12px; font-weight: 800;
           color: #fafafa;
-          letter-spacing: -0.02em;
-          /* start hidden below */
           opacity: 0;
-          transform: translateY(10px) scale(0.75);
-          transition:
-            opacity  0.5s cubic-bezier(0.16, 1, 0.3, 1),
-            transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-          will-change: transform, opacity;
-          pointer-events: none;
-          user-select: none;
+          transform: scale(0.7) translateY(8px);
+          transition: opacity 0.45s cubic-bezier(0.16,1,0.3,1),
+                      transform 0.45s cubic-bezier(0.16,1,0.3,1);
         }
         .logo-avatar.show {
           opacity: 1;
-          transform: translateY(0px) scale(1);
+          transform: scale(1) translateY(0);
         }
 
+        /* ── Nav links ───────────────────────────── */
         .nav-link {
-          padding: 5px 10px;
+          padding: 5px 11px;
           border-radius: 6px;
-          font-size: 13px;
-          font-weight: 500;
-          color: rgba(255,255,255,0.45);
+          font-size: 13px; font-weight: 500;
+          color: rgba(255,255,255,0.4);
           background: transparent;
-          transition: color 0.15s, background 0.15s;
           text-decoration: none;
+          transition: color 0.15s, background 0.15s;
         }
-        .nav-link:hover,
-        .nav-link.active {
-          color: #fafafa;
-          background: rgba(255,255,255,0.07);
-        }
+        .nav-link:hover { color: #fafafa; background: rgba(255,255,255,0.07); }
+        .nav-link.active { color: #fafafa; background: rgba(255,255,255,0.09); }
 
+        /* ── Theme button — NO box ───────────────── */
         .theme-btn {
-          width: 32px; height: 32px;
-          border-radius: 6px;
-          border: 1px solid rgba(255,255,255,0.1);
-          background: transparent;
-          color: rgba(255,255,255,0.45);
+          width: 30px; height: 30px;
+          background: none; border: none; outline: none;
+          color: rgba(255,255,255,0.4);
           cursor: pointer;
           display: flex; align-items: center; justify-content: center;
-          transition: all 0.15s;
+          transition: color 0.15s;
+          padding: 0;
         }
-        .theme-btn:hover {
-          background: rgba(255,255,255,0.07);
-          color: #fafafa;
-          border-color: rgba(255,255,255,0.2);
-        }
+        .theme-btn:hover { color: #fafafa; }
       `}</style>
 
       <header style={{
@@ -166,7 +137,7 @@ export function Navbar() {
         borderBottom: "1px solid rgba(255,255,255,0.07)",
       }}>
         <div style={{
-          maxWidth: 860, margin: "0 auto", padding: "0 16px",
+          maxWidth: 1060, margin: "0 auto", padding: "0 16px",
           height: 52,
           display: "flex", alignItems: "center", justifyContent: "space-between",
           borderLeft: "1px solid rgba(255,255,255,0.06)",
@@ -174,44 +145,23 @@ export function Navbar() {
         }}>
 
           {/* Logo */}
-          <a href="#" style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none" }}>
-
-            <div className="logo-wrap">
-              {/* I.. text */}
-              <div className={`logo-text ${scrolled ? "hide" : ""}`}>
-                I..
-              </div>
-              {/* IT avatar */}
-              <div className={`logo-avatar ${scrolled ? "show" : ""}`}>
-                IT
-              </div>
+          <a href="#" style={{ display: "flex", alignItems: "center", textDecoration: "none" }}>
+            <div className="logo-area">
+              {/* <I> — visible before scroll */}
+              <div className={`logo-i${scrolled ? " hide" : ""}`}>&lt;I&gt;</div>
+              {/* Avatar circle — visible after scroll */}
+              <div className={`logo-avatar${scrolled ? " show" : ""}`}>IT</div>
             </div>
-
-            {/* Name — slides out on scroll */}
-            <span style={{
-              fontFamily: "'Geist Mono', monospace",
-              fontSize: 13.5,
-              fontWeight: 700,
-              color: "#fafafa",
-              letterSpacing: "-0.03em",
-              opacity: scrolled ? 0 : 1,
-              transform: scrolled ? "translateX(-8px)" : "none",
-              transition: "opacity 0.4s cubic-bezier(0.16,1,0.3,1), transform 0.4s cubic-bezier(0.16,1,0.3,1)",
-              pointerEvents: "none",
-              userSelect: "none",
-            }}>
-              Indresh Thakur
-            </span>
           </a>
 
-          {/* Right */}
-          <div style={{ display: "flex", alignItems: "center", gap: 2 }}>
-            <nav style={{ display: "flex", gap: 1, marginRight: 6 }}>
+          {/* Right side */}
+          <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+            <nav style={{ display: "flex", gap: 1, marginRight: 8 }}>
               {NAV_LINKS.map(({ label, href }) => (
                 <a
                   key={href}
                   href={href}
-                  className={`nav-link ${activeSection === href.slice(1) ? "active" : ""}`}
+                  className={`nav-link${activeSection === href.slice(1) ? " active" : ""}`}
                 >
                   {label}
                 </a>
@@ -221,8 +171,8 @@ export function Navbar() {
             <button
               suppressHydrationWarning
               onClick={toggleTheme}
-              title={isDark ? "Switch to light" : "Switch to dark"}
               className="theme-btn"
+              title={isDark ? "Switch to light" : "Switch to dark"}
             >
               {isDark ? <SunIcon /> : <MoonIcon />}
             </button>
