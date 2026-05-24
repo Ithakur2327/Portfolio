@@ -1,10 +1,22 @@
 "use client";
-import { useEffect, useRef } from "react";
+import React, { useEffect, useRef } from "react";
+
+// Exact chanhdai DotGridSpotlight algorithm adapted for full-page fixed canvas
+// Colors from the demo code provided:
+const DOT_COLOR = {
+  light: {
+    default: "rgba(0, 0, 0, 0.08)",
+    active:  "rgba(0, 0, 0, 0.16)",
+  },
+  dark: {
+    default: "rgba(255, 255, 255, 0.06)",
+    active:  "rgba(255, 255, 255, 0.12)",
+  },
+};
 
 export function DotBackground() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const mouseRef  = useRef({ x: -9999, y: -9999 });
-  const rafRef    = useRef<number>(0);
+  const mouse = useRef({ x: -1000, y: -1000, isActive: false });
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -12,73 +24,97 @@ export function DotBackground() {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    const GAP        = 14;    // bahut tight grid
-    const DOT_R_BASE = 0.8;   // tiny dot
-    const DOT_R_PEAK = 1.4;   // barely grow — no blinking
-    const ALPHA_REST = 0.08;  // dim at rest
-    const ALPHA_PEAK = 0.28;  // subtle, not bright
-    const REACH      = 120;
-    const LERP_IN    = 0.09;
-    const LERP_OUT   = 0.05;
+    // chanhdai defaults
+    const spacing         = 6;   // tighter than default 10 for full-page feel
+    const baseRadius      = 1;
+    const activeRadius    = 2;
+    const interactionRadius = 140;
+    const activeMaxAlpha  = 1.0;
+    const activeMinAlpha  = 0.5;
 
-    let cols = 0, rows = 0;
-    let dotR: Float32Array;
-    let dotA: Float32Array;
+    let width = 0, height = 0;
+    let renderFrameId: number | null = null;
 
-    const init = () => {
-      const dpr = Math.min(window.devicePixelRatio || 1, 2);
-      canvas.width        = window.innerWidth  * dpr;
-      canvas.height       = window.innerHeight * dpr;
-      canvas.style.width  = window.innerWidth  + "px";
-      canvas.style.height = window.innerHeight + "px";
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      cols = Math.ceil(window.innerWidth  / GAP) + 2;
-      rows = Math.ceil(window.innerHeight / GAP) + 2;
-      dotR = new Float32Array(cols * rows).fill(DOT_R_BASE);
-      dotA = new Float32Array(cols * rows).fill(ALPHA_REST);
-    };
-    init();
-    window.addEventListener("resize", init);
+    const getTheme = () =>
+      document.documentElement.classList.contains("dark") ? "dark" : "light";
 
-    const onMove  = (e: MouseEvent) => { mouseRef.current = { x: e.clientX, y: e.clientY }; };
-    const onLeave = ()               => { mouseRef.current = { x: -9999, y: -9999 }; };
-    window.addEventListener("mousemove",  onMove,  { passive: true });
-    window.addEventListener("mouseleave", onLeave);
+    const draw = () => {
+      ctx.clearRect(0, 0, width, height);
+      const theme = getTheme();
+      const dotColor    = DOT_COLOR[theme].default;
+      const activeDot   = DOT_COLOR[theme].active;
 
-    const tick = () => {
-      ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
-      const { x: mx, y: my } = mouseRef.current;
-      const dark = document.documentElement.classList.contains("dark");
-      const rgb  = dark ? "255,255,255" : "0,0,0";
+      const offsetX = (width  % spacing) / 2;
+      const offsetY = (height % spacing) / 2;
 
-      for (let r = 0; r < rows; r++) {
-        for (let c = 0; c < cols; c++) {
-          const px  = c * GAP;
-          const py  = r * GAP;
-          const idx = r * cols + c;
-          const dist = Math.sqrt((px - mx) ** 2 + (py - my) ** 2);
-          const t    = Math.max(0, 1 - dist / REACH);
-          const s    = t * t * (3 - 2 * t);
-          const tR = DOT_R_BASE + (DOT_R_PEAK - DOT_R_BASE) * s;
-          const tA = ALPHA_REST + (ALPHA_PEAK - ALPHA_REST) * s;
-          const sp = tR > dotR[idx] ? LERP_IN : LERP_OUT;
-          dotR[idx] += (tR - dotR[idx]) * sp;
-          dotA[idx] += (tA - dotA[idx]) * sp;
+      for (let x = offsetX; x <= width; x += spacing) {
+        for (let y = offsetY; y <= height; y += spacing) {
+          const dx = x - mouse.current.x;
+          const dy = y - mouse.current.y;
+          const distance = Math.sqrt(dx * dx + dy * dy);
+
+          let currentRadius = baseRadius;
+          let currentColor  = dotColor;
+          let currentAlpha  = 1.0;
+
+          if (mouse.current.isActive && distance < interactionRadius) {
+            const factor  = 1 - distance / interactionRadius;
+            currentRadius = baseRadius + (activeRadius - baseRadius) * factor;
+            currentColor  = activeDot;
+            currentAlpha  = activeMinAlpha + (activeMaxAlpha - activeMinAlpha) * factor;
+          }
+
+          ctx.globalAlpha = currentAlpha;
           ctx.beginPath();
-          ctx.arc(px, py, dotR[idx], 0, Math.PI * 2);
-          ctx.fillStyle = `rgba(${rgb},${dotA[idx].toFixed(4)})`;
+          ctx.arc(x, y, currentRadius, 0, Math.PI * 2);
+          ctx.fillStyle = currentColor;
           ctx.fill();
         }
       }
-      rafRef.current = requestAnimationFrame(tick);
+      ctx.globalAlpha = 1.0;
     };
-    tick();
+
+    const resize = () => {
+      const dpr = window.devicePixelRatio || 1;
+      width  = window.innerWidth;
+      height = window.innerHeight;
+      canvas.width  = width  * dpr;
+      canvas.height = height * dpr;
+      canvas.style.width  = `${width}px`;
+      canvas.style.height = `${height}px`;
+      ctx.scale(dpr, dpr);
+      draw();
+    };
+
+    const onMouseMove = (e: MouseEvent) => {
+      mouse.current = { x: e.clientX, y: e.clientY, isActive: true };
+      if (renderFrameId === null) {
+        renderFrameId = requestAnimationFrame(() => { draw(); renderFrameId = null; });
+      }
+    };
+
+    const onMouseLeave = () => {
+      mouse.current.isActive = false;
+      if (renderFrameId === null) {
+        renderFrameId = requestAnimationFrame(() => { draw(); renderFrameId = null; });
+      }
+    };
+
+    // Also redraw when theme changes (MutationObserver on html class)
+    const mo = new MutationObserver(() => draw());
+    mo.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
+
+    window.addEventListener("resize",     resize);
+    window.addEventListener("mousemove",  onMouseMove);
+    window.addEventListener("mouseleave", onMouseLeave);
+    resize();
 
     return () => {
-      cancelAnimationFrame(rafRef.current);
-      window.removeEventListener("resize",     init);
-      window.removeEventListener("mousemove",  onMove);
-      window.removeEventListener("mouseleave", onLeave);
+      window.removeEventListener("resize",     resize);
+      window.removeEventListener("mousemove",  onMouseMove);
+      window.removeEventListener("mouseleave", onMouseLeave);
+      mo.disconnect();
+      if (renderFrameId !== null) cancelAnimationFrame(renderFrameId);
     };
   }, []);
 
@@ -86,7 +122,13 @@ export function DotBackground() {
     <canvas
       ref={canvasRef}
       aria-hidden
-      style={{ position: "fixed", inset: 0, zIndex: 0, pointerEvents: "none", display: "block" }}
+      style={{
+        position:      "fixed",
+        inset:         0,
+        zIndex:        0,
+        pointerEvents: "none",
+        display:       "block",
+      }}
     />
   );
 }
