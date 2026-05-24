@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useTheme } from "./ThemeProvider";
 
 const NAV_LINKS = [
@@ -33,14 +33,20 @@ export function Navbar() {
   const { theme, setTheme } = useTheme();
   const [scrolled, setScrolled] = useState(false);
   const [activeSection, setActiveSection] = useState("");
+  const prevScrolled = useRef(false);
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 8);
+    const onScroll = () => {
+      const s = window.scrollY > 60;
+      if (s !== prevScrolled.current) {
+        prevScrolled.current = s;
+        setScrolled(s);
+      }
+    };
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  // active section highlight
   useEffect(() => {
     const ids = NAV_LINKS.map(l => l.href.slice(1));
     const obs = new IntersectionObserver(
@@ -55,85 +61,175 @@ export function Navbar() {
   const isDark = theme === "dark";
 
   return (
-    <header
-      style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 100, transition: "all 0.25s" }}
-      className={scrolled ? "nav-bg" : ""}
-    >
-      <div
-        style={{
-          maxWidth: 860, margin: "0 auto", padding: "0 16px",
-          height: 52, display: "flex", alignItems: "center", justifyContent: "space-between",
-          borderLeft: "1px solid var(--line)", borderRight: "1px solid var(--line)",
-        }}
-      >
-        {/* Logo */}
-        <a href="#" style={{ display: "flex", alignItems: "center", gap: 8, fontWeight: 700, fontSize: 13.5, color: "var(--text-primary)", letterSpacing: "-0.02em" }}>
-          <div style={{
-            width: 26, height: 26, borderRadius: "50%",
-            background: "var(--text-primary)", color: "var(--bg)",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            fontSize: 10, fontWeight: 800, fontFamily: "'Geist Mono', monospace",
-          }}>IT</div>
-          <span>Indresh Thakur</span>
-        </a>
+    <>
+      <style>{`
+        .logo-wrap {
+          position: relative;
+          width: 38px;
+          height: 38px;
+          flex-shrink: 0;
+        }
 
-        {/* Right */}
-        <div style={{ display: "flex", alignItems: "center", gap: 2 }}>
-          {/* Nav links */}
-          <nav style={{ display: "flex", gap: 1, marginRight: 6 }} className="desktop-nav">
-            {NAV_LINKS.map(({ label, href }) => {
-              const isActive = activeSection === href.slice(1);
-              return (
+        /* I.. text — no box, just raw text */
+        .logo-text {
+          position: absolute;
+          inset: 0;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-family: 'Geist Mono', monospace;
+          font-size: 17px;
+          font-weight: 900;
+          color: #fafafa;
+          letter-spacing: -0.06em;
+          /* start visible */
+          opacity: 1;
+          transform: translateY(0px) scale(1);
+          transition:
+            opacity  0.5s cubic-bezier(0.16, 1, 0.3, 1),
+            transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+          will-change: transform, opacity;
+          pointer-events: none;
+          user-select: none;
+        }
+        .logo-text.hide {
+          opacity: 0;
+          transform: translateY(-10px) scale(0.8);
+        }
+
+        /* IT avatar circle */
+        .logo-avatar {
+          position: absolute;
+          inset: 0;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border-radius: 50%;
+          background: linear-gradient(135deg, #27272a 0%, #52525b 100%);
+          border: 1.5px solid #3f3f46;
+          font-family: 'Geist Mono', monospace;
+          font-size: 11px;
+          font-weight: 800;
+          color: #fafafa;
+          letter-spacing: -0.02em;
+          /* start hidden below */
+          opacity: 0;
+          transform: translateY(10px) scale(0.75);
+          transition:
+            opacity  0.5s cubic-bezier(0.16, 1, 0.3, 1),
+            transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+          will-change: transform, opacity;
+          pointer-events: none;
+          user-select: none;
+        }
+        .logo-avatar.show {
+          opacity: 1;
+          transform: translateY(0px) scale(1);
+        }
+
+        .nav-link {
+          padding: 5px 10px;
+          border-radius: 6px;
+          font-size: 13px;
+          font-weight: 500;
+          color: rgba(255,255,255,0.45);
+          background: transparent;
+          transition: color 0.15s, background 0.15s;
+          text-decoration: none;
+        }
+        .nav-link:hover,
+        .nav-link.active {
+          color: #fafafa;
+          background: rgba(255,255,255,0.07);
+        }
+
+        .theme-btn {
+          width: 32px; height: 32px;
+          border-radius: 6px;
+          border: 1px solid rgba(255,255,255,0.1);
+          background: transparent;
+          color: rgba(255,255,255,0.45);
+          cursor: pointer;
+          display: flex; align-items: center; justify-content: center;
+          transition: all 0.15s;
+        }
+        .theme-btn:hover {
+          background: rgba(255,255,255,0.07);
+          color: #fafafa;
+          border-color: rgba(255,255,255,0.2);
+        }
+      `}</style>
+
+      <header style={{
+        position: "fixed", top: 0, left: 0, right: 0, zIndex: 100,
+        background: "#09090b",
+        borderBottom: "1px solid rgba(255,255,255,0.07)",
+      }}>
+        <div style={{
+          maxWidth: 860, margin: "0 auto", padding: "0 16px",
+          height: 52,
+          display: "flex", alignItems: "center", justifyContent: "space-between",
+          borderLeft: "1px solid rgba(255,255,255,0.06)",
+          borderRight: "1px solid rgba(255,255,255,0.06)",
+        }}>
+
+          {/* Logo */}
+          <a href="#" style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none" }}>
+
+            <div className="logo-wrap">
+              {/* I.. text */}
+              <div className={`logo-text ${scrolled ? "hide" : ""}`}>
+                I..
+              </div>
+              {/* IT avatar */}
+              <div className={`logo-avatar ${scrolled ? "show" : ""}`}>
+                IT
+              </div>
+            </div>
+
+            {/* Name — slides out on scroll */}
+            <span style={{
+              fontFamily: "'Geist Mono', monospace",
+              fontSize: 13.5,
+              fontWeight: 700,
+              color: "#fafafa",
+              letterSpacing: "-0.03em",
+              opacity: scrolled ? 0 : 1,
+              transform: scrolled ? "translateX(-8px)" : "none",
+              transition: "opacity 0.4s cubic-bezier(0.16,1,0.3,1), transform 0.4s cubic-bezier(0.16,1,0.3,1)",
+              pointerEvents: "none",
+              userSelect: "none",
+            }}>
+              Indresh Thakur
+            </span>
+          </a>
+
+          {/* Right */}
+          <div style={{ display: "flex", alignItems: "center", gap: 2 }}>
+            <nav style={{ display: "flex", gap: 1, marginRight: 6 }}>
+              {NAV_LINKS.map(({ label, href }) => (
                 <a
-                  key={href} href={href}
-                  style={{
-                    padding: "5px 10px", borderRadius: 6, fontSize: 13, fontWeight: 500,
-                    color: isActive ? "var(--text-primary)" : "var(--text-secondary)",
-                    background: isActive ? "var(--bg-hover)" : "transparent",
-                    transition: "all 0.15s",
-                  }}
-                  onMouseEnter={e => {
-                    (e.currentTarget as HTMLElement).style.background = "var(--bg-hover)";
-                    (e.currentTarget as HTMLElement).style.color = "var(--text-primary)";
-                  }}
-                  onMouseLeave={e => {
-                    if (!isActive) {
-                      (e.currentTarget as HTMLElement).style.background = "transparent";
-                      (e.currentTarget as HTMLElement).style.color = "var(--text-secondary)";
-                    }
-                  }}
+                  key={href}
+                  href={href}
+                  className={`nav-link ${activeSection === href.slice(1) ? "active" : ""}`}
                 >
                   {label}
                 </a>
-              );
-            })}
-          </nav>
+              ))}
+            </nav>
 
-          {/* Dark / Light toggle only */}
-          <button
-            suppressHydrationWarning
-            onClick={toggleTheme}
-            title={isDark ? "Switch to light" : "Switch to dark"}
-            style={{
-              width: 32, height: 32, borderRadius: 6,
-              border: "1px solid var(--border)", background: "transparent",
-              color: "var(--text-secondary)", cursor: "pointer",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              transition: "all 0.15s",
-            }}
-            onMouseEnter={e => {
-              (e.currentTarget as HTMLElement).style.background = "var(--bg-hover)";
-              (e.currentTarget as HTMLElement).style.color = "var(--text-primary)";
-            }}
-            onMouseLeave={e => {
-              (e.currentTarget as HTMLElement).style.background = "transparent";
-              (e.currentTarget as HTMLElement).style.color = "var(--text-secondary)";
-            }}
-          >
-            {isDark ? <SunIcon /> : <MoonIcon />}
-          </button>
+            <button
+              suppressHydrationWarning
+              onClick={toggleTheme}
+              title={isDark ? "Switch to light" : "Switch to dark"}
+              className="theme-btn"
+            >
+              {isDark ? <SunIcon /> : <MoonIcon />}
+            </button>
+          </div>
+
         </div>
-      </div>
-    </header>
+      </header>
+    </>
   );
 }
