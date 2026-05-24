@@ -18,10 +18,12 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body suppressHydrationWarning>
+      <body>
         <ThemeProvider>
           <DotBackground />
-          {children}
+          <div style={{ position: "relative", zIndex: 1 }}>
+            {children}
+          </div>
         </ThemeProvider>
       </body>
     </html>
