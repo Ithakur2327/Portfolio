@@ -31,25 +31,20 @@ function parse(raw: string): Token[][] {
 function GoldWord({ text, idx, total, progress }: {
   text: string; idx: number; total: number; progress: MotionValue<number>;
 }) {
-  /* each word reveals quickly — tight window */
   const s = Math.max(0, (idx - 0.2) / total);
   const e = Math.min(1, (idx + 0.4) / total);
 
   const raw = useTransform(progress, [s, e], [0, 1]);
   const p   = useSpring(raw, { stiffness: 800, damping: 32, mass: 0.2 });
 
-  /* muted zinc → crisp metallic gold — NO gradient/backgroundClip (avoids React warning) */
-  const color = useTransform(p, [0, 1], ["#3f3f46", "#D4AF37"]);
-
-  /* sharp glow — NOT blurry, just a tight luminous halo */
-  const textShadow = useTransform(p, v =>
-    v < 0.05
-      ? "none"
-      : `0 0 ${(v * 8).toFixed(1)}px rgba(212,175,55,${(v * 0.6).toFixed(2)}), 0 0 ${(v * 2).toFixed(1)}px rgba(255,230,80,${(v * 0.4).toFixed(2)})`
-  );
+  /* dim zinc → full metallic gold color — CSS class handles the 3D text-shadow */
+  const opacity = useTransform(p, [0, 0.15, 1], [0.2, 0.6, 1]);
 
   return (
-    <motion.span style={{ display:"inline", color, textShadow, fontWeight:700, letterSpacing:"-0.01em" }}>
+    <motion.span
+      className="gold-word"
+      style={{ opacity }}
+    >
       {text}
     </motion.span>
   );
