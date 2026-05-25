@@ -27,60 +27,36 @@ function parse(raw: string): Token[][] {
   });
 }
 
-/* ══ GOLD WORD — crisp metallic gold, no blur, no background conflict ══ */
 function GoldWord({ text, idx, total, progress }: {
   text: string; idx: number; total: number; progress: MotionValue<number>;
 }) {
   const s = Math.max(0, (idx - 0.2) / total);
   const e = Math.min(1, (idx + 0.4) / total);
-
   const raw = useTransform(progress, [s, e], [0, 1]);
   const p   = useSpring(raw, { stiffness: 800, damping: 32, mass: 0.2 });
-
-  /* dim zinc → full metallic gold color — CSS class handles the 3D text-shadow */
   const opacity = useTransform(p, [0, 0.15, 1], [0.2, 0.6, 1]);
-
   return (
-    <motion.span
-      className="gold-word"
-      style={{ opacity }}
-    >
-      {text}
-    </motion.span>
+    <motion.span className="gold-word" style={{ opacity }}>{text}</motion.span>
   );
 }
 
-/* ══ SCROLL REVEAL ══ */
 function ScrollRevealText() {
   const ref = useRef<HTMLDivElement>(null);
-
-  /* offset: start revealing as soon as section hits viewport top,
-     finish well before the section bottom — so ALL words are done
-     before GitHub/LeetCode panels appear */
   const { scrollYProgress } = useScroll({
     target: ref,
     offset: ["start 0.85", "center 0.6"],
   });
   const smooth = useSpring(scrollYProgress, { stiffness: 200, damping: 26, restDelta: 0.001 });
-
   const paras = parse(ABOUT_TEXT);
   const total = paras.flat().filter(t => t.hl).length;
-
   return (
     <div ref={ref}>
       {paras.map((tokens, pi) => (
-        <p key={pi} style={{
-          margin: "0 0 16px",          /* tighter paragraph spacing */
-          fontSize: 15.5,
-          lineHeight: 1.85,
-          fontFamily: SF,
-          letterSpacing: "-0.012em",
-          fontWeight: 400,
-        }}>
+        <p key={pi} style={{ margin:"0 0 16px", fontSize:15.5, lineHeight:1.85, fontFamily:SF, letterSpacing:"-0.012em", fontWeight:400, color:"var(--text-secondary)" }}>
           {tokens.map((t, ti) =>
             t.hl
               ? <GoldWord key={ti} text={t.text} idx={t.idx} total={total} progress={smooth} />
-              : <span key={ti} style={{ color:"#a1a1aa" }}>{t.text}</span>
+              : <span key={ti} style={{ color:"var(--text-muted)" }}>{t.text}</span>
           )}
         </p>
       ))}
@@ -92,8 +68,8 @@ function ScrollRevealText() {
 interface Week { days: { contributionCount: number; date: string }[] }
 
 function GitHubGraph({ username = "IndreshThakur" }: { username?: string }) {
-  const [weeks,   setWeeks]   = useState<Week[]>([]);
-  const [total,   setTotal]   = useState<number | null>(null);
+  const [weeks, setWeeks]   = useState<Week[]>([]);
+  const [total, setTotal]   = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -125,20 +101,25 @@ function GitHubGraph({ username = "IndreshThakur" }: { username?: string }) {
     <div>
       <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:14 }}>
         <div style={{ display:"flex", alignItems:"center", gap:10 }}>
-          <IBox><svg width="15" height="15" viewBox="0 0 24 24" fill="#e4e4e7"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg></IBox>
+          {/* Real GitHub logo */}
+          <div style={{ width:36, height:36, borderRadius:9, background:"var(--bg-secondary)", borderTop:"1px solid var(--border)", borderRight:"1px solid var(--border)", borderBottom:"1px solid var(--border)", borderLeft:"1px solid var(--border)", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="var(--text-primary)">
+              <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/>
+            </svg>
+          </div>
           <div>
-            <div style={{ fontSize:13, fontWeight:600, color:"#e4e4e7", fontFamily:SF }}>GitHub</div>
-            <div style={{ fontSize:11, color:"#71717a", fontFamily:MONO }}>@{username}</div>
+            <div style={{ fontSize:13, fontWeight:600, color:"var(--text-primary)", fontFamily:SF }}>GitHub</div>
+            <div style={{ fontSize:11, color:"var(--text-muted)", fontFamily:MONO }}>@{username}</div>
           </div>
         </div>
         {total !== null && total > 0 && (
           <div style={{ textAlign:"right" }}>
             <div style={{ fontSize:22, fontWeight:700, color:"#4ade80", fontFamily:MONO, letterSpacing:"-0.04em", lineHeight:1 }}>{total.toLocaleString()}</div>
-            <div style={{ fontSize:10, color:"#71717a", fontFamily:MONO, marginTop:2 }}>contributions this year</div>
+            <div style={{ fontSize:10, color:"var(--text-muted)", fontFamily:MONO, marginTop:2 }}>contributions this year</div>
           </div>
         )}
       </div>
-      <div style={{ height:1, background:"#1f1f23", marginBottom:12 }} />
+      <div style={{ height:1, background:"var(--border)", marginBottom:12 }} />
       {loading ? <Spin color="#4ade80" /> : (
         <>
           <div style={{ display:"flex", gap:3, overflowX:"auto", paddingBottom:4 }}>
@@ -152,11 +133,11 @@ function GitHubGraph({ username = "IndreshThakur" }: { username?: string }) {
             ))}
           </div>
           <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginTop:8 }}>
-            <span style={{ fontSize:10, color:"#52525b", fontFamily:MONO }}>Contribution activity</span>
+            <span style={{ fontSize:10, color:"var(--text-muted)", fontFamily:MONO }}>Contribution activity</span>
             <div style={{ display:"flex", alignItems:"center", gap:3 }}>
-              <span style={{ fontSize:10, color:"#52525b", fontFamily:MONO }}>Less</span>
+              <span style={{ fontSize:10, color:"var(--text-muted)", fontFamily:MONO }}>Less</span>
               {[0,1,2,3,4].map(l=><div key={l} className="contrib-cell" data-level={l} style={{ flexShrink:0 }}/>)}
-              <span style={{ fontSize:10, color:"#52525b", fontFamily:MONO }}>More</span>
+              <span style={{ fontSize:10, color:"var(--text-muted)", fontFamily:MONO }}>More</span>
             </div>
           </div>
         </>
@@ -165,7 +146,7 @@ function GitHubGraph({ username = "IndreshThakur" }: { username?: string }) {
   );
 }
 
-/* ══ LEETCODE ══ */
+/* ══ LEETCODE — unique purple/indigo style ══ */
 interface LC { easySolved:number; totalEasy:number; mediumSolved:number; totalMedium:number; hardSolved:number; totalHard:number; totalSolved:number; ranking:number; }
 
 function LeetCodeStats({ username="IThakur09" }: { username?: string }) {
@@ -201,54 +182,84 @@ function LeetCodeStats({ username="IThakur09" }: { username?: string }) {
   }, [username]);
 
   const tiers = data ? [
-    { label:"Easy",   solved:data.easySolved,  total:data.totalEasy,   color:"#4ade80", bg:"rgba(74,222,128,0.07)"  },
-    { label:"Medium", solved:data.mediumSolved, total:data.totalMedium, color:"#fbbf24", bg:"rgba(251,191,36,0.07)"  },
-    { label:"Hard",   solved:data.hardSolved,   total:data.totalHard,   color:"#f87171", bg:"rgba(248,113,113,0.07)" },
+    { label:"Easy",   solved:data.easySolved,  total:data.totalEasy,   color:"#4ade80" },
+    { label:"Medium", solved:data.mediumSolved, total:data.totalMedium, color:"#fb923c" },
+    { label:"Hard",   solved:data.hardSolved,   total:data.totalHard,   color:"#f87171" },
   ] : [];
 
+  const totalPct = data ? Math.round((data.totalSolved / (data.totalEasy + data.totalMedium + data.totalHard)) * 100) : 0;
+
   return (
-    <div>
+    <div style={{ height:"100%", display:"flex", flexDirection:"column" }}>
+      {/* Header */}
       <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:14 }}>
         <div style={{ display:"flex", alignItems:"center", gap:10 }}>
-          <IBox><svg width="13" height="13" viewBox="0 0 24 24" fill="#fbbf24"><path d="M13.483 0a1.374 1.374 0 0 0-.961.438L7.116 6.226l-3.854 4.126a5.266 5.266 0 0 0-1.209 2.104 5.35 5.35 0 0 0-.125.513 5.527 5.527 0 0 0 .062 2.362 5.83 5.83 0 0 0 .349 1.017 5.938 5.938 0 0 0 1.271 1.818l4.277 4.193.039.038c2.248 2.165 5.852 2.133 8.063-.074l2.396-2.392c.54-.54.54-1.414.003-1.955a1.378 1.378 0 0 0-1.951-.003l-2.396 2.392a3.021 3.021 0 0 1-4.205.038l-.02-.019-4.276-4.193c-.652-.64-.972-1.469-.948-2.263a2.68 2.68 0 0 1 .066-.523 2.545 2.545 0 0 1 .619-1.164L9.13 8.114c1.058-1.134 3.204-1.27 4.43-.278l3.501 2.831c.593.48 1.461.387 1.94-.207a1.384 1.384 0 0 0-.207-1.943l-3.5-2.831c-.8-.647-1.766-1.045-2.774-1.202l2.015-2.158A1.384 1.384 0 0 0 13.483 0zm-2.866 12.815a1.38 1.38 0 0 0-1.38 1.382 1.38 1.38 0 0 0 1.38 1.382H20.79a1.38 1.38 0 0 0 1.38-1.382 1.38 1.38 0 0 0-1.38-1.382z"/></svg></IBox>
+          {/* Real LeetCode logo */}
+          <div style={{ width:36, height:36, borderRadius:9, background:"#1a1a2e", borderTop:"1px solid #2d2d4e", borderRight:"1px solid #2d2d4e", borderBottom:"1px solid #2d2d4e", borderLeft:"1px solid #2d2d4e", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="#a78bfa">
+              <path d="M13.483 0a1.374 1.374 0 0 0-.961.438L7.116 6.226l-3.854 4.126a5.266 5.266 0 0 0-1.209 2.104 5.35 5.35 0 0 0-.125.513 5.527 5.527 0 0 0 .062 2.362 5.83 5.83 0 0 0 .349 1.017 5.938 5.938 0 0 0 1.271 1.818l4.277 4.193.039.038c2.248 2.165 5.852 2.133 8.063-.074l2.396-2.392c.54-.54.54-1.414.003-1.955a1.378 1.378 0 0 0-1.951-.003l-2.396 2.392a3.021 3.021 0 0 1-4.205.038l-.02-.019-4.276-4.193c-.652-.64-.972-1.469-.948-2.263a2.68 2.68 0 0 1 .066-.523 2.545 2.545 0 0 1 .619-1.164L9.13 8.114c1.058-1.134 3.204-1.27 4.43-.278l3.501 2.831c.593.48 1.461.387 1.94-.207a1.384 1.384 0 0 0-.207-1.943l-3.5-2.831c-.8-.647-1.766-1.045-2.774-1.202l2.015-2.158A1.384 1.384 0 0 0 13.483 0zm-2.866 12.815a1.38 1.38 0 0 0-1.38 1.382 1.38 1.38 0 0 0 1.38 1.382H20.79a1.38 1.38 0 0 0 1.38-1.382 1.38 1.38 0 0 0-1.38-1.382z"/>
+            </svg>
+          </div>
           <div>
-            <div style={{ fontSize:13, fontWeight:600, color:"#e4e4e7", fontFamily:SF }}>LeetCode</div>
-            <div style={{ fontSize:11, color:"#71717a", fontFamily:MONO }}>@{username}</div>
+            <div style={{ fontSize:13, fontWeight:600, color:"var(--text-primary)", fontFamily:SF }}>LeetCode</div>
+            <div style={{ fontSize:11, color:"var(--text-muted)", fontFamily:MONO }}>@{username}</div>
           </div>
         </div>
         {data && data.totalSolved > 0 && (
-          <div style={{ textAlign:"right" }}>
-            <div style={{ fontSize:22, fontWeight:700, color:"#fbbf24", fontFamily:MONO, letterSpacing:"-0.04em", lineHeight:1 }}>{data.totalSolved}</div>
-            <div style={{ fontSize:10, color:"#71717a", fontFamily:MONO, marginTop:2 }}>problems solved</div>
+          <div style={{ display:"flex", flexDirection:"column", alignItems:"flex-end" }}>
+            <div style={{ fontSize:24, fontWeight:800, color:"#a78bfa", fontFamily:MONO, letterSpacing:"-0.05em", lineHeight:1 }}>{data.totalSolved}</div>
+            <div style={{ fontSize:10, color:"var(--text-muted)", fontFamily:MONO, marginTop:2 }}>problems solved</div>
           </div>
         )}
       </div>
-      <div style={{ height:1, background:"#1f1f23", marginBottom:12 }} />
-      {loading ? <Spin color="#fbbf24" /> : error||!data ? (
-        <div style={{ height:80, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:6 }}>
-          <span style={{ fontSize:12, color:"#52525b", fontFamily:MONO }}>Could not load</span>
-          <a href={`https://leetcode.com/${username}`} target="_blank" rel="noreferrer" style={{ fontSize:11, color:"#fbbf24", fontFamily:MONO, textDecoration:"none" }}>Visit profile ↗</a>
+
+      <div style={{ height:1, background:"var(--border)", marginBottom:14 }} />
+
+      {loading ? <Spin color="#a78bfa" /> : error||!data ? (
+        <div style={{ flex:1, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:6 }}>
+          <span style={{ fontSize:12, color:"var(--text-muted)", fontFamily:MONO }}>Could not load</span>
+          <a href={`https://leetcode.com/${username}`} target="_blank" rel="noreferrer" style={{ fontSize:11, color:"#a78bfa", fontFamily:MONO, textDecoration:"none" }}>Visit profile ↗</a>
         </div>
       ) : (
         <>
-          <div style={{ display:"flex", flexDirection:"column", gap:7, marginBottom:10 }}>
-            {tiers.map(t => (
-              <div key={t.label} style={{ display:"flex", alignItems:"center", gap:8, padding:"6px 10px", borderRadius:7, background:t.bg, borderTop:`1px solid ${t.color}22`, borderRight:`1px solid ${t.color}22`, borderBottom:`1px solid ${t.color}22`, borderLeft:`1px solid ${t.color}22` }}>
-                <span style={{ fontSize:11, color:t.color, fontFamily:MONO, width:46, fontWeight:600 }}>{t.label}</span>
-                <div style={{ flex:1, height:4, borderRadius:2, background:"rgba(255,255,255,0.05)", overflow:"hidden" }}>
-                  <div style={{ height:"100%", borderRadius:2, background:t.color, width:`${Math.round((t.solved/(t.total||1))*100)}%`, transition:"width 1.2s cubic-bezier(0.22,1,0.36,1)", boxShadow:`0 0 6px ${t.color}88` }}/>
-                </div>
-                <span style={{ fontSize:11, fontFamily:MONO, width:60, textAlign:"right" }}>
-                  <span style={{ color:t.color }}>{t.solved}</span>
-                  <span style={{ color:"#3f3f46" }}>/{t.total}</span>
-                </span>
+          {/* Circular progress + tiers side by side */}
+          <div style={{ display:"flex", gap:16, alignItems:"center", marginBottom:14 }}>
+            {/* Donut circle */}
+            <div style={{ position:"relative", flexShrink:0, width:72, height:72 }}>
+              <svg width="72" height="72" style={{ transform:"rotate(-90deg)" }}>
+                <circle cx="36" cy="36" r="28" fill="none" stroke="var(--border)" strokeWidth="6"/>
+                <circle cx="36" cy="36" r="28" fill="none" stroke="#a78bfa" strokeWidth="6"
+                  strokeDasharray={`${2*Math.PI*28*totalPct/100} ${2*Math.PI*28}`}
+                  strokeLinecap="round"
+                  style={{ transition:"stroke-dasharray 1.2s cubic-bezier(0.22,1,0.36,1)" }}
+                />
+              </svg>
+              <div style={{ position:"absolute", inset:0, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center" }}>
+                <span style={{ fontSize:14, fontWeight:700, color:"#a78bfa", fontFamily:MONO, lineHeight:1 }}>{totalPct}%</span>
+                <span style={{ fontSize:9, color:"var(--text-muted)", fontFamily:MONO, marginTop:2 }}>done</span>
               </div>
-            ))}
+            </div>
+
+            {/* Tier bars */}
+            <div style={{ flex:1, display:"flex", flexDirection:"column", gap:8 }}>
+              {tiers.map(t => (
+                <div key={t.label} style={{ display:"flex", alignItems:"center", gap:8 }}>
+                  <span style={{ fontSize:10, color:t.color, fontFamily:MONO, width:42, fontWeight:600 }}>{t.label}</span>
+                  <div style={{ flex:1, height:5, borderRadius:3, background:"var(--border)", overflow:"hidden" }}>
+                    <div style={{ height:"100%", borderRadius:3, background:t.color, width:`${Math.round((t.solved/(t.total||1))*100)}%`, transition:"width 1.2s cubic-bezier(0.22,1,0.36,1)", boxShadow:`0 0 6px ${t.color}66` }}/>
+                  </div>
+                  <span style={{ fontSize:10, fontFamily:MONO, color:"var(--text-muted)", width:48, textAlign:"right" }}>
+                    <span style={{ color:t.color }}>{t.solved}</span>/{t.total}
+                  </span>
+                </div>
+              ))}
+            </div>
           </div>
-          {data.ranking>0 && (
-            <div style={{ display:"flex", justifyContent:"space-between" }}>
-              <span style={{ fontSize:11, color:"#52525b", fontFamily:MONO }}>Global ranking</span>
-              <span style={{ fontSize:12, color:"#fbbf24", fontFamily:MONO, fontWeight:600 }}>#{data.ranking.toLocaleString()}</span>
+
+          {data.ranking > 0 && (
+            <div style={{ display:"flex", justifyContent:"space-between", paddingTop:8, borderTop:"1px solid var(--border)" }}>
+              <span style={{ fontSize:11, color:"var(--text-muted)", fontFamily:MONO }}>Global ranking</span>
+              <span style={{ fontSize:12, color:"#a78bfa", fontFamily:MONO, fontWeight:700 }}>#{data.ranking.toLocaleString()}</span>
             </div>
           )}
         </>
@@ -257,17 +268,9 @@ function LeetCodeStats({ username="IThakur09" }: { username?: string }) {
   );
 }
 
-/* ── helpers ── */
-function IBox({ children }: { children: React.ReactNode }) {
-  return (
-    <div style={{ width:32, height:32, borderRadius:8, flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center", background:"#111113", borderTop:"1px solid #27272a", borderRight:"1px solid #27272a", borderBottom:"1px solid #27272a", borderLeft:"1px solid #27272a" }}>
-      {children}
-    </div>
-  );
-}
 function Spin({ color }: { color: string }) {
   return (
-    <div style={{ height:72, display:"flex", alignItems:"center", justifyContent:"center" }}>
+    <div style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", minHeight:60 }}>
       <div style={{ width:16, height:16, borderTop:`2px solid ${color}`, borderRight:"2px solid transparent", borderBottom:"2px solid transparent", borderLeft:"2px solid transparent", borderRadius:"50%", animation:"spin 0.7s linear infinite" }}/>
     </div>
   );
@@ -286,48 +289,37 @@ export function AboutSection() {
         transition={{ duration:0.5, ease:[0.22,1,0.36,1] }}
         style={{ borderBottom:"1px solid var(--line)" }}
       >
-        {/* ── FULL VIEWPORT WIDTH — no left/right gaps ── */}
+        {/* full viewport width, theme-aware */}
         <div style={{
-          position: "relative",
-          left: "50%",
-          marginLeft: "-50vw",
-          width: "100vw",
-          background: "#09090b",
-          /* Use separate border properties — NO shorthand mixing */
-          borderTopWidth: "1px",
-          borderTopStyle: "solid",
-          borderTopColor: "#27272a",
-          borderBottomWidth: "1px",
-          borderBottomStyle: "solid",
-          borderBottomColor: "#27272a",
+          position:"relative", left:"50%", marginLeft:"-50vw", width:"100vw",
+          background:"var(--bg-base)",
+          borderTopWidth:"1px", borderTopStyle:"solid", borderTopColor:"var(--line)",
+          borderBottomWidth:"1px", borderBottomStyle:"solid", borderBottomColor:"var(--line)",
         }}>
           <div style={{ maxWidth:1060, margin:"0 auto", padding:"0 32px 40px" }}>
 
-            {/* ── ABOUT heading — transparent so dot bg shows through text area ── */}
-            <div style={{ paddingTop:28, paddingBottom:18 }}>
+            {/* ABOUT heading — transparent so dots show through */}
+            <div style={{ paddingTop:28, paddingBottom:0 }}>
               <span style={{
                 fontSize:28, fontWeight:700, letterSpacing:"-0.03em", lineHeight:1,
-                fontFamily:SF, color:"#fafafa",
-                /* transparent = DotBackground canvas bleeds through character shapes */
-                background:"transparent",
-                display:"inline-block",
+                fontFamily:SF, color:"var(--text-primary)",
+                background:"transparent", display:"inline-block",
               }}>About</span>
             </div>
 
-            {/* thin rule below heading */}
-            <div style={{ height:1, background:"#1f1f23", marginBottom:24 }} />
+            <div style={{ height:1, background:"var(--border)", margin:"18px 0 24px" }} />
 
-            {/* ── SCROLL REVEAL TEXT — tighter paragraph gaps ── */}
+            {/* scroll-reveal text */}
             <div style={{ marginBottom:28 }}>
               <ScrollRevealText />
             </div>
 
-            {/* ── PANELS ── */}
+            {/* panels */}
             <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12 }}>
-              <div style={{ padding:"18px", background:"#0d0d0f", borderTop:"1px solid #1f1f23", borderRight:"1px solid #1f1f23", borderBottom:"1px solid #1f1f23", borderLeft:"1px solid #1f1f23", borderRadius:10 }}>
+              <div style={{ padding:"18px", background:"var(--bg-card)", borderTop:"1px solid var(--border)", borderRight:"1px solid var(--border)", borderBottom:"1px solid var(--border)", borderLeft:"1px solid var(--border)", borderRadius:10 }}>
                 <GitHubGraph username="IndreshThakur" />
               </div>
-              <div style={{ padding:"18px", background:"#0d0d0f", borderTop:"1px solid #1f1f23", borderRight:"1px solid #1f1f23", borderBottom:"1px solid #1f1f23", borderLeft:"1px solid #1f1f23", borderRadius:10 }}>
+              <div style={{ padding:"18px", background:"var(--bg-card)", borderTop:"1px solid var(--border)", borderRight:"1px solid var(--border)", borderBottom:"1px solid var(--border)", borderLeft:"1px solid var(--border)", borderRadius:10, display:"flex", flexDirection:"column" }}>
                 <LeetCodeStats username="IThakur09" />
               </div>
             </div>

@@ -14,13 +14,12 @@ function applyTheme(t: Theme) {
   root.classList.add(t);
   root.setAttribute("data-theme", t);
   root.style.colorScheme = t;
-  // Background applied via CSS, not inline
   root.style.background = "";
 }
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setThemeState] = useState<Theme>("dark");
-  const [mounted, setMounted] = useState(false);
+  const [mounted, setMounted]  = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -31,9 +30,21 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const setTheme = (t: Theme) => {
-    setThemeState(t);
-    applyTheme(t);
-    localStorage.setItem("theme", t);
+    /* polygon clip-path reveal animation */
+    if (
+      typeof document !== "undefined" &&
+      typeof (document as any).startViewTransition === "function"
+    ) {
+      (document as any).startViewTransition(() => {
+        setThemeState(t);
+        applyTheme(t);
+        localStorage.setItem("theme", t);
+      });
+    } else {
+      setThemeState(t);
+      applyTheme(t);
+      localStorage.setItem("theme", t);
+    }
   };
 
   return (

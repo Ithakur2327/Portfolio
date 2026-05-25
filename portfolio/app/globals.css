@@ -162,17 +162,13 @@ a { color: inherit; text-decoration: none; }
 
 .logo-avatar {
   position: absolute; inset: 0;
-  display: flex; align-items: center; justify-content: center;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #27272a 0%, #52525b 100%);
+  border-radius: 50%; overflow: hidden;
   border: 1.5px solid var(--border);
-  font-family: 'Geist Mono', monospace;
-  font-size: 12px; font-weight: 800;
-  color: var(--text-primary);
   opacity: 0; transform: scale(0.7) translateY(8px);
   transition: opacity 0.45s cubic-bezier(0.16,1,0.3,1), transform 0.45s cubic-bezier(0.16,1,0.3,1);
 }
 .logo-avatar.show { opacity: 1; transform: scale(1) translateY(0); }
+.logo-avatar img { width:100%; height:100%; object-fit:cover; border-radius:50%; }
 
 .theme-btn {
   width: 30px; height: 30px;
@@ -421,4 +417,24 @@ a { color: inherit; text-decoration: none; }
 @media (max-width: 600px) {
   .desktop-nav { display:none !important; }
   .page-wrapper { padding:0; }
+}
+/* ── View Transition — polygon wipe on theme change ── */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+::view-transition-new(root) {
+  animation: polygonReveal 0.55s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+@keyframes polygonReveal {
+  from {
+    clip-path: polygon(50% 50%, 50% 50%, 50% 50%, 50% 50%, 50% 50%, 50% 50%);
+  }
+  to {
+    clip-path: polygon(
+      -20% -20%, 120% -20%, 120% 120%, -20% 120%,
+      -20% -20%, 120% -20%
+    );
+  }
 }

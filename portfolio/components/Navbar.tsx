@@ -64,7 +64,19 @@ export function Navbar() {
         <a href="#" style={{ display: "flex", alignItems: "center", textDecoration: "none" }}>
           <div className="logo-area">
             <div className={`logo-i${scrolled ? " hide" : ""}`}>&lt;I&gt;</div>
-            <div className={`logo-avatar${scrolled ? " show" : ""}`}>IT</div>
+            <div className={`logo-avatar${scrolled ? " show" : ""}`}>
+              <img
+                src="/avatar-dark.jpg"
+                alt="IT"
+                onError={(e) => {
+                  const el = e.currentTarget as HTMLImageElement;
+                  el.style.display = "none";
+                  const fb = el.nextElementSibling as HTMLElement;
+                  if (fb) fb.style.display = "flex";
+                }}
+              />
+              <div className="logo-avatar-fallback" style={{ display: "none" }}>IT</div>
+            </div>
           </div>
         </a>
 
