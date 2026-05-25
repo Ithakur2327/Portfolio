@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import Image from "next/image";
 import { useTheme } from "./ThemeProvider";
+import { Avatar } from "./Avatar";
 
 const SENTENCES = [
   "AI Software Engineer",
@@ -11,19 +11,19 @@ const SENTENCES = [
 ];
 
 function FlipSentences() {
-  const [idx, setIdx]   = useState(0);
-  const [anim, setAnim] = useState<"in" | "out">("in");
+  const [idx, setIdx] = useState(0);
+  const [anim, setAnim] = useState<"in"|"out">("in");
   useEffect(() => {
     const t = setInterval(() => {
       setAnim("out");
-      setTimeout(() => { setIdx(i => (i + 1) % SENTENCES.length); setAnim("in"); }, 280);
+      setTimeout(() => { setIdx(i => (i+1)%SENTENCES.length); setAnim("in"); }, 280);
     }, 2500);
     return () => clearInterval(t);
   }, []);
   return (
     <span key={idx} className={`fs-${anim}`} style={{
-      display:"block", fontFamily:"'Geist Mono',monospace",
-      fontSize:13, color:"#71717a", lineHeight:1,
+      display:"block",fontFamily:"'Geist Mono',monospace",
+      fontSize:13,color:"#71717a",lineHeight:1,
     }}>{SENTENCES[idx]}</span>
   );
 }
@@ -35,15 +35,15 @@ function LiveClock() {
     const update = () => {
       const now = new Date();
       setTime(now.toLocaleTimeString("en-IN",{
-        timeZone:"Asia/Kolkata", hour:"2-digit", minute:"2-digit", hour12:true,
-      }).toUpperCase() + " IST");
-      const d = 330 - (-now.getTimezoneOffset());
-      if (d === 0) { setDiff("same time"); return; }
-      const h = Math.floor(Math.abs(d)/60), m = Math.abs(d)%60;
+        timeZone:"Asia/Kolkata",hour:"2-digit",minute:"2-digit",hour12:true,
+      }).toUpperCase()+" IST");
+      const d = 330-(-now.getTimezoneOffset());
+      if(d===0){setDiff("same time");return;}
+      const h=Math.floor(Math.abs(d)/60),m=Math.abs(d)%60;
       setDiff(`${h}${m?`:${String(m).padStart(2,"0")}`:``}h ${d>0?"ahead":"behind"}`);
     };
-    update(); const id = setInterval(update, 30000); return () => clearInterval(id);
-  }, []);
+    update(); const id=setInterval(update,30000); return()=>clearInterval(id);
+  },[]);
   return (
     <span style={{fontFamily:"'Geist Mono',monospace"}}>
       {time||"--:-- IST"} {diff&&<span style={{color:"#52525b"}}>// {diff}</span>}
@@ -51,7 +51,7 @@ function LiveClock() {
   );
 }
 
-function IBox({ color, children }: { color?: string; children: React.ReactNode }) {
+function IBox({color,children}:{color?:string;children:React.ReactNode}) {
   return (
     <div style={{
       width:26,height:26,borderRadius:7,
@@ -62,15 +62,9 @@ function IBox({ color, children }: { color?: string; children: React.ReactNode }
   );
 }
 
-function Row({ icon, href, newTab, children }: {
-  icon:React.ReactNode; href?:string; newTab?:boolean; children:React.ReactNode;
-}) {
-  const s:React.CSSProperties = {
-    display:"flex",alignItems:"center",gap:13,
-    fontFamily:"'Geist Mono',monospace",fontSize:13,
-    color:"#a1a1aa",textDecoration:"none",
-  };
-  if (href) return (
+function Row({icon,href,newTab,children}:{icon:React.ReactNode;href?:string;newTab?:boolean;children:React.ReactNode}) {
+  const s:React.CSSProperties={display:"flex",alignItems:"center",gap:13,fontFamily:"'Geist Mono',monospace",fontSize:13,color:"#a1a1aa",textDecoration:"none"};
+  if(href) return (
     <a href={href} target={newTab?"_blank":undefined} rel="noreferrer" style={s}
       onMouseEnter={e=>(e.currentTarget as HTMLElement).style.color="#e4e4e7"}
       onMouseLeave={e=>(e.currentTarget as HTMLElement).style.color="#a1a1aa"}
@@ -79,210 +73,30 @@ function Row({ icon, href, newTab, children }: {
   return <div style={{...s,cursor:"default"}}>{icon}<span>{children}</span></div>;
 }
 
-function SocialTile({ href,label,icon,iconBg,iconBorder,iconColor,last }:{
-  href:string;label:string;icon:React.ReactNode;
-  iconBg:string;iconBorder:string;iconColor:string;last?:boolean;
-}) {
+function SocialTile({href,label,icon,iconBg,iconBorder,iconColor,last}:{href:string;label:string;icon:React.ReactNode;iconBg:string;iconBorder:string;iconColor:string;last?:boolean}) {
   return (
     <a href={href} target="_blank" rel="noreferrer" style={{
       flex:1,display:"flex",alignItems:"center",gap:10,
       padding:"14px 16px",borderRight:last?"none":"1px solid #27272a",
-      background:"#09090b",color:"#fafafa",
-      textDecoration:"none",position:"relative",
+      background:"#09090b",color:"#fafafa",textDecoration:"none",position:"relative",
       transition:"background 0.12s",minWidth:0,
     }}
       onMouseEnter={e=>(e.currentTarget as HTMLElement).style.background="#111113"}
       onMouseLeave={e=>(e.currentTarget as HTMLElement).style.background="#09090b"}
     >
-      <div style={{
-        width:32,height:32,borderRadius:8,
-        background:iconBg,border:iconBorder,
-        display:"flex",alignItems:"center",justifyContent:"center",
-        color:iconColor,flexShrink:0,
-      }}>{icon}</div>
+      <div style={{width:32,height:32,borderRadius:8,background:iconBg,border:iconBorder,display:"flex",alignItems:"center",justifyContent:"center",color:iconColor,flexShrink:0}}>{icon}</div>
       <span style={{fontWeight:600,fontSize:13.5,fontFamily:"'Geist',sans-serif"}}>{label}</span>
       <span style={{position:"absolute",top:11,right:11,color:"#3f3f46"}}>
-        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-          <line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/>
-        </svg>
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
       </span>
     </a>
   );
 }
 
 /* ══════════════════════════════════════════════════════
-   AVATAR — hover: eye blink + hair wave. idle: stable.
+   AVATAR — Canvas-based: real photo + perpetual hair
+   wave + hover eye blink. Buttery 120fps feel.
 ══════════════════════════════════════════════════════ */
-function Avatar() {
-  const { theme } = useTheme();
-  const isDark = theme === "dark";
-  const [hovered, setHovered] = useState(false);
-
-  return (
-    <>
-      <style>{`
-        /* ── theme crossfade ── */
-        .av-layer {
-          position: absolute; inset: 0;
-          border-radius: 50%; overflow: hidden;
-          transition: opacity 0.65s cubic-bezier(0.16,1,0.3,1);
-          pointer-events: none;
-        }
-
-        /* ── hair wave: SVG feTurbulence displacement on hover only ── */
-        .av-img {
-          width: 100%; height: 100%;
-          object-fit: cover;
-          display: block;
-          border-radius: 50%;
-          /* NO filter / animation by default — perfectly stable */
-          filter: none;
-          transform: none;
-          animation: none;
-        }
-
-        /* When hovered: 90fps-feel spring shake on the whole image,
-           then SVG turbulence makes top (hair) area wavy */
-        .av-hovered .av-img {
-          animation: hairSpring 0.6s cubic-bezier(0.34,1.56,0.64,1) forwards;
-          filter: url(#av-hair-filter);
-        }
-
-        @keyframes hairSpring {
-          /* fast micro-wobbles — 60+ keyframe steps for smooth 90fps feel */
-          0%   { transform: translate(0,0) rotate(0deg); }
-          4%   { transform: translate(-1.2px,-1.0px) rotate(-0.4deg); }
-          8%   { transform: translate(1.5px,-1.8px) rotate(0.6deg); }
-          13%  { transform: translate(-1.8px, 0.8px) rotate(-0.8deg); }
-          18%  { transform: translate(2.0px,-0.6px) rotate(0.9deg); }
-          24%  { transform: translate(-1.4px, 1.2px) rotate(-0.6deg); }
-          30%  { transform: translate(1.2px,-0.8px) rotate(0.5deg); }
-          37%  { transform: translate(-0.8px, 0.6px) rotate(-0.3deg); }
-          45%  { transform: translate(0.5px,-0.4px) rotate(0.2deg); }
-          54%  { transform: translate(-0.3px, 0.2px) rotate(-0.1deg); }
-          64%  { transform: translate(0.15px,-0.1px) rotate(0.05deg); }
-          76%  { transform: translate(-0.05px,0.05px) rotate(-0.02deg); }
-          88%  { transform: translate(0.02px,0) rotate(0.01deg); }
-          100% { transform: translate(0,0) rotate(0deg); filter: none; }
-        }
-
-        /* ── eye blink: hover triggers one blink then eyelid stays hidden ── */
-        .av-eyelid-l,
-        .av-eyelid-r {
-          position: absolute;
-          overflow: hidden;
-          pointer-events: none;
-          z-index: 3;
-        }
-        /* Eye positions — tuned for this specific anime portrait */
-        .av-eyelid-l { left:32%; top:43%; width:17%; height:8%; }
-        .av-eyelid-r { left:52%; top:43%; width:17%; height:8%; }
-
-        .av-eyelid-l::after,
-        .av-eyelid-r::after {
-          content: '';
-          position: absolute;
-          inset: 0;
-          border-radius: 50% 50% 0 0 / 100% 100% 0 0;
-          background: #08080e;
-          /* start fully hidden above */
-          transform: translateY(-110%);
-          /* NO transition by default — instant reset on mouse leave */
-          transition: none;
-        }
-
-        /* on hover: animate one blink */
-        .av-hovered .av-eyelid-l::after {
-          animation: eyeBlink 0.21s cubic-bezier(0.4,0,0.2,1) forwards;
-        }
-        .av-hovered .av-eyelid-r::after {
-          animation: eyeBlink 0.21s cubic-bezier(0.4,0,0.2,1) 0.018s forwards;
-        }
-
-        @keyframes eyeBlink {
-          0%   { transform: translateY(-110%); }  /* open */
-          35%  { transform: translateY(0%); }     /* close — fast snap */
-          60%  { transform: translateY(0%); }     /* hold */
-          100% { transform: translateY(-110%); }  /* open */
-        }
-
-        /* Mouse leave — instantly reset (no transition) */
-        .av-eyelid-l::after,
-        .av-eyelid-r::after {
-          transition: none !important;
-        }
-      `}</style>
-
-      {/* SVG filter for hair displacement — zero cost when not applied */}
-      <svg width="0" height="0" aria-hidden="true"
-        style={{position:"absolute",overflow:"hidden",pointerEvents:"none"}}>
-        <defs>
-          <filter id="av-hair-filter" x="0%" y="0%" width="100%" height="55%">
-            <feTurbulence
-              type="fractalNoise"
-              baseFrequency="0.025 0.06"
-              numOctaves="3"
-              seed="5"
-              result="turbulence"
-            />
-            <feDisplacementMap
-              in="SourceGraphic"
-              in2="turbulence"
-              scale="7"
-              xChannelSelector="R"
-              yChannelSelector="G"
-            />
-          </filter>
-        </defs>
-      </svg>
-
-      <div
-        onMouseEnter={() => setHovered(true)}
-        onMouseLeave={() => setHovered(false)}
-        className={hovered ? "av-hovered" : ""}
-        style={{
-          position:"relative", width:130, height:130,
-          cursor:"pointer", flexShrink:0,
-          borderRadius:"50%",
-        }}
-      >
-        {/* Dark photo */}
-        <div className="av-layer" style={{opacity: isDark ? 1 : 0}}>
-          <Image
-            src="/avatar-dark.jpg"
-            alt="Indresh Thakur"
-            width={130} height={130}
-            className="av-img"
-            priority
-          />
-        </div>
-
-        {/* Light photo */}
-        <div className="av-layer" style={{opacity: isDark ? 0 : 1}}>
-          <Image
-            src="/avatar-light.jpg"
-            alt="Indresh Thakur"
-            width={130} height={130}
-            className="av-img"
-            priority
-          />
-        </div>
-
-        {/* Eyelid overlay */}
-        <div className="av-eyelid-l" />
-        <div className="av-eyelid-r" />
-
-        {/* Online dot */}
-        <span className="pulse" style={{
-          position:"absolute", bottom:6, right:6,
-          width:13, height:13, borderRadius:"50%",
-          background:"#22c55e", border:"2.5px solid #09090b",
-          display:"block", zIndex:4,
-        }}/>
-      </div>
-    </>
-  );
-}
 
 /* ═══════════════════════════════════════════════════════ */
 const CW = 1060;
@@ -293,9 +107,7 @@ export function HeroSection() {
   const [lineW, setLineW] = useState<number>(180);
 
   useEffect(() => { setTimeout(() => setVis(true), 50); }, []);
-  useEffect(() => {
-    if (nameRef.current) setLineW(nameRef.current.offsetWidth);
-  }, []);
+  useEffect(() => { if(nameRef.current) setLineW(nameRef.current.offsetWidth); }, []);
 
   const BG = "#09090b";
   const B  = "1px solid #27272a";
@@ -308,13 +120,11 @@ export function HeroSection() {
         @keyframes fsOut { from{transform:none;opacity:1} to{transform:translateY(-7px);opacity:0} }
         .fs-in  { animation: fsIn  0.28s cubic-bezier(0.16,1,0.3,1) forwards }
         .fs-out { animation: fsOut 0.22s ease-in forwards }
-
         .hero-social { display:flex; }
         @media (max-width:540px) {
           .hero-social { flex-direction:column; }
           .hero-social a { border-right:none !important; border-bottom:1px solid #27272a; }
           .hero-social a:last-child { border-bottom:none; }
-          .hero-av-box { padding:10px 10px !important; }
           .hero-grid { grid-template-columns:1fr !important; }
         }
       `}</style>
@@ -325,16 +135,18 @@ export function HeroSection() {
         transition:"opacity 0.5s cubic-bezier(0.16,1,0.3,1),transform 0.5s cubic-bezier(0.16,1,0.3,1)",
       }}>
 
-        {/* PROFILE — full width */}
+        {/* PROFILE */}
         <div style={{width:"100%",background:BG,borderTop:B,borderBottom:B}}>
           <div style={{...centered,display:"flex",alignItems:"stretch"}}>
-            <div className="hero-av-box" style={{
-              borderRight:B,flexShrink:0,
-              display:"flex",alignItems:"center",justifyContent:"center",
-              padding:"16px 20px",
+            {/* Avatar box */}
+            <div style={{
+              borderRight:B, flexShrink:0,
+              display:"flex", alignItems:"center", justifyContent:"center",
+              padding:0, width:162, minWidth:162,
             }}>
               <Avatar />
             </div>
+
             <div style={{flex:1,display:"flex",flexDirection:"column",minWidth:0,justifyContent:"flex-end"}}>
               <div style={{flex:1}}/>
               <div style={{padding:"10px 20px 0"}}>
@@ -357,7 +169,7 @@ export function HeroSection() {
 
         {/* INFO + SOCIAL */}
         <div style={centered}>
-          <div style={{background:BG,border:B}}>
+          <div style={{background:BG,borderTop:B,borderBottom:B,borderLeft:B,borderRight:B}}>
             <div style={{padding:"16px 18px 14px"}}>
               <div className="hero-grid" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"11px 48px"}}>
                 <div style={{display:"flex",flexDirection:"column",gap:11}}>
@@ -380,7 +192,6 @@ export function HeroSection() {
             </div>
           </div>
         </div>
-
       </section>
     </>
   );

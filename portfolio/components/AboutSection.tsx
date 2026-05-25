@@ -6,18 +6,12 @@ import { useReveal } from "./useReveal";
 const SF   = "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', sans-serif";
 const MONO = "'SF Mono', 'Geist Mono', monospace";
 
-/* ══════════════════════════════════════════════════════════
-   TEXT — wrap [[word]] to highlight
-══════════════════════════════════════════════════════════ */
 const ABOUT_TEXT = `Hi, I'm [[Indresh Thakur]], currently pursuing [[B.Tech]] in [[Computer Science & Engineering (AI)]] at [[NIET Greater Noida]]. I'm a [[motivated]] and [[growth-oriented]] [[Full-Stack & AI Developer]] passionate about building [[modern]], [[scalable]], and [[user-focused]] digital experiences.
 
 My work focuses on developing [[intelligent web applications]] and [[AI-powered systems]] while continuously improving my [[problem-solving]] abilities through active [[DSA]] practice and real-world project development. I enjoy exploring [[emerging technologies]], learning new tech stacks, and turning ideas into [[impactful solutions]].
 
-✨ "I don't just build projects — I create [[smart]], [[meaningful]], and [[future-ready digital experiences]]."
-
 I bring a unique blend of [[technical expertise]], [[adaptability]], [[creativity]], and a genuine enthusiasm for building software that creates [[real impact]].`;
 
-/* ── token parser ────────────────────────────────────── */
 interface Token { text: string; hl: boolean; idx: number }
 function parse(raw: string): Token[][] {
   let g = 0;
@@ -34,89 +28,116 @@ function parse(raw: string): Token[][] {
 }
 
 /* ══════════════════════════════════════════════════════════
-   GOLD WORD — uses CSS class, NO inline gradient (avoids React warning)
-   Animates via motion.span opacity/scale/filter only
+   GOLD WORD
+   — text ALWAYS fully visible, no blur ever
+   — scroll se sirf gold glass background + text color change
+   — 90fps feel: will-change + translateZ(0) GPU layer
 ══════════════════════════════════════════════════════════ */
-function GoldWord({ text, idx, total, progress }: {
+function GoldWord({ text, idx, total, progress, isDark }: {
   text: string; idx: number; total: number;
-  progress: MotionValue<number>;
+  progress: MotionValue<number>; isDark: boolean;
 }) {
-  const s = Math.max(0, (idx - 0.3) / total);
-  const e = Math.min(1, (idx + 1.0) / total);
+  /* stagger per word, tight window for fast feel */
+  const s = Math.max(0, (idx - 0.2) / total);
+  const e = Math.min(1, (idx + 0.6) / total);
 
-  // Only animate opacity, scale, filter — NO background changes (avoids conflict)
-  const opacity = useSpring(useTransform(progress, [s, e], [0.15, 1]), { stiffness: 200, damping: 22 });
-  const scale   = useSpring(useTransform(progress, [s, e], [0.95, 1]), { stiffness: 200, damping: 22 });
-  const blurV   = useTransform(progress, [s, e], [3, 0]);
-  const blurS   = useSpring(blurV, { stiffness: 200, damping: 22 });
+  /* 0→1 scroll progress for this word */
+  const raw = useTransform(progress, [s, e], [0, 1]);
+  /* high stiffness = snappy 90fps-like response */
+  const p = useSpring(raw, { stiffness: 400, damping: 30, mass: 0.5 });
+
+  /* interpolated values */
+  const goldTextDark  = "rgba(255, 210, 80, 1)";
+  const goldTextLight = "rgba(130, 90, 0, 1)";
+  const baseTextDark  = "rgba(161,161,170,1)";   /* zinc-400 */
+  const baseTextLight = "rgba(82,82,91,1)";
+
+  const color   = useTransform(p, [0,1], isDark  ? [baseTextDark,  goldTextDark]  : [baseTextLight, goldTextLight]);
+  const bgAlpha = useTransform(p, [0,1], [0, isDark ? 0.14 : 0.10]);
+  const bdAlpha = useTransform(p, [0,1], [0, isDark ? 0.35 : 0.28]);
+
+  const goldRGB = isDark ? "245,200,80" : "160,110,0";
 
   return (
     <motion.span
-      className="gold-word"
       style={{
-        opacity,
-        scale,
-        filter: useTransform(blurS, v => `blur(${v.toFixed(1)}px)`),
+        position: "relative",
+        display: "inline",
+        color,
+        fontWeight: 600,
+        borderRadius: 5,
+        /* GPU layer for smoothness */
+        willChange: "color",
+        transform: "translateZ(0)",
       }}
     >
+      {/* gold glass bg — separate layer so text stays crisp */}
+      <motion.span
+        aria-hidden
+        style={{
+          position: "absolute",
+          inset: "-2px -5px",
+          borderRadius: 5,
+          background: useTransform(bgAlpha, v => `rgba(${goldRGB},${v.toFixed(3)})`),
+          border: useTransform(bdAlpha, v => `1px solid rgba(${goldRGB},${v.toFixed(3)})`),
+          boxShadow: useTransform(p, [0,1], [
+            "none",
+            `0 0 8px rgba(${goldRGB},0.18), inset 0 1px 0 rgba(255,240,160,0.12)`
+          ]),
+          pointerEvents: "none",
+          willChange: "background, border, box-shadow",
+          transform: "translateZ(0)",
+        }}
+      />
       {text}
     </motion.span>
   );
 }
 
 /* ══════════════════════════════════════════════════════════
-   SCROLL REVEAL
+   SCROLL REVEAL TEXT
 ══════════════════════════════════════════════════════════ */
 function ScrollRevealText({ isDark }: { isDark: boolean }) {
   const ref = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({
     target: ref,
-    offset: ["start 0.9", "end 0.2"],
+    offset: ["start 0.88", "end 0.18"],
   });
-  const smooth = useSpring(scrollYProgress, { stiffness: 80, damping: 20, restDelta: 0.001 });
+  /* smooth but responsive */
+  const smooth = useSpring(scrollYProgress, { stiffness: 120, damping: 24, restDelta: 0.0005 });
 
   const paras = parse(ABOUT_TEXT);
   const total = paras.flat().filter(t => t.hl).length;
 
   return (
     <div ref={ref}>
-      {paras.map((tokens, pi) => {
-        const isQuote = tokens[0]?.text.startsWith("✨");
-        return (
-          <motion.p
-            key={pi}
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, delay: pi * 0.06, ease: [0.22, 1, 0.36, 1] }}
-            style={{
-              margin: isQuote ? "24px 0 18px" : "0 0 20px",
-              padding: isQuote ? "13px 18px" : 0,
-              borderLeft: isQuote ? "2px solid #d4a017" : "none",
-              background: isQuote
-                ? isDark ? "rgba(212,160,23,0.05)" : "rgba(146,112,10,0.04)"
-                : "transparent",
-              borderRadius: isQuote ? "0 8px 8px 0" : 0,
-              fontStyle: isQuote ? "italic" : "normal",
-              fontSize: 15.5,
-              lineHeight: 2,
-              fontFamily: SF,
-              letterSpacing: "-0.015em",
-            }}
-          >
-            {tokens.map((t, ti) =>
-              t.hl
-                ? <GoldWord key={ti} text={t.text} idx={t.idx} total={total} progress={smooth} />
-                : <span key={ti} style={{ color: isDark ? "#71717a" : "#6b7280" }}>{t.text}</span>
-            )}
-          </motion.p>
-        );
-      })}
+      {paras.map((tokens, pi) => (
+        <motion.p
+          key={pi}
+          initial={{ opacity: 0, y: 6 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.32, delay: pi * 0.05, ease: [0.22, 1, 0.36, 1] }}
+          style={{
+            margin: "0 0 18px",
+            fontSize: 15,
+            lineHeight: 1.85,
+            fontFamily: SF,
+            letterSpacing: "-0.015em",
+          }}
+        >
+          {tokens.map((t, ti) =>
+            t.hl
+              ? <GoldWord key={ti} text={t.text} idx={t.idx} total={total} progress={smooth} isDark={isDark} />
+              : <span key={ti} style={{ color: isDark ? "#71717a" : "#6b7280" }}>{t.text}</span>
+          )}
+        </motion.p>
+      ))}
     </div>
   );
 }
 
 /* ══════════════════════════════════════════════════════════
-   GITHUB
+   GITHUB GRAPH
 ══════════════════════════════════════════════════════════ */
 interface Week { days: { contributionCount: number; date: string }[] }
 
@@ -200,7 +221,7 @@ function GitHubGraph({ username = "IndreshThakur", isDark }: { username?: string
 }
 
 /* ══════════════════════════════════════════════════════════
-   LEETCODE
+   LEETCODE STATS
 ══════════════════════════════════════════════════════════ */
 interface LC { easySolved:number; totalEasy:number; mediumSolved:number; totalMedium:number; hardSolved:number; totalHard:number; totalSolved:number; ranking:number; }
 
@@ -298,7 +319,6 @@ function LeetCodeStats({ username="IThakur09", isDark }: { username?: string; is
   );
 }
 
-/* ── shared helpers ──────────────────────────────────── */
 function IBox({ isDark, children }: { isDark: boolean; children: React.ReactNode }) {
   return (
     <div style={{ width:32, height:32, borderRadius:8, flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center", background:isDark?"#111113":"#f4f4f5", border:`1px solid ${isDark?"#27272a":"#e4e4e7"}` }}>
@@ -315,7 +335,7 @@ function Spin({ color, isDark }: { color: string; isDark: boolean }) {
 }
 
 /* ══════════════════════════════════════════════════════════
-   MAIN
+   MAIN EXPORT
 ══════════════════════════════════════════════════════════ */
 export function AboutSection() {
   const { ref, visible } = useReveal();
@@ -329,10 +349,8 @@ export function AboutSection() {
     return () => obs.disconnect();
   }, []);
 
-  const boxBg     = isDark ? "#09090b" : "#ffffff";
-  const boxBorder = isDark ? "#27272a" : "#e4e4e7";
-  const panelBg   = isDark ? "#0d0d0f" : "#f9f9f9";
-  const panelBd   = isDark ? "#1f1f23" : "#e4e4e7";
+  const panelBg = isDark ? "#0d0d0f" : "#ececea";
+  const panelBd = isDark ? "#1f1f23" : "#ddddd8";
 
   return (
     <>
@@ -341,58 +359,67 @@ export function AboutSection() {
         initial={{ opacity:0, y:14 }}
         animate={visible ? { opacity:1, y:0 } : {}}
         transition={{ duration:0.5, ease:[0.22,1,0.36,1] }}
-        style={{ padding:"24px 0 44px", borderBottom:"1px solid var(--line)" }}
+        style={{ padding:"20px 0 40px", borderBottom:"1px solid var(--line)" }}
       >
-        {/* ── Main box — full width of page-wrapper ── */}
+        {/* full-bleed wrapper — same as hero panels */}
         <div style={{
-          background: boxBg,
-          border: `1px solid ${boxBorder}`,
-          borderRadius: 16,
-          overflow: "visible",  /* allow label to sit at top edge */
           position: "relative",
+          marginLeft:  "calc(-100vw + 50%)",
+          marginRight: "calc(-100vw + 50%)",
+          background: isDark ? "#09090b" : "#f2f2f0",
+          borderTop:    "1px solid var(--line)",
+          borderBottom: "1px solid var(--line)",
         }}>
+          <div style={{ maxWidth:1060, margin:"0 auto", padding:"0 32px" }}>
 
-          {/* ── ABOUT label: inside box top-left, transparent bg cutout ──
-              The label itself has transparent background so dots show through
-              only in the label's character area. Left/right of box is solid boxBg. */}
-          <div style={{
-            padding: "24px 32px 0",
-            /* No background here — inherits box background */
-          }}>
-            <span className="about-heading" style={{
-              /* Override to be transparent behind the text so dots bleed through */
-              background: "transparent",
+            {/* About heading */}
+            <div style={{
+              padding:"22px 0 16px",
+              borderBottom:`1px solid ${isDark?"#1f1f23":"#e0e0dc"}`,
             }}>
-              About
-            </span>
-          </div>
-
-          {/* Thin divider below label */}
-          <div style={{ height:1, background:boxBorder, margin:"16px 0 0" }} />
-
-          {/* ── Content ── */}
-          <div style={{ padding:"28px 32px 36px" }}>
-
-            {/* Scroll-reveal text */}
-            <div style={{ marginBottom:32 }}>
-              <ScrollRevealText isDark={isDark} />
+              <h2 style={{
+                fontSize:18,
+                fontWeight:700,
+                letterSpacing:"-0.03em",
+                color: isDark?"#fafafa":"#18181b",
+                fontFamily:SF,
+                margin:0,
+              }}>
+                About
+              </h2>
             </div>
 
-            {/* GitHub + LeetCode panels */}
-            <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:14 }}>
-              <div style={{ padding:"20px", background:panelBg, border:`1px solid ${panelBd}`, borderRadius:12 }}>
-                <GitHubGraph username="IndreshThakur" isDark={isDark} />
+            {/* body */}
+            <div style={{ padding:"24px 0 32px" }}>
+              <div style={{ marginBottom:28 }}>
+                <ScrollRevealText isDark={isDark} />
               </div>
-              <div style={{ padding:"20px", background:panelBg, border:`1px solid ${panelBd}`, borderRadius:12 }}>
-                <LeetCodeStats username="IThakur09" isDark={isDark} />
+
+              {/* stats panels */}
+              <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12 }}>
+                <div style={{
+                  padding:"18px",
+                  background:panelBg,
+                  border:`1px solid ${panelBd}`,
+                  borderRadius:10,
+                }}>
+                  <GitHubGraph username="IndreshThakur" isDark={isDark} />
+                </div>
+                <div style={{
+                  padding:"18px",
+                  background:panelBg,
+                  border:`1px solid ${panelBd}`,
+                  borderRadius:10,
+                }}>
+                  <LeetCodeStats username="IThakur09" isDark={isDark} />
+                </div>
               </div>
             </div>
-
           </div>
         </div>
       </motion.section>
 
-      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+      <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
     </>
   );
 }
