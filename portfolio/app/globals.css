@@ -254,6 +254,57 @@ a { color: inherit; text-decoration: none; }
   color: var(--text-muted); margin-bottom: 16px;
   font-family: 'Geist Mono', monospace;
 }
+
+/* ── About section label — big bold ── */
+.about-heading {
+  font-size: 28px; font-weight: 700; letter-spacing: -0.03em;
+  color: var(--text-primary); line-height: 1;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', sans-serif;
+  display: inline-block;
+  /* transparent bg = dots show through */
+  background: transparent;
+  padding: 0;
+}
+
+/* ── Gold highlight word ── */
+.gold-word {
+  display: inline;
+  font-weight: 600;
+  color: #000;
+  background: linear-gradient(135deg, #b8860b 0%, #d4a017 30%, #ffd700 55%, #d4a017 80%, #b8860b 100%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  border-bottom: 1px solid rgba(212,160,23,0.35);
+  padding-bottom: 1px;
+  margin-bottom: -1px;
+  letter-spacing: -0.01em;
+  will-change: transform, opacity, filter;
+}
+
+/* shimmer on hover */
+.gold-word:hover {
+  animation: goldShimmer 1.2s linear infinite;
+}
+@keyframes goldShimmer {
+  from { background-position: -200% center; }
+  to   { background-position:  200% center; }
+}
+
+/* ── Gold box variant (pill around word) ── */
+.gold-box {
+  display: inline;
+  font-weight: 600;
+  color: var(--text-primary);
+  background: transparent;
+  border: 1px solid rgba(212,160,23,0.5);
+  border-radius: 4px;
+  padding: 1px 5px;
+  box-shadow: 0 0 8px rgba(212,160,23,0.15), inset 0 0 8px rgba(212,160,23,0.05);
+  letter-spacing: -0.01em;
+  will-change: transform, opacity;
+}
 .section-title {
   font-size: 22px; font-weight: 700;
   letter-spacing: -0.03em; color: var(--text-primary);
