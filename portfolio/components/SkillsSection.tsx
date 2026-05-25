@@ -180,7 +180,7 @@ export function SkillsSection() {
   return (
     <>
       {/* gap between About and Skills */}
-      <div style={{ height: 65 }} />
+      <div style={{ height: 60 }} />
 
       {/* partition box — full page-wrapper width */}
       <div
@@ -189,7 +189,7 @@ export function SkillsSection() {
         style={{
           borderTop: "1px solid var(--line)",
           borderBottom: "1px solid var(--line)",
-          marginBottom: 68,
+          marginBottom: 55,
           opacity: visible ? 1 : 0,
           transform: visible ? "none" : "translateY(14px)",
           transition: "opacity 0.5s ease, transform 0.5s ease",
