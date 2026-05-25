@@ -130,7 +130,7 @@ export function HeroSection() {
       `}</style>
 
       <section id="about" style={{
-        marginTop:72,
+        marginTop:68,
         opacity:vis?1:0, transform:vis?"none":"translateY(10px)",
         transition:"opacity 0.5s cubic-bezier(0.16,1,0.3,1),transform 0.5s cubic-bezier(0.16,1,0.3,1)",
       }}>

@@ -52,7 +52,7 @@ function ScrollRevealText() {
   return (
     <div ref={ref}>
       {paras.map((tokens, pi) => (
-        <p key={pi} style={{ margin:"0 0 16px", fontSize:15.5, lineHeight:1.85, fontFamily:SF, letterSpacing:"-0.012em", fontWeight:400, color:"var(--text-secondary)" }}>
+        <p key={pi} style={{ margin:"0 0 16px", fontSize:16.5, lineHeight:1.85, fontFamily:SF, letterSpacing:"-0.012em", fontWeight:400, color:"var(--text-secondary)" }}>
           {tokens.map((t, ti) =>
             t.hl
               ? <GoldWord key={ti} text={t.text} idx={t.idx} total={total} progress={smooth} />
