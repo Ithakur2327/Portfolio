@@ -1,139 +1,83 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useTheme } from "./ThemeProvider";
 
-interface Particle {
-  x: number;
-  y: number;
-  vx: number;
-  vy: number;
+const COUNT = 100;
+
+function randomBetween(a: number, b: number) {
+  return a + Math.random() * (b - a);
+}
+
+interface Dot {
+  id: number;
+  left: string;
+  top: string;
   size: number;
+  delay: string;
+  duration: string;
   opacity: number;
-  maxOpacity: number;
-  life: number;
-  maxLife: number;
+}
+
+function makeDots(): Dot[] {
+  return Array.from({ length: COUNT }, (_, i) => ({
+    id: i,
+    left:     `${randomBetween(0, 100)}%`,
+    top:      `${randomBetween(5, 95)}%`,
+    size:      randomBetween(1, 2.8),
+    delay:    `${randomBetween(0, 4).toFixed(2)}s`,
+    duration: `${randomBetween(1.4, 3.2).toFixed(2)}s`,
+    opacity:   randomBetween(0.5, 1),
+  }));
 }
 
 export function SparklesBridge() {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const animRef   = useRef<number>(0);
-  const particles = useRef<Particle[]>([]);
   const { theme } = useTheme();
-  const [mounted, setMounted] = useState(false);
+  const [dots, setDots] = useState<Dot[]>([]);
 
-  useEffect(() => { setMounted(true); }, []);
-
-  // Particle colour — white in dark, near-black in light
-  const isDark = mounted ? theme === "dark" : true;
-  const particleColor = isDark ? "255,255,255" : "10,10,10";
-
+  // Generate dots only on client to avoid SSR mismatch
   useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
+    setDots(makeDots());
+  }, []);
 
-    const HEIGHT = 28; // exact gap height
-
-    function resize() {
-      if (!canvas) return;
-      canvas.width  = window.innerWidth;
-      canvas.height = HEIGHT;
-    }
-    resize();
-    window.addEventListener("resize", resize);
-
-    // Spawn particles across full width
-    function spawnParticle() {
-      if (!canvas) return;
-      const maxLife = 60 + Math.random() * 80; // ~1-2s at 60fps
-      particles.current.push({
-        x:          Math.random() * canvas.width,
-        y:          Math.random() * HEIGHT,
-        vx:         (Math.random() - 0.5) * 0.4,
-        vy:         (Math.random() - 0.5) * 0.4,
-        size:       0.3 + Math.random() * 1.1,
-        opacity:    0,
-        maxOpacity: 0.25 + Math.random() * 0.65,
-        life:       0,
-        maxLife,
-      });
-    }
-
-    // Pre-seed
-    for (let i = 0; i < 120; i++) spawnParticle();
-
-    function draw() {
-      if (!canvas || !ctx) return;
-      ctx.clearRect(0, 0, canvas.width, HEIGHT);
-
-      // Spawn a few per frame to maintain density
-      if (particles.current.length < 180) spawnParticle();
-      if (Math.random() < 0.55) spawnParticle();
-
-      const color = isDark ? "255,255,255" : "10,10,10";
-
-      particles.current = particles.current.filter((p) => {
-        p.life++;
-        p.x += p.vx;
-        p.y += p.vy;
-
-        // Fade in first half, fade out second half
-        const half = p.maxLife / 2;
-        if (p.life < half) {
-          p.opacity = (p.life / half) * p.maxOpacity;
-        } else {
-          p.opacity = ((p.maxLife - p.life) / half) * p.maxOpacity;
-        }
-
-        if (p.life >= p.maxLife) return false;
-
-        // Soft glow dot
-        const grd = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.size * 2.5);
-        grd.addColorStop(0, `rgba(${color},${p.opacity})`);
-        grd.addColorStop(1, `rgba(${color},0)`);
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.size * 2.5, 0, Math.PI * 2);
-        ctx.fillStyle = grd;
-        ctx.fill();
-
-        return true;
-      });
-
-      animRef.current = requestAnimationFrame(draw);
-    }
-
-    draw();
-
-    return () => {
-      cancelAnimationFrame(animRef.current);
-      window.removeEventListener("resize", resize);
-      particles.current = [];
-    };
-  // Re-run when theme changes so particle colour updates instantly
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isDark]);
+  const isDark = theme === "dark";
+  const color  = isDark ? "255,255,255" : "0,0,0";
 
   return (
-    <div
-      style={{
+    <>
+      <style>{`
+        @keyframes spkl {
+          0%,100% { opacity:0; transform:scale(0.4); }
+          50%      { opacity:var(--spkl-op); transform:scale(1); }
+        }
+      `}</style>
+
+      <div style={{
         position: "relative",
         width: "100%",
         height: 28,
         overflow: "hidden",
-        // Subtle gradient line at bottom edge (navbar shadow continuation)
         borderBottom: "1px solid var(--nav-border)",
-      }}
-    >
-      <canvas
-        ref={canvasRef}
-        style={{
-          display: "block",
-          width: "100%",
-          height: 28,
-          pointerEvents: "none",
-        }}
-      />
-    </div>
+      }}>
+        {dots.map((d) => (
+          <span
+            key={d.id}
+            style={{
+              position:    "absolute",
+              left:         d.left,
+              top:          d.top,
+              width:        d.size,
+              height:       d.size,
+              borderRadius: "50%",
+              background:  `rgba(${color},${d.opacity})`,
+              boxShadow:   `0 0 ${d.size * 3}px ${d.size}px rgba(${color},0.25)`,
+              // @ts-ignore
+              "--spkl-op":  d.opacity,
+              animation:   `spkl ${d.duration} ${d.delay} ease-in-out infinite`,
+              pointerEvents: "none",
+            } as React.CSSProperties}
+          />
+        ))}
+      </div>
+    </>
   );
 }
