@@ -37,33 +37,33 @@
   --expo-out: linear(0 0%,0.1684 2.66%,0.3165 5.49%,0.446 8.52%,0.5581 11.78%,0.6535 15.29%,0.7341 19.11%,0.8011 23.3%,0.8557 27.93%,0.8962 32.68%,0.9283 38.01%,0.9529 44.08%,0.9711 51.14%,0.9833 59.06%,0.9915 68.74%,1 100%);
 }
 
-/* ── LIGHT (warm greyish, NOT pure white) ───────────────── */
+/* ── LIGHT — crisp, high-contrast, 8K clarity feel ── */
 html.light {
-  --bg-base:        #f2f2f0;
-  --bg-secondary:   rgba(242,242,240,0.7);
-  --bg-hover:       rgba(228,228,224,0.85);
-  --bg-card:        #ebebea;
-  --border:         #d4d4d0;
-  --line:           rgba(0,0,0,0.08);
-  --text-primary:   #1a1a1a;
-  --text-secondary: #4a4a4a;
-  --text-muted:     #888882;
-  --accent:         #1a1a1a;
-  --accent-fg:      #f2f2f0;
-  --link:           #2563eb;
-  --tag-bg:         #e4e4e0;
-  --tag-text:       #3a3a38;
-  --tag-border:     #c8c8c4;
-  --success:        #16a34a;
+  --bg-base:        #f5f5f3;
+  --bg-secondary:   #ececea;
+  --bg-hover:       #e2e2de;
+  --bg-card:        #ffffff;          /* pure white cards — crisp on light bg */
+  --border:         #c8c8c4;          /* stronger border */
+  --line:           rgba(0,0,0,0.10);
+  --text-primary:   #000000;          /* pure black text — max contrast */
+  --text-secondary: #1a1a1a;          /* near-black secondary */
+  --text-muted:     #6b6b65;
+  --accent:         #000000;
+  --accent-fg:      #ffffff;
+  --link:           #1d4ed8;
+  --tag-bg:         #e8e8e4;
+  --tag-text:       #1a1a1a;
+  --tag-border:     #b8b8b4;
+  --success:        #15803d;
   --info:           #1d4ed8;
-  --pattern-dot:    rgba(0,0,0,0.10);
-  --pattern-dot-active: rgba(0,0,0,0.22);
-  --nav-bg:         rgba(242,242,240,0.90);
-  --nav-border:     rgba(0,0,0,0.08);
-  --nav-link-color: rgba(0,0,0,0.45);
-  --nav-link-hover: #1a1a1a;
+  --pattern-dot:    rgba(0,0,0,0.12);
+  --pattern-dot-active: rgba(0,0,0,0.25);
+  --nav-bg:         rgba(245,245,243,0.92);
+  --nav-border:     rgba(0,0,0,0.10);
+  --nav-link-color: rgba(0,0,0,0.50);
+  --nav-link-hover: #000000;
   --nav-link-active-bg: rgba(0,0,0,0.08);
-  --divider-color:  #c8c8c4;
+  --divider-color:  #b8b8b4;
   --divider-glow:   rgba(124,58,237,0.5);
 }
 
@@ -418,20 +418,36 @@ a { color: inherit; text-decoration: none; }
   .desktop-nav { display:none !important; }
   .page-wrapper { padding:0; }
 }
-/* ── View Transition — smooth circular reveal from top-right (theme toggle) ── */
-::view-transition-old(root),
+/* ── View Transition — circle reveal from LEFT (theme toggle) ── */
+::view-transition-group(root) { animation-duration: 0.75s; }
+::view-transition-old(root) { animation: none; }
 ::view-transition-new(root) {
-  animation: none;
-  mix-blend-mode: normal;
+  animation: circleRevealLeft 0.75s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
-/* new theme slides in as a growing circle from top-right corner */
-::view-transition-new(root) {
-  animation: circleReveal 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+@keyframes circleRevealLeft {
+  from { clip-path: circle(0% at 40px 26px); }
+  to   { clip-path: circle(160% at 40px 26px); }
 }
-::view-transition-old(root) {
-  animation: none;
+
+/* ═══════════════════════════════════════════════════════════
+   90FPS SMOOTHNESS + 8K CLARITY
+═══════════════════════════════════════════════════════════ */
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  -webkit-text-size-adjust: 100%;
 }
-@keyframes circleReveal {
-  from { clip-path: circle(0% at calc(100% - 40px) 26px); }
-  to   { clip-path: circle(150% at calc(100% - 40px) 26px); }
+
+/* GPU-accelerated transitions on all interactive elements */
+a, button, [role="button"] {
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  will-change: auto;
 }
+
+/* Crisp image rendering */
+img { image-rendering: -webkit-optimize-contrast; }
+
+/* Smooth scroll */
+html { scroll-behavior: smooth; }

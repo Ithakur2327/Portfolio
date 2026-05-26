@@ -23,7 +23,7 @@ function FlipSentences() {
   return (
     <span key={idx} className={`fs-${anim}`} style={{
       display:"block",fontFamily:"'Geist Mono',monospace",
-      fontSize:13,color:"var(--text-muted)",lineHeight:1,
+      fontSize:13,color:"var(--text-muted)",lineHeight:1,letterSpacing:"-0.01em",
     }}>{SENTENCES[idx]}</span>
   );
 }
@@ -57,7 +57,7 @@ function IBox({color,children}:{color?:string;children:React.ReactNode}) {
       width:26,height:26,borderRadius:7,
       background:"var(--bg-secondary)",border:"1px solid var(--border)",
       display:"flex",alignItems:"center",justifyContent:"center",
-      color:color??"#71717a",flexShrink:0,
+      color:color??"var(--text-muted)",flexShrink:0,
     }}>{children}</div>
   );
 }
@@ -152,7 +152,7 @@ export function HeroSection() {
               <div style={{padding:"10px 20px 0"}}>
                 <h1 ref={nameRef} style={{
                   fontSize:"clamp(22px,4vw,32px)",fontWeight:700,
-                  letterSpacing:"-0.04em",color:"var(--text-primary)",
+                  letterSpacing:"-0.04em",color:"var(--text-primary)",WebkitFontSmoothing:"antialiased",
                   lineHeight:1.15,margin:0,
                   fontFamily:"'Geist',sans-serif",display:"inline-block",
                 }}>Indresh Thakur</h1>
