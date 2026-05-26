@@ -35,11 +35,13 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       typeof document !== "undefined" &&
       typeof (document as any).startViewTransition === "function"
     ) {
-      (document as any).startViewTransition(() => {
+      const transition = (document as any).startViewTransition(() => {
         setThemeState(t);
         applyTheme(t);
         localStorage.setItem("theme", t);
       });
+      /* ensure transition is ready before it plays */
+      transition.ready?.catch(() => {});
     } else {
       setThemeState(t);
       applyTheme(t);

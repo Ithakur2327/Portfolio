@@ -37,33 +37,33 @@
   --expo-out: linear(0 0%,0.1684 2.66%,0.3165 5.49%,0.446 8.52%,0.5581 11.78%,0.6535 15.29%,0.7341 19.11%,0.8011 23.3%,0.8557 27.93%,0.8962 32.68%,0.9283 38.01%,0.9529 44.08%,0.9711 51.14%,0.9833 59.06%,0.9915 68.74%,1 100%);
 }
 
-/* ── LIGHT — crisp, high-contrast, 8K clarity feel ── */
+/* ── LIGHT (warm greyish, NOT pure white) ───────────────── */
 html.light {
-  --bg-base:        #f5f5f3;
-  --bg-secondary:   #ececea;
-  --bg-hover:       #e2e2de;
-  --bg-card:        #ffffff;          /* pure white cards — crisp on light bg */
-  --border:         #c8c8c4;          /* stronger border */
-  --line:           rgba(0,0,0,0.10);
-  --text-primary:   #000000;          /* pure black text — max contrast */
-  --text-secondary: #1a1a1a;          /* near-black secondary */
-  --text-muted:     #6b6b65;
-  --accent:         #000000;
-  --accent-fg:      #ffffff;
-  --link:           #1d4ed8;
-  --tag-bg:         #e8e8e4;
-  --tag-text:       #1a1a1a;
-  --tag-border:     #b8b8b4;
-  --success:        #15803d;
+  --bg-base:        #f0f0ee;
+  --bg-secondary:   rgba(255,255,255,0.85);
+  --bg-hover:       rgba(235,235,232,0.9);
+  --bg-card:        #ffffff;
+  --border:         #d0d0cc;
+  --line:           rgba(0,0,0,0.09);
+  --text-primary:   #0a0a0a;
+  --text-secondary: #1a1a1a;
+  --text-muted:     #666660;
+  --accent:         #1a1a1a;
+  --accent-fg:      #f2f2f0;
+  --link:           #2563eb;
+  --tag-bg:         #e4e4e0;
+  --tag-text:       #3a3a38;
+  --tag-border:     #c8c8c4;
+  --success:        #16a34a;
   --info:           #1d4ed8;
-  --pattern-dot:    rgba(0,0,0,0.12);
-  --pattern-dot-active: rgba(0,0,0,0.25);
-  --nav-bg:         rgba(245,245,243,0.92);
-  --nav-border:     rgba(0,0,0,0.10);
-  --nav-link-color: rgba(0,0,0,0.50);
-  --nav-link-hover: #000000;
+  --pattern-dot:    rgba(0,0,0,0.10);
+  --pattern-dot-active: rgba(0,0,0,0.22);
+  --nav-bg:         rgba(242,242,240,0.90);
+  --nav-border:     rgba(0,0,0,0.08);
+  --nav-link-color: rgba(0,0,0,0.45);
+  --nav-link-hover: #1a1a1a;
   --nav-link-active-bg: rgba(0,0,0,0.08);
-  --divider-color:  #b8b8b4;
+  --divider-color:  #c8c8c4;
   --divider-glow:   rgba(124,58,237,0.5);
 }
 
@@ -418,36 +418,99 @@ a { color: inherit; text-decoration: none; }
   .desktop-nav { display:none !important; }
   .page-wrapper { padding:0; }
 }
-/* ── View Transition — circle reveal from LEFT (theme toggle) ── */
-::view-transition-group(root) { animation-duration: 0.75s; }
-::view-transition-old(root) { animation: none; }
+/* ── View Transition — smooth circular reveal from top-right (theme toggle) ── */
+::view-transition-old(root),
 ::view-transition-new(root) {
-  animation: circleRevealLeft 0.75s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: none;
+  mix-blend-mode: normal;
 }
-@keyframes circleRevealLeft {
-  from { clip-path: circle(0% at 40px 26px); }
-  to   { clip-path: circle(160% at 40px 26px); }
+/* new theme wipes in from LEFT — polygon sweep, slow + 90fps smooth */
+::view-transition-new(root) {
+  animation: polygonWipe 0.75s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
-
+::view-transition-old(root) {
+  animation: polygonFade 0.75s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+@keyframes polygonWipe {
+  from {
+    clip-path: polygon(0 0, 0 0, 0 100%, 0 100%);
+  }
+  to {
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+  }
+}
+@keyframes polygonFade {
+  from { opacity: 1; }
+  to   { opacity: 0; }
+}
 /* ═══════════════════════════════════════════════════════════
    90FPS SMOOTHNESS + 8K CLARITY
 ═══════════════════════════════════════════════════════════ */
-html {
-  -webkit-font-smoothing: antialiased;
+
+/* GPU acceleration for all animated elements */
+.reveal, .proj-card, .cert-card, .tag, .btn-primary, .btn-ghost,
+.social-link, .overview-item, .contact-row, .field-input,
+.stat-badge, .contrib-cell, nav a {
+  will-change: transform;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+/* Subpixel text rendering — crisp at any DPI */
+body, h1, h2, h3, p, span, a, button {
+  -webkit-font-smoothing:  antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
-  -webkit-text-size-adjust: 100%;
 }
 
-/* GPU-accelerated transitions on all interactive elements */
-a, button, [role="button"] {
-  -webkit-backface-visibility: hidden;
-  backface-visibility: hidden;
-  will-change: auto;
+/* Light mode — cards look crisp white with shadow */
+html.light .proj-card,
+html.light .cert-card,
+html.light .stat-badge {
+  background: #ffffff;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.05);
+  border-color: #d8d8d4;
 }
 
-/* Crisp image rendering */
-img { image-rendering: -webkit-optimize-contrast; }
+/* Light mode hero + info blocks — crisp white */
+html.light [style*="background:#09090b"],
+html.light [style*='background:"#09090b"'] {
+  background: #ffffff !important;
+}
 
-/* Smooth scroll */
-html { scroll-behavior: smooth; }
+/* Light mode — all text forced dark */
+html.light body,
+html.light p,
+html.light h1, html.light h2, html.light h3,
+html.light span:not(.gold-word),
+html.light a,
+html.light div {
+  color: var(--text-primary);
+}
+
+/* Gold word — visible in both modes */
+.gold-word {
+  color: #b8860b;
+  font-weight: 600;
+}
+html.dark .gold-word {
+  color: #e6b84a;
+}
+html.light .gold-word {
+  color: #8b6914;
+}
+
+/* Smooth theme transition for background/color */
+*, *::before, *::after {
+  transition-property: background-color, border-color, color, box-shadow;
+  transition-duration: 0s;
+  transition-timing-function: ease;
+}
+/* Only transition on body-level, not layout shifts */
+body {
+  transition: color 0.15s ease;
+}
+html {
+  transition: background-color 0.15s ease;
+}
