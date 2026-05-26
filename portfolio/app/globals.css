@@ -409,10 +409,105 @@ a { color: inherit; text-decoration: none; }
 /* ═══════════════════════════════════════════════════════════
    RESPONSIVE
 ═══════════════════════════════════════════════════════════ */
+/* ── Mobile navigation ── */
 @media (max-width: 600px) {
   .desktop-nav { display:none !important; }
   .page-wrapper { padding:0; }
 }
+
+/* ══════════════════════════════════════════════════════════
+   FULL RESPONSIVE BREAKPOINTS
+══════════════════════════════════════════════════════════ */
+
+/* ── Tablet (≤ 860px) ── */
+@media (max-width: 860px) {
+  /* Hero: stack avatar above info */
+  .hero-grid { grid-template-columns: 1fr !important; }
+
+  /* Nav inner padding */
+  .nav-inner { padding: 0 12px; }
+
+  /* Page wrapper allow scroll */
+  .page-wrapper { border-left: none !important; border-right: none !important; }
+
+  /* Section padding */
+  section { padding-left: 16px; padding-right: 16px; }
+}
+
+/* ── Mobile (≤ 600px) ── */
+@media (max-width: 600px) {
+  /* Hero name + avatar stack */
+  .hero-profile-row { flex-direction: column !important; }
+  .hero-avatar-box {
+    width: 100% !important;
+    min-width: unset !important;
+    height: 140px !important;
+    border-right: none !important;
+    border-bottom: 1px solid var(--border) !important;
+    justify-content: center !important;
+  }
+
+  /* Hero info grid → single col */
+  .hero-grid { grid-template-columns: 1fr !important; gap: 8px !important; }
+
+  /* Social tiles → vertical */
+  .hero-social { flex-direction: column !important; }
+  .hero-social a {
+    border-right: none !important;
+    border-bottom: 1px solid #27272a !important;
+  }
+  .hero-social a:last-child { border-bottom: none !important; }
+
+  /* Sections full width */
+  section, .section-inner { padding-left: 14px !important; padding-right: 14px !important; }
+
+  /* Skills section */
+  .skills-strip-offset { margin-left: -14px !important; margin-right: -14px !important; }
+
+  /* Projects */
+  .proj-tags { flex-wrap: wrap; }
+
+  /* Education / bottom sections — single col */
+  .bottom-grid { grid-template-columns: 1fr !important; }
+
+  /* Contact form */
+  .contact-cols { flex-direction: column !important; }
+
+  /* Stat badges */
+  .stat-badges-row { flex-wrap: wrap; gap: 8px !important; }
+  .stat-badge { min-width: calc(50% - 4px) !important; padding: 12px 16px !important; }
+
+  /* Typography scale down */
+  .about-heading, h1 { font-size: clamp(20px, 6vw, 28px) !important; }
+  .section-title { font-size: 18px !important; }
+
+  /* Contrib graph — horizontal scroll */
+  .contrib-wrap { overflow-x: auto; padding-bottom: 6px; }
+
+  /* Overview section */
+  .overview-cols { flex-direction: column !important; }
+}
+
+/* ── Small mobile (≤ 400px) ── */
+@media (max-width: 400px) {
+  .stat-badge { min-width: 100% !important; }
+  .hero-avatar-box { height: 110px !important; }
+
+  /* Compact nav */
+  .nav-inner { height: 46px; }
+  .nav-root  { height: 46px; }
+}
+
+/* ── Landscape phone (short + wide) ── */
+@media (max-height: 500px) and (orientation: landscape) {
+  section { padding-top: 8px; padding-bottom: 8px; }
+}
+
+/* ── Large desktop (≥ 1200px) ── */
+@media (min-width: 1200px) {
+  .page-wrapper { max-width: 1060px; }
+}
+
 /* ── View Transition — diagonal cross-line wipe from top-left corner ── */
 ::view-transition-old(root),
 ::view-transition-new(root) {

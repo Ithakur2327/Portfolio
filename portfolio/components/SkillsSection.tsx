@@ -19,14 +19,14 @@ const TECH: Record<string, { color: string; logo: string }> = {
   "CSS3":        { color: "#1572B6", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/css3/css3-original.svg" },
   "Node.js":     { color: "#339933", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nodejs/nodejs-original.svg" },
   "Express.js":  { color: "#888888", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/express/express-original.svg" },
-  "REST APIs":   { color: "#6366f1", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/fastapi/fastapi-original.svg" },
+  "REST APIs":   { color: "#6366f1", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/azuredevops/azuredevops-original.svg" },
   "FastAPI":     { color: "#009688", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/fastapi/fastapi-original.svg" },
   "GraphQL":     { color: "#E10098", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/graphql/graphql-plain.svg" },
   "LLM APIs":    { color: "#10a37f", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/openai/openai-original.svg" },
-  "LangChain":   { color: "#1C9E6E", logo: "https://avatars.githubusercontent.com/u/126733545?s=48" },
-  "LangGraph":   { color: "#2D6A4F", logo: "https://avatars.githubusercontent.com/u/126733545?s=48" },
+  "LangChain":   { color: "#1C9E6E", logo: "https://python.langchain.com/img/favicon.ico" },
+  "LangGraph":   { color: "#2D6A4F", logo: "https://python.langchain.com/img/favicon.ico" },
   "RAG":         { color: "#a855f7", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/pytorch/pytorch-original.svg" },
-  "Vector DB":   { color: "#FF6333", logo: "https://avatars.githubusercontent.com/u/73504361?s=48" },
+  "Vector DB":   { color: "#FF6333", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/redis/redis-original.svg" },
   "MongoDB":     { color: "#47A248", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/mongodb/mongodb-original.svg" },
   "MySQL":       { color: "#4479A1", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/mysql/mysql-original.svg" },
   "PostgreSQL":  { color: "#4169E1", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/postgresql/postgresql-original.svg" },
@@ -55,13 +55,13 @@ function SkillChip({ name, visible, delay = 0 }: { name: string; visible: boolea
       initial={{ opacity: 0, y: 10 }}
       animate={visible ? { opacity: 1, y: 0 } : { opacity: 0.15, y: 6 }}
       transition={{ delay, duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-      style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6, width: 62, cursor: "default" }}
+      style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6, width: 66, cursor: "default" }}
     >
       <div
         style={{
-          width: 40, height: 40,
+          width: 44, height: 44,
           display: "flex", alignItems: "center", justifyContent: "center",
-          borderRadius: 10,
+          borderRadius: 11,
           background: visible ? `${tech.color}18` : `${tech.color}08`,
           border: `1px solid ${tech.color}${visible ? "45" : "20"}`,
           transition: "transform 0.2s, box-shadow 0.2s, background 0.4s, border-color 0.4s",
@@ -78,7 +78,7 @@ function SkillChip({ name, visible, delay = 0 }: { name: string; visible: boolea
         }}
       >
         {tech.logo && (
-          <img src={tech.logo} alt={name} width={24} height={24}
+          <img src={tech.logo} alt={name} width={26} height={26}
             style={{ objectFit: "contain", filter: visible ? "none" : "grayscale(1) opacity(0.3)", transition: "filter 0.4s" }}
             onError={e => { (e.target as HTMLImageElement).style.display = "none"; }}
           />
@@ -94,11 +94,10 @@ function SkillChip({ name, visible, delay = 0 }: { name: string; visible: boolea
   );
 }
 
-/* ── Lamp Beam — exactly like screenshot 2:
-     one thin line at top + soft radial glow below, nothing else ── */
+/* ── Lamp Beam — centered line + full-card spotlight glow ── */
 function LampBeam({ glowColor, visible }: { glowColor: string; visible: boolean }) {
   return (
-    <div style={{ position: "relative", width: "100%", height: 80, flexShrink: 0, overflow: "visible" }}>
+    <div style={{ position: "absolute", top: 0, left: 0, right: 0, pointerEvents: "none", zIndex: 0 }}>
 
       {/* THE line — thin, centered, fades at edges */}
       <motion.div
@@ -113,28 +112,48 @@ function LampBeam({ glowColor, visible }: { glowColor: string; visible: boolean 
           top: 0, left: "50%",
           transform: "translateX(-50%)",
           transformOrigin: "center",
-          width: "78%", height: 1.5,
+          width: "72%", height: 1.5,
           borderRadius: 2,
           background: `linear-gradient(to right, transparent 0%, ${glowColor} 20%, ${glowColor} 80%, transparent 100%)`,
-          boxShadow: visible ? `0 0 8px 1px ${glowColor}77` : "none",
+          boxShadow: visible ? `0 0 10px 2px ${glowColor}88` : "none",
           transition: "box-shadow 0.75s",
         }}
       />
 
-      {/* Soft radial glow below the line — reaches down to icons */}
+      {/* Full-card radial spotlight — covers entire card height */}
       <motion.div
         animate={
           visible
-            ? { opacity: 1, height: 110 }
-            : { opacity: 0, height: 40 }
+            ? { opacity: 1 }
+            : { opacity: 0 }
         }
-        transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1], delay: 0.05 }}
+        transition={{ duration: 1.0, ease: [0.22, 1, 0.36, 1], delay: 0.05 }}
         style={{
           position: "absolute",
           top: 0, left: "50%",
           transform: "translateX(-50%)",
-          width: "80%",
-          background: `radial-gradient(ellipse 100% 90% at 50% 0%, ${glowColor}44 0%, ${glowColor}18 45%, transparent 80%)`,
+          width: "100%",
+          height: 420,
+          background: `radial-gradient(ellipse 85% 420px at 50% 0%, ${glowColor}22 0%, ${glowColor}0d 35%, ${glowColor}05 60%, transparent 80%)`,
+          pointerEvents: "none",
+        }}
+      />
+
+      {/* Tighter bright cone near top */}
+      <motion.div
+        animate={
+          visible
+            ? { opacity: 1 }
+            : { opacity: 0 }
+        }
+        transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1], delay: 0.1 }}
+        style={{
+          position: "absolute",
+          top: 0, left: "50%",
+          transform: "translateX(-50%)",
+          width: "65%",
+          height: 140,
+          background: `radial-gradient(ellipse 100% 140px at 50% 0%, ${glowColor}38 0%, ${glowColor}18 50%, transparent 100%)`,
           pointerEvents: "none",
         }}
       />
@@ -158,38 +177,48 @@ function LampSkillBox({ title, glowColor, items }: { title: string; glowColor: s
         overflow: "hidden",
         display: "flex",
         flexDirection: "column",
+        position: "relative",
         transition: "border-color 0.6s",
       }}
     >
+      {/* Lamp beam — absolute, spans full card */}
       <LampBeam glowColor={glowColor} visible={isInView} />
 
-      {/* Title */}
-      <div style={{ textAlign: "center", marginTop: 2, marginBottom: 12, position: "relative", zIndex: 10 }}>
-        <motion.span
-          animate={{ opacity: isInView ? 1 : 0.22, y: isInView ? 0 : 4 }}
-          transition={{ delay: isInView ? 0.3 : 0, duration: 0.5 }}
-          style={{
-            fontSize: 10, fontWeight: 700, letterSpacing: "0.12em",
-            textTransform: "uppercase" as const,
-            color: isInView ? glowColor : "var(--text-muted)",
-            fontFamily: MONO,
-            transition: "color 0.5s",
-          }}
-        >{title}</motion.span>
-      </div>
+      {/* Title + content — positioned above lamp via z-index */}
+      <div style={{ position: "relative", zIndex: 1, paddingTop: 20, display: "flex", flexDirection: "column", height: "100%" }}>
 
-      {/* Accent divider */}
-      <div style={{
-        height: 1, margin: "0 14px 14px",
-        background: `linear-gradient(to right, transparent, ${glowColor}${isInView ? "30" : "0a"}, transparent)`,
-        transition: "background 0.6s",
-      }} />
+        {/* Title */}
+        <div style={{ textAlign: "center", marginBottom: 12 }}>
+          <motion.span
+            animate={{ opacity: isInView ? 1 : 0.22, y: isInView ? 0 : 4 }}
+            transition={{ delay: isInView ? 0.3 : 0, duration: 0.5 }}
+            style={{
+              fontSize: 10, fontWeight: 700, letterSpacing: "0.12em",
+              textTransform: "uppercase" as const,
+              color: isInView ? glowColor : "var(--text-muted)",
+              fontFamily: MONO,
+              transition: "color 0.5s",
+            }}
+          >{title}</motion.span>
+        </div>
 
-      {/* Skills grid */}
-      <div style={{ padding: "0 14px 16px", display: "flex", flexWrap: "wrap", gap: 10 }}>
-        {items.map((name, i) => (
-          <SkillChip key={name} name={name} visible={isInView} delay={isInView ? 0.35 + i * 0.07 : 0} />
-        ))}
+        {/* Accent divider */}
+        <div style={{
+          height: 1, margin: "0 14px 16px",
+          background: `linear-gradient(to right, transparent, ${glowColor}${isInView ? "35" : "0a"}, transparent)`,
+          transition: "background 0.6s",
+        }} />
+
+        {/* Skills grid */}
+        <div style={{
+          padding: "0 14px 20px",
+          display: "flex", flexWrap: "wrap" as const, gap: 10,
+          justifyContent: "center",
+        }}>
+          {items.map((name, i) => (
+            <SkillChip key={name} name={name} visible={isInView} delay={isInView ? 0.35 + i * 0.07 : 0} />
+          ))}
+        </div>
       </div>
     </div>
   );
@@ -253,12 +282,31 @@ export function SkillsSection() {
           from { transform: translateX(0); }
           to   { transform: translateX(-33.333%); }
         }
-        @media (max-width: 860px) {
-          .skills-lamp-grid { flex-wrap: wrap !important; }
-          .skills-lamp-grid > * { min-width: calc(50% - 6px) !important; flex: 0 0 calc(50% - 6px) !important; }
+
+        /* 4 columns on desktop */
+        .skills-lamp-grid {
+          display: flex;
+          gap: 12px;
+          align-items: stretch;
         }
+
+        /* 2 columns on tablet */
+        @media (max-width: 860px) {
+          .skills-lamp-grid {
+            flex-wrap: wrap;
+          }
+          .skills-lamp-grid > * {
+            min-width: calc(50% - 6px) !important;
+            flex: 0 0 calc(50% - 6px) !important;
+          }
+        }
+
+        /* 1 column on mobile */
         @media (max-width: 500px) {
-          .skills-lamp-grid > * { min-width: 100% !important; flex: 0 0 100% !important; }
+          .skills-lamp-grid > * {
+            min-width: 100% !important;
+            flex: 0 0 100% !important;
+          }
         }
       `}</style>
 
@@ -278,7 +326,7 @@ export function SkillsSection() {
           borderTop: "1px solid var(--line)",
           borderBottom: "1px solid var(--line)",
         }}>
-          <div style={{ maxWidth: 1060, margin: "0 auto", padding: "0 32px 40px" }}>
+          <div style={{ maxWidth: 1060, margin: "0 auto", padding: "0 20px 40px" }}>
 
             <div style={{ paddingTop: 28 }}>
               <span style={{
@@ -290,14 +338,14 @@ export function SkillsSection() {
             <div style={{ height: 1, background: "var(--border)", margin: "18px 0 24px" }} />
 
             {/* 4 lamp boxes */}
-            <div className="skills-lamp-grid" style={{ display: "flex", gap: 12 }}>
+            <div className="skills-lamp-grid">
               {LAMP_GROUPS.map(g => (
                 <LampSkillBox key={g.title} {...g} />
               ))}
             </div>
 
-            {/* Single moving strip */}
-            <div style={{ marginTop: 28, marginLeft: -32, marginRight: -32 }}>
+            {/* Moving strip */}
+            <div style={{ marginTop: 28, marginLeft: -20, marginRight: -20 }}>
               <MovingStrip items={STRIP_NAMES} />
             </div>
 

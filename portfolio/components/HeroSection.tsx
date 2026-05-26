@@ -140,9 +140,9 @@ export function HeroSection() {
 
         {/* PROFILE */}
         <div style={{width:"100%",background:BG,borderTop:B,borderBottom:B}}>
-          <div style={{...centered,display:"flex",alignItems:"stretch"}}>
+          <div className="hero-profile-row" style={{...centered,display:"flex",alignItems:"stretch"}}>
             {/* Avatar box */}
-            <div style={{
+            <div className="hero-avatar-box" style={{
               borderRight:B, flexShrink:0,
               display:"flex", alignItems:"center", justifyContent:"center",
               padding:0, width:162, minWidth:162,
