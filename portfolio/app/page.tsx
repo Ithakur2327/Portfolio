@@ -1,6 +1,6 @@
 import { Navbar }          from "@/components/Navbar";
 import { HeroSection }     from "@/components/HeroSection";
-
+import { SparklesBridge }  from "@/components/SparklesBridge";
 import { AboutSection }    from "@/components/AboutSection";
 import { SkillsSection }   from "@/components/SkillsSection";
 import { ProjectsSection } from "@/components/ProjectsSection";
@@ -13,13 +13,9 @@ export default function Home() {
     <>
       <Navbar />
       <main>
-       
+        <SparklesBridge />
         <HeroSection />
-        <div style={{ maxWidth: 1060, margin: "0 auto", overflow: "visible", position: "relative" }}>
-          
-        </div>
-
-        {/* Rest of content inside page-wrapper */}
+        <div style={{ maxWidth: 1060, margin: "0 auto", overflow: "visible", position: "relative" }} />
         <div className="page-wrapper" style={{ marginTop: 16 }}>
           <AboutSection />
           <SkillsSection />

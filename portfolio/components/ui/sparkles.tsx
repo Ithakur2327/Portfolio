@@ -2,7 +2,7 @@
 import React, { useId, useEffect, useState } from "react";
 import Particles from "@tsparticles/react";
 import { loadSlim } from "@tsparticles/slim";
-import { Engine, RecursivePartial, IOptions } from "@tsparticles/engine";
+import { tsParticles } from "@tsparticles/engine";
 import { cn } from "@/lib/utils";
 
 type ParticlesProps = {
@@ -15,19 +15,6 @@ type ParticlesProps = {
   particleColor?: string;
   particleDensity?: number;
 };
-
-// Initialize ONCE outside component — not inside a hook
-let engineReady = false;
-let enginePromise: Promise<void> | null = null;
-
-function getEngine(): Promise<void> {
-  if (engineReady) return Promise.resolve();
-  if (enginePromise) return enginePromise;
-  enginePromise = import("@tsparticles/engine")
-    .then(({ tsParticles }) => loadSlim(tsParticles as unknown as Engine))
-    .then(() => { engineReady = true; });
-  return enginePromise;
-}
 
 export function SparklesCore(props: ParticlesProps) {
   const {
@@ -45,7 +32,7 @@ export function SparklesCore(props: ParticlesProps) {
   const generatedId = useId();
 
   useEffect(() => {
-    getEngine().then(() => setInit(true));
+    loadSlim(tsParticles as any).then(() => setInit(true));
   }, []);
 
   return init ? (
@@ -83,7 +70,7 @@ export function SparklesCore(props: ParticlesProps) {
           size: { value: { min: minSize, max: maxSize } },
         },
         detectRetina: true,
-      } as RecursivePartial<IOptions>}
+      } as any}
     />
   ) : null;
 }
