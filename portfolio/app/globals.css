@@ -424,24 +424,21 @@ a { color: inherit; text-decoration: none; }
   animation: none;
   mix-blend-mode: normal;
 }
-/* new theme wipes in from LEFT — polygon sweep, slow + 90fps smooth */
+/* Theme wipes LEFT→RIGHT, 1.1s ultra-smooth */
 ::view-transition-new(root) {
-  animation: polygonWipe 0.75s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: polygonWipe 1.1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 ::view-transition-old(root) {
-  animation: polygonFade 0.75s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: polygonFade 1.1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 @keyframes polygonWipe {
-  from {
-    clip-path: polygon(0 0, 0 0, 0 100%, 0 100%);
-  }
-  to {
-    clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
-  }
+  0%   { clip-path: polygon(-2% 0, -2% 0, -2% 100%, -2% 100%); }
+  100% { clip-path: polygon(-2% 0, 102% 0, 102% 100%, -2% 100%); }
 }
 @keyframes polygonFade {
-  from { opacity: 1; }
-  to   { opacity: 0; }
+  0%   { opacity: 1; transform: none; }
+  60%  { opacity: 0.6; }
+  100% { opacity: 0; }
 }
 /* ═══════════════════════════════════════════════════════════
    90FPS SMOOTHNESS + 8K CLARITY
@@ -491,26 +488,60 @@ html.light div {
 
 /* Gold word — visible in both modes */
 .gold-word {
-  color: #b8860b;
+  color: #e6b84a;
   font-weight: 600;
 }
 html.dark .gold-word {
-  color: #e6b84a;
+  color: #f0c040;
+  text-shadow: 0 0 20px rgba(240,192,64,0.15);
 }
 html.light .gold-word {
-  color: #8b6914;
+  color: #b45309;
+  text-shadow: none;
 }
 
-/* Smooth theme transition for background/color */
-*, *::before, *::after {
-  transition-property: background-color, border-color, color, box-shadow;
-  transition-duration: 0s;
-  transition-timing-function: ease;
+/* Only transition colour-related props, never geometry (causes jank) */
+body  { transition: color 0.1s ease; }
+html  { transition: background-color 0.1s ease; }
+
+/* ═══════════════════════════════════════════════════════════
+   120 FPS OPTIMISATIONS
+═══════════════════════════════════════════════════════════ */
+
+/* Promote all scroll-animated sections to their own GPU layers */
+section, .page-wrapper, header, main {
+  transform: translateZ(0);
+  will-change: auto;
 }
-/* Only transition on body-level, not layout shifts */
-body {
-  transition: color 0.15s ease;
+
+/* Skip offscreen rendering for long sections */
+.reveal-section {
+  content-visibility: auto;
+  contain-intrinsic-size: 0 400px;
 }
-html {
-  transition: background-color 0.15s ease;
+
+/* Ensure canvas (Avatar WebGL) is on its own layer */
+canvas {
+  transform: translateZ(0);
+  will-change: contents;
+  image-rendering: high-quality;
+  image-rendering: -webkit-optimize-contrast;
+}
+
+/* Remove all CSS transitions on view-transition so GPU handles it */
+::view-transition-group(*) {
+  animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Framer Motion — ensure 3D layer for all motion divs */
+[data-framer-motion] {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+/* Font — subpixel antialiasing at high DPI */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  body {
+    -webkit-font-smoothing: subpixel-antialiased;
+  }
 }

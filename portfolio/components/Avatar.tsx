@@ -244,14 +244,6 @@ export function Avatar() {
         ref={canvasRef}
         style={{ width: 160, height: 160, borderRadius: "50%", display: "block" }}
       />
-      {/* Green pulse dot */}
-      <span className="pulse" style={{
-        position: "absolute", bottom: 6, right: 6,
-        width: 13, height: 13, borderRadius: "50%",
-        background: "#22c55e", border: "2.5px solid #09090b",
-        display: "block", zIndex: 2,
-        boxShadow: "0 0 6px #22c55e",
-      }} />
-    </div>
+      </div>
   );
 }

@@ -23,7 +23,7 @@ function FlipSentences() {
   return (
     <span key={idx} className={`fs-${anim}`} style={{
       display:"block",fontFamily:"'Geist Mono',monospace",
-      fontSize:13,color:"var(--text-muted)",lineHeight:1,letterSpacing:"-0.01em",
+      fontSize:13,color:"var(--text-muted)",lineHeight:1,
     }}>{SENTENCES[idx]}</span>
   );
 }
@@ -46,7 +46,7 @@ function LiveClock() {
   },[]);
   return (
     <span style={{fontFamily:"'Geist Mono',monospace"}}>
-      {time||"--:-- IST"} {diff&&<span style={{color:"var(--text-muted)"}}>// {diff}</span>}
+      {time||"--:-- IST"} 
     </span>
   );
 }
@@ -57,13 +57,13 @@ function IBox({color,children}:{color?:string;children:React.ReactNode}) {
       width:26,height:26,borderRadius:7,
       background:"var(--bg-secondary)",border:"1px solid var(--border)",
       display:"flex",alignItems:"center",justifyContent:"center",
-      color:color??"var(--text-muted)",flexShrink:0,
+      color:color??"#71717a",flexShrink:0,
     }}>{children}</div>
   );
 }
 
 function Row({icon,href,newTab,children}:{icon:React.ReactNode;href?:string;newTab?:boolean;children:React.ReactNode}) {
-  const s:React.CSSProperties={display:"flex",alignItems:"center",gap:13,fontFamily:"'Geist Mono',monospace",fontSize:13,color:"var(--text-muted)",textDecoration:"none"};
+  const s:React.CSSProperties={display:"flex",alignItems:"center",gap:13,fontFamily:"'Geist Mono',monospace",fontSize:13,color:"var(--text-secondary)",textDecoration:"none"};
   if(href) return (
     <a href={href} target={newTab?"_blank":undefined} rel="noreferrer" style={s}
       onMouseEnter={e=>(e.currentTarget as HTMLElement).style.color="var(--text-primary)"}
@@ -152,7 +152,7 @@ export function HeroSection() {
               <div style={{padding:"10px 20px 0"}}>
                 <h1 ref={nameRef} style={{
                   fontSize:"clamp(22px,4vw,32px)",fontWeight:700,
-                  letterSpacing:"-0.04em",color:"var(--text-primary)",WebkitFontSmoothing:"antialiased",
+                  letterSpacing:"-0.04em",color:"var(--text-primary)",
                   lineHeight:1.15,margin:0,
                   fontFamily:"'Geist',sans-serif",display:"inline-block",
                 }}>Indresh Thakur</h1>
@@ -172,15 +172,17 @@ export function HeroSection() {
           <div style={{background:BG,borderTop:B,borderBottom:B,borderLeft:B,borderRight:B}}>
             <div style={{padding:"16px 18px 14px"}}>
               <div className="hero-grid" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"11px 48px"}}>
+                {/* LEFT: Noida → Phone → Email → Resume */}
                 <div style={{display:"flex",flexDirection:"column",gap:11}}>
                   <Row href="https://maps.google.com/?q=Greater+Noida+India" newTab icon={<IBox color="#f87171"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></IBox>}>Noida, India</Row>
                   <Row href="tel:+917859096326" icon={<IBox color="#4ade80"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.35 2 2 0 0 1 3.6 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.6a16 16 0 0 0 6 6l.96-.96a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg></IBox>}>+91 7859096326</Row>
-                  <Row href="https://indreshthakur.dev" newTab icon={<IBox color="#a78bfa"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></IBox>}>indreshthakur.dev</Row>
+                  <Row href="mailto:ithakur2327@gmail.com" icon={<IBox color="#60a5fa"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></IBox>}>ithakur2327@gmail.com</Row>
                   <Row href="/resume.pdf" newTab icon={<IBox><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="15" y2="17"/></svg></IBox>}>Resume</Row>
                 </div>
+                {/* RIGHT: Clock → Website → he/him (aligned with resume) */}
                 <div style={{display:"flex",flexDirection:"column",gap:11}}>
                   <Row icon={<IBox color="#fbbf24"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></IBox>}><LiveClock/></Row>
-                  <Row href="mailto:ithakur2327@gmail.com" icon={<IBox color="#60a5fa"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></IBox>}>ithakur2327@gmail.com</Row>
+                  <Row href="https://indreshthakur.dev" newTab icon={<IBox color="#a78bfa"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></IBox>}>indreshthakur.dev</Row>
                   <Row icon={<IBox color="#f472b6"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 1 0-16 0"/></svg></IBox>}>he/him</Row>
                 </div>
               </div>

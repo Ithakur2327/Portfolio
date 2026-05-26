@@ -52,11 +52,11 @@ function ScrollRevealText() {
   return (
     <div ref={ref}>
       {paras.map((tokens, pi) => (
-        <p key={pi} style={{ margin:"0 0 16px", fontSize:15.5, lineHeight:1.85, fontFamily:SF, letterSpacing:"-0.012em", fontWeight:400, color:"var(--text-secondary)" }}>
+        <p key={pi} style={{ margin:"0 0 16px", fontSize:15.5, lineHeight:1.85, fontFamily:SF, letterSpacing:"-0.012em", fontWeight:400, color:"var(--text-primary)", opacity: 0.8 }}>
           {tokens.map((t, ti) =>
             t.hl
               ? <GoldWord key={ti} text={t.text} idx={t.idx} total={total} progress={smooth} />
-              : <span key={ti} style={{ color:"var(--text-secondary)" }}>{t.text}</span>
+              : <span key={ti} style={{ color:"var(--text-primary)", opacity: 0.75 }}>{t.text}</span>
           )}
         </p>
       ))}
