@@ -23,7 +23,7 @@ function FlipSentences() {
   return (
     <span key={idx} className={`fs-${anim}`} style={{
       display:"block",fontFamily:"'Geist Mono',monospace",
-      fontSize:13,color:"#71717a",lineHeight:1,
+      fontSize:13,color:"var(--text-muted)",lineHeight:1,
     }}>{SENTENCES[idx]}</span>
   );
 }
@@ -46,7 +46,7 @@ function LiveClock() {
   },[]);
   return (
     <span style={{fontFamily:"'Geist Mono',monospace"}}>
-      {time||"--:-- IST"} {diff&&<span style={{color:"#52525b"}}>// {diff}</span>}
+      {time||"--:-- IST"} {diff&&<span style={{color:"var(--text-muted)"}}>// {diff}</span>}
     </span>
   );
 }
@@ -55,7 +55,7 @@ function IBox({color,children}:{color?:string;children:React.ReactNode}) {
   return (
     <div style={{
       width:26,height:26,borderRadius:7,
-      background:"#111113",border:"1px solid #27272a",
+      background:"var(--bg-secondary)",border:"1px solid var(--border)",
       display:"flex",alignItems:"center",justifyContent:"center",
       color:color??"#71717a",flexShrink:0,
     }}>{children}</div>
@@ -63,11 +63,11 @@ function IBox({color,children}:{color?:string;children:React.ReactNode}) {
 }
 
 function Row({icon,href,newTab,children}:{icon:React.ReactNode;href?:string;newTab?:boolean;children:React.ReactNode}) {
-  const s:React.CSSProperties={display:"flex",alignItems:"center",gap:13,fontFamily:"'Geist Mono',monospace",fontSize:13,color:"#a1a1aa",textDecoration:"none"};
+  const s:React.CSSProperties={display:"flex",alignItems:"center",gap:13,fontFamily:"'Geist Mono',monospace",fontSize:13,color:"var(--text-muted)",textDecoration:"none"};
   if(href) return (
     <a href={href} target={newTab?"_blank":undefined} rel="noreferrer" style={s}
-      onMouseEnter={e=>(e.currentTarget as HTMLElement).style.color="#e4e4e7"}
-      onMouseLeave={e=>(e.currentTarget as HTMLElement).style.color="#a1a1aa"}
+      onMouseEnter={e=>(e.currentTarget as HTMLElement).style.color="var(--text-primary)"}
+      onMouseLeave={e=>(e.currentTarget as HTMLElement).style.color="var(--text-muted)"}
     >{icon}<span>{children}</span></a>
   );
   return <div style={{...s,cursor:"default"}}>{icon}<span>{children}</span></div>;
@@ -78,15 +78,15 @@ function SocialTile({href,label,icon,iconBg,iconBorder,iconColor,last}:{href:str
     <a href={href} target="_blank" rel="noreferrer" style={{
       flex:1,display:"flex",alignItems:"center",gap:10,
       padding:"14px 16px",borderRight:last?"none":"1px solid #27272a",
-      background:"#09090b",color:"#fafafa",textDecoration:"none",position:"relative",
+      background:"var(--bg-base)",color:"var(--text-primary)",textDecoration:"none",position:"relative",
       transition:"background 0.12s",minWidth:0,
     }}
-      onMouseEnter={e=>(e.currentTarget as HTMLElement).style.background="#111113"}
-      onMouseLeave={e=>(e.currentTarget as HTMLElement).style.background="#09090b"}
+      onMouseEnter={e=>(e.currentTarget as HTMLElement).style.background="var(--bg-secondary)"}
+      onMouseLeave={e=>(e.currentTarget as HTMLElement).style.background="var(--bg-base)"}
     >
       <div style={{width:32,height:32,borderRadius:8,background:iconBg,border:iconBorder,display:"flex",alignItems:"center",justifyContent:"center",color:iconColor,flexShrink:0}}>{icon}</div>
       <span style={{fontWeight:600,fontSize:13.5,fontFamily:"'Geist',sans-serif"}}>{label}</span>
-      <span style={{position:"absolute",top:11,right:11,color:"#3f3f46"}}>
+      <span style={{position:"absolute",top:11,right:11,color:"var(--text-muted)"}}>
         <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
       </span>
     </a>
@@ -109,8 +109,8 @@ export function HeroSection() {
   useEffect(() => { setTimeout(() => setVis(true), 50); }, []);
   useEffect(() => { if(nameRef.current) setLineW(nameRef.current.offsetWidth); }, []);
 
-  const BG = "#09090b";
-  const B  = "1px solid #27272a";
+  const BG = "var(--bg-base)";
+  const B  = "1px solid var(--border)";
   const centered:React.CSSProperties = { maxWidth:CW, margin:"0 auto", borderLeft:B, borderRight:B };
 
   return (
@@ -130,7 +130,7 @@ export function HeroSection() {
       `}</style>
 
       <section id="about" style={{
-        marginTop:68,
+        marginTop:72,
         opacity:vis?1:0, transform:vis?"none":"translateY(10px)",
         transition:"opacity 0.5s cubic-bezier(0.16,1,0.3,1),transform 0.5s cubic-bezier(0.16,1,0.3,1)",
       }}>
@@ -152,11 +152,11 @@ export function HeroSection() {
               <div style={{padding:"10px 20px 0"}}>
                 <h1 ref={nameRef} style={{
                   fontSize:"clamp(22px,4vw,32px)",fontWeight:700,
-                  letterSpacing:"-0.04em",color:"#fafafa",
+                  letterSpacing:"-0.04em",color:"var(--text-primary)",
                   lineHeight:1.15,margin:0,
                   fontFamily:"'Geist',sans-serif",display:"inline-block",
                 }}>Indresh Thakur</h1>
-                <div style={{height:1,background:"#27272a",marginTop:8,width:lineW,maxWidth:"100%"}}/>
+                <div style={{height:1,background:"var(--border)",marginTop:8,width:lineW,maxWidth:"100%"}}/>
               </div>
               <div style={{padding:"8px 20px 12px",height:36,display:"flex",alignItems:"center",overflow:"hidden"}}>
                 <FlipSentences/>
@@ -186,9 +186,9 @@ export function HeroSection() {
               </div>
             </div>
             <div className="hero-social" style={{display:"flex",borderTop:B}}>
-              <SocialTile href="https://github.com/IndreshThakur" label="GitHub" iconBg="#18181b" iconBorder="1px solid #27272a" iconColor="#fafafa" icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>}/>
+              <SocialTile href="https://github.com/IndreshThakur" label="GitHub" iconBg="var(--bg-secondary)" iconBorder="1px solid var(--border)" iconColor="var(--text-primary)" icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>}/>
               <SocialTile href="https://linkedin.com/in/indresh-thakur" label="LinkedIn" iconBg="#0A66C2" iconBorder="none" iconColor="#fff" icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>}/>
-              <SocialTile href="https://x.com/indresh_dev" label="X" last iconBg="#18181b" iconBorder="1px solid #27272a" iconColor="#fafafa" icon={<svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.255 5.623zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>}/>
+              <SocialTile href="https://x.com/indresh_dev" label="X" last iconBg="var(--bg-secondary)" iconBorder="1px solid var(--border)" iconColor="var(--text-primary)" icon={<svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.255 5.623zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>}/>
             </div>
           </div>
         </div>
