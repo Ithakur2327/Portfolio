@@ -34,9 +34,12 @@ function GoldWord({ text, idx, total, progress }: {
   const e = Math.min(1, (idx + 0.4) / total);
   const raw = useTransform(progress, [s, e], [0, 1]);
   const p   = useSpring(raw, { stiffness: 800, damping: 32, mass: 0.2 });
-  const opacity = useTransform(p, [0, 0.15, 1], [0.2, 0.6, 1]);
+  const opacity = useTransform(p, [0, 0.15, 1], [0.25, 0.65, 1]);
   return (
-    <motion.span className="gold-word" style={{ opacity }}>{text}</motion.span>
+    <motion.span
+      className="gold-word"
+      style={{ opacity, display:"inline", verticalAlign:"baseline" }}
+    >{text}</motion.span>
   );
 }
 
@@ -52,11 +55,16 @@ function ScrollRevealText() {
   return (
     <div ref={ref}>
       {paras.map((tokens, pi) => (
-        <p key={pi} style={{ margin:"0 0 16px", fontSize:15.5, lineHeight:1.85, fontFamily:SF, letterSpacing:"-0.012em", fontWeight:400, color:"var(--text-primary)", opacity: 0.8 }}>
+        <p key={pi} style={{
+          margin:"0 0 18px", fontSize:15, lineHeight:1.8,
+          fontFamily:SF, letterSpacing:"-0.01em",
+          fontWeight:400, color:"var(--text-primary)",
+          wordBreak:"normal", overflowWrap:"break-word",
+        }}>
           {tokens.map((t, ti) =>
             t.hl
               ? <GoldWord key={ti} text={t.text} idx={t.idx} total={total} progress={smooth} />
-              : <span key={ti} style={{ color:"var(--text-primary)", opacity: 0.75 }}>{t.text}</span>
+              : <span key={ti} style={{ color:"var(--text-primary)", display:"inline" }}>{t.text}</span>
           )}
         </p>
       ))}

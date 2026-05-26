@@ -39,11 +39,11 @@
 
 /* ── LIGHT (warm greyish, NOT pure white) ───────────────── */
 html.light {
-  --bg-base:        #f0f0ee;
-  --bg-secondary:   rgba(255,255,255,0.85);
-  --bg-hover:       rgba(235,235,232,0.9);
+  --bg-base:        #f5f5f3;
+  --bg-secondary:   rgba(255,255,255,0.92);
+  --bg-hover:       rgba(242,242,240,0.95);
   --bg-card:        #ffffff;
-  --border:         #d0d0cc;
+  --border:         #d8d8d4;
   --line:           rgba(0,0,0,0.09);
   --text-primary:   #0a0a0a;
   --text-secondary: #1a1a1a;
@@ -69,7 +69,7 @@ html.light {
 
 /* ── Page background via CSS (not JS inline) ────────────── */
 html        { background: #09090b; }
-html.light  { background: #f2f2f0; }
+html.light  { background: #f5f5f3; }
 
 /* ═══════════════════════════════════════════════════════════
    RESET
@@ -267,11 +267,6 @@ a { color: inherit; text-decoration: none; }
   display: inline;
   font-weight: 700;
   letter-spacing: -0.01em;
-  color: #D4AF37;
-}
-
-.gold-word:hover {
-  color: #F0C940;
 }
 
 /* ── Gold box variant (pill around word) ── */
@@ -418,26 +413,36 @@ a { color: inherit; text-decoration: none; }
   .desktop-nav { display:none !important; }
   .page-wrapper { padding:0; }
 }
-/* ── View Transition — smooth circular reveal from top-right (theme toggle) ── */
+/* ── View Transition — diagonal cross-line wipe from top-left corner ── */
 ::view-transition-old(root),
 ::view-transition-new(root) {
   animation: none;
   mix-blend-mode: normal;
+  will-change: clip-path, opacity;
 }
-/* Theme wipes LEFT→RIGHT, 1.1s ultra-smooth */
+
 ::view-transition-new(root) {
-  animation: polygonWipe 1.1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: diagWipeIn 1.05s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 ::view-transition-old(root) {
-  animation: polygonFade 1.1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: diagFadeOut 1.05s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
-@keyframes polygonWipe {
-  0%   { clip-path: polygon(-2% 0, -2% 0, -2% 100%, -2% 100%); }
-  100% { clip-path: polygon(-2% 0, 102% 0, 102% 100%, -2% 100%); }
+
+/*
+  Diagonal cross-line: leading edge is always a slanted line.
+  Top-right of edge moves along top, bottom-left of edge moves along bottom.
+  The slant gap = 18vw so the diagonal line is clearly visible as it sweeps.
+
+  0%   → both points at 0 (top-left corner, nothing visible)
+  100% → both points past 100% (fully covered)
+*/
+@keyframes diagWipeIn {
+  0%   { clip-path: polygon(0 0,   0    0,   0    100%, 0 100%); }
+  100% { clip-path: polygon(0 0, 118vw  0, 100vw 100%, 0 100%); }
 }
-@keyframes polygonFade {
-  0%   { opacity: 1; transform: none; }
-  60%  { opacity: 0.6; }
+@keyframes diagFadeOut {
+  0%   { opacity: 1; }
+  45%  { opacity: 0.5; }
   100% { opacity: 0; }
 }
 /* ═══════════════════════════════════════════════════════════
@@ -481,6 +486,7 @@ html.light body,
 html.light p,
 html.light h1, html.light h2, html.light h3,
 html.light span:not(.gold-word),
+html.light strong:not(.gold-word),
 html.light a,
 html.light div {
   color: var(--text-primary);
@@ -488,15 +494,24 @@ html.light div {
 
 /* Gold word — visible in both modes */
 .gold-word {
+  display: inline;
+  font-weight: 700;
+  letter-spacing: -0.01em;
   color: #e6b84a;
-  font-weight: 600;
 }
 html.dark .gold-word {
-  color: #f0c040;
-  text-shadow: 0 0 20px rgba(240,192,64,0.15);
+  color: #f5c842;
+  background: rgba(245, 200, 66, 0.08);
+  border-radius: 3px;
+  padding: 1px 3px;
+  box-shadow: 0 0 0 1px rgba(245,200,66,0.12), 0 0 16px rgba(245,200,66,0.08);
+  text-shadow: none;
 }
 html.light .gold-word {
-  color: #b45309;
+  color: #92400e;
+  background: rgba(217, 119, 6, 0.11);
+  border-radius: 3px;
+  padding: 1px 3px;
   text-shadow: none;
 }
 
@@ -528,9 +543,9 @@ canvas {
   image-rendering: -webkit-optimize-contrast;
 }
 
-/* Remove all CSS transitions on view-transition so GPU handles it */
+/* View transition GPU acceleration — do not override timing */
 ::view-transition-group(*) {
-  animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: clip-path, opacity;
 }
 
 /* Framer Motion — ensure 3D layer for all motion divs */

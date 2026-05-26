@@ -96,7 +96,12 @@ export function Navbar() {
 
           <button
             suppressHydrationWarning
-            onClick={() => setTheme(isDark ? "light" : "dark")}
+            onClick={(e) => {
+              const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+              const cx = rect.left + rect.width / 2;
+              const cy = rect.top + rect.height / 2;
+              setTheme(isDark ? "light" : "dark", cx, cy);
+            }}
             className="theme-btn"
             title={isDark ? "Switch to light" : "Switch to dark"}
           >
