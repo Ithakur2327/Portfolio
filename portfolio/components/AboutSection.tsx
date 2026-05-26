@@ -14,15 +14,14 @@ import { useReveal } from "./useReveal";
 const SF =
   "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', sans-serif";
 
-const MONO =
-  "'SF Mono', 'Geist Mono', monospace";
+const MONO = "'SF Mono', 'Geist Mono', monospace";
 
 /* ──────────────────────────────────────────────────────────
    ABOUT TEXT
 ────────────────────────────────────────────────────────── */
-const ABOUT_TEXT = `Hi, I'm [[Indresh Thakur]], currently pursuing [[B.Tech]] in [[Computer Science & Engineering (AI)]] at [[NIET Greater Noida]]. I'm a [[motivated]] and [[growth-oriented]] [[Full-Stack & AI Developer]] passionate about building [[modern]], [[scalable]], and [[user-focused]] digital experiences.
+const ABOUT_TEXT = `Hi, I'm [[Indresh Thakur]], currently pursuing [[B.Tech]] in [[Computer Science & Engineering (AI)]] at [[NIET Greater Noida]]. I'm a [[motivated]] and[[growth]]  [[oriented]] [[Full-Stack & AI Developer]] passionate about building [[modern]], [[scalable]], and [[user-focused]] digital experiences.
 
-My work focuses on developing [[intelligent web applications]] and [[AI-powered systems]] while continuously improving my [[problem-solving]] abilities through active [[DSA]] practice and real-world project development. I enjoy exploring [[emerging technologies]], learning new tech stacks, and turning ideas into [[impactful solutions]].
+My work focuses on developing [[intelligent web applications]] and [[AI-powered systems]] while continuously improving my [[problem-solving]] abilities through active [[Data Structures and Algorithms]] practice and real-world project development. I enjoy exploring [[emerging technologies]], learning new tech stacks, and turning ideas into [[impactful solutions]].
 
 I bring a unique blend of [[technical expertise]], [[adaptability]], [[creativity]], and a genuine enthusiasm for building software that creates [[real impact]].`;
 
@@ -36,11 +35,13 @@ interface Token {
   isName: boolean;
 }
 
+interface ContribDay {
+  contributionCount: number;
+  date: string;
+}
+
 interface Week {
-  days: {
-    contributionCount: number;
-    date: string;
-  }[];
+  days: ContribDay[];
 }
 
 interface LC {
@@ -59,32 +60,17 @@ interface LC {
 ────────────────────────────────────────────────────────── */
 function parse(raw: string): Token[][] {
   let g = 0;
-
   return raw.split("\n\n").map((para) => {
     const tokens: Token[] = [];
-
     const re = /\[\[(.+?)\]\]|([^\[]+)/g;
-
     let m: RegExpExecArray | null;
-
     while ((m = re.exec(para)) !== null) {
       if (m[1]) {
-        tokens.push({
-          text: m[1],
-          hl: true,
-          idx: g++,
-          isName: m[1] === "Indresh Thakur",
-        });
+        tokens.push({ text: m[1], hl: true, idx: g++, isName: m[1] === "Indresh Thakur" });
       } else {
-        tokens.push({
-          text: m[2],
-          hl: false,
-          idx: -1,
-          isName: false,
-        });
+        tokens.push({ text: m[2], hl: false, idx: -1, isName: false });
       }
     }
-
     return tokens;
   });
 }
@@ -93,60 +79,28 @@ function parse(raw: string): Token[][] {
    GOLD WORD
 ────────────────────────────────────────────────────────── */
 function GoldWord({
-  text,
-  idx,
-  total,
-  progress,
-  isName,
+  text, idx, total, progress, isName,
 }: {
-  text: string;
-  idx: number;
-  total: number;
-  progress: MotionValue<number>;
-  isName: boolean;
+  text: string; idx: number; total: number; progress: MotionValue<number>; isName: boolean;
 }) {
   const s = Math.max(0, (idx - 0.2) / total);
-
   const e = Math.min(1, (idx + 0.4) / total);
-
   const raw = useTransform(progress, [s, e], [0, 1]);
-
-  const p = useSpring(raw, {
-    stiffness: 800,
-    damping: 32,
-    mass: 0.2,
-  });
-
-  const opacity = useTransform(
-    p,
-    [0, 0.15, 1],
-    [0.25, 0.65, 1]
-  );
+  const p = useSpring(raw, { stiffness: 800, damping: 32, mass: 0.2 });
+  const opacity = useTransform(p, [0, 0.15, 1], [0.25, 0.65, 1]);
 
   if (isName) {
     return (
-      <motion.span
-        style={{
-          opacity,
-          display: "inline",
-          verticalAlign: "baseline",
-        }}
-      >
-        <span className="name-highlight">
-          {text}
-        </span>
+      <motion.span style={{ opacity, display: "inline", verticalAlign: "baseline" }}>
+        <span className="name-highlight">{text}</span>
       </motion.span>
     );
   }
 
   return (
     <motion.span
-      className="gold-word"
-      style={{
-        opacity,
-        display: "inline",
-        verticalAlign: "baseline",
-      }}
+      className="gold-box-word"
+      style={{ opacity, display: "inline", verticalAlign: "baseline" }}
     >
       {text}
     </motion.span>
@@ -158,23 +112,10 @@ function GoldWord({
 ────────────────────────────────────────────────────────── */
 function ScrollRevealText() {
   const ref = useRef<HTMLDivElement>(null);
-
-  const { scrollYProgress } = useScroll({
-    target: ref,
-    offset: ["start 0.85", "center 0.6"],
-  });
-
-  const smooth = useSpring(scrollYProgress, {
-    stiffness: 200,
-    damping: 26,
-    restDelta: 0.001,
-  });
-
+  const { scrollYProgress } = useScroll({ target: ref, offset: ["start 0.85", "center 0.6"] });
+  const smooth = useSpring(scrollYProgress, { stiffness: 200, damping: 26, restDelta: 0.001 });
   const paras = parse(ABOUT_TEXT);
-
-  const total = paras
-    .flat()
-    .filter((t) => t.hl).length;
+  const total = paras.flat().filter((t) => t.hl).length;
 
   return (
     <div ref={ref}>
@@ -183,36 +124,16 @@ function ScrollRevealText() {
           key={pi}
           className="about-para"
           style={{
-            margin: "0 0 18px",
-            lineHeight: 1.8,
-            fontFamily: SF,
-            letterSpacing: "-0.01em",
-            fontWeight: 400,
-            color: "var(--text-primary)",
-            wordBreak: "normal",
-            overflowWrap: "break-word",
+            margin: "0 0 18px", lineHeight: 1.8, fontFamily: SF,
+            letterSpacing: "-0.01em", fontWeight: 400,
+            color: "var(--text-primary)", wordBreak: "normal", overflowWrap: "break-word",
           }}
         >
           {tokens.map((t, ti) =>
             t.hl ? (
-              <GoldWord
-                key={ti}
-                text={t.text}
-                idx={t.idx}
-                total={total}
-                progress={smooth}
-                isName={t.isName}
-              />
+              <GoldWord key={ti} text={t.text} idx={t.idx} total={total} progress={smooth} isName={t.isName} />
             ) : (
-              <span
-                key={ti}
-                style={{
-                  color: "var(--text-primary)",
-                  display: "inline",
-                }}
-              >
-                {t.text}
-              </span>
+              <span key={ti} style={{ color: "var(--text-primary)", display: "inline" }}>{t.text}</span>
             )
           )}
         </p>
@@ -222,221 +143,168 @@ function ScrollRevealText() {
 }
 
 /* ──────────────────────────────────────────────────────────
-   GITHUB GRAPH
+   GITHUB GRAPH  (image-style with month + day labels)
 ────────────────────────────────────────────────────────── */
-function GitHubGraph({
-  username = "IndreshThakur",
-}: {
-  username?: string;
-}) {
-  const [weeks, setWeeks] = useState<Week[]>([]);
-  const [total, setTotal] = useState<number | null>(
-    null
-  );
+const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const DAYS   = ["","Mon","","Wed","","Fri",""];
 
+function GitHubGraph({ username = "IndreshThakur" }: { username?: string }) {
+  const [weeks,   setWeeks]   = useState<Week[]>([]);
+  const [total,   setTotal]   = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
+  const [hovered, setHovered] = useState<{ date: string; count: number } | null>(null);
+  const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
-    fetch(
-      `https://github-contributions-api.jogruber.de/v4/${username}?y=last`
-    )
+    fetch(`https://github-contributions-api.jogruber.de/v4/${username}?y=last`)
       .then((r) => r.json())
       .then((json) => {
-        const c:
-          | {
-              date: string;
-              count: number;
-            }[]
-          | undefined = json.contributions;
-
-        const tot = Object.values(
-          json.total as Record<string, number>
-        ).reduce((a, b) => a + b, 0);
-
+        const c: { date: string; count: number }[] | undefined = json.contributions;
+        const tot = Object.values(json.total as Record<string, number>).reduce((a, b) => a + b, 0);
         setTotal(tot);
-
         const ws: Week[] = [];
-
         for (let i = 0; i < (c?.length || 0); i += 7) {
-          ws.push({
-            days:
-              c?.slice(i, i + 7).map((x) => ({
-                contributionCount: x.count,
-                date: x.date,
-              })) || [],
-          });
+          ws.push({ days: c?.slice(i, i + 7).map((x) => ({ contributionCount: x.count, date: x.date })) || [] });
         }
-
-        setWeeks(ws.slice(-26));
-
+        setWeeks(ws.slice(-53));
         setLoading(false);
       })
-      .catch(() => {
-        setLoading(false);
-      });
+      .catch(() => setLoading(false));
   }, [username]);
 
-  const lvl = (n: number) =>
-    n === 0 ? 0 : n < 3 ? 1 : n < 6 ? 2 : n < 10 ? 3 : 4;
+  const lvl = (n: number) => n === 0 ? 0 : n < 3 ? 1 : n < 6 ? 2 : n < 10 ? 3 : 4;
+
+  // Build month label positions
+  const monthLabels: { label: string; col: number }[] = [];
+  weeks.forEach((w, wi) => {
+    if (w.days[0]) {
+      const d = new Date(w.days[0].date);
+      if (wi === 0 || d.getDate() <= 7) {
+        const lbl = MONTHS[d.getMonth()];
+        if (!monthLabels.length || monthLabels[monthLabels.length - 1].label !== lbl) {
+          monthLabels.push({ label: lbl, col: wi });
+        }
+      }
+    }
+  });
+
+  const CELL = 11;
+  const GAP  = 3;
+  const STEP = CELL + GAP;
+  const LEFT_PAD = 28;
 
   return (
-    <div>
+    <div style={{ position: "relative" }}>
       {/* HEADER */}
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          marginBottom: 14,
-          flexWrap: "wrap",
-          gap: 8,
-        }}
-      >
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 10,
-          }}
-        >
-          <div
-            style={{
-              width: 36,
-              height: 36,
-              borderRadius: 9,
-              background: "var(--bg-secondary)",
-              border: "1px solid var(--border)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              flexShrink: 0,
-            }}
-          >
-            <svg
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="var(--text-primary)"
-            >
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14, flexWrap: "wrap", gap: 8 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <div style={{ width: 40, height: 40, borderRadius: 10, background: "var(--bg-secondary)", border: "1px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="var(--text-primary)">
               <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z" />
             </svg>
           </div>
-
           <div>
-            <div
-              style={{
-                fontSize: 13,
-                fontWeight: 600,
-                color: "var(--text-primary)",
-                fontFamily: SF,
-              }}
-            >
-              GitHub
-            </div>
-
-            <div
-              style={{
-                fontSize: 11,
-                color: "var(--text-muted)",
-                fontFamily: MONO,
-              }}
-            >
-              @{username}
-            </div>
+            <div style={{ fontSize: 14, fontWeight: 700, color: "var(--text-primary)", fontFamily: SF }}>GitHub</div>
+            <div style={{ fontSize: 11, color: "var(--text-muted)", fontFamily: MONO }}>@{username}</div>
           </div>
         </div>
-
         {total !== null && total > 0 && (
           <div style={{ textAlign: "right" }}>
-            <div
-              style={{
-                fontSize: 22,
-                fontWeight: 700,
-                color: "#4ade80",
-                fontFamily: MONO,
-                letterSpacing: "-0.04em",
-                lineHeight: 1,
-              }}
-            >
-              {total.toLocaleString()}
-            </div>
-
-            <div
-              style={{
-                fontSize: 10,
-                color: "var(--text-muted)",
-                fontFamily: MONO,
-                marginTop: 2,
-              }}
-            >
-              contributions this year
-            </div>
+            <div style={{ fontSize: 26, fontWeight: 800, color: "#4ade80", fontFamily: MONO, letterSpacing: "-0.05em", lineHeight: 1 }}>{total.toLocaleString()}</div>
+            <div style={{ fontSize: 10, color: "var(--text-muted)", fontFamily: MONO, marginTop: 2 }}>contributions this year</div>
           </div>
         )}
       </div>
 
-      <div
-        style={{
-          height: 1,
-          background: "var(--border)",
-          marginBottom: 12,
-        }}
-      />
+      <div style={{ height: 1, background: "var(--border)", marginBottom: 12 }} />
 
-      {loading ? (
-        <Spin color="#4ade80" />
-      ) : (
-        <>
-          <div
-            style={{
-              display: "flex",
-              gap: 3,
-              overflowX: "auto",
-              paddingBottom: 4,
-            }}
-          >
-            {weeks.map((w, wi) => (
-              <div
-                key={wi}
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: 3,
-                }}
-              >
-                {w.days.map((d, di) => (
-                  <div
-                    key={di}
-                    className="contrib-cell"
-                    data-level={lvl(
-                      d.contributionCount
-                    )}
-                  />
-                ))}
-              </div>
+      {loading ? <Spin color="#4ade80" /> : (
+        <div style={{ overflowX: "auto", paddingBottom: 4 }}>
+          {/* Month labels */}
+          <div style={{ display: "flex", paddingLeft: LEFT_PAD, marginBottom: 4 }}>
+            {monthLabels.map((m, i) => (
+              <div key={i} style={{
+                position: "absolute",
+                left: LEFT_PAD + m.col * STEP,
+                fontSize: 10, color: "var(--text-muted)", fontFamily: MONO, userSelect: "none",
+              }}>{m.label}</div>
             ))}
+            <div style={{ height: 14 }} />
           </div>
 
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              marginTop: 8,
-            }}
-          >
-            <span
-              style={{
-                fontSize: 10,
-                color: "var(--text-muted)",
-                fontFamily: MONO,
-              }}
-            >
-              Contribution activity
-            </span>
+          {/* Grid: day labels + cells */}
+          <div style={{ display: "flex", gap: 0, position: "relative" }}>
+            {/* Day labels */}
+            <div style={{ display: "flex", flexDirection: "column", gap: GAP, marginRight: 4, marginTop: 14 }}>
+              {DAYS.map((d, i) => (
+                <div key={i} style={{ height: CELL, fontSize: 9, color: "var(--text-muted)", fontFamily: MONO, lineHeight: `${CELL}px`, userSelect: "none", width: 22 }}>{d}</div>
+              ))}
+            </div>
+
+            {/* Cells */}
+            <div style={{ display: "flex", gap: GAP, marginTop: 14 }}>
+              {weeks.map((w, wi) => (
+                <div key={wi} style={{ display: "flex", flexDirection: "column", gap: GAP }}>
+                  {w.days.map((d, di) => (
+                    <div
+                      key={di}
+                      className={`gh-cell gh-cell-${lvl(d.contributionCount)}`}
+                      style={{ width: CELL, height: CELL, borderRadius: 2, cursor: "default", transition: "transform 0.1s" }}
+                      onMouseEnter={(e) => {
+                        const rect = (e.target as HTMLElement).getBoundingClientRect();
+                        setHovered({ date: d.date, count: d.contributionCount });
+                        setTooltipPos({ x: rect.left, y: rect.top });
+                      }}
+                      onMouseLeave={() => setHovered(null)}
+                    />
+                  ))}
+                </div>
+              ))}
+            </div>
           </div>
-        </>
+
+          {/* Legend */}
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 10 }}>
+            <span style={{ fontSize: 10, color: "var(--text-muted)", fontFamily: MONO }}>Contribution activity</span>
+            <div style={{ display: "flex", alignItems: "center", gap: 3 }}>
+              <span style={{ fontSize: 9, color: "var(--text-muted)", fontFamily: MONO, marginRight: 3 }}>Less</span>
+              {[0,1,2,3,4].map(l => (
+                <div key={l} className={`gh-cell gh-cell-${l}`} style={{ width: 10, height: 10, borderRadius: 2 }} />
+              ))}
+              <span style={{ fontSize: 9, color: "var(--text-muted)", fontFamily: MONO, marginLeft: 3 }}>More</span>
+            </div>
+          </div>
+        </div>
       )}
+
+      {/* Tooltip */}
+      {hovered && (
+        <div style={{
+          position: "fixed", top: tooltipPos.y - 36, left: tooltipPos.x - 40,
+          background: "var(--bg-card)", border: "1px solid var(--border)",
+          borderRadius: 6, padding: "4px 10px", fontSize: 11, fontFamily: MONO,
+          color: "var(--text-primary)", pointerEvents: "none", zIndex: 999,
+          boxShadow: "0 4px 12px rgba(0,0,0,0.3)", whiteSpace: "nowrap",
+        }}>
+          <strong style={{ color: "#4ade80" }}>{hovered.count}</strong> contributions on {hovered.date}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ──────────────────────────────────────────────────────────
+   PROGRESS BAR
+────────────────────────────────────────────────────────── */
+function ProgressBar({ pct, color }: { pct: number; color: string }) {
+  return (
+    <div style={{ position: "relative", height: 8, borderRadius: 99, background: "rgba(255,255,255,0.07)", overflow: "hidden" }}>
+      <motion.div
+        initial={{ width: 0 }}
+        animate={{ width: `${pct}%` }}
+        transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
+        style={{ position: "absolute", left: 0, top: 0, bottom: 0, borderRadius: 99, background: color }}
+      />
     </div>
   );
 }
@@ -444,249 +312,102 @@ function GitHubGraph({
 /* ──────────────────────────────────────────────────────────
    LEETCODE
 ────────────────────────────────────────────────────────── */
-function LeetCodeStats({
-  username = "IThakur09",
-}: {
-  username?: string;
-}) {
-  const [data, setData] =
-    useState<LC | null>(null);
-
-  const [loading, setLoading] =
-    useState(true);
+function LeetCodeStats({ username = "IThakur09" }: { username?: string }) {
+  const [data, setData] = useState<LC | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const run = async () => {
       try {
-        const r = await fetch(
-          `https://alfa-leetcode-api.onrender.com/${username}/solved`
-        );
-
-        const j = await r.json();
-
-        const r2 = await fetch(
-          `https://alfa-leetcode-api.onrender.com/userProfile/${username}`
-        );
-
-        const j2 = await r2.json();
-
+        const [r1, r2] = await Promise.all([
+          fetch(`https://alfa-leetcode-api.onrender.com/${username}/solved`),
+          fetch(`https://alfa-leetcode-api.onrender.com/userProfile/${username}`),
+        ]);
+        const [j1, j2] = await Promise.all([r1.json(), r2.json()]);
         setData({
-          easySolved: j2.easySolved ?? 0,
-          totalEasy: j2.totalEasy ?? 842,
+          easySolved:   j2.easySolved   ?? 0,
+          totalEasy:    j2.totalEasy    ?? 842,
           mediumSolved: j2.mediumSolved ?? 0,
-          totalMedium: j2.totalMedium ?? 1768,
-          hardSolved: j2.hardSolved ?? 0,
-          totalHard: j2.totalHard ?? 763,
-          totalSolved: j.solvedProblem ?? 0,
-          ranking: j2.ranking ?? 0,
+          totalMedium:  j2.totalMedium  ?? 1768,
+          hardSolved:   j2.hardSolved   ?? 0,
+          totalHard:    j2.totalHard    ?? 763,
+          totalSolved:  j1.solvedProblem ?? 0,
+          ranking:      j2.ranking      ?? 0,
         });
-
         setLoading(false);
-      } catch {
-        setLoading(false);
-      }
+      } catch { setLoading(false); }
     };
-
     run();
   }, [username]);
 
-  const tiers = data
-    ? [
-        {
-          label: "Easy",
-          solved: data.easySolved,
-          total: data.totalEasy,
-          color: "#4ade80",
-          accent: "rgba(74,222,128,0.08)",
-        },
-
-        {
-          label: "Medium",
-          solved: data.mediumSolved,
-          total: data.totalMedium,
-          color: "#fb923c",
-          accent: "rgba(251,146,60,0.08)",
-        },
-
-        {
-          label: "Hard",
-          solved: data.hardSolved,
-          total: data.totalHard,
-          color: "#f87171",
-          accent: "rgba(248,113,113,0.08)",
-        },
-      ]
-    : [];
+  const tiers = data ? [
+    { label: "Easy",   solved: data.easySolved,   total: data.totalEasy,   color: "#4ade80", accent: "rgba(74,222,128,0.10)" },
+    { label: "Medium", solved: data.mediumSolved,  total: data.totalMedium, color: "#fb923c", accent: "rgba(251,146,60,0.10)" },
+    { label: "Hard",   solved: data.hardSolved,    total: data.totalHard,   color: "#f87171", accent: "rgba(248,113,113,0.10)" },
+  ] : [];
 
   return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        height: "100%",
-      }}
-    >
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          marginBottom: 14,
-          flexWrap: "wrap",
-          gap: 8,
-        }}
-      >
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 10,
-          }}
-        >
-          <div
-            style={{
-              width: 36,
-              height: 36,
-              borderRadius: 9,
-              background: "#1a1a1a",
-              border: "1px solid #2a2a2a",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <svg
-              width="22"
-              height="22"
-              viewBox="0 0 24 24"
-              fill="none"
-            >
-              <path
-                d="M13.483 0a1.374 1.374 0 0 0-.961.438"
-                fill="#FFA116"
-              />
+    <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
+      {/* HEADER */}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14, flexWrap: "wrap", gap: 8 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <div style={{ width: 40, height: 40, borderRadius: 10, background: "#1a1200", border: "1px solid #3d2e00", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+            {/* LeetCode icon */}
+            <svg width="22" height="22" viewBox="0 0 95 115" fill="none">
+              <path d="M68.0,44.0 L38.0,44.0" stroke="#B3B3B3" strokeWidth="8" strokeLinecap="round"/>
+              <path d="M45.5,75.8 L22.0,52.3 C16.0,46.3 16.0,36.5 22.0,30.5 L46.4,6.1 C52.4,0.1 62.2,0.1 68.2,6.1 L90.0,27.9" stroke="#FFA116" strokeWidth="8" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M44.5,44.0 L25.0,63.5 C19.0,69.5 19.0,79.3 25.0,85.3 L47.0,107.3 C53.0,113.3 62.8,113.3 68.8,107.3 L91.0,85.1" stroke="#B3B3B3" strokeWidth="8" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
           </div>
-
           <div>
-            <div
-              style={{
-                fontSize: 13,
-                fontWeight: 600,
-                color: "var(--text-primary)",
-                fontFamily: SF,
-              }}
-            >
-              LeetCode
-            </div>
-
-            <div
-              style={{
-                fontSize: 11,
-                color: "var(--text-muted)",
-                fontFamily: MONO,
-              }}
-            >
-              @{username}
-            </div>
+            <div style={{ fontSize: 14, fontWeight: 700, color: "var(--text-primary)", fontFamily: SF }}>LeetCode</div>
+            <div style={{ fontSize: 11, color: "var(--text-muted)", fontFamily: MONO }}>@{username}</div>
           </div>
         </div>
-
         {data && (
           <div style={{ textAlign: "right" }}>
-            <div
-              style={{
-                fontSize: 26,
-                fontWeight: 800,
-                color: "var(--text-primary)",
-                fontFamily: MONO,
-                letterSpacing: "-0.05em",
-                lineHeight: 1,
-              }}
-            >
-              {data.totalSolved}
-            </div>
-
-            <div
-              style={{
-                fontSize: 10,
-                color: "var(--text-muted)",
-                fontFamily: MONO,
-                marginTop: 2,
-              }}
-            >
-              problems solved
-            </div>
+            <div style={{ fontSize: 26, fontWeight: 800, color: "#FFA116", fontFamily: MONO, letterSpacing: "-0.05em", lineHeight: 1 }}>{data.totalSolved.toLocaleString()}</div>
+            <div style={{ fontSize: 10, color: "var(--text-muted)", fontFamily: MONO, marginTop: 2 }}>problems solved</div>
           </div>
         )}
       </div>
 
-      <div
-        style={{
-          height: 1,
-          background: "var(--border)",
-          marginBottom: 14,
-        }}
-      />
+      <div style={{ height: 1, background: "var(--border)", marginBottom: 16 }} />
 
-      {loading ? (
-        <Spin color="#FFA116" />
-      ) : (
+      {loading ? <Spin color="#FFA116" /> : (
         <>
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns:
-                "1fr 1fr 1fr",
-              gap: 8,
-              marginBottom: 12,
-            }}
-          >
-            {tiers.map((t) => (
-              <div
-                key={t.label}
-                style={{
-                  padding: "10px 10px 8px",
-                  background: t.accent,
-                  border: `1px solid ${t.color}22`,
-                  borderRadius: 8,
-                }}
-              >
-                <span
-                  style={{
-                    fontSize: 10,
-                    fontWeight: 600,
-                    color: t.color,
-                    fontFamily: MONO,
-                  }}
-                >
-                  {t.label}
-                </span>
-
-                <div
-                  style={{
-                    fontSize: 18,
-                    fontWeight: 700,
-                    color: "var(--text-primary)",
-                    fontFamily: MONO,
-                    marginTop: 6,
-                  }}
-                >
-                  {t.solved}
+          {/* Progress bars */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 14, marginBottom: 16 }}>
+            {tiers.map((t) => {
+              const pct = Math.round((t.solved / t.total) * 100);
+              return (
+                <div key={t.label}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 6 }}>
+                    <span style={{ fontSize: 12, fontWeight: 600, color: t.color, fontFamily: SF }}>{t.label}</span>
+                    <span style={{ fontSize: 11, color: "var(--text-muted)", fontFamily: MONO }}>
+                      {t.solved} / {t.total}&nbsp;&nbsp;
+                      <span style={{ color: t.color }}>{pct}%</span>
+                    </span>
+                  </div>
+                  <ProgressBar pct={pct} color={t.color} />
                 </div>
-
-                <div
-                  style={{
-                    fontSize: 9,
-                    color: "var(--text-muted)",
-                    fontFamily: MONO,
-                  }}
-                >
-                  of {t.total}
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
+
+          {/* Divider */}
+          <div style={{ height: 1, background: "var(--border)", marginBottom: 14 }} />
+
+          {/* Global ranking */}
+          {data && data.ranking > 0 && (
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <span style={{ fontSize: 16 }}>🌐</span>
+              <span style={{ fontSize: 13, color: "var(--text-secondary)", fontFamily: SF }}>Global Ranking</span>
+              <span style={{ marginLeft: "auto", fontSize: 18, fontWeight: 800, color: "#FFA116", fontFamily: MONO, letterSpacing: "-0.04em" }}>
+                #{data.ranking.toLocaleString()}
+              </span>
+            </div>
+          )}
         </>
       )}
     </div>
@@ -696,33 +417,10 @@ function LeetCodeStats({
 /* ──────────────────────────────────────────────────────────
    SPINNER
 ────────────────────────────────────────────────────────── */
-function Spin({
-  color,
-}: {
-  color: string;
-}) {
+function Spin({ color }: { color: string }) {
   return (
-    <div
-      style={{
-        flex: 1,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        minHeight: 60,
-      }}
-    >
-      <div
-        style={{
-          width: 16,
-          height: 16,
-          borderTop: `2px solid ${color}`,
-          borderRight: "2px solid transparent",
-          borderBottom: "2px solid transparent",
-          borderLeft: "2px solid transparent",
-          borderRadius: "50%",
-          animation: "spin 0.7s linear infinite",
-        }}
-      />
+    <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", minHeight: 80 }}>
+      <div style={{ width: 18, height: 18, borderTop: `2px solid ${color}`, borderRight: "2px solid transparent", borderBottom: "2px solid transparent", borderLeft: "2px solid transparent", borderRadius: "50%", animation: "spin 0.7s linear infinite" }} />
     </div>
   );
 }
@@ -736,57 +434,100 @@ export function AboutSection() {
   return (
     <>
       <style>{`
-        @keyframes spin {
-          to {
-            transform: rotate(360deg);
-          }
-        }
+        @keyframes spin { to { transform: rotate(360deg); } }
 
+        /* Name highlight — green, square box, no dot */
         .name-highlight {
           display: inline;
           color: #4ade80;
-
-          background: linear-gradient(
-            135deg,
-            rgba(74,222,128,0.10) 0%,
-            rgba(34,197,94,0.05) 50%,
-            rgba(16,185,129,0.08) 100%
-          );
-
-          border: 1px solid rgba(74,222,128,0.20);
-
+          background: linear-gradient(135deg, rgba(74,222,128,0.10) 0%, rgba(34,197,94,0.05) 50%, rgba(16,185,129,0.08) 100%);
+          border: 1px solid rgba(74,222,128,0.22);
           border-radius: 5px;
-
           padding: 1px 7px 2px;
-
-          box-shadow:
-            0 0 8px rgba(74,222,128,0.10),
-            0 0 18px rgba(74,222,128,0.05);
-
+          box-shadow: 0 0 10px rgba(74,222,128,0.12), 0 0 22px rgba(74,222,128,0.06);
           font-weight: 600;
-
-          backdrop-filter: blur(3px);
-
-          text-shadow:
-            0 0 10px rgba(74,222,128,0.22);
-
           white-space: nowrap;
         }
 
-        .gold-word {
+        /* Gold highlight — NO pseudo-element dot */
+        .gold-box-word {
+          display: inline;
           color: #f5c542;
           font-weight: 600;
           background: rgba(245,197,66,0.08);
-          border: 1px solid rgba(245,197,66,0.12);
+          border: 1px solid rgba(245,197,66,0.14);
           border-radius: 5px;
           padding: 1px 5px 2px;
           margin: 0 1px;
         }
 
+        /* GitHub cell colours */
+        .gh-cell   { background: #161b22; }
+        .gh-cell:hover { transform: scale(1.35); }
+        .gh-cell-0 { background: rgba(255,255,255,0.06); }
+        .gh-cell-1 { background: rgba(74,222,128,0.22); }
+        .gh-cell-2 { background: rgba(74,222,128,0.44); }
+        .gh-cell-3 { background: rgba(74,222,128,0.68); }
+        .gh-cell-4 { background: #4ade80; }
+
+        /* 3D card effect */
+        .stat-card-3d {
+          padding: 20px;
+          background: var(--bg-card);
+          border: 1px solid var(--border);
+          border-radius: 12px;
+          position: relative;
+          transition: transform 0.25s cubic-bezier(0.16,1,0.3,1), box-shadow 0.25s cubic-bezier(0.16,1,0.3,1);
+          transform-style: preserve-3d;
+          box-shadow:
+            0 1px 1px rgba(0,0,0,0.12),
+            0 2px 2px rgba(0,0,0,0.10),
+            0 4px 4px rgba(0,0,0,0.09),
+            0 8px 8px rgba(0,0,0,0.07),
+            0 0 0 1px rgba(255,255,255,0.04) inset;
+        }
+        .stat-card-3d:hover {
+          transform: translateY(-4px) rotateX(1.5deg);
+          box-shadow:
+            0 2px 2px rgba(0,0,0,0.15),
+            0 4px 4px rgba(0,0,0,0.13),
+            0 8px 8px rgba(0,0,0,0.11),
+            0 16px 16px rgba(0,0,0,0.09),
+            0 24px 32px rgba(0,0,0,0.08),
+            0 0 0 1px rgba(255,255,255,0.06) inset;
+        }
+
+        /* Light mode card tweaks */
+        html.light .stat-card-3d {
+          box-shadow:
+            0 1px 1px rgba(0,0,0,0.06),
+            0 2px 4px rgba(0,0,0,0.05),
+            0 4px 8px rgba(0,0,0,0.04),
+            0 0 0 1px rgba(0,0,0,0.03) inset;
+        }
+        html.light .stat-card-3d:hover {
+          box-shadow:
+            0 4px 8px rgba(0,0,0,0.08),
+            0 8px 16px rgba(0,0,0,0.06),
+            0 16px 24px rgba(0,0,0,0.05);
+        }
+        html.light .gh-cell-0 { background: rgba(0,0,0,0.07); }
+        html.light .name-highlight {
+          color: #16a34a;
+          background: rgba(22,163,74,0.08);
+          border-color: rgba(22,163,74,0.20);
+          box-shadow: none;
+        }
+        html.light .gold-box-word {
+          color: #92400e;
+          background: rgba(217,119,6,0.09);
+          border-color: rgba(217,119,6,0.18);
+        }
+
         .about-panels {
           display: grid;
           grid-template-columns: 1fr 1fr;
-          gap: 12px;
+          gap: 14px;
         }
 
         .about-content {
@@ -795,142 +536,45 @@ export function AboutSection() {
           padding: 0 32px 40px;
         }
 
-        .contrib-cell {
-          width: 11px;
-          height: 11px;
-          border-radius: 3px;
-          background: #161b22;
-        }
-
-        .contrib-cell[data-level="1"] {
-          background: rgba(74,222,128,0.25);
-        }
-
-        .contrib-cell[data-level="2"] {
-          background: rgba(74,222,128,0.45);
-        }
-
-        .contrib-cell[data-level="3"] {
-          background: rgba(74,222,128,0.7);
-        }
-
-        .contrib-cell[data-level="4"] {
-          background: #4ade80;
-        }
-
         @media (max-width: 860px) {
-
-          .about-content {
-            padding: 0 22px 34px;
-          }
+          .about-content { padding: 0 22px 34px; }
         }
 
         @media (max-width: 640px) {
-
-          .about-panels {
-            grid-template-columns: 1fr;
-          }
-
-          .about-content {
-            padding: 0 16px 30px;
-          }
-
-          .about-para {
-            font-size: 14px !important;
-            line-height: 1.9 !important;
-          }
+          .about-panels { grid-template-columns: 1fr; }
+          .about-content { padding: 0 16px 30px; }
+          .about-para { font-size: 14px !important; line-height: 1.9 !important; }
         }
       `}</style>
 
       <motion.section
         ref={ref}
-        initial={{
-          opacity: 0,
-          y: 14,
-        }}
-        animate={
-          visible
-            ? {
-                opacity: 1,
-                y: 0,
-              }
-            : {}
-        }
-        transition={{
-          duration: 0.5,
-          ease: [0.22, 1, 0.36, 1],
-        }}
+        initial={{ opacity: 0, y: 14 }}
+        animate={visible ? { opacity: 1, y: 0 } : {}}
+        transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
       >
-        <div
-          style={{
-            position: "relative",
-            left: "50%",
-            marginLeft: "-50vw",
-            width: "100vw",
-            background: "var(--bg-base)",
-            borderTop: "1px solid var(--line)",
-            borderBottom: "1px solid var(--line)",
-          }}
-        >
+        <div style={{ position: "relative", left: "50%", marginLeft: "-50vw", width: "100vw", background: "var(--bg-base)", borderTop: "1px solid var(--line)", borderBottom: "1px solid var(--line)" }}>
           <div className="about-content">
             {/* TITLE */}
-            <div
-              style={{
-                paddingTop: 28,
-              }}
-            >
-              <span
-                style={{
-                  fontSize: 28,
-                  fontWeight: 700,
-                  letterSpacing: "-0.03em",
-                  lineHeight: 1,
-                  fontFamily: SF,
-                  color: "var(--text-primary)",
-                }}
-              >
+            <div style={{ paddingTop: 28 }}>
+              <span style={{ fontSize: 28, fontWeight: 700, letterSpacing: "-0.03em", lineHeight: 1, fontFamily: SF, color: "var(--text-primary)" }}>
                 About
               </span>
             </div>
 
-            <div
-              style={{
-                height: 1,
-                background: "var(--border)",
-                margin: "18px 0 24px",
-              }}
-            />
+            <div style={{ height: 1, background: "var(--border)", margin: "18px 0 24px" }} />
 
             {/* TEXT */}
-            <div
-              style={{
-                marginBottom: 28,
-              }}
-            >
+            <div style={{ marginBottom: 28 }}>
               <ScrollRevealText />
             </div>
 
             {/* PANELS */}
             <div className="about-panels">
-              <div
-                style={{
-                  padding: "18px",
-                  background: "var(--bg-card)",
-                  border: "1px solid var(--border)",
-                  borderRadius: 10,
-                }}
-              >
+              <div className="stat-card-3d">
                 <GitHubGraph username="IndreshThakur" />
               </div>
-
-              <div
-                style={{
-                  padding: "18px",
-                  background: "var(--bg-card)",
-                  border: "1px solid var(--border)",
-                  borderRadius: 10,
-                }}
-              >
+              <div className="stat-card-3d">
                 <LeetCodeStats username="IThakur09" />
               </div>
             </div>
