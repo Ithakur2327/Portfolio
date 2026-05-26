@@ -1,5 +1,6 @@
 import { Navbar }          from "@/components/Navbar";
 import { HeroSection }     from "@/components/HeroSection";
+import { SparklesBridge } from "@/components/SparklesBridge";
 
 import { AboutSection }    from "@/components/AboutSection";
 import { SkillsSection }   from "@/components/SkillsSection";
@@ -13,13 +14,8 @@ export default function Home() {
     <>
       <Navbar />
       <main>
-        {/* Extra spacing between navbar (52px fixed) and hero */}
-        <div style={{ height: 28 }} />
-
-        {/* Hero — full width, outside page-wrapper */}
+        <SparklesBridge />
         <HeroSection />
-
-        {/* Animated divider at bottom of hero */}
         <div style={{ maxWidth: 1060, margin: "0 auto", overflow: "visible", position: "relative" }}>
           
         </div>
