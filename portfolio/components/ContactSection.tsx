@@ -48,8 +48,9 @@ const CONTACT_LINKS = [
 
 export function ContactSection() {
   const { ref, visible } = useReveal();
-  const [form, setForm] = useState({ name: "", email: "", message: "" });
-  const [sent, setSent] = useState(false);
+  const { ref: refForm, visible: visForm } = useReveal();
+  const [form, setForm]   = useState({ name: "", email: "", message: "" });
+  const [sent, setSent]   = useState(false);
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -65,21 +66,22 @@ export function ContactSection() {
 
   return (
     <>
+      {/* ── CONTACT LINKS ─────────────────────────── */}
       <div className="section-separator" />
       <section
         id="contact"
         ref={ref}
         style={{
-          padding: "32px 0 80px",
+          padding: "32px 0 40px",
           opacity: visible ? 1 : 0,
           transform: visible ? "none" : "translateY(14px)",
           transition: "opacity 0.55s var(--expo-out), transform 0.55s var(--expo-out)",
+          borderBottom: "1px solid var(--line)",
         }}
       >
         <p className="section-label">Contact</p>
 
-        {/* Contact links */}
-        <div style={{ marginBottom: 32 }}>
+        <div>
           {CONTACT_LINKS.map((item, i) => (
             <a
               key={i}
@@ -94,19 +96,20 @@ export function ContactSection() {
               }}
             >
               <span style={{
-                width: 28, height: 28, borderRadius: 6, flexShrink: 0,
+                width: 30, height: 30, borderRadius: 7, flexShrink: 0,
                 background: "var(--bg-hover)", border: "1px solid var(--border)",
                 display: "flex", alignItems: "center", justifyContent: "center",
                 color: "var(--text-secondary)",
               }}>
                 {item.icon}
               </span>
-              <span style={{ fontSize: 11, color: "var(--text-muted)", width: 56, flexShrink: 0, fontFamily: "'Geist Mono', monospace" }}>
+              <span style={{ fontSize: 11, color: "var(--text-muted)", width: 60, flexShrink: 0, fontFamily: "'Geist Mono', monospace" }}>
                 {item.label}
               </span>
-              <span style={{ fontSize: 13.5 }}>{item.value}</span>
-              <svg
-                width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"
+              <span style={{ fontSize: 13.5, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                {item.value}
+              </span>
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"
                 style={{ marginLeft: "auto", color: "var(--text-muted)", flexShrink: 0 }}
               >
                 <line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/>
@@ -114,79 +117,125 @@ export function ContactSection() {
             </a>
           ))}
         </div>
+      </section>
+
+      {/* ── LET'S BUILD TOGETHER + FORM ───────────── */}
+      <div className="section-separator" />
+      <section
+        ref={refForm}
+        style={{
+          padding: "48px 0 80px",
+          opacity: visForm ? 1 : 0,
+          transform: visForm ? "none" : "translateY(14px)",
+          transition: "opacity 0.55s var(--expo-out), transform 0.55s var(--expo-out)",
+        }}
+      >
+        {/* Headline */}
+        <div style={{ marginBottom: 36 }}>
+          <p className="section-label">Let&apos;s Build Together</p>
+
+          <h2 style={{
+            fontSize: "clamp(28px, 5vw, 40px)",
+            fontWeight: 800,
+            letterSpacing: "-0.04em",
+            color: "var(--text-primary)",
+            lineHeight: 1.1,
+            marginBottom: 12,
+          }}>
+            Have an idea?{" "}
+            <span style={{ color: "var(--text-muted)", fontWeight: 400 }}>Let&apos;s talk.</span>
+          </h2>
+
+          <p style={{ fontSize: 14, color: "var(--text-secondary)", maxWidth: 420, lineHeight: 1.7 }}>
+            Open to freelance projects, collaborations, and full-time roles. Drop me a message and I&apos;ll get back to you within 24 hours.
+          </p>
+        </div>
 
         {/* Form */}
-        <p className="section-label">Send a Message</p>
-        <form onSubmit={handleSubmit} style={{ marginTop: 14 }}>
-          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+        <form onSubmit={handleSubmit}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+
+            {/* Name + Email row */}
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
               <div>
                 <label style={{
                   display: "block", fontSize: 11, fontWeight: 600,
-                  color: "var(--text-muted)", marginBottom: 5,
-                  fontFamily: "'Geist Mono', monospace", letterSpacing: "0.05em", textTransform: "uppercase",
+                  color: "var(--text-muted)", marginBottom: 6,
+                  fontFamily: "'Geist Mono', monospace", letterSpacing: "0.06em", textTransform: "uppercase",
                 }}>
-                  Name
+                  Full Name
                 </label>
                 <input
-                  placeholder="Your name"
+                  placeholder="Indresh Thakur"
                   value={form.name}
                   onChange={e => setForm({ ...form, name: e.target.value })}
                   required
-                  className="field-input" suppressHydrationWarning
+                  className="field-input"
+                  suppressHydrationWarning
                 />
               </div>
               <div>
                 <label style={{
                   display: "block", fontSize: 11, fontWeight: 600,
-                  color: "var(--text-muted)", marginBottom: 5,
-                  fontFamily: "'Geist Mono', monospace", letterSpacing: "0.05em", textTransform: "uppercase",
+                  color: "var(--text-muted)", marginBottom: 6,
+                  fontFamily: "'Geist Mono', monospace", letterSpacing: "0.06em", textTransform: "uppercase",
                 }}>
-                  Email
+                  Email Address
                 </label>
                 <input
                   type="email"
-                  placeholder="your@email.com"
+                  placeholder="hello@example.com"
                   value={form.email}
                   onChange={e => setForm({ ...form, email: e.target.value })}
                   required
-                  className="field-input" suppressHydrationWarning
+                  className="field-input"
+                  suppressHydrationWarning
                 />
               </div>
             </div>
 
+            {/* Message */}
             <div>
               <label style={{
                 display: "block", fontSize: 11, fontWeight: 600,
-                color: "var(--text-muted)", marginBottom: 5,
-                fontFamily: "'Geist Mono', monospace", letterSpacing: "0.05em", textTransform: "uppercase",
+                color: "var(--text-muted)", marginBottom: 6,
+                fontFamily: "'Geist Mono', monospace", letterSpacing: "0.06em", textTransform: "uppercase",
               }}>
                 Message
               </label>
               <textarea
-                placeholder="Tell me about your project..."
+                placeholder="Tell me about your project or idea..."
                 value={form.message}
                 onChange={e => setForm({ ...form, message: e.target.value })}
                 required
-                rows={4}
-                className="field-input" suppressHydrationWarning
+                rows={5}
+                className="field-input"
+                suppressHydrationWarning
                 style={{ resize: "vertical" }}
               />
             </div>
 
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 10 }}>
-              <p style={{ fontSize: 12, color: "var(--text-muted)" }}>
-                I usually respond within 24 hours.
+            {/* Footer row */}
+            <div style={{
+              display: "flex", alignItems: "center",
+              justifyContent: "space-between", flexWrap: "wrap", gap: 12,
+              marginTop: 4,
+            }}>
+              <p style={{ fontSize: 12, color: "var(--text-muted)", fontFamily: "'Geist Mono', monospace" }}>
+                Usually replies within 24h
               </p>
               <button
                 type="submit"
-                className={`btn-primary ${sent ? "sent" : ""}`} suppressHydrationWarning
+                className={`btn-primary ${sent ? "sent" : ""}`}
+                suppressHydrationWarning
                 disabled={loading}
                 style={{ opacity: loading ? 0.7 : 1 }}
               >
                 {loading ? (
                   <>
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ animation: "spin 0.8s linear infinite" }}>
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"
+                      style={{ animation: "spin 0.8s linear infinite" }}
+                    >
                       <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
                     </svg>
                     Sending...
@@ -207,7 +256,17 @@ export function ContactSection() {
           </div>
         </form>
       </section>
-      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+
+      <style>{`
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* responsive: stack name/email on mobile */
+        @media (max-width: 500px) {
+          .contact-grid-2col {
+            grid-template-columns: 1fr !important;
+          }
+        }
+      `}</style>
     </>
   );
 }
