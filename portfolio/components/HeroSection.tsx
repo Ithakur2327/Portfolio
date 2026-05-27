@@ -175,7 +175,6 @@ export function HeroSection() {
 
   const BG = "var(--bg-base)";
   const B  = "1px solid var(--border)";
-  const centered: React.CSSProperties = { maxWidth:CW, margin:"0 auto", borderLeft:B, borderRight:B };
 
   return (
     <>
@@ -199,6 +198,13 @@ export function HeroSection() {
         .h-nameblock {
           flex: 1; display: flex; flex-direction: column;
           justify-content: flex-end; min-width: 0;
+        }
+
+        /* ── Info wrap (centering) ── */
+        .h-info-wrap {
+          max-width: 1060px;
+          margin-left: auto;
+          margin-right: auto;
         }
 
         /* ── Info grid ── */
@@ -250,6 +256,13 @@ export function HeroSection() {
             border-bottom: 1px solid var(--border) !important;
           }
           .s-tile:last-child { border-bottom: none !important; }
+          /* Info section — side margins on mobile */
+          .h-info-wrap {
+            border-left: none !important;
+            border-right: none !important;
+            margin-left: 12px !important;
+            margin-right: 12px !important;
+          }
         }
 
         @media (max-width: 380px) {
@@ -259,14 +272,18 @@ export function HeroSection() {
 
       <section id="about" style={{
         marginTop: 0,
+        width: "100%",
         opacity: vis ? 1 : 0,
         transform: vis ? "none" : "translateY(10px)",
         transition: "opacity 0.5s cubic-bezier(0.16,1,0.3,1), transform 0.5s cubic-bezier(0.16,1,0.3,1)",
       }}>
 
-        {/* ── PROFILE ROW ── */}
-        <div style={{width:"100%", background:BG, borderTop:B, borderBottom:B}}>
-          <div className="h-profile" style={centered}>
+        {/* ── PROFILE ROW — full viewport width bg, centered content ── */}
+        <div style={{
+          position:"relative", left:"50%", marginLeft:"-50vw", width:"100vw",
+          background:BG, borderTop:B, borderBottom:B,
+        }}>
+          <div className="h-profile" style={{maxWidth:CW, margin:"0 auto", borderLeft:B, borderRight:B}}>
 
             {/* Avatar */}
             <div className="h-avatar">
@@ -292,10 +309,10 @@ export function HeroSection() {
           </div>
         </div>
 
-        <div style={{height:20}}/>
+        <div style={{height:20, maxWidth:CW, margin:"0 auto"}}/>
 
         {/* ── INFO + SOCIAL wrapped in HoverBorderGradient ── */}
-        <div style={centered}>
+        <div className="h-info-wrap" style={{borderLeft:B, borderRight:B}}>
           <HoverBorderGradient>
             <div style={{background:BG, border:B}}>
 

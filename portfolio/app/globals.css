@@ -432,6 +432,8 @@ a { color: inherit; text-decoration: none; }
 
   /* Section padding */
   section { padding-left: 16px; padding-right: 16px; }
+  /* Hero section — no side padding, it handles its own layout */
+  section#about { padding-left: 0 !important; padding-right: 0 !important; }
 }
 
 /* ── Mobile (≤ 600px) ── */
@@ -460,6 +462,8 @@ a { color: inherit; text-decoration: none; }
 
   /* Sections full width */
   section, .section-inner { padding-left: 14px !important; padding-right: 14px !important; }
+  /* Hero section — no side padding */
+  section#about { padding-left: 0 !important; padding-right: 0 !important; }
 
   /* Skills section */
   .skills-strip-offset { margin-left: -14px !important; margin-right: -14px !important; }
@@ -613,7 +617,7 @@ html  { transition: background-color 0.1s ease; }
 ═══════════════════════════════════════════════════════════ */
 
 /* Promote all scroll-animated sections to their own GPU layers */
-section, .page-wrapper, header, main {
+section, header, main {
   transform: translateZ(0);
   will-change: auto;
 }

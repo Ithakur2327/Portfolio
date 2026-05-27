@@ -163,21 +163,37 @@ function GitHubGraph({ username = "IndreshThakur" }: { username?: string }) {
   const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
-    fetch(`https://github-contributions-api.jogruber.de/v4/${username}?y=last`)
-      .then((r) => r.json())
-      .then((json) => {
-        const c: { date: string; count: number }[] | undefined = json.contributions;
-        // sum all years
-        const tot = c?.reduce((a, b) => a + b.count, 0) ?? 0;
-        setTotal(tot);
-        const ws: Week[] = [];
-        for (let i = 0; i < (c?.length || 0); i += 7) {
-          ws.push({ days: c?.slice(i, i + 7).map((x) => ({ contributionCount: x.count, date: x.date })) || [] });
-        }
-        setWeeks(ws.slice(-53));
-        setLoading(false);
-      })
-      .catch(() => setLoading(false));
+    const fetchContributions = async () => {
+      const apis = [
+        `https://github-contributions-api.jogruber.de/v4/${username}?y=last`,
+        `https://gh-contributions.vercel.app/api/${username}`,
+        `https://github-contributions.vercel.app/api?username=${username}`,
+      ];
+
+      for (const url of apis) {
+        try {
+          const r = await fetch(url, { signal: AbortSignal.timeout(8000) });
+          if (!r.ok) continue;
+          const json = await r.json();
+          // Handle jogruber format: { contributions: [{date, count}] }
+          let c: { date: string; count: number }[] | undefined =
+            json.contributions ?? json.data ?? json;
+          if (!Array.isArray(c)) continue;
+          if (!c.length) continue;
+          const tot = c.reduce((a: number, b: { count: number }) => a + b.count, 0);
+          setTotal(tot);
+          const ws: Week[] = [];
+          for (let i = 0; i < c.length; i += 7) {
+            ws.push({ days: c.slice(i, i + 7).map((x) => ({ contributionCount: x.count, date: x.date })) });
+          }
+          setWeeks(ws.slice(-53));
+          setLoading(false);
+          return;
+        } catch {}
+      }
+      setLoading(false);
+    };
+    fetchContributions();
   }, [username]);
 
   const lvl = (n: number) => n === 0 ? 0 : n < 3 ? 1 : n < 6 ? 2 : n < 10 ? 3 : 4;
@@ -225,7 +241,11 @@ function GitHubGraph({ username = "IndreshThakur" }: { username?: string }) {
 
       <div style={{ height: 1, background: "var(--border)", marginBottom: 12 }} />
 
-      {loading ? <Spin color="#4ade80" /> : (
+      {loading ? <Spin color="#4ade80" /> : weeks.length === 0 ? (
+        <div style={{ padding: "20px 0", fontSize: 11, color: "var(--text-muted)", fontFamily: MONO, textAlign: "center" }}>
+          Contribution data unavailable — visit GitHub profile
+        </div>
+      ) : (
         <div style={{ overflowX: "auto", paddingBottom: 4 }}>
           {/* Month labels */}
           <div style={{ position: "relative", paddingLeft: LEFT_PAD, marginBottom: 4, height: 14 }}>
@@ -520,9 +540,10 @@ export function AboutSection() {
           box-shadow: none;
         }
         html.light .gold-box-word {
-          color: #92400e;
-          background: rgba(180,100,0,0.08);
-          border-color: rgba(180,100,0,0.20);
+          color: #d97706 !important;
+          background: rgba(245,158,11,0.13) !important;
+          border-color: rgba(217,119,6,0.45) !important;
+          box-shadow: none !important;
         }
         html.light .gh-cell-0 { background: rgba(0,0,0,0.07); }
         html.light .gh-cell-1 { background: rgba(22,163,74,0.20); }
