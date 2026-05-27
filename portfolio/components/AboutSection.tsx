@@ -155,7 +155,7 @@ function ScrollRevealText() {
 const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 const DAYS   = ["","Mon","","Wed","","Fri",""];
 
-function GitHubGraph({ username = "IndreshThakur" }: { username?: string }) {
+function GitHubGraph({ username = "Ithakur2327" }: { username?: string }) {
   const [weeks,   setWeeks]   = useState<Week[]>([]);
   const [total,   setTotal]   = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
