@@ -12,7 +12,7 @@ export function SparklesBridge() {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    const HEIGHT = 60;
+    const HEIGHT = 30;
 
     const resize = () => {
       canvas.width  = window.innerWidth;
@@ -45,7 +45,7 @@ export function SparklesBridge() {
       };
     }
 
-    for (let i = 0; i < 200; i++) {
+    for (let i = 0; i < 60; i++) {
       const d = spawn();
       d.life = Math.random() * d.maxLife;
       dots.push(d);
@@ -58,7 +58,7 @@ export function SparklesBridge() {
       const W = canvas.width;
 
       // Pure black
-      ctx.fillStyle = "#000000";
+      ctx.fillStyle = "#0a0909";
       ctx.fillRect(0, 0, W, HEIGHT);
 
       // White sparkle dots only — no blue line
@@ -109,7 +109,7 @@ export function SparklesBridge() {
   return (
     <canvas
       ref={canvasRef}
-      style={{ display: "block", width: "100%", height: 60 }}
+      style={{ display: "block", width: "100%", height: 30 }}
     />
   );
 }

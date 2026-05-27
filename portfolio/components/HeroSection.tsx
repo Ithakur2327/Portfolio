@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Avatar } from "./Avatar";
 import { motion } from "motion/react";
+import { useTheme } from "./ThemeProvider";
 
 /* ─── Flip sentences ─────────────────────────────────── */
 const SENTENCES = [
@@ -97,13 +98,16 @@ function SocialTile({href,label,icon,iconBg,iconBorder,iconColor}:{href:string;l
 }
 
 /* ─── HoverBorderGradient ────────────────────────────── 
-   Only the 1px border glows — content area stays untouched.
-   Uses a wrapper + pseudo-border approach via motion.div overlay.
+   Moving white/black border around the info box.
+   Dark theme  → white border light
+   Light theme → black border light
+   NO blue background effect — only border glow moves.
 */
 type Dir = "TOP"|"LEFT"|"BOTTOM"|"RIGHT";
 
 function HoverBorderGradient({ children }: { children: React.ReactNode }) {
-  const [hovered, setHovered] = useState(false);
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
   const [dir, setDir] = useState<Dir>("TOP");
 
   const next = (d: Dir): Dir => {
@@ -111,44 +115,40 @@ function HoverBorderGradient({ children }: { children: React.ReactNode }) {
     return a[(a.indexOf(d) - 1 + 4) % 4];
   };
 
+  // Border glow color based on theme — white for dark, black for light
+  const borderColor = isDark
+    ? "rgba(255,255,255,0.7)"
+    : "rgba(0,0,0,0.7)";
+
   const map: Record<Dir,string> = {
-    TOP:    "radial-gradient(20% 50% at 50% 0%,    rgba(255,255,255,0.7) 0%, transparent 100%)",
-    LEFT:   "radial-gradient(16% 43% at 0% 50%,   rgba(255,255,255,0.7) 0%, transparent 100%)",
-    BOTTOM: "radial-gradient(20% 50% at 50% 100%, rgba(255,255,255,0.7) 0%, transparent 100%)",
-    RIGHT:  "radial-gradient(16% 43% at 100% 50%, rgba(255,255,255,0.7) 0%, transparent 100%)",
+    TOP:    `radial-gradient(20% 50% at 50% 0%,    ${borderColor} 0%, transparent 100%)`,
+    LEFT:   `radial-gradient(16% 43% at 0% 50%,   ${borderColor} 0%, transparent 100%)`,
+    BOTTOM: `radial-gradient(20% 50% at 50% 100%, ${borderColor} 0%, transparent 100%)`,
+    RIGHT:  `radial-gradient(16% 43% at 100% 50%, ${borderColor} 0%, transparent 100%)`,
   };
-  const blue = "radial-gradient(75% 181% at 50% 50%, rgba(50,117,248,1) 0%, transparent 100%)";
 
   useEffect(() => {
-    if (hovered) return;
     const id = setInterval(() => setDir(d => next(d)), 1800);
     return () => clearInterval(id);
-  }, [hovered]);
+  }, []);
 
   return (
-    <div
-      style={{ position:"relative" }}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-    >
-      {/* The glowing border: sits BEHIND content, bleeds through the 1px gap */}
+    <div style={{ position:"relative" }}>
+      {/* Moving border light — only at the 1px edge, no background fill */}
       <motion.div
         aria-hidden
         style={{
           position:"absolute",
-          inset: -1,            // 1px outside the content box
+          inset: -1,
           zIndex: 0,
           borderRadius: 0,
           filter: "blur(2px)",
           pointerEvents: "none",
         }}
-        initial={{ background: map[dir] }}
-        animate={{
-          background: hovered ? [map[dir], blue] : map[dir],
-        }}
+        animate={{ background: map[dir] }}
         transition={{ ease:"linear", duration: 1.8 }}
       />
-      {/* Content — sits on top, has its own solid bg so gradient doesn't bleed in */}
+      {/* Content on top with solid bg so border glow doesn't bleed in */}
       <div style={{ position:"relative", zIndex:1 }}>
         {children}
       </div>
@@ -213,30 +213,29 @@ export function HeroSection() {
         .s-tile   { border-right: 1px solid var(--border); }
         .s-tile:last-child { border-right: none !important; }
 
-        /* ──────────────────────────────────────────────
-           MOBILE ≤ 600px
-           Avatar LEFT (small), Name RIGHT of it — same row
-           Info: single column
-        ────────────────────────────────────────────── */
         @media (max-width: 600px) {
-          /* Profile row stays row but avatar shrinks */
           .h-avatar {
-            width: 120px !important;
-            min-width: 120px !important;
+            width: 110px !important;
+            min-width: 110px !important;
+            max-width: 110px !important;
             border-right: 1px solid var(--border) !important;
-            padding: 16px 12px !important;
+            padding: 14px 10px !important;
+            overflow: hidden !important;
           }
-
-          /* Info: single column */
+          .h-avatar img, .h-avatar > * {
+            max-width: 100% !important;
+            height: auto !important;
+          }
+          .h-nameblock {
+            flex: 1 !important;
+            min-width: 0 !important;
+            overflow: hidden !important;
+          }
           .h-grid {
             grid-template-columns: 1fr !important;
             gap: 11px 0 !important;
           }
-
-          /* Hide the spacer div that only works on 2-col layout */
           .h-spacer { display: none !important; }
-
-          /* Social: stack */
           .h-social { flex-direction: column !important; }
           .s-tile {
             border-right: none !important;
@@ -246,12 +245,12 @@ export function HeroSection() {
         }
 
         @media (max-width: 380px) {
-          .h-avatar { width: 100px !important; min-width: 100px !important; padding: 12px 10px !important; }
+          .h-avatar { width: 88px !important; min-width: 88px !important; max-width: 88px !important; padding: 10px 8px !important; }
         }
       `}</style>
 
       <section id="about" style={{
-        marginTop: 0,   /* no gap — SparklesBridge is directly above */
+        marginTop: 0,
         opacity: vis ? 1 : 0,
         transform: vis ? "none" : "translateY(10px)",
         transition: "opacity 0.5s cubic-bezier(0.16,1,0.3,1), transform 0.5s cubic-bezier(0.16,1,0.3,1)",
