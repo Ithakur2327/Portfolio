@@ -1,9 +1,7 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import { useTheme } from "./ThemeProvider";
 import { Avatar } from "./Avatar";
 import { motion } from "motion/react";
-import { cn } from "@/lib/utils";
 
 /* ─── Flip sentences ─────────────────────────────────── */
 const SENTENCES = [
@@ -35,11 +33,11 @@ function FlipSentences() {
 function LiveClock() {
   const [time, setTime] = useState("");
   useEffect(() => {
-    const update = () => {
-      setTime(new Date().toLocaleTimeString("en-IN",{
+    const update = () => setTime(
+      new Date().toLocaleTimeString("en-IN",{
         timeZone:"Asia/Kolkata", hour:"2-digit", minute:"2-digit", hour12:true,
-      }).toUpperCase()+" IST");
-    };
+      }).toUpperCase()+" IST"
+    );
     update(); const id = setInterval(update, 30000); return () => clearInterval(id);
   },[]);
   return <span style={{fontFamily:"'Geist Mono',monospace"}}>{time||"--:-- IST"}</span>;
@@ -72,17 +70,16 @@ function Row({icon, href, newTab, children}:{icon:React.ReactNode; href?:string;
       onMouseLeave={e=>(e.currentTarget as HTMLElement).style.opacity="1"}
     >{icon}<span style={{borderBottom:"1px solid rgba(128,128,128,0.2)"}}>{children}</span></a>
   );
-  return <div style={{...s, cursor:"default"}}>{icon}<span>{children}</span></div>;
+  return <div style={{...s}}>{icon}<span>{children}</span></div>;
 }
 
 /* ─── Social tile ────────────────────────────────────── */
-function SocialTile({href,label,icon,iconBg,iconBorder,iconColor,last}:{href:string;label:string;icon:React.ReactNode;iconBg:string;iconBorder:string;iconColor:string;last?:boolean}) {
+function SocialTile({href,label,icon,iconBg,iconBorder,iconColor}:{href:string;label:string;icon:React.ReactNode;iconBg:string;iconBorder:string;iconColor:string}) {
   return (
-    <a href={href} target="_blank" rel="noreferrer" className="social-tile"
+    <a href={href} target="_blank" rel="noreferrer" className="s-tile"
       style={{
         flex:1, display:"flex", alignItems:"center", gap:10,
         padding:"14px 16px",
-        borderRight: last ? "none" : "1px solid var(--border)",
         background:"var(--bg-base)", color:"var(--text-primary)",
         textDecoration:"none", position:"relative",
         transition:"background 0.12s", minWidth:0,
@@ -99,27 +96,32 @@ function SocialTile({href,label,icon,iconBg,iconBorder,iconColor,last}:{href:str
   );
 }
 
-/* ─── HoverBorderGradient ────────────────────────────── */
-type Direction = "TOP" | "LEFT" | "BOTTOM" | "RIGHT";
+/* ─── HoverBorderGradient ────────────────────────────── 
+   Only the 1px border glows — content area stays untouched.
+   Uses a wrapper + pseudo-border approach via motion.div overlay.
+*/
+type Dir = "TOP"|"LEFT"|"BOTTOM"|"RIGHT";
 
 function HoverBorderGradient({ children }: { children: React.ReactNode }) {
   const [hovered, setHovered] = useState(false);
-  const [direction, setDirection] = useState<Direction>("TOP");
+  const [dir, setDir] = useState<Dir>("TOP");
 
-  const dirs: Direction[] = ["TOP","LEFT","BOTTOM","RIGHT"];
-  const rotateDir = (d: Direction) => dirs[(dirs.indexOf(d) - 1 + 4) % 4];
-
-  const movingMap: Record<Direction, string> = {
-    TOP:    "radial-gradient(20% 50% at 50% 0%,    rgba(255,255,255,0.4) 0%, rgba(255,255,255,0) 100%)",
-    LEFT:   "radial-gradient(16% 43% at 0% 50%,   rgba(255,255,255,0.4) 0%, rgba(255,255,255,0) 100%)",
-    BOTTOM: "radial-gradient(20% 50% at 50% 100%, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0) 100%)",
-    RIGHT:  "radial-gradient(16% 43% at 100% 50%, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0) 100%)",
+  const next = (d: Dir): Dir => {
+    const a: Dir[] = ["TOP","LEFT","BOTTOM","RIGHT"];
+    return a[(a.indexOf(d) - 1 + 4) % 4];
   };
-  const highlight = "radial-gradient(75% 181% at 50% 50%, rgba(50,117,248,0.85) 0%, rgba(255,255,255,0) 100%)";
+
+  const map: Record<Dir,string> = {
+    TOP:    "radial-gradient(20% 50% at 50% 0%,    rgba(255,255,255,0.7) 0%, transparent 100%)",
+    LEFT:   "radial-gradient(16% 43% at 0% 50%,   rgba(255,255,255,0.7) 0%, transparent 100%)",
+    BOTTOM: "radial-gradient(20% 50% at 50% 100%, rgba(255,255,255,0.7) 0%, transparent 100%)",
+    RIGHT:  "radial-gradient(16% 43% at 100% 50%, rgba(255,255,255,0.7) 0%, transparent 100%)",
+  };
+  const blue = "radial-gradient(75% 181% at 50% 50%, rgba(50,117,248,1) 0%, transparent 100%)";
 
   useEffect(() => {
     if (hovered) return;
-    const id = setInterval(() => setDirection(d => rotateDir(d)), 2000);
+    const id = setInterval(() => setDir(d => next(d)), 1800);
     return () => clearInterval(id);
   }, [hovered]);
 
@@ -129,18 +131,24 @@ function HoverBorderGradient({ children }: { children: React.ReactNode }) {
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
-      {/* Animated gradient border layer — bleeds through 1px */}
+      {/* The glowing border: sits BEHIND content, bleeds through the 1px gap */}
       <motion.div
+        aria-hidden
         style={{
-          position:"absolute", inset:-1, zIndex:0, pointerEvents:"none",
-          filter:"blur(2px)",
-          opacity: hovered ? 1 : 0.55,
-          transition:"opacity 0.4s ease",
+          position:"absolute",
+          inset: -1,            // 1px outside the content box
+          zIndex: 0,
+          borderRadius: 0,
+          filter: "blur(2px)",
+          pointerEvents: "none",
         }}
-        initial={{ background: movingMap[direction] }}
-        animate={{ background: hovered ? [movingMap[direction], highlight] : movingMap[direction] }}
-        transition={{ ease:"linear", duration:2 }}
+        initial={{ background: map[dir] }}
+        animate={{
+          background: hovered ? [map[dir], blue] : map[dir],
+        }}
+        transition={{ ease:"linear", duration: 1.8 }}
       />
+      {/* Content — sits on top, has its own solid bg so gradient doesn't bleed in */}
       <div style={{ position:"relative", zIndex:1 }}>
         {children}
       </div>
@@ -156,16 +164,13 @@ const CW = 1060;
 export function HeroSection() {
   const [vis, setVis] = useState(false);
   const nameRef = useRef<HTMLHeadingElement>(null);
-  const [lineW, setLineW] = useState<number>(180);
+  const [lineW, setLineW] = useState(180);
 
   useEffect(() => { setTimeout(() => setVis(true), 50); }, []);
   useEffect(() => {
-    const update = () => {
-      if (nameRef.current) setLineW(nameRef.current.offsetWidth);
-    };
-    update();
-    window.addEventListener("resize", update);
-    return () => window.removeEventListener("resize", update);
+    const upd = () => { if (nameRef.current) setLineW(nameRef.current.offsetWidth); };
+    upd(); window.addEventListener("resize", upd);
+    return () => window.removeEventListener("resize", upd);
   }, []);
 
   const BG = "var(--bg-base)";
@@ -180,98 +185,73 @@ export function HeroSection() {
         .fs-in  { animation: fsIn  0.28s cubic-bezier(0.16,1,0.3,1) forwards }
         .fs-out { animation: fsOut 0.22s ease-in forwards }
 
-        /* ── DESKTOP: avatar left, name right of it ── */
-        .hero-profile-row {
+        /* ── Profile row ── */
+        .h-profile {
           display: flex;
           flex-direction: row;
           align-items: stretch;
         }
-        .hero-avatar-cell {
-          width: 162px;
-          min-width: 162px;
-          flex-shrink: 0;
+        .h-avatar {
+          width: 162px; min-width: 162px; flex-shrink: 0;
           border-right: 1px solid var(--border);
-          display: flex;
-          align-items: center;
-          justify-content: center;
+          display: flex; align-items: center; justify-content: center;
         }
-        .hero-name-cell {
-          flex: 1;
-          display: flex;
-          flex-direction: column;
-          justify-content: flex-end;
-          min-width: 0;
+        .h-nameblock {
+          flex: 1; display: flex; flex-direction: column;
+          justify-content: flex-end; min-width: 0;
         }
 
-        /* ── DESKTOP: info grid 2 columns ── */
-        .hero-info-grid {
+        /* ── Info grid ── */
+        .h-grid {
           display: grid;
           grid-template-columns: 1fr 1fr;
           gap: 11px 48px;
         }
 
-        /* ── DESKTOP: social row horizontal ── */
-        .hero-social {
-          display: flex;
-          flex-direction: row;
-        }
-        .social-tile {
-          border-right: 1px solid var(--border);
-        }
-        .social-tile:last-child {
-          border-right: none !important;
-        }
+        /* ── Social row ── */
+        .h-social { display: flex; flex-direction: row; }
+        .s-tile   { border-right: 1px solid var(--border); }
+        .s-tile:last-child { border-right: none !important; }
 
-        /* ─────────────────────────────────────────────
-           MOBILE ≤ 600px — matches reference screenshot
-        ───────────────────────────────────────────── */
+        /* ──────────────────────────────────────────────
+           MOBILE ≤ 600px
+           Avatar LEFT (small), Name RIGHT of it — same row
+           Info: single column
+        ────────────────────────────────────────────── */
         @media (max-width: 600px) {
-          /* Profile row: stack vertically */
-          .hero-profile-row {
-            flex-direction: column !important;
-          }
-
-          /* Avatar cell: full width, no right border, centered */
-          .hero-avatar-cell {
-            width: 100% !important;
-            min-width: unset !important;
-            border-right: none !important;
-            border-bottom: none !important;
-            padding: 28px 20px 12px !important;
-            justify-content: flex-start !important;
-          }
-
-          /* Name cell: left aligned, normal padding */
-          .hero-name-cell {
-            padding: 0 !important;
+          /* Profile row stays row but avatar shrinks */
+          .h-avatar {
+            width: 120px !important;
+            min-width: 120px !important;
+            border-right: 1px solid var(--border) !important;
+            padding: 16px 12px !important;
           }
 
           /* Info: single column */
-          .hero-info-grid {
+          .h-grid {
             grid-template-columns: 1fr !important;
             gap: 11px 0 !important;
           }
 
-          /* Right column spacer: hide on mobile */
-          .hero-right-spacer { display: none !important; }
+          /* Hide the spacer div that only works on 2-col layout */
+          .h-spacer { display: none !important; }
 
-          /* Social: stack vertically */
-          .hero-social { flex-direction: column !important; }
-          .social-tile {
+          /* Social: stack */
+          .h-social { flex-direction: column !important; }
+          .s-tile {
             border-right: none !important;
             border-bottom: 1px solid var(--border) !important;
           }
-          .social-tile:last-child { border-bottom: none !important; }
+          .s-tile:last-child { border-bottom: none !important; }
         }
 
-        /* Small mobile — a bit tighter */
         @media (max-width: 380px) {
-          .hero-avatar-cell { padding: 20px 16px 10px !important; }
+          .h-avatar { width: 100px !important; min-width: 100px !important; padding: 12px 10px !important; }
         }
       `}</style>
 
       <section id="about" style={{
-        marginTop: 72,
+        marginTop: 0,   /* no gap — SparklesBridge is directly above */
         opacity: vis ? 1 : 0,
         transform: vis ? "none" : "translateY(10px)",
         transition: "opacity 0.5s cubic-bezier(0.16,1,0.3,1), transform 0.5s cubic-bezier(0.16,1,0.3,1)",
@@ -279,19 +259,19 @@ export function HeroSection() {
 
         {/* ── PROFILE ROW ── */}
         <div style={{width:"100%", background:BG, borderTop:B, borderBottom:B}}>
-          <div className="hero-profile-row" style={centered}>
+          <div className="h-profile" style={centered}>
 
             {/* Avatar */}
-            <div className="hero-avatar-cell">
+            <div className="h-avatar">
               <Avatar />
             </div>
 
-            {/* Name + flip text */}
-            <div className="hero-name-cell">
+            {/* Name + flip */}
+            <div className="h-nameblock">
               <div style={{flex:1}}/>
               <div style={{padding:"10px 20px 0"}}>
                 <h1 ref={nameRef} style={{
-                  fontSize:"clamp(22px,4vw,32px)", fontWeight:700,
+                  fontSize:"clamp(20px,3.5vw,32px)", fontWeight:700,
                   letterSpacing:"-0.04em", color:"var(--text-primary)",
                   lineHeight:1.15, margin:0,
                   fontFamily:"'Geist',sans-serif", display:"inline-block",
@@ -307,16 +287,15 @@ export function HeroSection() {
 
         <div style={{height:20}}/>
 
-        {/* ── INFO + SOCIAL ── */}
+        {/* ── INFO + SOCIAL wrapped in HoverBorderGradient ── */}
         <div style={centered}>
           <HoverBorderGradient>
-            <div style={{background:BG, borderTop:B, borderBottom:B, borderLeft:B, borderRight:B}}>
+            <div style={{background:BG, border:B}}>
 
-              {/* Info rows */}
               <div style={{padding:"16px 18px 14px"}}>
-                <div className="hero-info-grid">
+                <div className="h-grid">
 
-                  {/* LEFT column */}
+                  {/* LEFT */}
                   <div style={{display:"flex",flexDirection:"column",gap:11}}>
                     <Row href="https://maps.google.com/?q=Greater+Noida+India" newTab
                       icon={<IBox color="#f87171"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></IBox>}>
@@ -336,10 +315,9 @@ export function HeroSection() {
                     </Row>
                   </div>
 
-                  {/* RIGHT column — on mobile this becomes its own single-col rows */}
+                  {/* RIGHT */}
                   <div style={{display:"flex",flexDirection:"column",gap:11}}>
-                    {/* Spacer aligns clock with "phone" row on desktop; hidden on mobile */}
-                    <div className="hero-right-spacer" style={{height:28,flexShrink:0}}/>
+                    <div className="h-spacer" style={{height:28,flexShrink:0}}/>
                     <Row icon={<IBox color="#fbbf24"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></IBox>}>
                       <LiveClock/>
                     </Row>
@@ -354,8 +332,8 @@ export function HeroSection() {
                 </div>
               </div>
 
-              {/* Social row */}
-              <div className="hero-social" style={{borderTop:B}}>
+              {/* Social */}
+              <div className="h-social" style={{borderTop:B}}>
                 <SocialTile href="https://github.com/IndreshThakur" label="GitHub"
                   iconBg="var(--bg-secondary)" iconBorder="1px solid var(--border)" iconColor="var(--text-primary)"
                   icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>}
@@ -364,7 +342,7 @@ export function HeroSection() {
                   iconBg="#0A66C2" iconBorder="none" iconColor="#fff"
                   icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>}
                 />
-                <SocialTile href="https://x.com/indresh_dev" label="X" last
+                <SocialTile href="https://x.com/indresh_dev" label="X"
                   iconBg="var(--bg-secondary)" iconBorder="1px solid var(--border)" iconColor="var(--text-primary)"
                   icon={<svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.255 5.623zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>}
                 />
@@ -372,6 +350,7 @@ export function HeroSection() {
             </div>
           </HoverBorderGradient>
         </div>
+
       </section>
     </>
   );
