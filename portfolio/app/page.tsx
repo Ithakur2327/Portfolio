@@ -16,7 +16,7 @@ export default function Home() {
       <main style={{ paddingTop: 52 }}>
         <SparklesBridge />
         <HeroSection />
-        <div className="page-wrapper" style={{ marginTop: 16 }}>
+        <div className="page-wrapper" style={{ marginTop:34 }}>
           <AboutSection />
           <SkillsSection />
           <ProjectsSection />

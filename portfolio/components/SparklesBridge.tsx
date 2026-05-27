@@ -13,6 +13,7 @@ export function SparklesBridge() {
     if (!ctx) return;
 
     const HEIGHT = 30;
+    const isDark = theme === "dark";
 
     const resize = () => {
       canvas.width  = window.innerWidth;
@@ -38,14 +39,14 @@ export function SparklesBridge() {
         y: Math.random() * HEIGHT,
         vx: (Math.random() - 0.5) * 0.25,
         vy: (Math.random() - 0.5) * 0.25,
-        r: 0.3 + Math.random() * 0.85,
+        r: 0.2 + Math.random() * 0.5,   // smaller dots
         life: 0,
         maxLife,
-        maxOp: 0.5 + Math.random() * 0.5,
+        maxOp: 0.4 + Math.random() * 0.4,
       };
     }
 
-    for (let i = 0; i < 60; i++) {
+    for (let i = 0; i < 50; i++) {
       const d = spawn();
       d.life = Math.random() * d.maxLife;
       dots.push(d);
@@ -57,11 +58,11 @@ export function SparklesBridge() {
       if (!ctx || !canvas) return;
       const W = canvas.width;
 
-      // Pure black
-      ctx.fillStyle = "#0a0909";
+      // Background: black for dark theme, white for light theme
+      ctx.fillStyle = isDark ? "#09090b" : "#f5f5f3";
       ctx.fillRect(0, 0, W, HEIGHT);
 
-      // White sparkle dots only — no blue line
+      // Dot color: white on dark, dark/black on light
       for (let i = 0; i < dots.length; i++) {
         const d = dots[i];
         d.life++;
@@ -80,17 +81,23 @@ export function SparklesBridge() {
           ? (d.life / half) * d.maxOp
           : ((d.maxLife - d.life) / half) * d.maxOp;
 
+        // White dots on dark, dark dots on light
+        const dotColor = isDark
+          ? `rgba(255,255,255,${op})`
+          : `rgba(0,0,0,1)`;
+
         ctx.beginPath();
         ctx.arc(d.x, d.y, d.r, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(255,255,255,${op})`;
+        ctx.fillStyle = dotColor;
         ctx.fill();
 
-        if (d.r > 0.6) {
-          const g = ctx.createRadialGradient(d.x, d.y, 0, d.x, d.y, d.r * 3.5);
-          g.addColorStop(0, `rgba(210,230,255,${op * 0.35})`);
+        // Subtle glow only on dark theme
+        if (isDark && d.r > 0.4) {
+          const g = ctx.createRadialGradient(d.x, d.y, 0, d.x, d.y, d.r * 3);
+          g.addColorStop(0, `rgba(210,230,255,${op * 0.25})`);
           g.addColorStop(1, "rgba(0,0,0,0)");
           ctx.beginPath();
-          ctx.arc(d.x, d.y, d.r * 3.5, 0, Math.PI * 2);
+          ctx.arc(d.x, d.y, d.r * 3, 0, Math.PI * 2);
           ctx.fillStyle = g;
           ctx.fill();
         }

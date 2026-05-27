@@ -214,18 +214,26 @@ export function HeroSection() {
         .s-tile:last-child { border-right: none !important; }
 
         @media (max-width: 600px) {
-          .h-avatar {
-            width: 110px !important;
-            min-width: 110px !important;
-            max-width: 110px !important;
-            border-right: 1px solid var(--border) !important;
-            padding: 14px 10px !important;
-            overflow: hidden !important;
-          }
-          .h-avatar img, .h-avatar > * {
-            max-width: 100% !important;
-            height: auto !important;
-          }
+         .h-avatar {
+  width: clamp(140px, 38vw, 190px);
+  min-width: clamp(140px, 38vw, 190px);
+  aspect-ratio: 1 / 1;
+  flex-shrink: 0;
+  border-right: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 !important;
+  overflow: hidden;
+  background: var(--bg-base);
+}
+         .h-avatar {
+  width: 30vw !important;
+  min-width: 30vw !important;
+  max-width: 160px !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+}
           .h-nameblock {
             flex: 1 !important;
             min-width: 0 !important;

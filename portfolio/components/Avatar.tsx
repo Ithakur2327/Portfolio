@@ -239,10 +239,27 @@ export function Avatar() {
   }, []);
 
   return (
-    <div style={{ position: "relative", width: "100%", maxWidth: 160, aspectRatio: "1/1", flexShrink: 0 }}>
+    <div 
+  style={{
+    position: "relative",
+    width: "100%",
+    height: "100%",
+    aspectRatio: "1/1",
+    flexShrink: 0,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+  }}
+>
       <canvas
         ref={canvasRef}
-        style={{ width: "100%", height: "100%", borderRadius: "50%", display: "block" }}
+       style={{
+  width: "100%",
+  height: "100%",
+  objectFit: "cover",
+  borderRadius: "50%",
+  display: "block",
+}}
       />
       </div>
   );
