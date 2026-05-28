@@ -410,7 +410,7 @@ a { color: inherit; text-decoration: none; }
    RESPONSIVE
 ═══════════════════════════════════════════════════════════ */
 /* ── Mobile navigation ── */
-@media (max-width: 600px) {
+@media (max-width: 760px) {
   .desktop-nav { display:none !important; }
   .page-wrapper { padding:0; }
 }
@@ -419,21 +419,27 @@ a { color: inherit; text-decoration: none; }
    FULL RESPONSIVE BREAKPOINTS
 ══════════════════════════════════════════════════════════ */
 
-/* ── Tablet (≤ 860px) ── */
+/* ── Tablet + iPad (≤ 860px) — treat like mobile ── */
 @media (max-width: 860px) {
-  /* Hero: stack avatar above info */
   .hero-grid { grid-template-columns: 1fr !important; }
-
-  /* Nav inner padding */
-  .nav-inner { padding: 0 12px; }
-
-  /* Page wrapper allow scroll */
+  .nav-inner { padding: 0 14px; }
   .page-wrapper { border-left: none !important; border-right: none !important; }
-
-  /* Section padding */
   section { padding-left: 16px; padding-right: 16px; }
-  /* Hero section — no side padding, it handles its own layout */
   section#about { padding-left: 0 !important; padding-right: 0 !important; }
+  .about-panels { grid-template-columns: 1fr !important; }
+  .skills-strip-offset { margin-left: -16px !important; margin-right: -16px !important; }
+  .stat-badges-row { flex-wrap: wrap; gap: 8px !important; }
+  .stat-badge { min-width: calc(50% - 4px) !important; padding: 13px 16px !important; }
+  .contact-cols { flex-direction: column !important; }
+  .overview-cols { flex-direction: column !important; }
+  .bottom-grid { grid-template-columns: 1fr !important; }
+  .about-heading, h1 { font-size: clamp(20px, 6vw, 28px) !important; }
+  .section-title { font-size: 18px !important; }
+  .contrib-wrap { overflow-x: auto; padding-bottom: 6px; }
+  .proj-tags { flex-wrap: wrap; }
+  .hero-social { flex-direction: column !important; }
+  .hero-social a { border-right: none !important; border-bottom: 1px solid var(--border) !important; }
+  .hero-social a:last-child { border-bottom: none !important; }
 }
 
 /* ── Mobile (≤ 600px) ── */
@@ -652,4 +658,62 @@ canvas {
   body {
     -webkit-font-smoothing: subpixel-antialiased;
   }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   CRYSTAL-CLEAR 8K QUALITY — high-DPI rendering
+═══════════════════════════════════════════════════════════ */
+
+/* Smooth scrolling for entire page */
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+/* Force crisp sub-pixel rendering on all text */
+* {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* SVG icons — crisp at all sizes */
+svg {
+  shape-rendering: geometricPrecision;
+  vector-effect: non-scaling-stroke;
+}
+
+/* Images — always high quality */
+img {
+  image-rendering: high-quality;
+  image-rendering: -webkit-optimize-contrast;
+}
+
+/* Borders sharper on retina */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  * { border-width: 0.5px; }
+  .nav-root, .edu-outer, .cert-section-box, .contact-outer, .footer-root {
+    border-width: 0.5px !important;
+  }
+  /* Sharper box-shadows */
+  .edu-sec-icon, .edu-card-icon, .cert-icon-box, .contact-sec-icon, .footer-avatar-wrap {
+    box-shadow: 0 0.5px 2px rgba(0,0,0,0.18), 0 1px 5px rgba(0,0,0,0.12);
+  }
+}
+
+/* Smooth transitions for all interactive elements */
+a, button {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+/* Prevent layout shift during font load */
+@font-face {
+  font-display: swap;
+}
+
+/* Smooth section transitions */
+section {
+  transition: opacity 0.3s ease, transform 0.3s ease;
 }

@@ -46,10 +46,10 @@ function CloseIcon() {
 
 export function Navbar() {
   const { theme, setTheme } = useTheme();
-  const [scrolled,       setScrolled]      = useState(false);
-  const [activeSection,  setActiveSection] = useState("about");
-  const [mounted,        setMounted]       = useState(false);
-  const [mobileOpen,     setMobileOpen]    = useState(false);
+  const [scrolled,      setScrolled]      = useState(false);
+  const [activeSection, setActiveSection] = useState("about");
+  const [mounted,       setMounted]       = useState(false);
+  const [mobileOpen,    setMobileOpen]    = useState(false);
 
   useEffect(() => { setMounted(true); }, []);
 
@@ -82,7 +82,6 @@ export function Navbar() {
   }, [mobileOpen]);
 
   const isDark = mounted ? theme === "dark" : true;
-  // Avatar image changes with theme
   const avatarSrc = isDark ? "/avatar-dark.jpg" : "/avatar-light.jpg";
 
   return (
@@ -94,43 +93,52 @@ export function Navbar() {
           position: fixed;
           top: 52px; left: 0; right: 0;
           background: var(--nav-bg);
-          backdrop-filter: blur(16px) saturate(180%);
-          -webkit-backdrop-filter: blur(16px) saturate(180%);
+          backdrop-filter: blur(20px) saturate(200%);
+          -webkit-backdrop-filter: blur(20px) saturate(200%);
           border-bottom: 1px solid var(--nav-border);
           padding: 12px 16px;
           flex-direction: column;
-          gap: 4px;
+          gap: 2px;
           z-index: 99;
         }
         .mobile-menu.open { display: flex; }
         .mobile-menu a {
-          padding: 10px 14px; border-radius: 8px;
-          font-size: 15px; font-weight: 500;
+          padding: 10px 14px; border-radius: 7px;
+          font-size: 14.5px; font-weight: 500;
           color: var(--nav-link-color);
           text-decoration: none;
           transition: color 0.15s;
         }
         .mobile-menu a:hover,
-        .mobile-menu a.active {
-          color: var(--nav-link-hover);
-        }
+        .mobile-menu a.active { color: var(--nav-link-hover); }
 
-        /* Nav link — NO background box, only colour change on hover/active */
+        /* Nav links — colour-only hover, NO background box */
         .nav-link {
           padding: 5px 10px;
-          border-radius: 0;
+          border-radius: 5px;
           font-size: 13px; font-weight: 500;
           color: var(--nav-link-color);
           background: transparent !important;
           text-decoration: none;
           transition: color 0.15s;
+          white-space: nowrap;
         }
         .nav-link:hover  { color: var(--nav-link-hover); background: transparent !important; }
         .nav-link.active { color: var(--nav-link-hover); background: transparent !important; }
 
-        @media (max-width: 700px) {
+        /* Partition between last nav link and theme toggle */
+        .nav-partition {
+          width: 1px;
+          height: 18px;
+          background: var(--nav-border);
+          margin: 0 6px;
+          flex-shrink: 0;
+        }
+
+        @media (max-width: 760px) {
           .mobile-nav-btn { display: flex !important; }
           .desktop-nav    { display: none !important; }
+          .nav-partition  { display: none !important; }
         }
       `}</style>
 
@@ -157,9 +165,9 @@ export function Navbar() {
             </div>
           </a>
 
-          {/* Right */}
-          <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-            <nav className="desktop-nav" style={{ display: "flex", gap: 0, marginRight: 8 }}>
+          {/* Right side */}
+          <div style={{ display: "flex", alignItems: "center", gap: 0 }}>
+            <nav className="desktop-nav" style={{ display: "flex", gap: 0 }}>
               {NAV_LINKS.map(({ label, href }) => (
                 <a key={href} href={href} className={`nav-link${activeSection === href.slice(1) ? " active" : ""}`}>
                   {label}
@@ -167,11 +175,15 @@ export function Navbar() {
               ))}
             </nav>
 
+            {/* Partition line between Contact and theme toggle */}
+            <span className="nav-partition desktop-nav" />
+
             <button
               suppressHydrationWarning
               onClick={() => setTheme(isDark ? "light" : "dark")}
               className="theme-btn"
               title={isDark ? "Switch to light" : "Switch to dark"}
+              style={{ marginLeft: 4 }}
             >
               {isDark ? <SunIcon /> : <MoonIcon />}
             </button>
@@ -189,7 +201,7 @@ export function Navbar() {
         </div>
       </header>
 
-      {/* Mobile dropdown menu */}
+      {/* Mobile dropdown */}
       <nav className={`mobile-menu${mobileOpen ? " open" : ""}`}>
         {NAV_LINKS.map(({ label, href }) => (
           <a
