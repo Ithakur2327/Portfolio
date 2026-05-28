@@ -6,6 +6,14 @@ import { useReveal } from "./useReveal";
 const SF = "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', sans-serif";
 const MONO = "'Geist Mono', monospace";
 
+// ─── Web3Forms Access Key ─────────────────────────────────
+// To enable real email delivery:
+// 1. Visit https://web3forms.com
+// 2. Enter your email (ithakur2327@gmail.com) → get free access key
+// 3. Replace the string below with your key
+// 4. Redeploy — forms will land in your inbox
+const WEB3FORMS_KEY = process.env.NEXT_PUBLIC_WEB3FORMS_KEY || "YOUR_WEB3FORMS_KEY";
+
 function MailIcon() {
   return (
     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -20,16 +28,57 @@ export function ContactSection() {
   const [form, setForm] = useState({ name: "", email: "", message: "" });
   const [sent, setSent] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
+    setError("");
+
+    try {
+      // Web3Forms — free, no backend needed
+      // Submissions go to your email inbox
+      const res = await fetch("https://api.web3forms.com/submit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        body: JSON.stringify({
+          access_key: WEB3FORMS_KEY,
+          name: form.name,
+          email: form.email,
+          message: form.message,
+          subject: `Portfolio Contact from ${form.name}`,
+          from_name: "Portfolio Contact Form",
+        }),
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        setSent(true);
+        setForm({ name: "", email: "", message: "" });
+        setTimeout(() => setSent(false), 6000);
+      } else {
+        // Fallback: open mailto if Web3Forms key not configured
+        if (WEB3FORMS_KEY === "YOUR_WEB3FORMS_KEY") {
+          const mailtoUrl = `mailto:ithakur2327@gmail.com?subject=${encodeURIComponent(`Portfolio Contact from ${form.name}`)}&body=${encodeURIComponent(`Name: ${form.name}\nEmail: ${form.email}\n\n${form.message}`)}`;
+          window.location.href = mailtoUrl;
+          setSent(true);
+          setForm({ name: "", email: "", message: "" });
+          setTimeout(() => setSent(false), 6000);
+        } else {
+          setError("Failed to send. Please try again or email directly.");
+        }
+      }
+    } catch {
+      // Network error fallback — open mailto
+      const mailtoUrl = `mailto:ithakur2327@gmail.com?subject=${encodeURIComponent(`Portfolio Contact from ${form.name}`)}&body=${encodeURIComponent(`Name: ${form.name}\nEmail: ${form.email}\n\n${form.message}`)}`;
+      window.location.href = mailtoUrl;
       setSent(true);
       setForm({ name: "", email: "", message: "" });
-      setTimeout(() => setSent(false), 5000);
-    }, 1200);
+      setTimeout(() => setSent(false), 6000);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -122,8 +171,15 @@ export function ContactSection() {
         .contact-form-footer {
           display: flex;
           align-items: center;
-          justify-content: flex-end;
+          justify-content: space-between;
           margin-top: 18px;
+          flex-wrap: wrap;
+          gap: 10px;
+        }
+        .contact-error {
+          font-size: 12px;
+          color: #f87171;
+          font-family: ${MONO};
         }
 
         @media (max-width: 860px) {
@@ -143,14 +199,13 @@ export function ContactSection() {
         style={{
           marginBottom: 0,
           opacity: visible ? 1 : 0,
-          transform: visible ? "none" : "translateY(14px)",
+          transform: visible ? "none" : "translate3d(0, 14px, 0)",
           transition: "opacity 0.55s var(--expo-out), transform 0.55s var(--expo-out)",
         }}
       >
         <div className="contact-outer">
           <div className="contact-inner">
 
-            {/* Title row – same as Skills/Projects/Education */}
             <div className="contact-titlerow">
               <h2 className="contact-title">
                 <span className="contact-sec-icon"><MailIcon /></span>
@@ -160,7 +215,6 @@ export function ContactSection() {
 
             <div className="contact-divider" />
 
-            {/* Hero text */}
             <motion.div
               initial={{ opacity: 0, y: 12 }}
               animate={visible ? { opacity: 1, y: 0 } : {}}
@@ -175,7 +229,6 @@ export function ContactSection() {
 
             <div className="contact-form-divider" />
 
-            {/* Form */}
             <motion.form
               onSubmit={handleSubmit}
               initial={{ opacity: 0, y: 14 }}
@@ -192,6 +245,7 @@ export function ContactSection() {
                     required
                     className="field-input"
                     suppressHydrationWarning
+                    autoComplete="name"
                   />
                 </div>
                 <div>
@@ -204,6 +258,7 @@ export function ContactSection() {
                     required
                     className="field-input"
                     suppressHydrationWarning
+                    autoComplete="email"
                   />
                 </div>
               </div>
@@ -223,12 +278,13 @@ export function ContactSection() {
               </div>
 
               <div className="contact-form-footer">
+                {error && <span className="contact-error">{error}</span>}
                 <button
                   type="submit"
                   className={`btn-primary${sent ? " sent" : ""}`}
                   suppressHydrationWarning
                   disabled={loading}
-                  style={{ opacity: loading ? 0.7 : 1 }}
+                  style={{ opacity: loading ? 0.7 : 1, marginLeft: "auto" }}
                 >
                   {loading ? (
                     <>

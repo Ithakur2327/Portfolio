@@ -190,10 +190,20 @@ export function HeroSection() {
           flex-direction: row;
           align-items: stretch;
         }
+
+        /* Avatar box — always square, image fills all 4 edges */
         .h-avatar {
-          width: 162px; min-width: 162px; flex-shrink: 0;
+          width: 162px;
+          min-width: 162px;
+          height: 162px;
+          min-height: 162px;
+          flex-shrink: 0;
           border-right: 1px solid var(--border);
-          display: flex; align-items: center; justify-content: center;
+          overflow: hidden;
+          padding: 0;
+          display: flex;
+          align-items: stretch;
+          justify-content: stretch;
         }
         .h-nameblock {
           flex: 1; display: flex; flex-direction: column;
@@ -220,26 +230,20 @@ export function HeroSection() {
         .s-tile:last-child { border-right: none !important; }
 
         @media (max-width: 600px) {
-         .h-avatar {
-  width: clamp(140px, 38vw, 190px);
-  min-width: clamp(140px, 38vw, 190px);
-  aspect-ratio: 1 / 1;
-  flex-shrink: 0;
-  border-right: 1px solid var(--border);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0 !important;
-  overflow: hidden;
-  background: var(--bg-base);
-}
-         .h-avatar {
-  width: 30vw !important;
-  min-width: 30vw !important;
-  max-width: 160px !important;
-  padding: 0 !important;
-  overflow: hidden !important;
-}
+          /* Side-by-side layout preserved on mobile */
+          .h-profile { flex-direction: row !important; }
+
+          /* Responsive square avatar */
+          .h-avatar {
+            width: clamp(100px, 28vw, 148px) !important;
+            min-width: clamp(100px, 28vw, 148px) !important;
+            height: clamp(100px, 28vw, 148px) !important;
+            min-height: clamp(100px, 28vw, 148px) !important;
+            border-right: 1px solid var(--border) !important;
+            border-bottom: none !important;
+            overflow: hidden !important;
+            padding: 0 !important;
+          }
           .h-nameblock {
             flex: 1 !important;
             min-width: 0 !important;
@@ -256,7 +260,6 @@ export function HeroSection() {
             border-bottom: 1px solid var(--border) !important;
           }
           .s-tile:last-child { border-bottom: none !important; }
-          /* Info section — side margins on mobile */
           .h-info-wrap {
             border-left: none !important;
             border-right: none !important;
@@ -266,7 +269,12 @@ export function HeroSection() {
         }
 
         @media (max-width: 380px) {
-          .h-avatar { width: 88px !important; min-width: 88px !important; max-width: 88px !important; padding: 10px 8px !important; }
+          .h-avatar {
+            width: clamp(88px, 26vw, 110px) !important;
+            min-width: clamp(88px, 26vw, 110px) !important;
+            height: clamp(88px, 26vw, 110px) !important;
+            min-height: clamp(88px, 26vw, 110px) !important;
+          }
         }
       `}</style>
 

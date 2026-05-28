@@ -682,7 +682,16 @@ export function AboutSection() {
         @media (max-width: 640px) {
           .about-panels { grid-template-columns: 1fr; }
           .about-content { padding: 0 16px 30px; }
-          .about-para { font-size: 14px !important; line-height: 1.9 !important; }
+          .about-para {
+            font-size: 14px !important;
+            line-height: 1.85 !important;
+            text-align: left !important;
+          }
+          /* Stat cards full width on mobile */
+          .stat-card-3d {
+            width: 100% !important;
+            min-width: unset !important;
+          }
         }
       `}</style>
 
