@@ -241,12 +241,14 @@ function GitHubGraph({ username = "Ithakur2327" }: { username?: string }) {
   const lvl = (n: number) => n === 0 ? 0 : n < 3 ? 1 : n < 6 ? 2 : n < 10 ? 3 : 4;
 
   const monthLabels: { label: string; col: number }[] = [];
+  const MIN_COLS_BETWEEN = 2; // minimum week-columns between labels to avoid overlap
   weeks.forEach((w, wi) => {
     if (w.days[0]) {
       const d = new Date(w.days[0].date);
       if (wi === 0 || d.getDate() <= 7) {
         const lbl = MONTHS[d.getMonth()];
-        if (!monthLabels.length || monthLabels[monthLabels.length - 1].label !== lbl) {
+        const last = monthLabels[monthLabels.length - 1];
+        if (!last || (last.label !== lbl && wi - last.col >= MIN_COLS_BETWEEN)) {
           monthLabels.push({ label: lbl, col: wi });
         }
       }
@@ -299,6 +301,7 @@ function GitHubGraph({ username = "Ithakur2327" }: { username?: string }) {
               const nextCol = monthLabels[i + 1]?.col ?? weeks.length;
               const slots = nextCol - m.col;          // how many week-columns this label owns
               const boxW  = slots * STEP;             // exact pixel width of those columns
+              const MIN_LABEL_WIDTH = 22;             // min px needed to show a 3-char label
               return (
                 <div key={i} style={{
                   width: boxW,
@@ -307,9 +310,10 @@ function GitHubGraph({ username = "Ithakur2327" }: { username?: string }) {
                   color: "var(--text-muted)",
                   fontFamily: MONO,
                   userSelect: "none",
-                  overflow: "hidden",               // clip if truly no space
+                  overflow: "hidden",
                   whiteSpace: "nowrap",
                   lineHeight: "16px",
+                  visibility: boxW >= MIN_LABEL_WIDTH ? "visible" : "hidden",
                 }}>{m.label}</div>
               );
             })}
