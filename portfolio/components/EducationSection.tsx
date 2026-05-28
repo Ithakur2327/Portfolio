@@ -296,40 +296,35 @@ export function EducationSection() {
         .lang-pill-item {
           display: inline-flex;
           align-items: center;
-          gap: 6px;
-          padding: 4px 12px 4px 9px;
-          border-radius: 5px;
-          font-size: 12px;
-          font-weight: 600;
+          gap: 0;
+          padding: 5px 16px;
+          border-radius: 7px;
+          font-size: 12.5px;
+          font-weight: 800;
           font-family: ${SF};
-          border: 1px solid rgba(212,160,23,0.35);
-          color: #d4a017;
-          background: rgba(212,160,23,0.10);
+          letter-spacing: 0.06em;
+          border: 1px solid rgba(59,130,246,0.35);
+          color: #60a5fa;
+          background: rgba(59,130,246,0.08);
           cursor: default;
           user-select: none;
           transition: transform 0.18s cubic-bezier(0.22,1,0.36,1), box-shadow 0.18s, background 0.18s;
         }
         .lang-pill-item:hover {
           transform: translateY(-2px);
-          box-shadow: 0 4px 12px rgba(212,160,23,0.18);
-          background: rgba(212,160,23,0.15);
+          box-shadow: 0 4px 14px rgba(59,130,246,0.20);
+          background: rgba(59,130,246,0.14);
         }
         html.light .lang-pill-item {
-          color: #b45309;
-          background: rgba(180,83,9,0.09);
-          border-color: rgba(180,83,9,0.30);
+          color: #1d4ed8;
+          background: rgba(29,78,216,0.08);
+          border-color: rgba(29,78,216,0.28);
         }
         html.light .lang-pill-item:hover {
-          box-shadow: 0 4px 12px rgba(180,83,9,0.16);
-          background: rgba(180,83,9,0.14);
+          box-shadow: 0 4px 12px rgba(29,78,216,0.16);
+          background: rgba(29,78,216,0.13);
         }
-        .lang-pill-dot {
-          width: 5px; height: 5px;
-          border-radius: 50%;
-          background: currentColor;
-          opacity: 0.75;
-          flex-shrink: 0;
-        }
+        .lang-pill-dot { display: none; }
 
         /* ── cert section ── */
         .cert-count-badge {
@@ -459,6 +454,7 @@ export function EducationSection() {
         id="certifications"
         ref={ref2}
         style={{
+          marginTop: 48,
           marginBottom: 55,
           opacity: vis2 ? 1 : 0,
           transform: vis2 ? "none" : "translateY(14px)",

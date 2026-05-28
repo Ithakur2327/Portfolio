@@ -293,15 +293,26 @@ function GitHubGraph({ username = "Ithakur2327" }: { username?: string }) {
       {loading ? <Spin color="#4ade80" /> : (
         <div ref={wrapRef} className="gh-graph-wrap">
           <div ref={innerRef} className="gh-graph-inner" style={{ transform: `scale(${scale})`, transformOrigin: "left top", backfaceVisibility: "hidden", WebkitFontSmoothing: "antialiased" } as React.CSSProperties}>
-          {/* Month labels */}
-          <div style={{ position: "relative", paddingLeft: LEFT_PAD, marginBottom: 4, height: 14 }}>
-            {monthLabels.map((m, i) => (
-              <div key={i} style={{
-                position: "absolute",
-                left: LEFT_PAD + m.col * STEP,
-                fontSize: 10, color: "var(--text-muted)", fontFamily: MONO, userSelect: "none",
-              }}>{m.label}</div>
-            ))}
+          {/* Month labels — spaced to never overlap */}
+          <div style={{ display: "flex", marginBottom: 4, paddingLeft: 26 }}>
+            {monthLabels.map((m, i) => {
+              const nextCol = monthLabels[i + 1]?.col ?? weeks.length;
+              const slots = nextCol - m.col;          // how many week-columns this label owns
+              const boxW  = slots * STEP;             // exact pixel width of those columns
+              return (
+                <div key={i} style={{
+                  width: boxW,
+                  flexShrink: 0,
+                  fontSize: 9,
+                  color: "var(--text-muted)",
+                  fontFamily: MONO,
+                  userSelect: "none",
+                  overflow: "hidden",               // clip if truly no space
+                  whiteSpace: "nowrap",
+                  lineHeight: "16px",
+                }}>{m.label}</div>
+              );
+            })}
           </div>
 
           {/* Grid */}

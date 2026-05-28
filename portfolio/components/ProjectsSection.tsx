@@ -458,6 +458,7 @@ export function ProjectsSection() {
         style={{
           paddingTop: 0,
           paddingBottom: 0,
+          marginBottom: 55,
           opacity: visible ? 1 : 0,
           transform: visible ? "none" : "translateY(14px)",
           transition: "opacity 0.55s var(--expo-out), transform 0.55s var(--expo-out)",
