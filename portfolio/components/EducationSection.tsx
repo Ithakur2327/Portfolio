@@ -454,7 +454,7 @@ export function EducationSection() {
         id="certifications"
         ref={ref2}
         style={{
-          marginTop: 48,
+          marginTop: 0,
           marginBottom: 55,
           opacity: vis2 ? 1 : 0,
           transform: vis2 ? "none" : "translateY(14px)",
