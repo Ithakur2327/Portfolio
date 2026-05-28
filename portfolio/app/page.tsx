@@ -12,11 +12,10 @@ export default function Home() {
   return (
     <>
       <Navbar />
-      {/* paddingTop = navbar height so SparklesBridge sits flush below navbar */}
       <main style={{ paddingTop: 52 }}>
         <SparklesBridge />
         <HeroSection />
-        <div className="page-wrapper" style={{ marginTop:34 }}>
+        <div className="page-wrapper" style={{ marginTop: 34 }}>
           <AboutSection />
           <SkillsSection />
           <ProjectsSection />

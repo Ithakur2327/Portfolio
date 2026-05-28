@@ -2,55 +2,22 @@
 import { useState } from "react";
 import { useReveal } from "./useReveal";
 
-const CONTACT_LINKS = [
-  {
-    icon: (
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
-        <polyline points="22,6 12,13 2,6"/>
-      </svg>
-    ),
-    label: "Email",
-    value: "ithakur2327@gmail.com",
-    href: "mailto:ithakur2327@gmail.com",
-  },
-  {
-    icon: (
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.35 2 2 0 0 1 3.6 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.6a16 16 0 0 0 6 6l.96-.96a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>
-      </svg>
-    ),
-    label: "Phone",
-    value: "+91 7859096326",
-    href: "tel:+917859096326",
-  },
-  {
-    icon: (
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-        <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
-      </svg>
-    ),
-    label: "LinkedIn",
-    value: "linkedin.com/in/indresh-thakur",
-    href: "https://linkedin.com/in/indresh-thakur",
-  },
-  {
-    icon: (
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-        <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/>
-      </svg>
-    ),
-    label: "GitHub",
-    value: "github.com/IndreshThakur",
-    href: "https://github.com/IndreshThakur",
-  },
-];
+const SF = "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', sans-serif";
+const MONO = "'Geist Mono', monospace";
+
+function MailIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+      <polyline points="22,6 12,13 2,6"/>
+    </svg>
+  );
+}
 
 export function ContactSection() {
   const { ref, visible } = useReveal();
-  const { ref: refForm, visible: visForm } = useReveal();
-  const [form, setForm]   = useState({ name: "", email: "", message: "" });
-  const [sent, setSent]   = useState(false);
+  const [form, setForm] = useState({ name: "", email: "", message: "" });
+  const [sent, setSent] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -66,207 +33,221 @@ export function ContactSection() {
 
   return (
     <>
-      {/* ── CONTACT LINKS ─────────────────────────── */}
+      <style>{`
+        .contact-section-box {
+          position: relative;
+          left: 50%;
+          margin-left: -50vw;
+          width: 100vw;
+          background: var(--bg-base);
+          border-top: 1px solid var(--line);
+          border-bottom: 1px solid var(--line);
+        }
+        .contact-section-inner {
+          max-width: 1060px;
+          margin: 0 auto;
+          padding: 28px 32px 52px;
+        }
+        .contact-head {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          margin-bottom: 28px;
+        }
+        .contact-icon-box {
+          width: 32px; height: 32px;
+          border-radius: 8px;
+          background: var(--bg-hover);
+          border: 1px solid var(--border);
+          display: flex; align-items: center; justify-content: center;
+          color: var(--text-muted);
+          flex-shrink: 0;
+        }
+        .contact-headline {
+          font-size: 26px;
+          font-weight: 800;
+          color: var(--text-primary);
+          letter-spacing: -0.04em;
+          line-height: 1.1;
+          font-family: ${SF};
+          margin-bottom: 8px;
+        }
+        .contact-sub {
+          font-size: 14px;
+          color: var(--text-secondary);
+          line-height: 1.65;
+          font-family: ${SF};
+          max-width: 460px;
+        }
+        .contact-note {
+          font-size: 12px;
+          color: var(--text-muted);
+          font-family: ${MONO};
+          margin-top: 6px;
+        }
+        .contact-form-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 12px;
+          margin-bottom: 12px;
+        }
+        .contact-form-label {
+          display: block;
+          font-size: 11px;
+          font-weight: 600;
+          color: var(--text-muted);
+          margin-bottom: 6px;
+          font-family: ${MONO};
+          letter-spacing: 0.06em;
+          text-transform: uppercase;
+        }
+        .contact-form-footer {
+          display: flex;
+          align-items: center;
+          justify-content: flex-end;
+          margin-top: 16px;
+        }
+        .contact-divider {
+          height: 1px;
+          background: var(--border);
+          margin: 24px 0;
+        }
+
+        @keyframes contact-spin { to { transform: rotate(360deg); } }
+
+        @media (max-width: 860px) {
+          .contact-section-inner { padding: 22px 22px 44px; }
+        }
+        @media (max-width: 640px) {
+          .contact-section-inner { padding: 18px 16px 36px; }
+          .contact-form-grid { grid-template-columns: 1fr; }
+          .contact-headline { font-size: 22px; }
+        }
+      `}</style>
+
       <div className="section-separator" />
       <section
         id="contact"
         ref={ref}
         style={{
-          padding: "32px 0 40px",
           opacity: visible ? 1 : 0,
           transform: visible ? "none" : "translateY(14px)",
           transition: "opacity 0.55s var(--expo-out), transform 0.55s var(--expo-out)",
-          borderBottom: "1px solid var(--line)",
         }}
       >
-        <p className="section-label">Contact</p>
+        <div className="contact-section-box">
+          <div className="contact-section-inner">
 
-        <div>
-          {CONTACT_LINKS.map((item, i) => (
-            <a
-              key={i}
-              href={item.href}
-              target={item.href.startsWith("http") ? "_blank" : undefined}
-              rel="noreferrer"
-              className="contact-row"
+            {/* Section icon label */}
+            <div className="contact-head">
+              <div className="contact-icon-box">
+                <MailIcon />
+              </div>
+              <span style={{ fontFamily: MONO, fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase" as const, color: "var(--text-muted)" }}>
+                Contact
+              </span>
+            </div>
+
+            {/* Headline block */}
+            <div
               style={{
                 opacity: visible ? 1 : 0,
-                transform: visible ? "none" : "translateX(-8px)",
-                transition: `opacity 0.4s var(--expo-out) ${0.06 * i}s, transform 0.4s var(--expo-out) ${0.06 * i}s`,
+                transform: visible ? "none" : "translateY(10px)",
+                transition: "opacity 0.5s var(--expo-out) 0.05s, transform 0.5s var(--expo-out) 0.05s",
+                marginBottom: 28,
               }}
             >
-              <span style={{
-                width: 30, height: 30, borderRadius: 7, flexShrink: 0,
-                background: "var(--bg-hover)", border: "1px solid var(--border)",
-                display: "flex", alignItems: "center", justifyContent: "center",
-                color: "var(--text-secondary)",
-              }}>
-                {item.icon}
-              </span>
-              <span style={{ fontSize: 11, color: "var(--text-muted)", width: 60, flexShrink: 0, fontFamily: "'Geist Mono', monospace" }}>
-                {item.label}
-              </span>
-              <span style={{ fontSize: 13.5, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                {item.value}
-              </span>
-              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"
-                style={{ marginLeft: "auto", color: "var(--text-muted)", flexShrink: 0 }}
-              >
-                <line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/>
-              </svg>
-            </a>
-          ))}
-        </div>
-      </section>
-
-      {/* ── LET'S BUILD TOGETHER + FORM ───────────── */}
-      <div className="section-separator" />
-      <section
-        ref={refForm}
-        style={{
-          padding: "48px 0 80px",
-          opacity: visForm ? 1 : 0,
-          transform: visForm ? "none" : "translateY(14px)",
-          transition: "opacity 0.55s var(--expo-out), transform 0.55s var(--expo-out)",
-        }}
-      >
-        {/* Headline */}
-        <div style={{ marginBottom: 36 }}>
-          <p className="section-label">Let&apos;s Build Together</p>
-
-          <h2 style={{
-            fontSize: "clamp(28px, 5vw, 40px)",
-            fontWeight: 800,
-            letterSpacing: "-0.04em",
-            color: "var(--text-primary)",
-            lineHeight: 1.1,
-            marginBottom: 12,
-          }}>
-            Have an idea?{" "}
-            <span style={{ color: "var(--text-muted)", fontWeight: 400 }}>Let&apos;s talk.</span>
-          </h2>
-
-          <p style={{ fontSize: 14, color: "var(--text-secondary)", maxWidth: 420, lineHeight: 1.7 }}>
-            Open to freelance projects, collaborations, and full-time roles. Drop me a message and I&apos;ll get back to you within 24 hours.
-          </p>
-        </div>
-
-        {/* Form */}
-        <form onSubmit={handleSubmit}>
-          <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-
-            {/* Name + Email row */}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-              <div>
-                <label style={{
-                  display: "block", fontSize: 11, fontWeight: 600,
-                  color: "var(--text-muted)", marginBottom: 6,
-                  fontFamily: "'Geist Mono', monospace", letterSpacing: "0.06em", textTransform: "uppercase",
-                }}>
-                  Full Name
-                </label>
-                <input
-                  placeholder="Indresh Thakur"
-                  value={form.name}
-                  onChange={e => setForm({ ...form, name: e.target.value })}
-                  required
-                  className="field-input"
-                  suppressHydrationWarning
-                />
-              </div>
-              <div>
-                <label style={{
-                  display: "block", fontSize: 11, fontWeight: 600,
-                  color: "var(--text-muted)", marginBottom: 6,
-                  fontFamily: "'Geist Mono', monospace", letterSpacing: "0.06em", textTransform: "uppercase",
-                }}>
-                  Email Address
-                </label>
-                <input
-                  type="email"
-                  placeholder="hello@example.com"
-                  value={form.email}
-                  onChange={e => setForm({ ...form, email: e.target.value })}
-                  required
-                  className="field-input"
-                  suppressHydrationWarning
-                />
-              </div>
-            </div>
-
-            {/* Message */}
-            <div>
-              <label style={{
-                display: "block", fontSize: 11, fontWeight: 600,
-                color: "var(--text-muted)", marginBottom: 6,
-                fontFamily: "'Geist Mono', monospace", letterSpacing: "0.06em", textTransform: "uppercase",
-              }}>
-                Message
-              </label>
-              <textarea
-                placeholder="Tell me about your project or idea..."
-                value={form.message}
-                onChange={e => setForm({ ...form, message: e.target.value })}
-                required
-                rows={5}
-                className="field-input"
-                suppressHydrationWarning
-                style={{ resize: "vertical" }}
-              />
-            </div>
-
-            {/* Footer row */}
-            <div style={{
-              display: "flex", alignItems: "center",
-              justifyContent: "space-between", flexWrap: "wrap", gap: 12,
-              marginTop: 4,
-            }}>
-              <p style={{ fontSize: 12, color: "var(--text-muted)", fontFamily: "'Geist Mono', monospace" }}>
-                Usually replies within 24h
+              <p className="contact-headline">Let&apos;s Build Together</p>
+              <p style={{ fontSize: 18, fontWeight: 600, color: "var(--text-secondary)", fontFamily: SF, marginBottom: 10, letterSpacing: "-0.02em" }}>
+                Have an idea? Let&apos;s talk.
               </p>
-              <button
-                type="submit"
-                className={`btn-primary ${sent ? "sent" : ""}`}
-                suppressHydrationWarning
-                disabled={loading}
-                style={{ opacity: loading ? 0.7 : 1 }}
-              >
-                {loading ? (
-                  <>
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"
-                      style={{ animation: "spin 0.8s linear infinite" }}
-                    >
-                      <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
-                    </svg>
-                    Sending...
-                  </>
-                ) : sent ? (
-                  <>✓ Sent!</>
-                ) : (
-                  <>
-                    Send Message
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                      <line x1="22" y1="2" x2="11" y2="13"/>
-                      <polygon points="22 2 15 22 11 13 2 9 22 2"/>
-                    </svg>
-                  </>
-                )}
-              </button>
+              <p className="contact-sub">
+                Open to freelance projects, collaborations, and full-time roles. Drop me a message and I&apos;ll get back to you within 24 hours.
+              </p>
             </div>
+
+            <div className="contact-divider" />
+
+            {/* Form */}
+            <form onSubmit={handleSubmit}
+              style={{
+                opacity: visible ? 1 : 0,
+                transform: visible ? "none" : "translateY(10px)",
+                transition: "opacity 0.5s var(--expo-out) 0.12s, transform 0.5s var(--expo-out) 0.12s",
+              }}
+            >
+              <div className="contact-form-grid">
+                <div>
+                  <label className="contact-form-label">Name</label>
+                  <input
+                    placeholder="Your name"
+                    value={form.name}
+                    onChange={e => setForm({ ...form, name: e.target.value })}
+                    required
+                    className="field-input"
+                    suppressHydrationWarning
+                  />
+                </div>
+                <div>
+                  <label className="contact-form-label">Email</label>
+                  <input
+                    type="email"
+                    placeholder="your@email.com"
+                    value={form.email}
+                    onChange={e => setForm({ ...form, email: e.target.value })}
+                    required
+                    className="field-input"
+                    suppressHydrationWarning
+                  />
+                </div>
+              </div>
+
+              <div style={{ marginBottom: 0 }}>
+                <label className="contact-form-label">Message</label>
+                <textarea
+                  placeholder="Tell me about your project or idea..."
+                  value={form.message}
+                  onChange={e => setForm({ ...form, message: e.target.value })}
+                  required
+                  rows={5}
+                  className="field-input"
+                  suppressHydrationWarning
+                  style={{ resize: "vertical" }}
+                />
+              </div>
+
+              <div className="contact-form-footer">
+                <button
+                  type="submit"
+                  className={`btn-primary${sent ? " sent" : ""}`}
+                  suppressHydrationWarning
+                  disabled={loading}
+                  style={{ opacity: loading ? 0.7 : 1 }}
+                >
+                  {loading ? (
+                    <>
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ animation: "contact-spin 0.8s linear infinite" }}>
+                        <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
+                      </svg>
+                      Sending...
+                    </>
+                  ) : sent ? (
+                    <>✓ Message Sent!</>
+                  ) : (
+                    <>
+                      Send Message
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                        <line x1="22" y1="2" x2="11" y2="13"/>
+                        <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+                      </svg>
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
           </div>
-        </form>
+        </div>
       </section>
-
-      <style>{`
-        @keyframes spin { to { transform: rotate(360deg); } }
-
-        /* responsive: stack name/email on mobile */
-        @media (max-width: 500px) {
-          .contact-grid-2col {
-            grid-template-columns: 1fr !important;
-          }
-        }
-      `}</style>
     </>
   );
 }

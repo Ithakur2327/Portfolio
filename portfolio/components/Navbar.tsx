@@ -3,11 +3,12 @@ import { useEffect, useState } from "react";
 import { useTheme } from "./ThemeProvider";
 
 const NAV_LINKS = [
-  { label: "About",     href: "#about"     },
-  { label: "Skills",    href: "#skills"    },
-  { label: "Projects",  href: "#projects"  },
-  { label: "Education", href: "#education" },
-  { label: "Contact",   href: "#contact"   },
+  { label: "About",          href: "#about"          },
+  { label: "Skills",         href: "#skills"         },
+  { label: "Projects",       href: "#projects"       },
+  { label: "Education",      href: "#education"      },
+  { label: "Certifications", href: "#certifications" },
+  { label: "Contact",        href: "#contact"        },
 ];
 
 function SunIcon() {
@@ -45,10 +46,10 @@ function CloseIcon() {
 
 export function Navbar() {
   const { theme, setTheme } = useTheme();
-  const [scrolled,      setScrolled]      = useState(false);
-  const [activeSection, setActiveSection] = useState("about");
-  const [mounted,       setMounted]       = useState(false);
-  const [mobileOpen,    setMobileOpen]    = useState(false);
+  const [scrolled,       setScrolled]      = useState(false);
+  const [activeSection,  setActiveSection] = useState("about");
+  const [mounted,        setMounted]       = useState(false);
+  const [mobileOpen,     setMobileOpen]    = useState(false);
 
   useEffect(() => { setMounted(true); }, []);
 
@@ -70,7 +71,6 @@ export function Navbar() {
     return () => obs.disconnect();
   }, []);
 
-  // Close mobile menu on outside click
   useEffect(() => {
     if (!mobileOpen) return;
     const fn = (e: MouseEvent) => {
@@ -82,6 +82,8 @@ export function Navbar() {
   }, [mobileOpen]);
 
   const isDark = mounted ? theme === "dark" : true;
+  // Avatar image changes with theme
+  const avatarSrc = isDark ? "/avatar-dark.jpg" : "/avatar-light.jpg";
 
   return (
     <>
@@ -106,14 +108,27 @@ export function Navbar() {
           font-size: 15px; font-weight: 500;
           color: var(--nav-link-color);
           text-decoration: none;
-          transition: color 0.15s, background 0.15s;
+          transition: color 0.15s;
         }
         .mobile-menu a:hover,
         .mobile-menu a.active {
           color: var(--nav-link-hover);
-          background: var(--nav-link-active-bg);
         }
-        @media (max-width: 600px) {
+
+        /* Nav link — NO background box, only colour change on hover/active */
+        .nav-link {
+          padding: 5px 10px;
+          border-radius: 0;
+          font-size: 13px; font-weight: 500;
+          color: var(--nav-link-color);
+          background: transparent !important;
+          text-decoration: none;
+          transition: color 0.15s;
+        }
+        .nav-link:hover  { color: var(--nav-link-hover); background: transparent !important; }
+        .nav-link.active { color: var(--nav-link-hover); background: transparent !important; }
+
+        @media (max-width: 700px) {
           .mobile-nav-btn { display: flex !important; }
           .desktop-nav    { display: none !important; }
         }
@@ -126,7 +141,10 @@ export function Navbar() {
             <div className="logo-area">
               <div className={`logo-i${scrolled ? " hide" : ""}`}>&lt;I&gt;</div>
               <div className={`logo-avatar${scrolled ? " show" : ""}`}>
-                <img src="/avatar-dark.jpg" alt="IT"
+                <img
+                  key={avatarSrc}
+                  src={avatarSrc}
+                  alt="IT"
                   onError={(e) => {
                     const el = e.currentTarget as HTMLImageElement;
                     el.style.display = "none";
@@ -141,7 +159,7 @@ export function Navbar() {
 
           {/* Right */}
           <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-            <nav className="desktop-nav" style={{ display: "flex", gap: 1, marginRight: 8 }}>
+            <nav className="desktop-nav" style={{ display: "flex", gap: 0, marginRight: 8 }}>
               {NAV_LINKS.map(({ label, href }) => (
                 <a key={href} href={href} className={`nav-link${activeSection === href.slice(1) ? " active" : ""}`}>
                   {label}
