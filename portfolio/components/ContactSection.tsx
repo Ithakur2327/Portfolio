@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import { motion } from "framer-motion";
 import { useReveal } from "./useReveal";
 
 const SF = "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', sans-serif";
@@ -7,7 +8,7 @@ const MONO = "'Geist Mono', monospace";
 
 function MailIcon() {
   return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
       <polyline points="22,6 12,13 2,6"/>
     </svg>
@@ -34,7 +35,9 @@ export function ContactSection() {
   return (
     <>
       <style>{`
-        .contact-section-box {
+        @keyframes contact-spin { to { transform: rotate(360deg); } }
+
+        .contact-outer {
           position: relative;
           left: 50%;
           margin-left: -50vw;
@@ -43,26 +46,37 @@ export function ContactSection() {
           border-top: 1px solid var(--line);
           border-bottom: 1px solid var(--line);
         }
-        .contact-section-inner {
+        .contact-inner {
           max-width: 1060px;
           margin: 0 auto;
-          padding: 28px 32px 52px;
+          padding: 0 32px 52px;
         }
-        .contact-head {
+        .contact-titlerow {
+          padding-top: 28px;
+          margin-bottom: 20px;
+        }
+        .contact-title {
+          font-size: 28px;
+          font-weight: 700;
+          letter-spacing: -0.03em;
+          line-height: 1;
+          font-family: ${SF};
+          color: var(--text-primary);
           display: flex;
           align-items: center;
           gap: 10px;
-          margin-bottom: 28px;
         }
-        .contact-icon-box {
-          width: 32px; height: 32px;
-          border-radius: 8px;
+        .contact-sec-icon {
+          width: 34px; height: 34px;
+          border-radius: 9px;
           background: var(--bg-hover);
           border: 1px solid var(--border);
           display: flex; align-items: center; justify-content: center;
-          color: var(--text-muted);
+          color: var(--text-secondary);
           flex-shrink: 0;
+          box-shadow: 0 1px 3px rgba(0,0,0,0.18);
         }
+        .contact-divider { height: 1px; background: var(--border); margin-bottom: 28px; }
         .contact-headline {
           font-size: 26px;
           font-weight: 800;
@@ -70,20 +84,34 @@ export function ContactSection() {
           letter-spacing: -0.04em;
           line-height: 1.1;
           font-family: ${SF};
-          margin-bottom: 8px;
+          margin-bottom: 6px;
         }
-        .contact-sub {
+        .contact-subtitle {
+          font-size: 17px;
+          font-weight: 600;
+          color: var(--text-secondary);
+          letter-spacing: -0.02em;
+          font-family: ${SF};
+          margin-bottom: 10px;
+        }
+        .contact-body-txt {
           font-size: 14px;
           color: var(--text-secondary);
-          line-height: 1.65;
+          line-height: 1.7;
           font-family: ${SF};
-          max-width: 460px;
+          max-width: 480px;
+          margin-bottom: 28px;
         }
-        .contact-note {
-          font-size: 12px;
+        .contact-form-divider { height: 1px; background: var(--border); margin-bottom: 24px; }
+        .contact-form-label {
+          display: block;
+          font-size: 10.5px;
+          font-weight: 600;
           color: var(--text-muted);
+          margin-bottom: 6px;
           font-family: ${MONO};
-          margin-top: 6px;
+          letter-spacing: 0.07em;
+          text-transform: uppercase;
         }
         .contact-form-grid {
           display: grid;
@@ -91,90 +119,68 @@ export function ContactSection() {
           gap: 12px;
           margin-bottom: 12px;
         }
-        .contact-form-label {
-          display: block;
-          font-size: 11px;
-          font-weight: 600;
-          color: var(--text-muted);
-          margin-bottom: 6px;
-          font-family: ${MONO};
-          letter-spacing: 0.06em;
-          text-transform: uppercase;
-        }
         .contact-form-footer {
           display: flex;
           align-items: center;
           justify-content: flex-end;
-          margin-top: 16px;
+          margin-top: 18px;
         }
-        .contact-divider {
-          height: 1px;
-          background: var(--border);
-          margin: 24px 0;
-        }
-
-        @keyframes contact-spin { to { transform: rotate(360deg); } }
 
         @media (max-width: 860px) {
-          .contact-section-inner { padding: 22px 22px 44px; }
+          .contact-inner { padding: 0 22px 44px; }
         }
         @media (max-width: 640px) {
-          .contact-section-inner { padding: 18px 16px 36px; }
+          .contact-inner { padding: 0 16px 36px; }
           .contact-form-grid { grid-template-columns: 1fr; }
-          .contact-headline { font-size: 22px; }
+          .contact-headline { font-size: 21px; }
+          .contact-title { font-size: 22px; }
         }
       `}</style>
 
-      <div className="section-separator" />
       <section
         id="contact"
         ref={ref}
         style={{
+          marginBottom: 0,
           opacity: visible ? 1 : 0,
           transform: visible ? "none" : "translateY(14px)",
           transition: "opacity 0.55s var(--expo-out), transform 0.55s var(--expo-out)",
         }}
       >
-        <div className="contact-section-box">
-          <div className="contact-section-inner">
+        <div className="contact-outer">
+          <div className="contact-inner">
 
-            {/* Section icon label */}
-            <div className="contact-head">
-              <div className="contact-icon-box">
-                <MailIcon />
-              </div>
-              <span style={{ fontFamily: MONO, fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase" as const, color: "var(--text-muted)" }}>
+            {/* Title row – same as Skills/Projects/Education */}
+            <div className="contact-titlerow">
+              <h2 className="contact-title">
+                <span className="contact-sec-icon"><MailIcon /></span>
                 Contact
-              </span>
-            </div>
-
-            {/* Headline block */}
-            <div
-              style={{
-                opacity: visible ? 1 : 0,
-                transform: visible ? "none" : "translateY(10px)",
-                transition: "opacity 0.5s var(--expo-out) 0.05s, transform 0.5s var(--expo-out) 0.05s",
-                marginBottom: 28,
-              }}
-            >
-              <p className="contact-headline">Let&apos;s Build Together</p>
-              <p style={{ fontSize: 18, fontWeight: 600, color: "var(--text-secondary)", fontFamily: SF, marginBottom: 10, letterSpacing: "-0.02em" }}>
-                Have an idea? Let&apos;s talk.
-              </p>
-              <p className="contact-sub">
-                Open to freelance projects, collaborations, and full-time roles. Drop me a message and I&apos;ll get back to you within 24 hours.
-              </p>
+              </h2>
             </div>
 
             <div className="contact-divider" />
 
+            {/* Hero text */}
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              animate={visible ? { opacity: 1, y: 0 } : {}}
+              transition={{ duration: 0.48, ease: [0.22, 1, 0.36, 1], delay: 0.06 }}
+            >
+              <p className="contact-headline">Let&apos;s Build Together</p>
+              <p className="contact-subtitle">Have an idea? Let&apos;s talk.</p>
+              <p className="contact-body-txt">
+                Open to freelance projects, collaborations, and full-time roles. Drop me a message and I&apos;ll get back to you within 24 hours.
+              </p>
+            </motion.div>
+
+            <div className="contact-form-divider" />
+
             {/* Form */}
-            <form onSubmit={handleSubmit}
-              style={{
-                opacity: visible ? 1 : 0,
-                transform: visible ? "none" : "translateY(10px)",
-                transition: "opacity 0.5s var(--expo-out) 0.12s, transform 0.5s var(--expo-out) 0.12s",
-              }}
+            <motion.form
+              onSubmit={handleSubmit}
+              initial={{ opacity: 0, y: 14 }}
+              animate={visible ? { opacity: 1, y: 0 } : {}}
+              transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1], delay: 0.14 }}
             >
               <div className="contact-form-grid">
                 <div>
@@ -202,7 +208,7 @@ export function ContactSection() {
                 </div>
               </div>
 
-              <div style={{ marginBottom: 0 }}>
+              <div>
                 <label className="contact-form-label">Message</label>
                 <textarea
                   placeholder="Tell me about your project or idea..."
@@ -244,7 +250,7 @@ export function ContactSection() {
                   )}
                 </button>
               </div>
-            </form>
+            </motion.form>
           </div>
         </div>
       </section>

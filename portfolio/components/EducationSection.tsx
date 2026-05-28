@@ -1,6 +1,7 @@
 "use client";
+import { useRef } from "react";
+import { motion, useInView } from "framer-motion";
 import { useReveal } from "./useReveal";
-import { useTheme } from "./ThemeProvider";
 
 const SF = "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', sans-serif";
 const MONO = "'Geist Mono', monospace";
@@ -8,7 +9,7 @@ const MONO = "'Geist Mono', monospace";
 const EDUCATION = [
   {
     school: "Noida Institute of Engineering and Technology",
-    short: "NIET, Greater Noida",
+    short: "Greater Noida",
     degree: "B.Tech — Computer Science & Engineering (AI)",
     period: "Aug 2023 — Present",
   },
@@ -16,20 +17,20 @@ const EDUCATION = [
     school: "L.N.J School",
     short: "Madhubani, Bihar",
     degree: "Class XII — BSEB",
-    period: "2021",
+    period: "",
   },
   {
-    school: "UMS Madhubani",
+    school: "U.M.S Madhubani",
     short: "Madhubani, Bihar",
     degree: "Class X — BSEB",
-    period: "2019",
+    period: "",
   },
 ];
 
 const LANGUAGES = [
-  { name: "Hindi", native: true },
-  { name: "English", native: false },
-  { name: "Maithili", native: true },
+  { name: "HINDI" },
+  { name: "ENGLISH" },
+  { name: "MAITHILI" },
 ];
 
 const CERTIFICATIONS = [
@@ -41,7 +42,7 @@ const CERTIFICATIONS = [
   },
   {
     title: "Principles of Generative AI",
-    issuer: "Infosys Springboard",
+    issuer: "Coursera",
     date: "2024",
     link: "https://drive.google.com/",
   },
@@ -65,43 +66,92 @@ const CERTIFICATIONS = [
   },
 ];
 
-// Education icon SVG
 function EduIcon() {
   return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/>
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+      <path d="M6 12v5c3 3 9 3 12 0v-5"/>
     </svg>
   );
 }
 
-// Cert icon SVG
 function CertIcon() {
   return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/>
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="8" r="6"/>
+      <path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/>
     </svg>
   );
 }
 
-// Arrow icon
 function ArrowIcon() {
   return (
     <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-      <line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/>
+      <line x1="7" y1="17" x2="17" y2="7"/>
+      <polyline points="7 7 17 7 17 17"/>
     </svg>
+  );
+}
+
+/* ── Language pill with skill-section-style highlight animation ── */
+function LangPill({ name, delay }: { name: string; delay: number }) {
+  const ref = useRef<HTMLSpanElement>(null);
+  const inView = useInView(ref, { once: true, margin: "-10% 0px -10% 0px" });
+
+  return (
+    <motion.span
+      ref={ref}
+      className="lang-pill-item"
+      initial={{ opacity: 0, scale: 0.82, y: 8 }}
+      animate={inView ? { opacity: 1, scale: 1, y: 0 } : {}}
+      transition={{ duration: 0.42, ease: [0.22, 1, 0.36, 1], delay }}
+    >
+      <span className="lang-pill-dot" />
+      {name}
+    </motion.span>
+  );
+}
+
+/* ── Education card with 3D entrance ── */
+function EduCard({ school, degree, short, period, index, sectionVisible }: {
+  school: string; degree: string; short: string; period: string; index: number; sectionVisible: boolean;
+}) {
+  return (
+    <motion.div
+      className="edu-card"
+      initial={{ opacity: 0, y: 22, rotateX: 8 }}
+      animate={sectionVisible ? { opacity: 1, y: 0, rotateX: 0 } : {}}
+      transition={{ duration: 0.52, ease: [0.22, 1, 0.36, 1], delay: index * 0.1 }}
+    >
+      {/* left graduation icon */}
+      <div className="edu-card-icon">
+        <EduIcon />
+      </div>
+      {/* vertical connecting line (hidden for last) */}
+      {index < EDUCATION.length - 1 && <div className="edu-card-line" />}
+      <div className="edu-card-body">
+        <div className="edu-card-top">
+          <div>
+            <p className="edu-card-school">{school}</p>
+            <p className="edu-card-degree">{degree}</p>
+            <p className="edu-card-loc">{short}</p>
+          </div>
+          <span className="edu-card-period">{period}</span>
+        </div>
+      </div>
+    </motion.div>
   );
 }
 
 export function EducationSection() {
-  const { theme } = useTheme();
-  const isDark = theme === "dark";
   const { ref, visible } = useReveal();
   const { ref: ref2, visible: vis2 } = useReveal();
 
   return (
     <>
       <style>{`
-        .edu-section-box {
+        /* ── shared section wrapper (same as Skills / Projects) ── */
+        .edu-outer {
           position: relative;
           left: 50%;
           margin-left: -50vw;
@@ -110,66 +160,112 @@ export function EducationSection() {
           border-top: 1px solid var(--line);
           border-bottom: 1px solid var(--line);
         }
-        .edu-section-inner {
+        .edu-inner {
           max-width: 1060px;
           margin: 0 auto;
-          padding: 28px 32px 40px;
+          padding: 0 32px 40px;
         }
-        .edu-section-head {
+
+        /* ── section head – bold label + icon exactly like Projects/Skills ── */
+        .edu-sec-titlerow {
+          padding-top: 28px;
+          margin-bottom: 20px;
+        }
+        .edu-sec-title {
+          font-size: 28px;
+          font-weight: 700;
+          letter-spacing: -0.03em;
+          line-height: 1;
+          font-family: ${SF};
+          color: var(--text-primary);
           display: flex;
           align-items: center;
           gap: 10px;
-          margin-bottom: 18px;
         }
-        .edu-section-icon {
-          width: 32px; height: 32px;
-          border-radius: 8px;
+        .edu-sec-icon {
+          width: 34px; height: 34px;
+          border-radius: 9px;
           background: var(--bg-hover);
           border: 1px solid var(--border);
           display: flex; align-items: center; justify-content: center;
-          color: var(--text-muted);
+          color: var(--text-secondary);
           flex-shrink: 0;
+          box-shadow: 0 1px 3px rgba(0,0,0,0.18);
+          transition: box-shadow 0.2s, border-color 0.2s;
         }
-        .edu-row {
+        .edu-sec-icon:hover {
+          box-shadow: 0 2px 8px rgba(0,0,0,0.28);
+          border-color: var(--text-muted);
+        }
+        .edu-sec-divider {
+          height: 1px;
+          background: var(--border);
+          margin-bottom: 22px;
+        }
+
+        /* ── edu cards – screenshot style, no line between them ── */
+        .edu-card {
+          position: relative;
+          display: flex;
+          align-items: flex-start;
+          gap: 14px;
+          padding: 16px 0 16px;
+          perspective: 600px;
+        }
+        .edu-card-icon {
+          width: 34px; height: 34px;
+          border-radius: 9px;
+          background: var(--bg-hover);
+          border: 1px solid var(--border);
+          display: flex; align-items: center; justify-content: center;
+          color: var(--text-secondary);
+          flex-shrink: 0;
+          position: relative;
+          z-index: 1;
+          box-shadow: 0 1px 3px rgba(0,0,0,0.14);
+          transition: box-shadow 0.2s, transform 0.2s;
+        }
+        .edu-card:hover .edu-card-icon {
+          box-shadow: 0 3px 10px rgba(0,0,0,0.22);
+          transform: translateY(-1px);
+        }
+        .edu-card-line {
+          position: absolute;
+          left: 16px;
+          top: 50px;
+          bottom: -16px;
+          width: 2px;
+          background: linear-gradient(to bottom, var(--border), transparent);
+          z-index: 0;
+        }
+        .edu-card-body { flex: 1; min-width: 0; }
+        .edu-card-top {
           display: flex;
           align-items: flex-start;
           justify-content: space-between;
           gap: 12px;
-          padding: 14px 0;
-          border-bottom: 1px solid var(--border);
         }
-        .edu-row:last-child { border-bottom: none; }
-        .edu-row-left {
-          display: flex;
-          align-items: flex-start;
-          gap: 12px;
-        }
-        .edu-dot {
-          width: 7px; height: 7px;
-          border-radius: 50%;
-          background: var(--text-muted);
-          margin-top: 6px;
-          flex-shrink: 0;
-        }
-        .edu-school {
-          font-size: 14px; font-weight: 700;
+        .edu-card-school {
+          font-size: 14.5px;
+          font-weight: 700;
           color: var(--text-primary);
-          letter-spacing: -0.02em;
+          letter-spacing: -0.025em;
           font-family: ${SF};
+          line-height: 1.2;
         }
-        .edu-degree {
+        .edu-card-degree {
           font-size: 12.5px;
           color: var(--text-secondary);
-          margin-top: 2px;
+          margin-top: 3px;
           font-family: ${SF};
         }
-        .edu-location {
+        .edu-card-loc {
           font-size: 11.5px;
           color: var(--text-muted);
-          margin-top: 3px;
+          margin-top: 4px;
           font-family: ${MONO};
         }
-        .edu-period {
+        .edu-card-period {
           font-size: 11px;
           color: var(--text-muted);
           font-family: ${MONO};
@@ -178,17 +274,17 @@ export function EducationSection() {
           padding-top: 2px;
         }
 
-        /* Languages row */
+        /* ── language pills ── */
         .lang-row {
           display: flex;
           align-items: center;
           gap: 8px;
           flex-wrap: wrap;
-          margin-top: 20px;
-          padding-top: 16px;
+          margin-top: 8px;
+          padding-top: 18px;
           border-top: 1px solid var(--border);
         }
-        .lang-label {
+        .lang-label-txt {
           font-size: 11px;
           font-weight: 600;
           letter-spacing: 0.07em;
@@ -197,52 +293,46 @@ export function EducationSection() {
           font-family: ${MONO};
           margin-right: 4px;
         }
-        .lang-pill {
+        .lang-pill-item {
           display: inline-flex;
           align-items: center;
-          gap: 5px;
-          padding: 3px 10px 3px 8px;
-          border-radius: 20px;
+          gap: 6px;
+          padding: 4px 12px 4px 9px;
+          border-radius: 5px;
           font-size: 12px;
           font-weight: 600;
           font-family: ${SF};
-          border: 1px solid;
-          transition: transform 0.15s, opacity 0.15s;
-          cursor: default;
-        }
-        .lang-pill:hover { transform: translateY(-1px); opacity: 0.85; }
-        .lang-pill-gold {
+          border: 1px solid rgba(212,160,23,0.35);
           color: #d4a017;
           background: rgba(212,160,23,0.10);
-          border-color: rgba(212,160,23,0.35);
+          cursor: default;
+          user-select: none;
+          transition: transform 0.18s cubic-bezier(0.22,1,0.36,1), box-shadow 0.18s, background 0.18s;
         }
-        html.light .lang-pill-gold {
+        .lang-pill-item:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 4px 12px rgba(212,160,23,0.18);
+          background: rgba(212,160,23,0.15);
+        }
+        html.light .lang-pill-item {
           color: #b45309;
           background: rgba(180,83,9,0.09);
           border-color: rgba(180,83,9,0.30);
         }
-        .lang-dot {
+        html.light .lang-pill-item:hover {
+          box-shadow: 0 4px 12px rgba(180,83,9,0.16);
+          background: rgba(180,83,9,0.14);
+        }
+        .lang-pill-dot {
           width: 5px; height: 5px;
           border-radius: 50%;
           background: currentColor;
-          opacity: 0.7;
+          opacity: 0.75;
+          flex-shrink: 0;
         }
 
-        /* Certifications box */
-        .cert-section-box {
-          position: relative;
-          left: 50%;
-          margin-left: -50vw;
-          width: 100vw;
-          background: var(--bg-base);
-          border-bottom: 1px solid var(--line);
-        }
-        .cert-section-inner {
-          max-width: 1060px;
-          margin: 0 auto;
-          padding: 28px 32px 40px;
-        }
-        .cert-count {
+        /* ── cert section ── */
+        .cert-count-badge {
           font-family: ${MONO};
           font-size: 10px;
           color: var(--text-muted);
@@ -251,184 +341,163 @@ export function EducationSection() {
           padding: 1px 6px;
           border-radius: 4px;
           margin-left: 8px;
+          vertical-align: middle;
         }
         .cert-item {
           display: flex;
           align-items: center;
-          gap: 12px;
+          gap: 13px;
           padding: 13px 8px;
           margin: 0 -8px;
-          border-radius: 7px;
+          border-radius: 8px;
           border-bottom: 1px solid var(--border);
           text-decoration: none;
           color: var(--text-primary);
-          transition: background 0.12s;
+          transition: background 0.14s;
           cursor: pointer;
         }
         .cert-item:last-child { border-bottom: none; }
         .cert-item:hover { background: var(--bg-hover); }
-        .cert-item:hover .cert-arrow { opacity: 1; transform: translate(1px, -1px); }
-        .cert-icon-wrap {
-          width: 32px; height: 32px;
-          border-radius: 7px;
+        .cert-item:hover .cert-arrow-icon {
+          opacity: 1;
+          transform: translate(2px, -2px);
+        }
+        .cert-icon-box {
+          width: 34px; height: 34px;
+          border-radius: 9px;
           background: var(--bg-hover);
           border: 1px solid var(--border);
           display: flex; align-items: center; justify-content: center;
-          color: var(--text-muted);
+          color: var(--text-secondary);
           flex-shrink: 0;
+          box-shadow: 0 1px 3px rgba(0,0,0,0.14);
+          transition: box-shadow 0.2s, transform 0.2s;
         }
-        .cert-title {
+        .cert-item:hover .cert-icon-box {
+          box-shadow: 0 3px 10px rgba(0,0,0,0.22);
+          transform: translateY(-1px);
+        }
+        .cert-title-txt {
           font-size: 13.5px;
           font-weight: 700;
           color: var(--text-primary);
-          letter-spacing: -0.01em;
+          letter-spacing: -0.015em;
           font-family: ${SF};
         }
-        .cert-meta {
-          font-size: 12px;
+        .cert-meta-txt {
+          font-size: 11.5px;
           color: var(--text-muted);
           margin-top: 2px;
           font-family: ${MONO};
         }
-        .cert-arrow {
+        .cert-arrow-icon {
           color: var(--text-muted);
           flex-shrink: 0;
-          opacity: 0.5;
-          transition: opacity 0.15s, transform 0.15s;
+          opacity: 0.4;
+          transition: opacity 0.15s, transform 0.2s cubic-bezier(0.22,1,0.36,1);
           margin-left: auto;
         }
 
+        /* ── responsive ── */
         @media (max-width: 860px) {
-          .edu-section-inner, .cert-section-inner { padding: 22px 22px 34px; }
+          .edu-inner { padding: 0 22px 34px; }
         }
         @media (max-width: 640px) {
-          .edu-section-inner, .cert-section-inner { padding: 18px 16px 28px; }
-          .edu-row { flex-direction: column; gap: 4px; }
-          .edu-period { align-self: flex-start; padding-top: 0; margin-left: 19px; }
+          .edu-inner { padding: 0 16px 28px; }
+          .edu-card-top { flex-direction: column; gap: 4px; }
+          .edu-card-period { margin-left: 0; }
+          .edu-sec-title { font-size: 22px; }
         }
       `}</style>
 
-      {/* ── EDUCATION ── */}
-      <div className="section-separator" />
+      {/* ═══ EDUCATION ═══ */}
       <section
         id="education"
         ref={ref}
         style={{
+          marginBottom: 0,
           opacity: visible ? 1 : 0,
           transform: visible ? "none" : "translateY(14px)",
           transition: "opacity 0.55s var(--expo-out), transform 0.55s var(--expo-out)",
         }}
       >
-        <div className="edu-section-box">
-          <div className="edu-section-inner">
-            {/* Header */}
-            <div className="edu-section-head">
-              <div className="edu-section-icon">
-                <EduIcon />
-              </div>
-              <span style={{ fontFamily: MONO, fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase" as const, color: "var(--text-muted)" }}>
+        <div className="edu-outer">
+          <div className="edu-inner">
+            {/* Title row – exactly like Projects/Skills */}
+            <div className="edu-sec-titlerow">
+              <h2 className="edu-sec-title">
+                <span className="edu-sec-icon"><EduIcon /></span>
                 Education
-              </span>
+              </h2>
             </div>
 
-            {/* Education rows */}
-            <div>
-              {EDUCATION.map((edu, i) => (
-                <div
-                  key={i}
-                  className="edu-row"
-                  style={{
-                    opacity: visible ? 1 : 0,
-                    transform: visible ? "none" : "translateY(10px)",
-                    transition: `opacity 0.45s var(--expo-out) ${0.1 * i}s, transform 0.45s var(--expo-out) ${0.1 * i}s`,
-                  }}
-                >
-                  <div className="edu-row-left">
-                    <div className="edu-dot" />
-                    <div>
-                      <p className="edu-school">{edu.school}</p>
-                      <p className="edu-degree">{edu.degree}</p>
-                      <p className="edu-location">{edu.short}</p>
-                    </div>
-                  </div>
-                  <span className="edu-period">{edu.period}</span>
-                </div>
-              ))}
-            </div>
+            <div className="edu-sec-divider" />
+
+            {/* Cards */}
+            {EDUCATION.map((edu, i) => (
+              <EduCard
+                key={i}
+                {...edu}
+                index={i}
+                sectionVisible={visible}
+              />
+            ))}
 
             {/* Languages */}
             <div className="lang-row">
-              <span className="lang-label">Languages</span>
+              <span className="lang-label-txt">Languages</span>
               {LANGUAGES.map((lang, i) => (
-                <span
-                  key={i}
-                  className="lang-pill lang-pill-gold"
-                  style={{
-                    opacity: visible ? 1 : 0,
-                    transition: `opacity 0.4s var(--expo-out) ${0.15 + 0.08 * i}s`,
-                  }}
-                >
-                  <span className="lang-dot" />
-                  {lang.name}
-                </span>
+                <LangPill key={i} name={lang.name} delay={0.18 + i * 0.08} />
               ))}
             </div>
           </div>
         </div>
       </section>
 
-      {/* ── CERTIFICATIONS ── */}
-      <div className="section-separator" />
+      {/* ═══ CERTIFICATIONS ═══ */}
       <section
         id="certifications"
         ref={ref2}
         style={{
+          marginBottom: 55,
           opacity: vis2 ? 1 : 0,
           transform: vis2 ? "none" : "translateY(14px)",
           transition: "opacity 0.55s var(--expo-out), transform 0.55s var(--expo-out)",
         }}
       >
-        <div className="cert-section-box">
-          <div className="cert-section-inner">
-            {/* Header */}
-            <div className="edu-section-head">
-              <div className="edu-section-icon">
-                <CertIcon />
-              </div>
-              <span style={{ fontFamily: MONO, fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase" as const, color: "var(--text-muted)" }}>
+        <div className="edu-outer">
+          <div className="edu-inner">
+            {/* Title row */}
+            <div className="edu-sec-titlerow">
+              <h2 className="edu-sec-title">
+                <span className="edu-sec-icon"><CertIcon /></span>
                 Certifications
-                <span className="cert-count">{CERTIFICATIONS.length}</span>
-              </span>
+                <span className="cert-count-badge">{CERTIFICATIONS.length}</span>
+              </h2>
             </div>
 
-            {/* Certification items */}
-            <div>
-              {CERTIFICATIONS.map((cert, i) => (
-                <a
-                  key={i}
-                  href={cert.link}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="cert-item"
-                  style={{
-                    opacity: vis2 ? 1 : 0,
-                    transform: vis2 ? "none" : "translateY(10px)",
-                    transition: `opacity 0.45s var(--expo-out) ${0.08 * i}s, transform 0.45s var(--expo-out) ${0.08 * i}s`,
-                  }}
-                >
-                  <div className="cert-icon-wrap">
-                    <CertIcon />
-                  </div>
-                  <div style={{ flex: 1 }}>
-                    <p className="cert-title">{cert.title}</p>
-                    <p className="cert-meta">@ {cert.issuer} · {cert.date}</p>
-                  </div>
-                  <span className="cert-arrow">
-                    <ArrowIcon />
-                  </span>
-                </a>
-              ))}
-            </div>
+            <div className="edu-sec-divider" />
+
+            {/* Cert items */}
+            {CERTIFICATIONS.map((cert, i) => (
+              <motion.a
+                key={i}
+                href={cert.link}
+                target="_blank"
+                rel="noreferrer"
+                className="cert-item"
+                initial={{ opacity: 0, y: 14, rotateX: 6 }}
+                animate={vis2 ? { opacity: 1, y: 0, rotateX: 0 } : {}}
+                transition={{ duration: 0.46, ease: [0.22, 1, 0.36, 1], delay: i * 0.08 }}
+              >
+                <div className="cert-icon-box"><CertIcon /></div>
+                <div style={{ flex: 1 }}>
+                  <p className="cert-title-txt">{cert.title}</p>
+                  <p className="cert-meta-txt">@ {cert.issuer} · {cert.date}</p>
+                </div>
+                <span className="cert-arrow-icon"><ArrowIcon /></span>
+              </motion.a>
+            ))}
           </div>
         </div>
       </section>

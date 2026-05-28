@@ -1,4 +1,5 @@
 "use client";
+import { useTheme } from "./ThemeProvider";
 
 const MONO = "'Geist Mono', monospace";
 const SF = "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', sans-serif";
@@ -19,7 +20,10 @@ const NAV_LINKS = [
 ];
 
 export function Footer() {
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
   const year = new Date().getFullYear();
+  const avatarSrc = isDark ? "/avatar-dark.jpg" : "/avatar-light.jpg";
 
   return (
     <>
@@ -35,38 +39,59 @@ export function Footer() {
         .footer-inner {
           max-width: 1060px;
           margin: 0 auto;
-          padding: 40px 32px 36px;
+          padding: 44px 32px 36px;
         }
         .footer-top {
           display: grid;
-          grid-template-columns: 1fr auto auto;
-          gap: 40px;
+          grid-template-columns: 1.2fr 1fr 1fr;
+          gap: 44px;
           align-items: flex-start;
-          margin-bottom: 32px;
+          margin-bottom: 36px;
         }
-        .footer-brand-logo {
-          font-family: ${MONO};
-          font-weight: 900;
-          font-size: 20px;
+        .footer-avatar-wrap {
+          width: 46px; height: 46px;
+          border-radius: 50%;
+          overflow: hidden;
+          border: 2px solid var(--border);
+          flex-shrink: 0;
+          margin-bottom: 10px;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+          transition: box-shadow 0.2s, border-color 0.2s;
+        }
+        .footer-avatar-wrap:hover {
+          box-shadow: 0 4px 16px rgba(0,0,0,0.28);
+          border-color: var(--text-muted);
+        }
+        .footer-avatar-wrap img {
+          width: 100%; height: 100%;
+          object-fit: cover;
+          display: block;
+          border-radius: 50%;
+          image-rendering: high-quality;
+        }
+        .footer-brand-name {
+          font-family: ${SF};
+          font-weight: 700;
+          font-size: 14.5px;
           color: var(--text-primary);
-          letter-spacing: -0.05em;
-          margin-bottom: 6px;
+          letter-spacing: -0.02em;
+          margin-bottom: 4px;
         }
         .footer-brand-desc {
           font-size: 12px;
           color: var(--text-muted);
           line-height: 1.6;
           font-family: ${SF};
-          max-width: 220px;
+          max-width: 200px;
         }
         .footer-col-title {
-          font-size: 11px;
+          font-size: 10.5px;
           font-weight: 600;
-          letter-spacing: 0.07em;
+          letter-spacing: 0.08em;
           text-transform: uppercase;
           color: var(--text-muted);
           font-family: ${MONO};
-          margin-bottom: 12px;
+          margin-bottom: 13px;
         }
         .footer-link {
           display: block;
@@ -74,59 +99,49 @@ export function Footer() {
           color: var(--text-secondary);
           font-family: ${SF};
           text-decoration: none;
-          padding: 3px 0;
+          padding: 3.5px 0;
           transition: color 0.15s;
         }
         .footer-link:hover { color: var(--text-primary); }
         .footer-bottom {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
           padding-top: 24px;
           border-top: 1px solid var(--border);
-          flex-wrap: wrap;
-          gap: 10px;
+          text-align: center;
         }
         .footer-copy {
           font-size: 11.5px;
           color: var(--text-muted);
           font-family: ${MONO};
         }
-        .footer-made {
-          font-size: 11.5px;
-          color: var(--text-muted);
-          font-family: ${SF};
-        }
 
         @media (max-width: 720px) {
-          .footer-inner { padding: 32px 22px 28px; }
+          .footer-inner { padding: 36px 22px 28px; }
           .footer-top { grid-template-columns: 1fr 1fr; gap: 28px; }
           .footer-top > :first-child { grid-column: 1 / -1; }
         }
         @media (max-width: 480px) {
           .footer-inner { padding: 28px 16px 24px; }
-          .footer-top { grid-template-columns: 1fr; gap: 22px; }
+          .footer-top { grid-template-columns: 1fr; gap: 24px; }
           .footer-top > :first-child { grid-column: auto; }
-          .footer-bottom { flex-direction: column; align-items: flex-start; gap: 6px; }
         }
       `}</style>
 
-      <div className="section-separator" />
       <footer className="footer-root">
         <div className="footer-inner">
           {/* Top grid */}
           <div className="footer-top">
-            {/* Brand */}
+            {/* Brand with avatar */}
             <div>
-              <div className="footer-brand-logo">
-                IT<span style={{ color: "var(--text-muted)" }}>.</span>
+              <div className="footer-avatar-wrap">
+                <img key={avatarSrc} src={avatarSrc} alt="Indresh Thakur" />
               </div>
+              <p className="footer-brand-name">Indresh Thakur</p>
               <p className="footer-brand-desc">
-                Indresh Thakur — Full-Stack &amp; AI Developer building modern, scalable digital experiences.
+                Full-Stack &amp; AI Developer building modern, scalable digital experiences.
               </p>
             </div>
 
-            {/* Navigation col */}
+            {/* Navigation */}
             <div>
               <p className="footer-col-title">Navigation</p>
               {NAV_LINKS.map(l => (
@@ -134,7 +149,7 @@ export function Footer() {
               ))}
             </div>
 
-            {/* Social col */}
+            {/* Connect */}
             <div>
               <p className="footer-col-title">Connect</p>
               {SOCIAL_LINKS.map(l => (
@@ -145,10 +160,9 @@ export function Footer() {
             </div>
           </div>
 
-          {/* Bottom bar */}
+          {/* Bottom copyright centered */}
           <div className="footer-bottom">
             <span className="footer-copy">© {year} Indresh Thakur. All rights reserved.</span>
-            <span className="footer-made">Built with Next.js &amp; 💙</span>
           </div>
         </div>
       </footer>
