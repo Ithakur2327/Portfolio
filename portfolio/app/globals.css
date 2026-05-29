@@ -809,3 +809,126 @@ html.light .gold-word {
 .marquee-fade {
   -webkit-overflow-scrolling: touch;
 }
+/* 
+* ═══════════════════════════════════════════════════════════
+   PERFORMANCE — GPU COMPOSITING & 144Hz SMOOTHNESS
+   All animations are compositor-only (transform/opacity).
+   No layout or paint triggers in animation paths.
+═══════════════════════════════════════════════════════════ */ */
+
+/* Force GPU layer for every animated element */
+.h-profile,
+.h-info-wrap,
+.h-avatar,
+.logo-avatar,
+.logo-i,
+[class*="fs-"],
+.s-tile,
+.lang-pill-item,
+.gh-cell,
+.stat-card-3d,
+.nav-root,
+.mobile-menu {
+  will-change: transform;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+/* Section reveal — use transform+opacity only (no layout props) */
+section,
+.about-panels > *,
+.edu-card,
+.proj-card {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+/* Smooth scroll — native, GPU composited */
+html {
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Prevent costly repaints on hover for interactive tiles */
+.s-tile,
+.cert-item,
+.lang-pill-item,
+.gh-cell {
+  transform: translateZ(0);
+  transition-property: transform, opacity, background, box-shadow;
+  transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* GitHub contribution cell hover — compositor only */
+.gh-cell:hover {
+  transform: scale(1.35) translateZ(0);
+}
+
+/* Stat card hover — compositor only */
+.stat-card-3d {
+  transition: transform 0.28s cubic-bezier(0.16,1,0.3,1),
+              box-shadow 0.28s cubic-bezier(0.16,1,0.3,1);
+  transform: translateZ(0);
+}
+.stat-card-3d:hover {
+  transform: translateY(-5px) rotateX(2deg) rotateY(-1deg) translateZ(0);
+}
+
+/* Lang pill hover — compositor only */
+.lang-pill-item:hover {
+  transform: translateY(-2px) translateZ(0);
+}
+
+/* Page wrapper — isolate stacking context */
+.page-wrapper {
+  isolation: isolate;
+  contain: layout style;
+}
+
+/* Reduce motion for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ── Low-end device optimizations ── */
+@media (max-width: 760px) {
+  /* Cheaper backdrop on mobile — less GPU memory pressure */
+  .nav-root {
+    backdrop-filter: blur(10px) saturate(140%);
+    -webkit-backdrop-filter: blur(10px) saturate(140%);
+  }
+  .mobile-menu {
+    backdrop-filter: blur(10px) saturate(140%);
+    -webkit-backdrop-filter: blur(10px) saturate(140%);
+  }
+
+  /* Disable 3D perspective on low-width — avoids compositing explosion */
+  .stat-card-3d {
+    transform: none !important;
+    transition: box-shadow 0.2s, background 0.2s;
+  }
+  .stat-card-3d:hover {
+    transform: translateY(-3px) translateZ(0) !important;
+  }
+
+  /* Disable gold-word glow on mobile — expensive filter */
+  .name-highlight {
+    box-shadow: none !important;
+  }
+}
+
+/* ── Framer Motion velocity hints ── */
+[data-framer-appear],
+[style*="translateY"],
+[style*="opacity"] {
+  will-change: transform, opacity;
+}

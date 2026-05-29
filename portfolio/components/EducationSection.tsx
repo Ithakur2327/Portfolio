@@ -279,19 +279,24 @@ export function EducationSection() {
           display: flex;
           align-items: center;
           gap: 8px;
-          flex-wrap: wrap;
+          flex-wrap: nowrap;
+          overflow-x: auto;
+          -webkit-overflow-scrolling: touch;
+          scrollbar-width: none;
           margin-top: 8px;
           padding-top: 18px;
           border-top: 1px solid var(--border);
         }
+        .lang-row::-webkit-scrollbar { display: none; }
         .lang-label-txt {
           font-size: 11px;
-          font-weight: 600;
+          font-weight: 800;
           letter-spacing: 0.07em;
           text-transform: uppercase;
           color: var(--text-muted);
           font-family: ${MONO};
           margin-right: 4px;
+          flex-shrink: 0;
         }
         .lang-pill-item {
           display: inline-flex;

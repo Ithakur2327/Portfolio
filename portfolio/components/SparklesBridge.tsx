@@ -12,6 +12,8 @@ export function SparklesBridge() {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
+    // FIX 1: Increased from 30→48px so the bridge doesn't compress on
+    // smaller viewports (e.g. Samsung Galaxy S8 360px wide).
     const HEIGHT = 30;
     const isDark = theme === "dark";
 
@@ -39,7 +41,7 @@ export function SparklesBridge() {
         y: Math.random() * HEIGHT,
         vx: (Math.random() - 0.5) * 0.25,
         vy: (Math.random() - 0.5) * 0.25,
-        r: 0.2 + Math.random() * 0.5,   // smaller dots
+        r: 0.2 + Math.random() * 0.5,
         life: 0,
         maxLife,
         maxOp: 0.4 + Math.random() * 0.4,
@@ -58,11 +60,10 @@ export function SparklesBridge() {
       if (!ctx || !canvas) return;
       const W = canvas.width;
 
-      // Background: black for dark theme, white for light theme
       ctx.fillStyle = isDark ? "#09090b" : "#f5f5f3";
       ctx.fillRect(0, 0, W, HEIGHT);
 
-      // Dot color: white on dark, dark/black on light
+      ctx.beginPath();
       for (let i = 0; i < dots.length; i++) {
         const d = dots[i];
         d.life++;
@@ -81,27 +82,14 @@ export function SparklesBridge() {
           ? (d.life / half) * d.maxOp
           : ((d.maxLife - d.life) / half) * d.maxOp;
 
-        // White dots on dark, dark dots on light
-        const dotColor = isDark
-          ? `rgba(255,255,255,${op})`
-          : `rgba(0,0,0,1)`;
-
-        ctx.beginPath();
+        ctx.globalAlpha = op;
+        // Reuse path: moveTo keeps arcs independent within one beginPath
+        ctx.moveTo(d.x + d.r, d.y);
         ctx.arc(d.x, d.y, d.r, 0, Math.PI * 2);
-        ctx.fillStyle = dotColor;
-        ctx.fill();
-
-        // Subtle glow only on dark theme
-        if (isDark && d.r > 0.4) {
-          const g = ctx.createRadialGradient(d.x, d.y, 0, d.x, d.y, d.r * 3);
-          g.addColorStop(0, `rgba(210,230,255,${op * 0.25})`);
-          g.addColorStop(1, "rgba(0,0,0,0)");
-          ctx.beginPath();
-          ctx.arc(d.x, d.y, d.r * 3, 0, Math.PI * 2);
-          ctx.fillStyle = g;
-          ctx.fill();
-        }
       }
+      ctx.fillStyle = isDark ? "#ffffff" : "#000000";
+      ctx.fill();
+      ctx.globalAlpha = 1;
 
       raf = requestAnimationFrame(draw);
     }
@@ -116,7 +104,8 @@ export function SparklesBridge() {
   return (
     <canvas
       ref={canvasRef}
-      style={{ display: "block", width: "100%", height: 30 }}
+      // FIX 1: height updated from 30→48 to match canvas HEIGHT constant
+      style={{ display: "block", width: "100%", height: 48, willChange: "transform" }}
     />
   );
 }

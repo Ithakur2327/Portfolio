@@ -87,7 +87,7 @@ function GoldWord({
   const s = Math.max(0, (idx - 0.2) / total);
   const e = Math.min(1, (idx + 0.4) / total);
   const raw = useTransform(progress, [s, e], [0, 1]);
-  const p = useSpring(raw, { stiffness: 800, damping: 32, mass: 0.2 });
+  const p = useSpring(raw, { stiffness: 400, damping: 28, mass: 0.2 });
   const opacity = useTransform(p, [0, 0.15, 1], [0.25, 0.65, 1]);
 
   if (isName) {
@@ -114,7 +114,7 @@ function GoldWord({
 function ScrollRevealText() {
   const ref = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start 0.85", "center 0.6"] });
-  const smooth = useSpring(scrollYProgress, { stiffness: 200, damping: 26, restDelta: 0.001 });
+  const smooth = useSpring(scrollYProgress, { stiffness: 120, damping: 20, restDelta: 0.001 });
   const paras = parse(ABOUT_TEXT);
   const total = paras.flat().filter((t) => t.hl).length;
 
@@ -389,11 +389,14 @@ function GitHubGraph({ username = "Ithakur2327" }: { username?: string }) {
 function ProgressBar({ pct, color }: { pct: number; color: string }) {
   return (
     <div style={{ position: "relative", height: 6, borderRadius: 99, background: "rgba(128,128,128,0.15)", overflow: "hidden" }}>
-      <motion.div
-        initial={{ width: 0 }}
-        animate={{ width: `${pct}%` }}
-        transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
-        style={{ position: "absolute", left: 0, top: 0, bottom: 0, borderRadius: 99, background: color }}
+      <div
+        style={{
+          position: "absolute", left: 0, top: 0, bottom: 0,
+          borderRadius: 99, background: color,
+          width: `${pct}%`,
+          transform: "translateZ(0)",
+          animation: "progressFill 1.2s cubic-bezier(0.16, 1, 0.3, 1) 0.2s both",
+        }}
       />
     </div>
   );
@@ -407,9 +410,8 @@ function DiffCard({ label, solved, total, color }: { label: string; solved: numb
   const bgAlpha  = label === "Easy" ? "rgba(74,222,128,0.07)"   : label === "Medium" ? "rgba(251,146,60,0.07)"  : "rgba(248,113,113,0.07)";
   const bdrAlpha = label === "Easy" ? "rgba(74,222,128,0.18)"   : label === "Medium" ? "rgba(251,146,60,0.18)"  : "rgba(248,113,113,0.18)";
   return (
-    <motion.div
-      whileHover={{ y: -3, scale: 1.03 }}
-      transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+    <div
+      className="diff-card-hover"
       style={{
         flex: 1,
         minWidth: 0,
@@ -419,13 +421,22 @@ function DiffCard({ label, solved, total, color }: { label: string; solved: numb
         border: `1px solid ${bdrAlpha}`,
         boxShadow: `0 2px 8px rgba(0,0,0,0.12)`,
         cursor: "default",
+        transition: "transform 0.2s cubic-bezier(0.16,1,0.3,1), box-shadow 0.2s",
+        willChange: "transform",
+        transform: "translateZ(0)",
+      }}
+      onMouseEnter={e => {
+        (e.currentTarget as HTMLElement).style.transform = "translateY(-3px) scale(1.03) translateZ(0)";
+      }}
+      onMouseLeave={e => {
+        (e.currentTarget as HTMLElement).style.transform = "translateZ(0)";
       }}
     >
       <div style={{ fontSize: 10, fontWeight: 700, color, fontFamily: MONO, letterSpacing: "0.05em", marginBottom: 5 }}>{label.toUpperCase()}</div>
       <div style={{ fontSize: 20, fontWeight: 800, color: "var(--text-primary)", fontFamily: MONO, letterSpacing: "-0.04em", lineHeight: 1 }}>{solved}</div>
       <div style={{ fontSize: 10, color: "var(--text-muted)", fontFamily: MONO, marginBottom: 8 }}>/ {total}</div>
       <ProgressBar pct={pct} color={color} />
-    </motion.div>
+    </div>
   );
 }
 
@@ -672,7 +683,7 @@ export function AboutSection() {
         .about-content {
           max-width: 1060px;
           margin: 0 auto;
-          padding: 0 32px 40px;
+          padding: 0 20px 40px;
         }
 
         @media (max-width: 860px) {

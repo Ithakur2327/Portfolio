@@ -37,9 +37,13 @@ export function Avatar() {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const SIZE = 320;
-    canvas.width  = SIZE;
-    canvas.height = SIZE;
+  const DPR = Math.min(window.devicePixelRatio || 1, 3);
+const SIZE = 2048;
+
+canvas.width = SIZE * DPR;
+canvas.height = SIZE * DPR;
+
+
 
     const gl = canvas.getContext("webgl", {
       antialias: true, alpha: true, premultipliedAlpha: false,
@@ -83,31 +87,15 @@ export function Avatar() {
         if(d>1.){ gl_FragColor=vec4(0.); return; }
 
         /* hair warp — top 52% only */
-        float mask = smoothstep(.52,.05,uv.y);
+        float mask = smoothstep(.58,.02,uv.y);
         float t = time*.7;
-        float dx = (fbm(uv*vec2(3.,2.)+vec2(t*.28,t*.13))-.5)*2.*.018*mask;
-        float dy = (fbm(uv*vec2(2.,3.2)+vec2(-t*.18,t*.22)+4.3)-.5)*2.*.007*mask;
+      float dx = (fbm(uv*vec2(4.0,3.0)+vec2(t*.55,t*.30))-.5)*2.*.028*mask;
+float dy = (fbm(uv*vec2(3.0,4.0)+vec2(-t*.30,t*.45)+4.3)-.5)*2.*.012*mask;
         vec2 w = clamp(uv+vec2(dx,dy),.001,.999);
         vec4 col = texture2D(tex, w);
 
         /* eyelid blink */
-        if(blink>.005){
-          float e = blink*blink*(3.-2.*blink);
-          vec2 eL=vec2(.378,.535), eR=vec2(.602,.528);
-          for(int i=0;i<2;i++){
-            vec2 ec = i==0?eL:eR;
-            float nx=(uv.x-ec.x)/.092;
-            if(abs(nx)>1.1) continue;
-            float arc = nx*nx*.040*.3;
-            float ly  = ec.y-.040*.9 + e*.040*2.1 + arc;
-            if(uv.y<ly && uv.y>ec.y-.040*2.2){
-              vec4 sk=texture2D(tex,clamp(vec2(uv.x,ec.y-.040*1.6),.001,.999));
-              sk.rgb*=.70;
-              float f=smoothstep(ly+.006,ly-.003,uv.y);
-              col.rgb=mix(col.rgb,sk.rgb,f*e);
-            }
-          }
-        }
+       
 
         col.a *= smoothstep(1.,.96,d);
         gl_FragColor = col;
@@ -138,8 +126,21 @@ export function Avatar() {
       const tx = gl.createTexture()!;
       gl.bindTexture(gl.TEXTURE_2D, tx);
       gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+
+const ext =
+  gl.getExtension("EXT_texture_filter_anisotropic") ||
+  gl.getExtension("WEBKIT_EXT_texture_filter_anisotropic") ||
+  gl.getExtension("MOZ_EXT_texture_filter_anisotropic");
+
+if (ext) {
+  gl.texParameterf(
+    gl.TEXTURE_2D,
+    ext.TEXTURE_MAX_ANISOTROPY_EXT,
+    16
+  );
+}
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
       return tx;
@@ -205,7 +206,7 @@ export function Avatar() {
         const tex = isDarkRef.current ? G.texD : G.texL;
         if (!tex) return;
 
-        gl.viewport(0, 0, SIZE, SIZE);
+       gl.viewport(0, 0, canvas.width, canvas.height);
         gl.clearColor(0, 0, 0, 0);
         gl.clear(gl.COLOR_BUFFER_BIT);
         gl.activeTexture(gl.TEXTURE0);
@@ -241,25 +242,26 @@ export function Avatar() {
   return (
     <div 
   style={{
-    position: "relative",
-    width: "100%",
-    height: "100%",
-    aspectRatio: "1/1",
-    flexShrink: 0,
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-  }}
->
-      <canvas
-        ref={canvasRef}
-       style={{
   width: "100%",
   height: "100%",
-  objectFit: "cover",
+  maxWidth: "100%",
+  maxHeight: "100%",
   borderRadius: "50%",
   display: "block",
 }}
+>
+    <canvas
+  ref={canvasRef}
+  style={{
+    width: "100%",
+    height: "100%",
+    maxWidth: "100%",
+    maxHeight: "100%",
+    borderRadius: "50%",
+    display: "block",
+    imageRendering: "auto",
+  }}
+
       />
       </div>
   );
