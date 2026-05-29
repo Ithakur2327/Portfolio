@@ -814,7 +814,7 @@ html.light .gold-word {
    PERFORMANCE — GPU COMPOSITING & 144Hz SMOOTHNESS
    All animations are compositor-only (transform/opacity).
    No layout or paint triggers in animation paths.
-═══════════════════════════════════════════════════════════ */ */
+═══════════════════════════════════════════════════════════ */
 
 /* Force GPU layer for every animated element */
 .h-profile,
