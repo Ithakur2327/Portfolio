@@ -30,12 +30,23 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        {/* DNS prefetch + preconnect for zero-latency resource fetching */}
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        {/* Prefetch CDN used by skill icons — fetched later, no blocking */}
+        <link rel="dns-prefetch" href="https://cdn.jsdelivr.net" />
+        <link rel="dns-prefetch" href="https://registry.npmmirror.com" />
+        <link rel="dns-prefetch" href="https://upload.wikimedia.org" />
+        {/* Preload avatar images — above fold, critical for LCP */}
+        <link rel="preload" href="/avatar-dark.jpg"  as="image" type="image/jpeg" />
+        <link rel="preload" href="/avatar-light.jpg" as="image" type="image/jpeg" />
+      </head>
       <body>
         <ThemeProvider>
           <DotBackground />
           <div style={{ position: "relative", zIndex: 1 }}>
             {children}
-
           </div>
         </ThemeProvider>
       </body>

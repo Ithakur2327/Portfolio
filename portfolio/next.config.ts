@@ -1,37 +1,75 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  images: { unoptimized: true },
+  images: {
+    unoptimized: false,
+    formats: ["image/avif", "image/webp"],
+    minimumCacheTTL: 31536000,
+  },
 
-  // FIX: HTTP headers for GPU compositing hints + caching
   async headers() {
     return [
       {
         source: "/(.*)",
         headers: [
-          // Enable hardware acceleration hints
           { key: "X-Content-Type-Options", value: "nosniff" },
+          { key: "X-Frame-Options", value: "DENY" },
+          { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
         ],
       },
       {
-        // FIX: Cache static assets aggressively — avatars, fonts won't change
-        source: "/(:path*\\.jpg|:path*\\.png|:path*\\.webp|:path*\\.ico|:path*\\.svg)",
+        // Static Next.js chunks — versioned filenames, safe to cache forever
+        source: "/_next/static/:path*",
         headers: [
           { key: "Cache-Control", value: "public, max-age=31536000, immutable" },
         ],
       },
+      {
+        // Public images
+        source: "/:path*.jpg",
+        headers: [{ key: "Cache-Control", value: "public, max-age=31536000, immutable" }],
+      },
+      {
+        source: "/:path*.jpeg",
+        headers: [{ key: "Cache-Control", value: "public, max-age=31536000, immutable" }],
+      },
+      {
+        source: "/:path*.png",
+        headers: [{ key: "Cache-Control", value: "public, max-age=31536000, immutable" }],
+      },
+      {
+        source: "/:path*.webp",
+        headers: [{ key: "Cache-Control", value: "public, max-age=31536000, immutable" }],
+      },
+      {
+        source: "/:path*.avif",
+        headers: [{ key: "Cache-Control", value: "public, max-age=31536000, immutable" }],
+      },
+      {
+        source: "/:path*.ico",
+        headers: [{ key: "Cache-Control", value: "public, max-age=31536000, immutable" }],
+      },
+      {
+        source: "/:path*.svg",
+        headers: [{ key: "Cache-Control", value: "public, max-age=31536000, immutable" }],
+      },
+      {
+        source: "/:path*.woff2",
+        headers: [{ key: "Cache-Control", value: "public, max-age=31536000, immutable" }],
+      },
     ];
   },
 
-  // FIX: Compiler optimizations
   compiler: {
     removeConsole: process.env.NODE_ENV === "production",
   },
 
-  // FIX: Experimental — reduces JS bundle size
   experimental: {
-    optimizePackageImports: ["motion"],
+    optimizePackageImports: ["motion", "framer-motion", "lucide-react"],
   },
+
+  compress: true,
+  reactStrictMode: true,
 };
 
 export default nextConfig;

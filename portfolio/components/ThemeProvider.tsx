@@ -14,6 +14,7 @@ function applyTheme(t: Theme) {
   root.classList.remove("dark", "light");
   root.classList.add(t);
   root.setAttribute("data-theme", t);
+  // color-scheme: tells browser to use native dark/light scrollbars + form elements
   root.style.colorScheme = t;
 }
 
@@ -21,6 +22,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setThemeState] = useState<Theme>("dark");
 
   useEffect(() => {
+    // Read persisted preference immediately on mount
     const stored = localStorage.getItem("theme") as Theme | null;
     const resolved: Theme = stored === "light" ? "light" : "dark";
     setThemeState(resolved);
@@ -31,9 +33,11 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     // Two-tone directional sound: going dark = lower, going light = higher
     playThemeToggleSound(t === "dark");
 
-    if (typeof document !== "undefined" &&
-        typeof (document as any).startViewTransition === "function") {
-      (document as any).startViewTransition(() => {
+    if (
+      typeof document !== "undefined" &&
+      typeof (document as unknown as { startViewTransition?: (cb: () => void) => void }).startViewTransition === "function"
+    ) {
+      (document as unknown as { startViewTransition: (cb: () => void) => void }).startViewTransition(() => {
         setThemeState(t);
         applyTheme(t);
         localStorage.setItem("theme", t);
