@@ -81,7 +81,7 @@ html.light  { background: #f5f5f3; }
 }
 
 html {
-  /* Native smooth scroll — GPU composited, 120fps capable */
+  /* Native smooth scroll — GPU composited, 144hz capable */
   scroll-behavior: smooth;
   /* Space for fixed navbar */
   scroll-padding-top: 64px;
@@ -91,6 +91,12 @@ html {
   overflow-y: scroll;
   /* Prevent scroll bounce jank on iOS */
   overscroll-behavior-y: none;
+  /* Enable subpixel antialiasing for 8K-sharp text */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  /* High-frequency repaint hint */
+  image-rendering: -webkit-optimize-contrast;
 }
 
 body {
@@ -307,12 +313,17 @@ a, button {
 }
 
 /* ═══════════════════════════════════════════════════════════
-   ANIMATIONS — 120FPS OPTIMIZED
+   ANIMATIONS — 144FPS / 8K QUALITY OPTIMIZED
    All keyframes use ONLY transform + opacity (compositor-only)
    Never animate width/height/top/left/padding/margin (layout)
+   Spring-tuned easing for silky high-refresh motion
 ═══════════════════════════════════════════════════════════ */
 @keyframes fadeUp  {
-  from { opacity: 0; transform: translate3d(0, 14px, 0); }
+  from { opacity: 0; transform: translate3d(0, 18px, 0) scale3d(0.98, 0.98, 1); }
+  to   { opacity: 1; transform: translate3d(0, 0, 0) scale3d(1, 1, 1); }
+}
+@keyframes fadeUpSubtle  {
+  from { opacity: 0; transform: translate3d(0, 8px, 0); }
   to   { opacity: 1; transform: translate3d(0, 0, 0); }
 }
 @keyframes pulse   { 0%,100%{opacity:1} 50%{opacity:0.35} }
@@ -332,29 +343,43 @@ a, button {
   from { background-position: -200% center; }
   to   { background-position:  200% center; }
 }
+/* Slide handle glow pulse */
+@keyframes glowPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(255,255,255,0); }
+  50% { box-shadow: 0 0 16px 4px rgba(255,255,255,0.18); }
+}
+/* Track shimmer for slide-to-unlock */
+@keyframes trackShimmer {
+  0% { background-position: -300% center; }
+  100% { background-position: 300% center; }
+}
 
 .pulse    { animation: pulse 2s ease infinite; }
 .fade-up  { animation: fadeUp 0.5s var(--expo-out) forwards; }
 
-.stagger > * { opacity: 0; animation: fadeUp 0.5s var(--expo-out) forwards; }
-.stagger > *:nth-child(1) { animation-delay: 0.05s }
-.stagger > *:nth-child(2) { animation-delay: 0.10s }
-.stagger > *:nth-child(3) { animation-delay: 0.15s }
-.stagger > *:nth-child(4) { animation-delay: 0.20s }
-.stagger > *:nth-child(5) { animation-delay: 0.25s }
-.stagger > *:nth-child(6) { animation-delay: 0.30s }
-.stagger > *:nth-child(7) { animation-delay: 0.35s }
+.stagger > * { opacity: 0; animation: fadeUp 0.48s var(--expo-out) forwards; }
+.stagger > *:nth-child(1) { animation-delay: 0.04s }
+.stagger > *:nth-child(2) { animation-delay: 0.09s }
+.stagger > *:nth-child(3) { animation-delay: 0.13s }
+.stagger > *:nth-child(4) { animation-delay: 0.17s }
+.stagger > *:nth-child(5) { animation-delay: 0.21s }
+.stagger > *:nth-child(6) { animation-delay: 0.25s }
+.stagger > *:nth-child(7) { animation-delay: 0.29s }
 
-/* Reveal — compositor-only transition, no layout */
+/* Reveal — compositor-only transition, no layout, ultra-smooth */
 .reveal {
   opacity: 0;
-  transform: translate3d(0, 16px, 0);
-  transition: opacity 0.55s var(--expo-out), transform 0.55s var(--expo-out);
+  transform: translate3d(0, 20px, 0) scale3d(0.985, 0.985, 1);
+  transition:
+    opacity 0.6s var(--expo-out),
+    transform 0.6s var(--expo-out);
   will-change: opacity, transform;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
 }
 .reveal.visible {
   opacity: 1;
-  transform: translate3d(0, 0, 0);
+  transform: translate3d(0, 0, 0) scale3d(1, 1, 1);
   /* Release the layer after animation — critical for memory */
   will-change: auto;
 }
@@ -419,18 +444,20 @@ a, button {
 .about-item { display: flex; gap: 10px; font-size: 13.5px; color: var(--text-secondary); line-height: 1.7; padding: 3px 0; }
 .about-item::before { content: '—'; color: var(--text-muted); flex-shrink: 0; margin-top: 1px; font-family: 'Geist Mono', monospace; }
 
-/* Marquee — GPU composited via transform3d */
+/* Marquee — GPU composited via transform3d, ultra-smooth */
 .marquee-track { overflow: hidden; }
 .marquee-inner {
   display: flex; gap: 8px; width: max-content;
-  animation: marquee 28s linear infinite;
+  animation: marquee 32s linear infinite;
   will-change: transform;
-  transform: translateZ(0);
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
 }
 .marquee-inner:hover { animation-play-state: paused; }
 .marquee-fade {
-  mask: linear-gradient(90deg,transparent,black 8%,black 92%,transparent);
-  -webkit-mask: linear-gradient(90deg,transparent,black 8%,black 92%,transparent);
+  mask: linear-gradient(90deg,transparent,black 6%,black 94%,transparent);
+  -webkit-mask: linear-gradient(90deg,transparent,black 6%,black 94%,transparent);
 }
 
 /* Cards — hover only uses transform3d (compositor) */
@@ -932,4 +959,30 @@ html {
 [style*="translateY"],
 [style*="opacity"] {
   will-change: transform, opacity;
+}
+/* ═══════════════════════════════════════════════════════════
+   SLIDE-TO-UNLOCK — Ultra smooth 144hz
+═══════════════════════════════════════════════════════════ */
+.slide-handle {
+  will-change: transform;
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+  animation: glowPulse 2.4s ease-in-out infinite;
+}
+.slide-handle:active { animation: none; }
+
+/* Theme btn spring bounce */
+.theme-btn {
+  transform: translateZ(0);
+  transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1),
+              background 0.15s ease;
+}
+.theme-btn:hover  { transform: translateZ(0) scale(1.12); }
+.theme-btn:active { transform: translateZ(0) scale(0.88); transition-duration: 0.08s; }
+
+/* Project cards spring hover */
+.proj-grid > * {
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  transform: translate3d(0, 0, 0);
 }

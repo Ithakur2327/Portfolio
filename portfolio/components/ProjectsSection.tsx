@@ -1,5 +1,5 @@
 "use client";
-import { useRef, useCallback, useState, useEffect, useId } from "react";
+import { useRef, useCallback, useState, useEffect, useId, useContext, createContext } from "react";
 import { createPortal } from "react-dom";
 import { useReveal } from "./useReveal";
 import {
@@ -9,6 +9,7 @@ import {
   useTransform,
   AnimatePresence,
 } from "motion/react";
+import { playIOSUnlockSound, playTickSound } from "../lib/soundcn/sounds";
 
 const MONO = "'Geist Mono', 'SF Mono', monospace";
 const SF   = "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', sans-serif";
@@ -124,7 +125,6 @@ const PROJECTS = [
   },
 ];
 
-/* ─── Icons ─────────────────────────────────────────────── */
 const GithubIcon = () => (
   <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
     <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/>
@@ -137,54 +137,202 @@ const ExternalIcon = () => (
   </svg>
 );
 
-/* ─── Slide-to-unlock ───────────────────────────────────── */
+/* ─────────────────────────────────────────────────────────
+   SLIDE-TO-UNLOCK  —  exact reference pattern + iOS sound
+───────────────────────────────────────────────────────── */
+const HANDLE_W = 56;
+
 function SlideToUnlock({ onUnlock }: { onUnlock: () => void }) {
-  const trackRef = useRef<HTMLDivElement>(null);
-  const [dragging, setDragging] = useState(false);
-  const HANDLE = 52;
+  const trackRef  = useRef<HTMLDivElement>(null);
+  const audioCtxRef = useRef<AudioContext | null>(null);
+  const lastTickZone = useRef(-1);
+  const [isDragging, setIsDragging] = useState(false);
+
   const x = useMotionValue(0);
-  const textOpacity = useTransform(x, [0, HANDLE * 1.3], [1, 0]);
+  const textOpacity = useTransform(x, [0, HANDLE_W], [1, 0]);
+
+  // Lazy-init AudioContext on first interaction (avoids autoplay policy issues)
+  const getAudioCtx = useCallback(() => {
+    if (!audioCtxRef.current) {
+      audioCtxRef.current = new AudioContext();
+    }
+    if (audioCtxRef.current.state === "suspended") {
+      audioCtxRef.current.resume();
+    }
+    return audioCtxRef.current;
+  }, []);
+
+  // Tick sounds as user drags — 6 evenly spaced zones
+  useEffect(() => {
+    const unsubscribe = x.on("change", (v) => {
+      const trackW = (trackRef.current?.offsetWidth ?? 280) - HANDLE_W;
+      if (trackW <= 0 || v < 4) return;
+      const zone = Math.floor((v / trackW) * 6);
+      if (zone !== lastTickZone.current && zone >= 0 && zone <= 5) {
+        lastTickZone.current = zone;
+        const pitch = 0.75 + (zone / 5) * 0.75; // 0.75→1.5 ascending
+        try { playTickSound(getAudioCtx(), pitch); } catch { /* */ }
+      }
+    });
+    return unsubscribe;
+  }, [x, getAudioCtx]);
+
+  const onDragStart = useCallback(() => {
+    setIsDragging(true);
+    lastTickZone.current = -1;
+    getAudioCtx(); // warm up
+  }, [getAudioCtx]);
 
   const onDragEnd = useCallback(() => {
-    setDragging(false);
-    const maxX = (trackRef.current?.offsetWidth ?? 0) - HANDLE;
-    if (x.get() >= maxX * 0.88) {
-      onUnlock();
+    setIsDragging(false);
+    const trackW = (trackRef.current?.offsetWidth ?? 280) - HANDLE_W;
+    const cur    = x.get();
+
+    if (cur >= trackW * 0.88) {
+      // Snap to end, play unlock sound, then call onUnlock
+      animate(x, trackW, {
+        type: "spring",
+        stiffness: 500,
+        damping: 40,
+        mass: 0.6,
+      });
+      playIOSUnlockSound(getAudioCtx());
+      setTimeout(() => onUnlock(), 160);
     } else {
-      animate(x, 0, { type: "spring", bounce: 0, duration: 0.28 });
+      // Snap back — zero bounce, fast
+      animate(x, 0, {
+        type: "spring",
+        bounce: 0,
+        duration: 0.28,
+      });
+      lastTickZone.current = -1;
     }
-  }, [x, onUnlock]);
+  }, [x, onUnlock, getAudioCtx]);
+
+  // Progress for handle color: white → green
+  const progress = useTransform(
+    x,
+    [0, (trackRef.current?.offsetWidth ?? 280) - HANDLE_W],
+    [0, 1]
+  );
+  const handleBg = useTransform(
+    progress,
+    [0, 1],
+    ["rgba(255,255,255,0.95)", "rgba(134,239,172,0.97)"]
+  );
 
   return (
-    <div style={{
-      width: 264,
-      background: "var(--bg-card)",
-      border: "1px solid var(--border)",
-      borderRadius: 14, padding: 4,
-      boxShadow: "0 6px 32px rgba(0,0,0,0.12)",
-    }}>
-      <div ref={trackRef} style={{ position: "relative", height: 48, display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <motion.span style={{ opacity: textOpacity, marginLeft: HANDLE + 10, pointerEvents: "none", userSelect: "none" }}>
-          <span style={{ fontSize: 13, fontWeight: 600, fontFamily: SF, color: "var(--text-muted)", letterSpacing: "0.01em" }}>
-            {dragging ? "release to unlock →" : "slide to unlock"}
+    <div
+      style={{
+        width: 280,
+        borderRadius: 18,
+        background: "var(--bg-card)",
+        border: "1px solid var(--border)",
+        boxShadow: "0 2px 16px rgba(0,0,0,0.10), inset 0 1px 0 rgba(255,255,255,0.05)",
+        padding: 4,
+        userSelect: "none",
+        WebkitUserSelect: "none",
+        position: "relative",
+        overflow: "hidden",
+      }}
+    >
+      {/* Shimmer overlay */}
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          background:
+            "linear-gradient(90deg,transparent 0%,rgba(255,255,255,0.045) 40%,rgba(255,255,255,0.09) 50%,rgba(255,255,255,0.045) 60%,transparent 100%)",
+          backgroundSize: "300% 100%",
+          animation: "trackShimmer 3.5s linear infinite",
+          borderRadius: "inherit",
+          pointerEvents: "none",
+        }}
+      />
+
+      {/* Track */}
+      <div
+        ref={trackRef}
+        style={{
+          position: "relative",
+          height: 52,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          overflow: "hidden",
+          borderRadius: 14,
+          touchAction: "none",
+        }}
+      >
+        {/* Label text — fades out as handle moves right */}
+        <motion.span
+          style={{
+            opacity: textOpacity,
+            marginLeft: HANDLE_W + 12,
+            pointerEvents: "none",
+            userSelect: "none",
+            WebkitUserSelect: "none",
+            position: "absolute",
+            left: 0,
+            right: 0,
+            textAlign: "center",
+          }}
+        >
+          <span
+            style={{
+              fontSize: 13,
+              fontWeight: 600,
+              fontFamily: SF,
+              color: "var(--text-muted)",
+              letterSpacing: "0.02em",
+            }}
+          >
+            {isDragging ? "release to unlock ›" : "slide to unlock  ›"}
           </span>
         </motion.span>
+
+        {/* Handle */}
         <motion.div
-          drag="x" dragConstraints={trackRef} dragElastic={0} dragMomentum={false}
-          onDragStart={() => setDragging(true)}
+          drag="x"
+          dragConstraints={trackRef}
+          dragElastic={0}
+          dragMomentum={false}
+          dragTransition={{ bounceStiffness: 600, bounceDamping: 40 }}
+          onDragStart={onDragStart}
           onDragEnd={onDragEnd}
           style={{
-            position: "absolute", top: 0, left: 0,
-            width: HANDLE, height: 48, x,
-            background: "rgba(255,255,255,0.93)", borderRadius: 10,
-            display: "flex", alignItems: "center", justifyContent: "center",
-            color: "#333", boxShadow: "0 2px 10px rgba(0,0,0,0.18)",
-            cursor: "grab", zIndex: 2,
+            position: "absolute",
+            top: 0,
+            left: 0,
+            width: HANDLE_W,
+            height: 52,
+            x,
+            background: handleBg,
+            borderRadius: 12,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            color: "#333",
+            boxShadow: "0 2px 10px rgba(0,0,0,0.20), 0 1px 2px rgba(0,0,0,0.08)",
+            cursor: "grab",
+            zIndex: 2,
+            touchAction: "none",
+            willChange: "transform",
           }}
-          whileTap={{ cursor: "grabbing", scale: 0.97 }}
+          whileTap={{ cursor: "grabbing" }}
+          whileHover={{
+            boxShadow: "0 4px 18px rgba(0,0,0,0.28)",
+            transition: { duration: 0.18 },
+          }}
         >
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M24 12 12.75 3v4.696H0v8.608h12.75V21z"/>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="currentColor"
+          >
+            <path d="M24 12 12.75 3v4.696H0v8.608h12.75V21z" />
           </svg>
         </motion.div>
       </div>
@@ -192,7 +340,9 @@ function SlideToUnlock({ onUnlock }: { onUnlock: () => void }) {
   );
 }
 
-/* ─── Project Modal — portal mounted on document.body ───── */
+/* ─────────────────────────────────────────────────────────
+   PROJECT MODAL
+───────────────────────────────────────────────────────── */
 function ProjectModal({
   proj,
   onClose,
@@ -221,7 +371,6 @@ function ProjectModal({
 
   const content = (
     <>
-      {/* Backdrop */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -231,19 +380,17 @@ function ProjectModal({
         style={{
           position: "fixed",
           top: 0, left: 0, right: 0, bottom: 0,
-          background: "rgba(0,0,0,0.72)",
-          backdropFilter: "blur(6px)",
-          WebkitBackdropFilter: "blur(6px)",
+          background: "rgba(0,0,0,0.78)",
+          backdropFilter: "blur(8px) saturate(160%)",
+          WebkitBackdropFilter: "blur(8px) saturate(160%)",
           zIndex: 9000,
         }}
       />
-
-      {/* Panel */}
       <motion.div
-        initial={{ opacity: 0, scale: 0.88, y: 20 }}
+        initial={{ opacity: 0, scale: 0.86, y: 32 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
-        exit={{ opacity: 0, scale: 0.88, y: 20, transition: { duration: 0.18, ease: [0.4, 0, 1, 1] } }}
-        transition={{ type: "spring", stiffness: 340, damping: 30 }}
+        exit={{ opacity: 0, scale: 0.86, y: 32, transition: { duration: 0.18, ease: [0.4, 0, 1, 1] } }}
+        transition={{ type: "spring", stiffness: 360, damping: 26, mass: 0.9 }}
         style={{
           position: "fixed",
           top: 0, left: 0, right: 0, bottom: 0,
@@ -261,12 +408,11 @@ function ProjectModal({
             maxWidth: 860,
             maxHeight: "calc(100vh - 24px)",
             overflowY: "auto",
-            WebkitOverflowScrolling: "touch" as React.CSSProperties["WebkitOverflowScrolling"],
             background: "var(--bg-card)",
             border: `1px solid ${proj.accentBorder}`,
             borderTop: `3px solid ${proj.accent}`,
-            borderRadius: 16,
-            boxShadow: `0 0 0 1px ${proj.accentBorder}, 0 24px 80px rgba(0,0,0,0.6)`,
+            borderRadius: 18,
+            boxShadow: `0 0 0 1px ${proj.accentBorder}, 0 32px 96px rgba(0,0,0,0.65)`,
             scrollbarWidth: "none" as const,
             pointerEvents: "auto",
           }}
@@ -283,14 +429,10 @@ function ProjectModal({
               .modal-two-col { grid-template-columns: 1fr; gap: 14px; }
             }
           `}</style>
-
           <div className="modal-scroll" style={{ padding: "20px" }}>
-            {/* Header */}
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, marginBottom: 18, flexWrap: "wrap" as const }}>
               <div style={{ display: "flex", alignItems: "center", gap: 9, flexWrap: "wrap" as const }}>
-                <h3 style={{ fontSize: "clamp(16px, 2.5vw, 22px)", fontWeight: 800, color: "var(--text-primary)", letterSpacing: "-0.03em", fontFamily: SF, margin: 0 }}>
-                  {proj.name}
-                </h3>
+                <h3 style={{ fontSize: "clamp(16px, 2.5vw, 22px)", fontWeight: 800, color: "var(--text-primary)", letterSpacing: "-0.03em", fontFamily: SF, margin: 0 }}>{proj.name}</h3>
                 <span style={{ fontFamily: MONO, fontSize: 10.5, color: "var(--text-muted)" }}>{proj.year}</span>
                 {proj.featured && (
                   <span style={{ fontSize: 8.5, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase" as const, color: proj.accent, background: proj.accentBg, border: `1px solid ${proj.accentBorder}`, padding: "2px 7px", borderRadius: 20 }}>Featured</span>
@@ -305,16 +447,10 @@ function ProjectModal({
                 </svg>
               </button>
             </div>
-
-            {/* Two col */}
             <div className="modal-two-col">
-              <img
-                src={proj.img} alt={proj.name}
-                style={{ width: "100%", height: 180, objectFit: "cover", objectPosition: "center top", display: "block", borderRadius: 10 }}
-              />
+              <img src={proj.img} alt={proj.name} style={{ width: "100%", height: 180, objectFit: "cover", objectPosition: "center top", display: "block", borderRadius: 10 }} />
               <div>
                 <p style={{ fontSize: 13, color: "var(--text-secondary)", lineHeight: 1.8, marginBottom: 16 }}>{proj.longDesc}</p>
-
                 <p style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase" as const, color: "var(--text-muted)", marginBottom: 8, fontFamily: MONO }}>Tech Stack</p>
                 <div style={{ display: "flex", flexWrap: "wrap" as const, gap: 5, marginBottom: 18 }}>
                   {proj.tags.map(tag => {
@@ -327,14 +463,9 @@ function ProjectModal({
                     );
                   })}
                 </div>
-
                 <div style={{ display: "flex", gap: 9, flexWrap: "wrap" as const }}>
-                  <a href={proj.github} target="_blank" rel="noreferrer"
-                    style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "9px 18px", borderRadius: 9, background: "var(--bg-hover)", border: "1px solid var(--border)", color: "var(--text-primary)", fontSize: 12.5, fontWeight: 600, textDecoration: "none", fontFamily: SF }}
-                  ><GithubIcon /> GitHub</a>
-                  <a href={proj.live} target="_blank" rel="noreferrer"
-                    style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "9px 18px", borderRadius: 9, background: proj.accentBg, border: `1px solid ${proj.accentBorder}`, color: proj.accent, fontSize: 12.5, fontWeight: 700, textDecoration: "none", fontFamily: SF }}
-                  ><ExternalIcon /> Live Demo</a>
+                  <a href={proj.github} target="_blank" rel="noreferrer" style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "9px 18px", borderRadius: 9, background: "var(--bg-hover)", border: "1px solid var(--border)", color: "var(--text-primary)", fontSize: 12.5, fontWeight: 600, textDecoration: "none", fontFamily: SF }}><GithubIcon /> GitHub</a>
+                  <a href={proj.live} target="_blank" rel="noreferrer" style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "9px 18px", borderRadius: 9, background: proj.accentBg, border: `1px solid ${proj.accentBorder}`, color: proj.accent, fontSize: 12.5, fontWeight: 700, textDecoration: "none", fontFamily: SF }}><ExternalIcon /> Live Demo</a>
                 </div>
               </div>
             </div>
@@ -347,7 +478,9 @@ function ProjectModal({
   return createPortal(content, document.body);
 }
 
-/* ─── Compact card ──────────────────────────────────────── */
+/* ─────────────────────────────────────────────────────────
+   PROJECT CARD
+───────────────────────────────────────────────────────── */
 function ProjectCard({ proj, index, visible, onOpen }: {
   proj: typeof PROJECTS[0];
   index: number;
@@ -356,7 +489,6 @@ function ProjectCard({ proj, index, visible, onOpen }: {
   onOpen: (rect: DOMRect) => void;
 }) {
   const cardRef = useRef<HTMLDivElement>(null);
-
   const handleClick = useCallback(() => {
     const rect = cardRef.current?.getBoundingClientRect() ?? null;
     onOpen(rect as DOMRect);
@@ -365,10 +497,19 @@ function ProjectCard({ proj, index, visible, onOpen }: {
   return (
     <motion.div
       ref={cardRef}
-      style={{
+      initial={false}
+      animate={{
         opacity: visible ? 1 : 0,
-        transform: visible ? "none" : "translateY(20px)",
-        transition: `opacity 0.45s cubic-bezier(0.16,1,0.3,1) ${0.06 * index}s, transform 0.45s cubic-bezier(0.16,1,0.3,1) ${0.06 * index}s`,
+        y: visible ? 0 : 20,
+      }}
+      transition={{
+        delay: visible ? 0.06 * index : 0,
+        type: "spring",
+        stiffness: 320,
+        damping: 28,
+        mass: 0.8,
+      }}
+      style={{
         borderRadius: 12,
         background: "var(--bg-card)",
         border: "1px solid var(--border)",
@@ -377,53 +518,56 @@ function ProjectCard({ proj, index, visible, onOpen }: {
         position: "relative" as const,
         display: "flex",
         flexDirection: "column" as const,
+        willChange: "transform, opacity",
+        backfaceVisibility: "hidden" as const,
+        WebkitBackfaceVisibility: "hidden" as const,
       }}
       onClick={handleClick}
-      whileHover={{ y: -2, transition: { duration: 0.18 } }}
-      onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = proj.accentBorder; }}
-      onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = "var(--border)"; }}
+      whileHover={{
+        y: -5,
+        scale: 1.018,
+        boxShadow: `0 12px 36px rgba(0,0,0,0.18), 0 2px 8px rgba(0,0,0,0.10)`,
+        borderColor: proj.accentBorder,
+        transition: { type: "spring", stiffness: 400, damping: 22, mass: 0.7 },
+      }}
+      whileTap={{
+        scale: 0.975,
+        transition: { type: "spring", stiffness: 600, damping: 30 },
+      }}
     >
       <div style={{ overflow: "hidden", flexShrink: 0 }}>
-        <img
-          src={proj.img} alt={proj.name}
-          style={{ width: "100%", height: 110, objectFit: "cover", objectPosition: "center top", display: "block", transition: "transform 0.35s ease" }}
-          onMouseEnter={e => (e.currentTarget as HTMLImageElement).style.transform = "scale(1.04)"}
-          onMouseLeave={e => (e.currentTarget as HTMLImageElement).style.transform = "scale(1)"}
+        <motion.img
+          src={proj.img}
+          alt={proj.name}
+          style={{ width: "100%", height: 110, objectFit: "cover", objectPosition: "center top", display: "block" }}
+          whileHover={{ scale: 1.07 }}
+          transition={{ type: "spring", stiffness: 260, damping: 22 }}
         />
       </div>
-
       <div style={{ padding: "10px 12px 10px", display: "flex", flexDirection: "column" as const, flex: 1 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 5, marginBottom: 5, flexWrap: "wrap" as const }}>
-          <span style={{ fontSize: 12.5, fontWeight: 700, color: "var(--text-primary)", letterSpacing: "-0.02em", fontFamily: SF, lineHeight: 1.2 }}>
-            {proj.name}
-          </span>
+          <span style={{ fontSize: 12.5, fontWeight: 700, color: "var(--text-primary)", letterSpacing: "-0.02em", fontFamily: SF, lineHeight: 1.2 }}>{proj.name}</span>
           <span style={{ fontFamily: MONO, fontSize: 9.5, color: "var(--text-muted)" }}>{proj.year}</span>
           {proj.featured && (
             <span style={{ fontSize: 8, fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase" as const, color: proj.accent, background: proj.accentBg, border: `1px solid ${proj.accentBorder}`, padding: "1px 5px", borderRadius: 20 }}>Featured</span>
           )}
         </div>
-
-        <p style={{
-          fontSize: 11, color: "var(--text-secondary)", lineHeight: 1.55,
-          margin: "0 0 auto", fontFamily: SF,
-          display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" as const,
-          overflow: "hidden",
-        }}>
+        <p style={{ fontSize: 11, color: "var(--text-secondary)", lineHeight: 1.55, margin: "0 0 auto", fontFamily: SF, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" as const, overflow: "hidden" }}>
           {proj.desc}
         </p>
-
         <div style={{ borderTop: "1px solid var(--border)", paddingTop: 7, marginTop: 9, display: "flex", alignItems: "center", justifyContent: "center", gap: 4, fontSize: 10, color: "var(--text-muted)", fontFamily: SF }}>
           Click to view full details
           <svg width="7" height="7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="9 18 15 12 9 6"/></svg>
         </div>
       </div>
-
       <div style={{ position: "absolute", bottom: 0, left: "15%", right: "15%", height: 1, background: `linear-gradient(90deg, transparent, ${proj.accent}44, transparent)`, pointerEvents: "none" }} />
     </motion.div>
   );
 }
 
-/* ─── Section ───────────────────────────────────────────── */
+/* ─────────────────────────────────────────────────────────
+   SECTION
+───────────────────────────────────────────────────────── */
 export function ProjectsSection() {
   const { ref: revealRef, visible } = useReveal();
   const [unlocked, setUnlocked] = useState(false);
@@ -431,14 +575,12 @@ export function ProjectsSection() {
   const sectionNodeRef = useRef<HTMLDivElement>(null);
   const uid = useId();
 
-  const setRefs = useCallback(
-    (node: HTMLDivElement | null) => {
-      (revealRef as React.MutableRefObject<HTMLDivElement | null>).current = node;
-      (sectionNodeRef as React.MutableRefObject<HTMLDivElement | null>).current = node;
-    },
-    [revealRef]
-  );
+  const setRefs = useCallback((node: HTMLDivElement | null) => {
+    (revealRef as React.MutableRefObject<HTMLDivElement | null>).current = node;
+    (sectionNodeRef as React.MutableRefObject<HTMLDivElement | null>).current = node;
+  }, [revealRef]);
 
+  // Reset lock when section scrolls out of view
   useEffect(() => {
     const el = sectionNodeRef.current;
     if (!el) return;
@@ -461,7 +603,7 @@ export function ProjectsSection() {
           marginBottom: 55,
           opacity: visible ? 1 : 0,
           transform: visible ? "none" : "translateY(14px)",
-          transition: "opacity 0.55s var(--expo-out), transform 0.55s var(--expo-out)",
+          transition: "opacity 0.6s var(--expo-out), transform 0.6s var(--expo-out)",
           borderBottom: "1px solid var(--line)",
         }}
       >
@@ -471,21 +613,27 @@ export function ProjectsSection() {
           borderTop: "1px solid var(--line)", borderBottom: "1px solid var(--line)",
         }}>
           <div style={{ maxWidth: 1060, margin: "0 auto", padding: "0 20px 32px" }}>
-
             <div style={{ paddingTop: 24, marginBottom: 4 }}>
-              <span style={{ fontSize: 28, fontWeight: 700, letterSpacing: "-0.03em", lineHeight: 1, fontFamily: SF, color: "var(--text-primary)" }}>
-                Projects
-              </span>
+              <span style={{ fontSize: 28, fontWeight: 700, letterSpacing: "-0.03em", lineHeight: 1, fontFamily: SF, color: "var(--text-primary)" }}>Projects</span>
             </div>
 
-            {/* Slide-to-unlock — no AnimatePresence to avoid exit bug */}
-            {!unlocked && (
-              <div style={{ display: "flex", justifyContent: "center", padding: "14px 0 4px" }}>
-                <SlideToUnlock onUnlock={() => setUnlocked(true)} />
-              </div>
-            )}
+            {/* Slide-to-unlock — AnimatePresence for smooth exit */}
+            <AnimatePresence mode="wait">
+              {!unlocked && (
+                <motion.div
+                  key="slide"
+                  initial={{ opacity: 0, y: 10, scale: 0.96 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -10, scale: 0.96 }}
+                  transition={{ type: "spring", stiffness: 380, damping: 26 }}
+                  style={{ display: "flex", justifyContent: "center", padding: "14px 0 4px" }}
+                >
+                  <SlideToUnlock onUnlock={() => setUnlocked(true)} />
+                </motion.div>
+              )}
+            </AnimatePresence>
 
-            <div style={{ height: 1, background: "var(--border)", margin: unlocked ? "20px 0 20px" : "14px 0 20px", transition: "margin 0.3s" }} />
+            <div style={{ height: 1, background: "var(--border)", margin: unlocked ? "20px 0 20px" : "14px 0 20px", transition: "margin 0.3s ease" }} />
 
             <style>{`
               .proj-grid {
@@ -497,14 +645,15 @@ export function ProjectsSection() {
               @media (max-width: 680px) { .proj-grid { grid-template-columns: repeat(2, 1fr); } }
               @media (max-width: 400px) { .proj-grid { grid-template-columns: 1fr; } }
             `}</style>
-            <div
+
+            <motion.div
               className="proj-grid"
-              style={{
-                filter: unlocked ? "none" : "blur(5px)",
-                pointerEvents: unlocked ? "auto" : "none",
-                userSelect: unlocked ? "auto" : "none",
-                transition: "filter 0.5s ease",
+              animate={{
+                filter: unlocked ? "blur(0px)" : "blur(5px)",
+                opacity: unlocked ? 1 : 0.65,
               }}
+              transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+              style={{ pointerEvents: unlocked ? "auto" : "none" }}
             >
               {PROJECTS.map((proj, i) => (
                 <ProjectCard
@@ -516,7 +665,7 @@ export function ProjectsSection() {
                   onOpen={(rect) => setActive({ proj, rect })}
                 />
               ))}
-            </div>
+            </motion.div>
           </div>
         </div>
       </div>
