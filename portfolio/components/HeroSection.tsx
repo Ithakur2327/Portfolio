@@ -107,43 +107,63 @@ type Dir = "TOP"|"LEFT"|"BOTTOM"|"RIGHT";
 function HoverBorderGradient({ children }: { children: React.ReactNode }) {
   const { theme } = useTheme();
   const isDark = theme === "dark";
-  const [pos, setPos] = useState<number>(0); // 0..3 cycling
+  // angle goes 0→360 continuously using rAF — smooth orbit, no jump
+  const angleRef = useRef(0);
+  const divRef   = useRef<HTMLDivElement>(null);
+  const rafRef   = useRef<number>(0);
 
   useEffect(() => {
-    const id = setInterval(() => setPos(p => (p + 1) % 4), 1800);
-    return () => clearInterval(id);
-  }, []);
-
-  // FIX: Use CSS custom property + transition instead of Framer Motion animate({background})
-  // Framer Motion animates background: gradient → gradient which forces full repaint every frame
-  // CSS opacity transition on 4 pre-rendered divs is compositor-only (no repaint)
-  const borderColor = isDark ? "rgba(255,255,255,0.7)" : "rgba(0,0,0,0.7)";
-  const gradients = [
-    `radial-gradient(20% 50% at 50% 0%,    ${borderColor} 0%, transparent 100%)`,
-    `radial-gradient(16% 43% at 0% 50%,   ${borderColor} 0%, transparent 100%)`,
-    `radial-gradient(20% 50% at 50% 100%, ${borderColor} 0%, transparent 100%)`,
-    `radial-gradient(16% 43% at 100% 50%, ${borderColor} 0%, transparent 100%)`,
-  ];
+    // Animate a single conic gradient that rotates continuously.
+    // Pure CSS via requestAnimationFrame — zero repaint, only style.background update
+    const SPEED = 0.06; // degrees per ms — matches original ~1800ms cadence
+    let last = 0;
+    const tick = (ts: number) => {
+      rafRef.current = requestAnimationFrame(tick);
+      const dt = ts - last;
+      last = ts;
+      angleRef.current = (angleRef.current + SPEED * dt) % 360;
+      if (!divRef.current) return;
+      const a = angleRef.current;
+      // AFTER
+const strong = isDark ? "rgba(255,255,255,0.40)" : "rgba(0,0,0,0.32)";
+const mid    = isDark ? "rgba(255,255,255,0.10)" : "rgba(0,0,0,0.07)";
+      const none   = "transparent";
+      // Conic gradient: bright arc rotates around the border
+      divRef.current.style.background =
+        `conic-gradient(from ${a}deg, ${none} 0deg, ${none} 60deg, ${mid} 90deg, ${strong} 120deg, ${mid} 150deg, ${none} 180deg, ${none} 360deg)`;
+    };
+    rafRef.current = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(rafRef.current);
+  }, [isDark]);
 
   return (
     <div style={{ position:"relative" }}>
-      {gradients.map((bg, i) => (
-        <div
-          key={i}
-          aria-hidden
-          style={{
-            position:"absolute",
-            inset: -1,
-            zIndex: 0,
-            filter: "blur(2px)",
-            pointerEvents: "none",
-            background: bg,
-            opacity: pos === i ? 1 : 0,
-            transition: "opacity 1.8s linear",
-            willChange: "opacity",
-          }}
-        />
-      ))}
+      {/* Rotating border glow layer — sits 1.5px outside content, filtered for softness */}
+      <div
+        ref={divRef}
+        aria-hidden
+        style={{
+          position: "absolute",
+          inset: -1.5,
+          zIndex: 0,
+          borderRadius: 1,
+          filter: "blur(3px)",
+          pointerEvents: "none",
+          willChange: "background",
+        }}
+      />
+      {/* Sharp inner glow — thinner, faster fade, adds crispness to border */}
+      <div
+        aria-hidden
+        style={{
+          position: "absolute",
+          inset: -0.5,
+          zIndex: 0,
+          borderRadius: 0,
+          pointerEvents: "none",
+          border: isDark ? "1px solid rgba(255,255,255,0.12)" : "1px solid rgba(0,0,0,0.10)",
+        }}
+      />
       <div style={{ position:"relative", zIndex:1 }}>
         {children}
       </div>
