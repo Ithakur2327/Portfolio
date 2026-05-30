@@ -3,6 +3,7 @@ import type { Viewport } from "next";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { DotBackground } from "@/components/DotBackground";
 import "./globals.css";
+import { Toaster } from "sonner"
 
 // FIX: Explicit viewport export — prevents 300ms tap delay and layout shift on mobile
 export const viewport: Viewport = {
@@ -35,6 +36,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <DotBackground />
           <div style={{ position: "relative", zIndex: 1 }}>
             {children}
+             <Toaster /> 
           </div>
         </ThemeProvider>
       </body>
