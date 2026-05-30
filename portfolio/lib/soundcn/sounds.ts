@@ -7,8 +7,13 @@ export const clickSoftSound = {
 };
 
 /**
- * iOS-style unlock sound — synthesized via Web Audio API
- * Plays two ascending tones, mimicking the real iOS slide-to-unlock chime
+ * Premium iOS-style unlock chime — synthesized via Web Audio API.
+ * 3-note ascending E-major arpeggio (E5 → G#5 → B5) with:
+ *  - sine fundamental + triangle harmonic per note
+ *  - per-note lowpass filter with frequency sweep
+ *  - snap attack (7ms), warm natural decay
+ *  - feedback delay for subtle hall reverb
+ *  - dynamics compressor for punch + headroom
  */
 export function playIOSUnlockSound(audioCtx?: AudioContext): void {
   try {
@@ -17,58 +22,118 @@ export function playIOSUnlockSound(audioCtx?: AudioContext): void {
 
     const now = ctx.currentTime;
 
-    // Two-note ascending chime (like iOS unlock)
-    const notes = [
-      { freq: 880,  start: 0,     dur: 0.12, gain: 0.28 },
-      { freq: 1174, start: 0.08,  dur: 0.18, gain: 0.22 },
+    /* ── Dynamics compressor — punch + prevent clipping ── */
+    const comp = ctx.createDynamicsCompressor();
+    comp.threshold.value = -10;
+    comp.knee.value      = 3;
+    comp.ratio.value     = 4;
+    comp.attack.value    = 0.001;
+    comp.release.value   = 0.08;
+    comp.connect(ctx.destination);
+
+    /* ── Master gain ── */
+    const master = ctx.createGain();
+    master.gain.setValueAtTime(0.58, now);
+    master.connect(comp);
+
+    /* ── Feedback delay → subtle hall reverb ── */
+    const delay   = ctx.createDelay(0.4);
+    delay.delayTime.value = 0.052;
+    const delayFb  = ctx.createGain();
+    delayFb.gain.value = 0.16;
+    const delayOut = ctx.createGain();
+    delayOut.gain.value = 0.13;
+    // Feedback loop
+    delay.connect(delayFb);
+    delayFb.connect(delay);
+    // Wet signal out
+    delay.connect(delayOut);
+    delayOut.connect(comp);
+    // Feed dry signal in
+    master.connect(delay);
+
+    /* ── E-major arpeggio: E5 → G#5 → B5 ── */
+    const notes: { freq: number; start: number; dur: number; gain: number }[] = [
+      { freq: 659.25, start: 0.00,  dur: 0.30, gain: 0.42 }, // E5
+      { freq: 830.61, start: 0.09,  dur: 0.28, gain: 0.36 }, // G#5
+      { freq: 987.77, start: 0.175, dur: 0.36, gain: 0.28 }, // B5
     ];
 
     notes.forEach(({ freq, start, dur, gain: gv }) => {
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      const filter = ctx.createBiquadFilter();
+      /* Sine fundamental */
+      const osc1    = ctx.createOscillator();
+      /* Triangle octave harmonic — adds bell-like brightness */
+      const osc2    = ctx.createOscillator();
+      const noteGain = ctx.createGain();
+      const harmGain = ctx.createGain();
+      const lpf      = ctx.createBiquadFilter();
 
-      osc.type = "sine";
-      osc.frequency.setValueAtTime(freq, now + start);
-      osc.frequency.exponentialRampToValueAtTime(freq * 1.015, now + start + dur * 0.3);
+      osc1.type = "sine";
+      osc1.frequency.setValueAtTime(freq, now + start);
 
-      filter.type = "lowpass";
-      filter.frequency.value = 4000;
-      filter.Q.value = 0.8;
+      osc2.type = "triangle";
+      osc2.frequency.setValueAtTime(freq * 2.001, now + start); // slightly detuned octave
 
-      gain.gain.setValueAtTime(0, now + start);
-      gain.gain.linearRampToValueAtTime(gv, now + start + 0.012);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + start + dur);
+      /* Lowpass filter sweeps down — mimics resonant bell decay */
+      lpf.type = "lowpass";
+      lpf.frequency.setValueAtTime(freq * 5.5, now + start);
+      lpf.frequency.exponentialRampToValueAtTime(freq * 1.8, now + start + dur * 0.75);
+      lpf.Q.value = 1.0;
 
-      osc.connect(filter);
-      filter.connect(gain);
-      gain.connect(ctx.destination);
+      /* Note envelope: snap attack → hold → exponential decay */
+      noteGain.gain.setValueAtTime(0,          now + start);
+      noteGain.gain.linearRampToValueAtTime(gv, now + start + 0.007);
+      noteGain.gain.setTargetAtTime(gv * 0.6,  now + start + 0.018, 0.035);
+      noteGain.gain.exponentialRampToValueAtTime(0.0001, now + start + dur);
 
-      osc.start(now + start);
-      osc.stop(now + start + dur + 0.02);
+      /* Harmonic envelope: shorter — adds initial brightness only */
+      harmGain.gain.setValueAtTime(0,            now + start);
+      harmGain.gain.linearRampToValueAtTime(gv * 0.07, now + start + 0.01);
+      harmGain.gain.exponentialRampToValueAtTime(0.0001, now + start + dur * 0.55);
+
+      osc1.connect(lpf);
+      lpf.connect(noteGain);
+      noteGain.connect(master);
+
+      osc2.connect(harmGain);
+      harmGain.connect(master);
+
+      osc1.start(now + start);
+      osc1.stop(now  + start + dur + 0.06);
+      osc2.start(now + start);
+      osc2.stop(now  + start + dur * 0.6);
     });
+
   } catch {
-    // AudioContext not available silently fail
+    // AudioContext not available — silently fail
   }
 }
 
 /**
- * Subtle tick sound for drag progress
+ * Crisp ascending tick during drag — pitch rises across 6 zones.
  */
 export function playTickSound(audioCtx: AudioContext, pitch = 1.0): void {
   try {
     const now = audioCtx.currentTime;
-    const osc = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
+
+    const osc    = audioCtx.createOscillator();
+    const gain   = audioCtx.createGain();
+    const filter = audioCtx.createBiquadFilter();
 
     osc.type = "sine";
-    osc.frequency.value = 600 * pitch;
+    osc.frequency.setValueAtTime(860 * pitch, now);
+    osc.frequency.exponentialRampToValueAtTime(680 * pitch, now + 0.032);
 
-    gain.gain.setValueAtTime(0, now);
-    gain.gain.linearRampToValueAtTime(0.08, now + 0.004);
-    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.045);
+    filter.type = "bandpass";
+    filter.frequency.value = 1000 * pitch;
+    filter.Q.value = 3.5;
 
-    osc.connect(gain);
+    gain.gain.setValueAtTime(0,     now);
+    gain.gain.linearRampToValueAtTime(0.13, now + 0.003);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.042);
+
+    osc.connect(filter);
+    filter.connect(gain);
     gain.connect(audioCtx.destination);
     osc.start(now);
     osc.stop(now + 0.05);

@@ -1,5 +1,5 @@
 "use client";
-import { useRef, useCallback, useState, useEffect, useId, useContext, createContext } from "react";
+import { useRef, useCallback, useState, useEffect, useId } from "react";
 import { createPortal } from "react-dom";
 import { useReveal } from "./useReveal";
 import {
@@ -138,20 +138,48 @@ const ExternalIcon = () => (
 );
 
 /* ─────────────────────────────────────────────────────────
-   SLIDE-TO-UNLOCK  —  exact reference pattern + iOS sound
+   SLIDE-TO-UNLOCK  ─  Ultra smooth, reactive track width
 ───────────────────────────────────────────────────────── */
 const HANDLE_W = 56;
 
 function SlideToUnlock({ onUnlock }: { onUnlock: () => void }) {
-  const trackRef  = useRef<HTMLDivElement>(null);
-  const audioCtxRef = useRef<AudioContext | null>(null);
-  const lastTickZone = useRef(-1);
+  const trackRef        = useRef<HTMLDivElement>(null);
+  const audioCtxRef     = useRef<AudioContext | null>(null);
+  const lastTickZone    = useRef(-1);
   const [isDragging, setIsDragging] = useState(false);
+  const [unlockDone, setUnlockDone] = useState(false);
+
+  /* ── Reactive track width via ResizeObserver ──────────
+     This is the critical fix: trackRef width was previously
+     read at render time (always null/default). Now it stays
+     accurate for progress + snap calculations.            */
+  const [trackW, setTrackW] = useState(224); // default 280 - 56
+  useEffect(() => {
+    const el = trackRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(([entry]) => {
+      setTrackW(Math.max(entry.contentRect.width - HANDLE_W, 1));
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
 
   const x = useMotionValue(0);
-  const textOpacity = useTransform(x, [0, HANDLE_W], [1, 0]);
 
-  // Lazy-init AudioContext on first interaction (avoids autoplay policy issues)
+  /* Shimmer text fades out as handle moves right */
+  const textOpacity = useTransform(x, [0, HANDLE_W * 0.8], [1, 0]);
+
+  /* Handle background: white → emerald — uses live trackW */
+  const handleBg = useTransform(
+    x,
+    [0, trackW],
+    ["rgba(255,255,255,0.95)", "rgba(52,211,153,0.97)"]
+  );
+
+  /* Progress fraction 0→1 — drives icon rotation */
+  const arrowRotate = useTransform(x, [0, trackW], [0, 360]);
+
+  /* Lazy-init AudioContext on first interaction */
   const getAudioCtx = useCallback(() => {
     if (!audioCtxRef.current) {
       audioCtxRef.current = new AudioContext();
@@ -162,73 +190,64 @@ function SlideToUnlock({ onUnlock }: { onUnlock: () => void }) {
     return audioCtxRef.current;
   }, []);
 
-  // Tick sounds as user drags — 6 evenly spaced zones
+  /* Ascending ticks — 6 zones */
   useEffect(() => {
     const unsubscribe = x.on("change", (v) => {
-      const trackW = (trackRef.current?.offsetWidth ?? 280) - HANDLE_W;
       if (trackW <= 0 || v < 4) return;
       const zone = Math.floor((v / trackW) * 6);
       if (zone !== lastTickZone.current && zone >= 0 && zone <= 5) {
         lastTickZone.current = zone;
-        const pitch = 0.75 + (zone / 5) * 0.75; // 0.75→1.5 ascending
+        const pitch = 0.72 + (zone / 5) * 0.80; // 0.72 → 1.52 ascending
         try { playTickSound(getAudioCtx(), pitch); } catch { /* */ }
       }
     });
     return unsubscribe;
-  }, [x, getAudioCtx]);
+  }, [x, getAudioCtx, trackW]);
 
   const onDragStart = useCallback(() => {
     setIsDragging(true);
     lastTickZone.current = -1;
-    getAudioCtx(); // warm up
+    getAudioCtx(); // warm up AudioContext on first touch
   }, [getAudioCtx]);
 
   const onDragEnd = useCallback(() => {
     setIsDragging(false);
-    const trackW = (trackRef.current?.offsetWidth ?? 280) - HANDLE_W;
-    const cur    = x.get();
+    const cur = x.get();
 
     if (cur >= trackW * 0.88) {
-      // Snap to end, play unlock sound, then call onUnlock
+      /* Snap to end with satisfying spring */
       animate(x, trackW, {
         type: "spring",
-        stiffness: 500,
-        damping: 40,
-        mass: 0.6,
+        stiffness: 480,
+        damping: 38,
+        mass: 0.55,
       });
+      /* Premium 3-note iOS chime */
       playIOSUnlockSound(getAudioCtx());
-      setTimeout(() => onUnlock(), 160);
+      setUnlockDone(true);
+      setTimeout(() => onUnlock(), 180);
     } else {
-      // Snap back — zero bounce, fast
+      /* Snap back — zero bounce, fast */
       animate(x, 0, {
         type: "spring",
+        stiffness: 520,
+        damping: 42,
+        mass: 0.5,
         bounce: 0,
-        duration: 0.28,
       });
       lastTickZone.current = -1;
     }
-  }, [x, onUnlock, getAudioCtx]);
-
-  // Progress for handle color: white → green
-  const progress = useTransform(
-    x,
-    [0, (trackRef.current?.offsetWidth ?? 280) - HANDLE_W],
-    [0, 1]
-  );
-  const handleBg = useTransform(
-    progress,
-    [0, 1],
-    ["rgba(255,255,255,0.95)", "rgba(134,239,172,0.97)"]
-  );
+  }, [x, trackW, onUnlock, getAudioCtx]);
 
   return (
     <div
       style={{
-        width: 280,
-        borderRadius: 18,
+        width: 300,
+        borderRadius: 20,
         background: "var(--bg-card)",
         border: "1px solid var(--border)",
-        boxShadow: "0 2px 16px rgba(0,0,0,0.10), inset 0 1px 0 rgba(255,255,255,0.05)",
+        boxShadow:
+          "0 2px 20px rgba(0,0,0,0.12), inset 0 1px 0 rgba(255,255,255,0.05)",
         padding: 4,
         userSelect: "none",
         WebkitUserSelect: "none",
@@ -236,15 +255,15 @@ function SlideToUnlock({ onUnlock }: { onUnlock: () => void }) {
         overflow: "hidden",
       }}
     >
-      {/* Shimmer overlay */}
+      {/* Shimmer sweep — GPU layer via backgroundSize animation */}
       <div
         style={{
           position: "absolute",
           inset: 0,
           background:
-            "linear-gradient(90deg,transparent 0%,rgba(255,255,255,0.045) 40%,rgba(255,255,255,0.09) 50%,rgba(255,255,255,0.045) 60%,transparent 100%)",
+            "linear-gradient(90deg,transparent 0%,rgba(255,255,255,0.042) 38%,rgba(255,255,255,0.088) 50%,rgba(255,255,255,0.042) 62%,transparent 100%)",
           backgroundSize: "300% 100%",
-          animation: "trackShimmer 3.5s linear infinite",
+          animation: "trackShimmer 3.2s linear infinite",
           borderRadius: "inherit",
           pointerEvents: "none",
         }}
@@ -255,16 +274,16 @@ function SlideToUnlock({ onUnlock }: { onUnlock: () => void }) {
         ref={trackRef}
         style={{
           position: "relative",
-          height: 52,
+          height: 54,
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
           overflow: "hidden",
-          borderRadius: 14,
+          borderRadius: 16,
           touchAction: "none",
         }}
       >
-        {/* Label text — fades out as handle moves right */}
+        {/* Label — fades out as handle moves right */}
         <motion.span
           style={{
             opacity: textOpacity,
@@ -284,7 +303,7 @@ function SlideToUnlock({ onUnlock }: { onUnlock: () => void }) {
               fontWeight: 600,
               fontFamily: SF,
               color: "var(--text-muted)",
-              letterSpacing: "0.02em",
+              letterSpacing: "0.025em",
             }}
           >
             {isDragging ? "release to unlock ›" : "slide to unlock  ›"}
@@ -293,11 +312,12 @@ function SlideToUnlock({ onUnlock }: { onUnlock: () => void }) {
 
         {/* Handle */}
         <motion.div
+          className="slide-handle"
           drag="x"
           dragConstraints={trackRef}
           dragElastic={0}
           dragMomentum={false}
-          dragTransition={{ bounceStiffness: 600, bounceDamping: 40 }}
+          dragTransition={{ bounceStiffness: 700, bounceDamping: 45 }}
           onDragStart={onDragStart}
           onDragEnd={onDragEnd}
           style={{
@@ -305,36 +325,68 @@ function SlideToUnlock({ onUnlock }: { onUnlock: () => void }) {
             top: 0,
             left: 0,
             width: HANDLE_W,
-            height: 52,
+            height: 54,
             x,
             background: handleBg,
-            borderRadius: 12,
+            borderRadius: 13,
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            color: "#333",
-            boxShadow: "0 2px 10px rgba(0,0,0,0.20), 0 1px 2px rgba(0,0,0,0.08)",
+            color: "#1a1a1a",
+            boxShadow:
+              "0 2px 12px rgba(0,0,0,0.22), 0 1px 3px rgba(0,0,0,0.10)",
             cursor: "grab",
             zIndex: 2,
             touchAction: "none",
             willChange: "transform",
           }}
-          whileTap={{ cursor: "grabbing" }}
+          whileTap={{ cursor: "grabbing", scale: 0.96 }}
           whileHover={{
-            boxShadow: "0 4px 18px rgba(0,0,0,0.28)",
-            transition: { duration: 0.18 },
+            boxShadow: "0 4px 20px rgba(0,0,0,0.30)",
+            transition: { duration: 0.16 },
           }}
         >
-          <svg
+          <motion.svg
             xmlns="http://www.w3.org/2000/svg"
             width="20"
             height="20"
             viewBox="0 0 24 24"
             fill="currentColor"
+            style={{ rotate: arrowRotate }}
           >
             <path d="M24 12 12.75 3v4.696H0v8.608h12.75V21z" />
-          </svg>
+          </motion.svg>
         </motion.div>
+
+        {/* Success checkmark — appears when unlocked */}
+        <AnimatePresence>
+          {unlockDone && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.6 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.6 }}
+              transition={{ type: "spring", stiffness: 500, damping: 28 }}
+              style={{
+                position: "absolute",
+                right: 12,
+                width: 28,
+                height: 28,
+                borderRadius: "50%",
+                background: "rgba(52,211,153,0.15)",
+                border: "1px solid rgba(52,211,153,0.4)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                color: "#34d399",
+                pointerEvents: "none",
+              }}
+            >
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );
@@ -375,22 +427,27 @@ function ProjectModal({
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0, transition: { duration: 0.18 } }}
-        transition={{ duration: 0.2 }}
+        transition={{ duration: 0.22 }}
         onClick={onClose}
         style={{
           position: "fixed",
           top: 0, left: 0, right: 0, bottom: 0,
-          background: "rgba(0,0,0,0.78)",
-          backdropFilter: "blur(8px) saturate(160%)",
-          WebkitBackdropFilter: "blur(8px) saturate(160%)",
+          background: "rgba(0,0,0,0.80)",
+          backdropFilter: "blur(10px) saturate(160%)",
+          WebkitBackdropFilter: "blur(10px) saturate(160%)",
           zIndex: 9000,
         }}
       />
       <motion.div
-        initial={{ opacity: 0, scale: 0.86, y: 32 }}
+        initial={{ opacity: 0, scale: 0.88, y: 28 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
-        exit={{ opacity: 0, scale: 0.86, y: 32, transition: { duration: 0.18, ease: [0.4, 0, 1, 1] } }}
-        transition={{ type: "spring", stiffness: 360, damping: 26, mass: 0.9 }}
+        exit={{
+          opacity: 0,
+          scale: 0.88,
+          y: 28,
+          transition: { duration: 0.18, ease: [0.4, 0, 1, 1] },
+        }}
+        transition={{ type: "spring", stiffness: 380, damping: 28, mass: 0.85 }}
         style={{
           position: "fixed",
           top: 0, left: 0, right: 0, bottom: 0,
@@ -500,14 +557,14 @@ function ProjectCard({ proj, index, visible, onOpen }: {
       initial={false}
       animate={{
         opacity: visible ? 1 : 0,
-        y: visible ? 0 : 20,
+        y: visible ? 0 : 22,
       }}
       transition={{
-        delay: visible ? 0.06 * index : 0,
+        delay: visible ? 0.055 * index : 0,
         type: "spring",
-        stiffness: 320,
-        damping: 28,
-        mass: 0.8,
+        stiffness: 340,
+        damping: 26,
+        mass: 0.75,
       }}
       style={{
         borderRadius: 12,
@@ -524,15 +581,15 @@ function ProjectCard({ proj, index, visible, onOpen }: {
       }}
       onClick={handleClick}
       whileHover={{
-        y: -5,
-        scale: 1.018,
-        boxShadow: `0 12px 36px rgba(0,0,0,0.18), 0 2px 8px rgba(0,0,0,0.10)`,
+        y: -6,
+        scale: 1.022,
+        boxShadow: `0 16px 40px rgba(0,0,0,0.20), 0 3px 10px rgba(0,0,0,0.12)`,
         borderColor: proj.accentBorder,
-        transition: { type: "spring", stiffness: 400, damping: 22, mass: 0.7 },
+        transition: { type: "spring", stiffness: 380, damping: 22, mass: 0.65 },
       }}
       whileTap={{
-        scale: 0.975,
-        transition: { type: "spring", stiffness: 600, damping: 30 },
+        scale: 0.972,
+        transition: { type: "spring", stiffness: 600, damping: 32 },
       }}
     >
       <div style={{ overflow: "hidden", flexShrink: 0 }}>
@@ -540,8 +597,8 @@ function ProjectCard({ proj, index, visible, onOpen }: {
           src={proj.img}
           alt={proj.name}
           style={{ width: "100%", height: 110, objectFit: "cover", objectPosition: "center top", display: "block" }}
-          whileHover={{ scale: 1.07 }}
-          transition={{ type: "spring", stiffness: 260, damping: 22 }}
+          whileHover={{ scale: 1.08 }}
+          transition={{ type: "spring", stiffness: 280, damping: 24 }}
         />
       </div>
       <div style={{ padding: "10px 12px 10px", display: "flex", flexDirection: "column" as const, flex: 1 }}>
@@ -580,7 +637,7 @@ export function ProjectsSection() {
     (sectionNodeRef as React.MutableRefObject<HTMLDivElement | null>).current = node;
   }, [revealRef]);
 
-  // Reset lock when section scrolls out of view
+  // Reset lock when section scrolls fully out of view
   useEffect(() => {
     const el = sectionNodeRef.current;
     if (!el) return;
@@ -603,7 +660,7 @@ export function ProjectsSection() {
           marginBottom: 55,
           opacity: visible ? 1 : 0,
           transform: visible ? "none" : "translateY(14px)",
-          transition: "opacity 0.6s var(--expo-out), transform 0.6s var(--expo-out)",
+          transition: "opacity 0.65s var(--expo-out), transform 0.65s var(--expo-out)",
           borderBottom: "1px solid var(--line)",
         }}
       >
@@ -622,18 +679,23 @@ export function ProjectsSection() {
               {!unlocked && (
                 <motion.div
                   key="slide"
-                  initial={{ opacity: 0, y: 10, scale: 0.96 }}
+                  initial={{ opacity: 0, y: 12, scale: 0.94 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: -10, scale: 0.96 }}
-                  transition={{ type: "spring", stiffness: 380, damping: 26 }}
-                  style={{ display: "flex", justifyContent: "center", padding: "14px 0 4px" }}
+                  exit={{ opacity: 0, y: -12, scale: 0.94 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 28, mass: 0.8 }}
+                  style={{ display: "flex", justifyContent: "center", padding: "16px 0 6px" }}
                 >
                   <SlideToUnlock onUnlock={() => setUnlocked(true)} />
                 </motion.div>
               )}
             </AnimatePresence>
 
-            <div style={{ height: 1, background: "var(--border)", margin: unlocked ? "20px 0 20px" : "14px 0 20px", transition: "margin 0.3s ease" }} />
+            <div style={{
+              height: 1,
+              background: "var(--border)",
+              margin: unlocked ? "20px 0 20px" : "14px 0 20px",
+              transition: "margin 0.35s cubic-bezier(0.22,1,0.36,1)",
+            }} />
 
             <style>{`
               .proj-grid {
@@ -649,10 +711,11 @@ export function ProjectsSection() {
             <motion.div
               className="proj-grid"
               animate={{
-                filter: unlocked ? "blur(0px)" : "blur(5px)",
-                opacity: unlocked ? 1 : 0.65,
+                filter: unlocked ? "blur(0px)" : "blur(4px)",
+                opacity: unlocked ? 1 : 0.60,
+                scale: unlocked ? 1 : 0.995,
               }}
-              transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+              transition={{ duration: 0.50, ease: [0.22, 1, 0.36, 1] }}
               style={{ pointerEvents: unlocked ? "auto" : "none" }}
             >
               {PROJECTS.map((proj, i) => (
