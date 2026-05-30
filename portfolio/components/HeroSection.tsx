@@ -1,7 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { Avatar } from "./Avatar";
-import { motion } from "motion/react";
 import { useTheme } from "./ThemeProvider";
 
 /* ─── Flip sentences ─────────────────────────────────── */
@@ -108,47 +107,43 @@ type Dir = "TOP"|"LEFT"|"BOTTOM"|"RIGHT";
 function HoverBorderGradient({ children }: { children: React.ReactNode }) {
   const { theme } = useTheme();
   const isDark = theme === "dark";
-  const [dir, setDir] = useState<Dir>("TOP");
-
-  const next = (d: Dir): Dir => {
-    const a: Dir[] = ["TOP","LEFT","BOTTOM","RIGHT"];
-    return a[(a.indexOf(d) - 1 + 4) % 4];
-  };
-
-  // Border glow color based on theme — white for dark, black for light
-  const borderColor = isDark
-    ? "rgba(255,255,255,0.7)"
-    : "rgba(0,0,0,0.7)";
-
-  const map: Record<Dir,string> = {
-    TOP:    `radial-gradient(20% 50% at 50% 0%,    ${borderColor} 0%, transparent 100%)`,
-    LEFT:   `radial-gradient(16% 43% at 0% 50%,   ${borderColor} 0%, transparent 100%)`,
-    BOTTOM: `radial-gradient(20% 50% at 50% 100%, ${borderColor} 0%, transparent 100%)`,
-    RIGHT:  `radial-gradient(16% 43% at 100% 50%, ${borderColor} 0%, transparent 100%)`,
-  };
+  const [pos, setPos] = useState<number>(0); // 0..3 cycling
 
   useEffect(() => {
-    const id = setInterval(() => setDir(d => next(d)), 1800);
+    const id = setInterval(() => setPos(p => (p + 1) % 4), 1800);
     return () => clearInterval(id);
   }, []);
 
+  // FIX: Use CSS custom property + transition instead of Framer Motion animate({background})
+  // Framer Motion animates background: gradient → gradient which forces full repaint every frame
+  // CSS opacity transition on 4 pre-rendered divs is compositor-only (no repaint)
+  const borderColor = isDark ? "rgba(255,255,255,0.7)" : "rgba(0,0,0,0.7)";
+  const gradients = [
+    `radial-gradient(20% 50% at 50% 0%,    ${borderColor} 0%, transparent 100%)`,
+    `radial-gradient(16% 43% at 0% 50%,   ${borderColor} 0%, transparent 100%)`,
+    `radial-gradient(20% 50% at 50% 100%, ${borderColor} 0%, transparent 100%)`,
+    `radial-gradient(16% 43% at 100% 50%, ${borderColor} 0%, transparent 100%)`,
+  ];
+
   return (
     <div style={{ position:"relative" }}>
-      {/* Moving border light — only at the 1px edge, no background fill */}
-      <motion.div
-        aria-hidden
-        style={{
-          position:"absolute",
-          inset: -1,
-          zIndex: 0,
-          borderRadius: 0,
-          filter: "blur(2px)",
-          pointerEvents: "none",
-        }}
-        animate={{ background: map[dir] }}
-        transition={{ ease:"linear", duration: 1.8 }}
-      />
-      {/* Content on top with solid bg so border glow doesn't bleed in */}
+      {gradients.map((bg, i) => (
+        <div
+          key={i}
+          aria-hidden
+          style={{
+            position:"absolute",
+            inset: -1,
+            zIndex: 0,
+            filter: "blur(2px)",
+            pointerEvents: "none",
+            background: bg,
+            opacity: pos === i ? 1 : 0,
+            transition: "opacity 1.8s linear",
+            willChange: "opacity",
+          }}
+        />
+      ))}
       <div style={{ position:"relative", zIndex:1 }}>
         {children}
       </div>

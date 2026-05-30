@@ -12,17 +12,22 @@ export function SparklesBridge() {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    // FIX 1: Increased from 30→48px so the bridge doesn't compress on
-    // smaller viewports (e.g. Samsung Galaxy S8 360px wide).
-    const HEIGHT = 30;
+    // FIX: Match HEIGHT constant to the style height (was 30 in code, 48 in style → misaligned render)
+    const HEIGHT = 48;
     const isDark = theme === "dark";
 
     const resize = () => {
-      canvas.width  = window.innerWidth;
-      canvas.height = HEIGHT;
+      // FIX: Use DPR for crisp rendering on retina screens
+      const dpr = window.devicePixelRatio || 1;
+      const w = window.innerWidth;
+      canvas.width  = w * dpr;
+      canvas.height = HEIGHT * dpr;
+      canvas.style.width  = `${w}px`;
+      canvas.style.height = `${HEIGHT}px`;
+      ctx.scale(dpr, dpr);
     };
     resize();
-    window.addEventListener("resize", resize);
+    window.addEventListener("resize", resize, { passive: true });
 
     type Dot = {
       x: number; y: number;
@@ -33,11 +38,16 @@ export function SparklesBridge() {
     };
 
     const dots: Dot[] = [];
+    let canvasW = window.innerWidth;
+
+    function getW() { return canvasW; }
+
+    window.addEventListener("resize", () => { canvasW = window.innerWidth; }, { passive: true });
 
     function spawn(): Dot {
       const maxLife = 100 + Math.random() * 140;
       return {
-        x: Math.random() * canvas!.width,
+        x: Math.random() * getW(),
         y: Math.random() * HEIGHT,
         vx: (Math.random() - 0.5) * 0.25,
         vy: (Math.random() - 0.5) * 0.25,
@@ -58,8 +68,10 @@ export function SparklesBridge() {
 
     function draw() {
       if (!ctx || !canvas) return;
-      const W = canvas.width;
+      const W = getW();
 
+      // FIX: Clear properly using logical pixels (not canvas pixels, since ctx is scaled)
+      ctx.clearRect(0, 0, W, HEIGHT);
       ctx.fillStyle = isDark ? "#09090b" : "#f5f5f3";
       ctx.fillRect(0, 0, W, HEIGHT);
 
@@ -83,7 +95,6 @@ export function SparklesBridge() {
           : ((d.maxLife - d.life) / half) * d.maxOp;
 
         ctx.globalAlpha = op;
-        // Reuse path: moveTo keeps arcs independent within one beginPath
         ctx.moveTo(d.x + d.r, d.y);
         ctx.arc(d.x, d.y, d.r, 0, Math.PI * 2);
       }
@@ -104,8 +115,13 @@ export function SparklesBridge() {
   return (
     <canvas
       ref={canvasRef}
-      // FIX 1: height updated from 30→48 to match canvas HEIGHT constant
-      style={{ display: "block", width: "100%", height: 48, willChange: "transform" }}
+      style={{
+        display: "block",
+        width: "100%",
+        height: 48,   // FIX: Matched to HEIGHT constant
+        willChange: "transform",
+        transform: "translateZ(0)",  // FIX: Own GPU layer
+      }}
     />
   );
 }

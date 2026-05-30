@@ -131,6 +131,7 @@ a, button {
   min-height: 100vh;
   position: relative;
   z-index: 1;
+  /* FIX: removed contain:layout style — breaks fixed navbar stacking on Chrome/Safari */
 }
 
 /* Full-bleed horizontal lines */
@@ -701,7 +702,7 @@ body, h1, h2, h3, p, span, a, button {
 /* 3. Canvas (Avatar WebGL) — own compositing layer */
 canvas {
   transform: translateZ(0);
-  image-rendering: -webkit-optimize-contrast;
+  image-rendering: auto;
 }
 
 /* 4. SVG — crisp geometric rendering */
@@ -712,7 +713,7 @@ svg {
 
 /* 5. Images — always high quality */
 img {
-  image-rendering: -webkit-optimize-contrast;
+  image-rendering: auto;
 }
 
 /* 6. Marquee — isolated compositor layer */
@@ -884,7 +885,7 @@ html {
 /* Page wrapper — isolate stacking context */
 .page-wrapper {
   isolation: isolate;
-  contain: layout style;
+  /* FIX: contain removed — breaks fixed-position navbar compositing */
 }
 
 /* Reduce motion for users who prefer it */

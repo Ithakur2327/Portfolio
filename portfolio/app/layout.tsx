@@ -1,7 +1,19 @@
 import type { Metadata } from "next";
+import type { Viewport } from "next";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { DotBackground } from "@/components/DotBackground";
 import "./globals.css";
+
+// FIX: Explicit viewport export — prevents 300ms tap delay and layout shift on mobile
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+  themeColor: [
+    { media: "(prefers-color-scheme: dark)",  color: "#09090b" },
+    { media: "(prefers-color-scheme: light)", color: "#f5f5f3" },
+  ],
+};
 
 export const metadata: Metadata = {
   title: "Indresh Thakur — Full-Stack & AI Developer",

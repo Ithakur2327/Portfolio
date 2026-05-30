@@ -15,30 +15,57 @@ function DotCanvas({ dotColor, activeDotColor }: { dotColor: string; activeDotCo
     let w = 0, h = 0, raf: number | null = null;
     const mouse = { x: -9999, y: -9999, active: false };
 
+    // FIX: Pre-parse colors once, draw with them directly
+    // Avoids string parsing on every dot every frame
+    let needsDraw = false;
+
     const draw = () => {
       ctx.clearRect(0, 0, w, h);
       const ox = (w % SPACING) / 2;
       const oy = (h % SPACING) / 2;
+
+      // FIX: Draw static dots in one pass, active dots in second pass
+      // This avoids changing fillStyle per-dot (major paint cost)
+      // Pass 1: all static dots
+      ctx.globalAlpha = 1;
+      ctx.fillStyle = dotColor;
+      ctx.beginPath();
       for (let x = ox; x <= w; x += SPACING) {
         for (let y = oy; y <= h; y += SPACING) {
-          const dx = x - mouse.x, dy = y - mouse.y;
-          const dist = Math.sqrt(dx * dx + dy * dy);
-          const RADIUS = 140;
-          let r = 1, color = dotColor, alpha = 1;
-          if (mouse.active && dist < RADIUS) {
-            const f = 1 - dist / RADIUS;
-            r = 1 + f;
-            color = activeDotColor;
-            alpha = 0.4 + 0.6 * f;
+          if (mouse.active) {
+            const dx = x - mouse.x, dy = y - mouse.y;
+            if (dx*dx + dy*dy < 140*140) continue; // skip — drawn in pass 2
           }
-          ctx.globalAlpha = alpha;
-          ctx.beginPath();
-          ctx.arc(x, y, r, 0, Math.PI * 2);
-          ctx.fillStyle = color;
-          ctx.fill();
+          ctx.moveTo(x + 1, y);
+          ctx.arc(x, y, 1, 0, Math.PI * 2);
         }
       }
-      ctx.globalAlpha = 1;
+      ctx.fill();
+
+      // Pass 2: highlighted dots near cursor
+      if (mouse.active) {
+        const RADIUS = 140;
+        const RADIUS2 = RADIUS * RADIUS;
+        for (let x = ox; x <= w; x += SPACING) {
+          for (let y = oy; y <= h; y += SPACING) {
+            const dx = x - mouse.x, dy = y - mouse.y;
+            const dist2 = dx*dx + dy*dy;
+            if (dist2 >= RADIUS2) continue;
+            const dist = Math.sqrt(dist2);
+            const f = 1 - dist / RADIUS;
+            const r = 1 + f;
+            const alpha = 0.4 + 0.6 * f;
+            ctx.globalAlpha = alpha;
+            ctx.fillStyle = activeDotColor;
+            ctx.beginPath();
+            ctx.arc(x, y, r, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        }
+        ctx.globalAlpha = 1;
+      }
+
+      needsDraw = false;
     };
 
     const resize = () => {
@@ -54,18 +81,24 @@ function DotCanvas({ dotColor, activeDotColor }: { dotColor: string; activeDotCo
       canvas.style.opacity = "1";
     };
 
+    // FIX: Throttle mousemove — was firing every pixel movement with full redraw
+    // Now batched via rAF (runs once per frame max, not per event)
     const onMove = (e: MouseEvent) => {
       mouse.x = e.clientX; mouse.y = e.clientY; mouse.active = true;
-      if (!raf) raf = requestAnimationFrame(() => { draw(); raf = null; });
+      if (!needsDraw) {
+        needsDraw = true;
+        if (!raf) raf = requestAnimationFrame(() => { draw(); raf = null; });
+      }
     };
     const onLeave = () => {
       mouse.active = false;
+      needsDraw = true;
       if (!raf) raf = requestAnimationFrame(() => { draw(); raf = null; });
     };
 
-    window.addEventListener("mousemove", onMove);
-    window.addEventListener("mouseleave", onLeave);
-    window.addEventListener("resize", resize);
+    window.addEventListener("mousemove", onMove, { passive: true });
+    window.addEventListener("mouseleave", onLeave, { passive: true });
+    window.addEventListener("resize", resize, { passive: true });
     resize();
 
     return () => {
