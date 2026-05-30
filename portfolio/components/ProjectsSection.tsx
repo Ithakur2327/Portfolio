@@ -196,14 +196,14 @@ function SlideToUnlock({ onUnlock }: { onUnlock: () => void }) {
   const onDragEnd = useCallback(() => {
     const cur = x.get();
     if (cur >= trackW * 0.82) {
-      /* Snap to end */
-      animate(x, trackW, { type: "spring", stiffness: 800, damping: 50, mass: 0.4 });
+      /* Snap to end — tight spring, zero overshoot */
+      animate(x, trackW, { type: "spring", stiffness: 900, damping: 60, mass: 0.35 });
       playIOSUnlockSound(getCtx());
       setUnlockDone(true);
-      setTimeout(() => onUnlock(), 220);
+      setTimeout(() => onUnlock(), 200);
     } else {
-      /* Snap back */
-      animate(x, 0, { type: "spring", stiffness: 900, damping: 55, mass: 0.35, bounce: 0 });
+      /* Snap back — fast spring, no bounce */
+      animate(x, 0, { type: "spring", stiffness: 1100, damping: 70, mass: 0.3, bounce: 0 });
       lastTickZone.current = -1;
     }
   }, [x, trackW, onUnlock, getCtx]);
@@ -263,6 +263,8 @@ function SlideToUnlock({ onUnlock }: { onUnlock: () => void }) {
           dragConstraints={{ left: 0, right: trackW }}
           dragElastic={0}
           dragMomentum={false}
+          /* dragTransition: controls physics when drag released — spring to snap point */
+          dragTransition={{ bounceStiffness: 1100, bounceDamping: 70 }}
           onDragStart={onDragStart}
           onDragEnd={onDragEnd}
           style={{
@@ -279,8 +281,10 @@ function SlideToUnlock({ onUnlock }: { onUnlock: () => void }) {
             zIndex: 2,
             touchAction: "none",
             willChange: "transform",
+            backfaceVisibility: "hidden",
+            WebkitBackfaceVisibility: "hidden",
           }}
-          whileTap={{ scale: 0.93 }}
+          whileTap={{ scale: 0.91, cursor: "grabbing" }}
         >
           {/* Chevron arrows → → */}
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
@@ -506,30 +510,53 @@ function ProjectCard({ proj, index, visible, onOpen }: {
         position: "relative" as const,
         display: "flex",
         flexDirection: "column" as const,
-        willChange: "transform, opacity",
+        /* willChange only set during hover via onHoverStart — not permanently */
         backfaceVisibility: "hidden" as const,
         WebkitBackfaceVisibility: "hidden" as const,
+        transform: "translateZ(0)",
       }}
       onClick={handleClick}
+      onHoverStart={() => {
+        if (cardRef.current) cardRef.current.style.willChange = "transform";
+      }}
+      onHoverEnd={() => {
+        /* Release GPU layer after hover — frees memory */
+        setTimeout(() => {
+          if (cardRef.current) cardRef.current.style.willChange = "auto";
+        }, 300);
+      }}
       whileHover={{
-        y: -6,
-        scale: 1.022,
-        boxShadow: `0 16px 40px rgba(0,0,0,0.20), 0 3px 10px rgba(0,0,0,0.12)`,
-        borderColor: proj.accentBorder,
-        transition: { type: "spring", stiffness: 380, damping: 22, mass: 0.65 },
+        y: -5,
+        scale: 1.018,
+        /* No boxShadow, no borderColor — both are paint triggers */
+        transition: { type: "spring", stiffness: 420, damping: 26, mass: 0.6 },
       }}
       whileTap={{
-        scale: 0.972,
-        transition: { type: "spring", stiffness: 600, damping: 32 },
+        scale: 0.975,
+        transition: { type: "spring", stiffness: 600, damping: 34 },
       }}
     >
       <div style={{ overflow: "hidden", flexShrink: 0 }}>
-        <motion.img
+        <img
           src={proj.img}
           alt={proj.name}
-          style={{ width: "100%", height: 110, objectFit: "cover", objectPosition: "center top", display: "block" }}
-          whileHover={{ scale: 1.08 }}
-          transition={{ type: "spring", stiffness: 280, damping: 24 }}
+          style={{
+            width: "100%", height: 110,
+            objectFit: "cover", objectPosition: "center top", display: "block",
+            transform: "translateZ(0) scale(1)",
+            transition: "transform 0.5s cubic-bezier(0.22,1,0.36,1)",
+            willChange: "auto",
+          }}
+          onMouseEnter={e => {
+            (e.currentTarget as HTMLImageElement).style.willChange = "transform";
+            (e.currentTarget as HTMLImageElement).style.transform = "translateZ(0) scale(1.08)";
+          }}
+          onMouseLeave={e => {
+            (e.currentTarget as HTMLImageElement).style.transform = "translateZ(0) scale(1)";
+            setTimeout(() => {
+              (e.currentTarget as HTMLImageElement).style.willChange = "auto";
+            }, 500);
+          }}
         />
       </div>
       <div style={{ padding: "10px 12px 10px", display: "flex", flexDirection: "column" as const, flex: 1 }}>
@@ -642,12 +669,16 @@ export function ProjectsSection() {
             <motion.div
               className="proj-grid"
               animate={{
-                filter: unlocked ? "blur(0px)" : "blur(4px)",
-                opacity: unlocked ? 1 : 0.60,
-                scale: unlocked ? 1 : 0.995,
+                opacity: unlocked ? 1 : 0.55,
+                scale:   unlocked ? 1 : 0.992,
               }}
-              transition={{ duration: 0.50, ease: [0.22, 1, 0.36, 1] }}
-              style={{ pointerEvents: unlocked ? "auto" : "none" }}
+              transition={{ duration: 0.42, ease: [0.22, 1, 0.36, 1] }}
+              style={{
+                pointerEvents: unlocked ? "auto" : "none",
+                willChange: "transform, opacity",
+                backfaceVisibility: "hidden",
+                WebkitBackfaceVisibility: "hidden",
+              }}
             >
               {PROJECTS.map((proj, i) => (
                 <ProjectCard

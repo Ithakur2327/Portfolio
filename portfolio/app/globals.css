@@ -1,33 +1,10 @@
-/* ─── FONT IMPORT — display=swap for zero render-blocking ── */
 @import url('https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500&display=swap');
-
-
-/* ═══════════════════════════════════════════════════════════
-   CSS @property — enables GPU-accelerated CSS var transitions
-   (Chrome 85+, Safari 16.4+, Firefox 128+)
-═══════════════════════════════════════════════════════════ */
-@property --divider-glow-opacity {
-  syntax: '<number>';
-  inherits: false;
-  initial-value: 0;
-}
-@property --pattern-dot-alpha {
-  syntax: '<number>';
-  inherits: false;
-  initial-value: 0.08;
-}
-@property --card-hover-alpha {
-  syntax: '<number>';
-  inherits: false;
-  initial-value: 0;
-}
 
 /* ═══════════════════════════════════════════════════════════
    THEME TOKENS
    dark  = pure black + zinc
    light = warm greyish-white (NOT pure white)
 ═══════════════════════════════════════════════════════════ */
-
 
 /* ── DARK (default) ─────────────────────────────────────── */
 :root, html.dark {
@@ -57,12 +34,7 @@
   --nav-link-active-bg: rgba(255,255,255,0.09);
   --divider-color:  #27272a;
   --divider-glow:   rgba(139,92,246,0.6);
-  /* Slide-to-unlock handle */
-  --slide-handle-bg: rgba(250,250,250,0.96);
-  --slide-handle-fg: #09090b;
   --expo-out: linear(0 0%,0.1684 2.66%,0.3165 5.49%,0.446 8.52%,0.5581 11.78%,0.6535 15.29%,0.7341 19.11%,0.8011 23.3%,0.8557 27.93%,0.8962 32.68%,0.9283 38.01%,0.9529 44.08%,0.9711 51.14%,0.9833 59.06%,0.9915 68.74%,1 100%);
-  /* Color-scheme hint — lets browser optimize scrollbars + form fields */
-  color-scheme: dark;
 }
 
 /* ── LIGHT (warm greyish, NOT pure white) ───────────────── */
@@ -93,12 +65,7 @@ html.light {
   --nav-link-active-bg: rgba(0,0,0,0.08);
   --divider-color:  #c8c8c4;
   --divider-glow:   rgba(124,58,237,0.5);
-  /* Slide-to-unlock handle */
-  --slide-handle-bg: #1a1a1a;
-  --slide-handle-fg: #f5f5f3;
-  color-scheme: light;
 }
-
 
 /* ── Page background via CSS ────────────── */
 html        { background: #09090b; }
@@ -107,14 +74,10 @@ html.light  { background: #f5f5f3; }
 /* ═══════════════════════════════════════════════════════════
    RESET — GPU-OPTIMIZED
 ═══════════════════════════════════════════════════════════ */
-
-
 *, *::before, *::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
-  /* Ensure all elements use compositor-friendly defaults */
-  -webkit-tap-highlight-color: transparent;
 }
 
 html {
@@ -124,24 +87,16 @@ html {
   scroll-padding-top: 64px;
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
-  /* Prevent layout shift from scrollbar appearing/disappearing */
+  /* Prevent layout shift from scrollbar */
   overflow-y: scroll;
-  /* Reserve scrollbar space — prevents layout reflow on content change */
-  scrollbar-gutter: stable;
   /* Prevent scroll bounce jank on iOS */
   overscroll-behavior-y: none;
-  /* Prevent horizontal scroll rubber-band on mobile */
-  overscroll-behavior-x: none;
   /* Enable subpixel antialiasing for 8K-sharp text */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
-  /* Critical: forces scroll on compositor thread — enables 144hz scroll */
-  touch-action: pan-y;
-  /* Font kerning for sharp typography */
-  font-kerning: normal;
-  /* OpenType features for premium text quality */
-  font-feature-settings: "kern" 1, "liga" 1, "calt" 1;
+  /* High-frequency repaint hint */
+  image-rendering: -webkit-optimize-contrast;
 }
 
 body {
@@ -152,42 +107,27 @@ body {
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  /* Only transition color — never geometry (avoids layout jank) */
+  transition: color 0.2s;
   /* Smooth momentum scrolling on iOS */
   -webkit-overflow-scrolling: touch;
-  /* Prevent horizontal overflow from creating a scrollbar */
-  overflow-x: hidden;
-  /* Contain paint to body — nothing bleeds outside */
-  contain: paint;
 }
 
 a { color: inherit; text-decoration: none; }
 ::selection { background: var(--accent); color: var(--accent-fg); }
-
-/* Thin scrollbar — GPU painted, not layout */
 ::-webkit-scrollbar { width: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
-/* Firefox scrollbar */
-* { scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
 
 /* Tap highlight off — prevents ghost flash on mobile */
 a, button {
+  -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
 }
-
-/* Prevent invisible focus rings causing repaints */
-:focus-visible {
-  outline: 2px solid var(--link);
-  outline-offset: 2px;
-}
-:focus:not(:focus-visible) { outline: none; }
-
 
 /* ═══════════════════════════════════════════════════════════
    LAYOUT
 ═══════════════════════════════════════════════════════════ */
-
-
 .page-wrapper {
   max-width: 1060px;
   margin: 0 auto;
@@ -197,8 +137,7 @@ a, button {
   min-height: 100vh;
   position: relative;
   z-index: 1;
-  /* Isolate stacking context — prevents unnecessary compositing of siblings */
-  isolation: isolate;
+  /* FIX: removed contain:layout style — breaks fixed navbar stacking on Chrome/Safari */
 }
 
 /* Full-bleed horizontal lines */
@@ -208,8 +147,6 @@ a, button {
   top: 0; left: -100vw;
   width: 200vw; height: 1px;
   background: var(--line); z-index: -1;
-  /* Pseudo-elements: force onto own layer */
-  will-change: auto;
 }
 .screen-line-bottom { position: relative; }
 .screen-line-bottom::after {
@@ -219,13 +156,9 @@ a, button {
   background: var(--line); z-index: -1;
 }
 
-
 /* ═══════════════════════════════════════════════════════════
-   COMPONENTS
+   NAVBAR
 ═══════════════════════════════════════════════════════════ */
-
-
-/* ── Navbar ─────────────────────────────────────────────── */
 .nav-root {
   position: fixed; top: 0; left: 0; right: 0; z-index: 100;
   height: 52px;
@@ -233,13 +166,10 @@ a, button {
   backdrop-filter: blur(16px) saturate(180%);
   -webkit-backdrop-filter: blur(16px) saturate(180%);
   border-bottom: 1px solid var(--nav-border);
-  /* Color transition only — never geometry */
-  transition: background 0.2s ease, border-color 0.2s ease;
-  /* Own compositing layer — prevents repaint cascade to page content */
+  transition: background 0.2s, border-color 0.2s;
+  /* Own compositing layer — keeps backdrop-filter from causing repaint cascade */
   will-change: transform;
   transform: translateZ(0);
-  /* Contain layout inside nav — nothing leaks */
-  contain: layout style;
 }
 .nav-inner {
   max-width: 1060px; margin: 0 auto;
@@ -251,9 +181,7 @@ a, button {
   font-size: 13px; font-weight: 500;
   color: var(--nav-link-color);
   background: transparent; text-decoration: none;
-  transition: color 0.15s ease, background 0.15s ease;
-  /* Prevent layout during hover — GPU only */
-  transform: translateZ(0);
+  transition: color 0.15s, background 0.15s;
 }
 .nav-link:hover  { color: var(--nav-link-hover); background: var(--nav-link-active-bg); }
 .nav-link.active { color: var(--nav-link-hover); background: var(--nav-link-active-bg); }
@@ -266,9 +194,6 @@ a, button {
   font-size: 15px; font-weight: 900;
   color: var(--text-primary);
   transition: opacity 0.45s cubic-bezier(0.16,1,0.3,1), transform 0.45s cubic-bezier(0.16,1,0.3,1);
-  will-change: opacity, transform;
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
 }
 .logo-i.hide { opacity: 0; transform: scale(0.7) translateY(-8px); }
 
@@ -278,9 +203,6 @@ a, button {
   border: 1.5px solid var(--border);
   opacity: 0; transform: scale(0.7) translateY(8px);
   transition: opacity 0.45s cubic-bezier(0.16,1,0.3,1), transform 0.45s cubic-bezier(0.16,1,0.3,1);
-  will-change: opacity, transform;
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
 }
 .logo-avatar.show { opacity: 1; transform: scale(1) translateY(0); }
 .logo-avatar img { width:100%; height:100%; object-fit:cover; border-radius:50%; }
@@ -290,17 +212,13 @@ a, button {
   background: none; border: none; outline: none;
   color: var(--nav-link-color);
   cursor: pointer; display: flex; align-items: center; justify-content: center;
-  padding: 0; border-radius: 6px;
-  /* Spring bounce — compositor only */
-  transform: translateZ(0);
-  transition: transform 0.18s cubic-bezier(0.34,1.56,0.64,1),
-              color 0.15s ease,
-              background 0.15s ease;
+  transition: color 0.15s; padding: 0; border-radius: 6px;
 }
-.theme-btn:hover  { color: var(--nav-link-hover); background: var(--nav-link-active-bg); transform: translateZ(0) scale(1.12); }
-.theme-btn:active { transform: translateZ(0) scale(0.88); transition-duration: 0.08s; }
+.theme-btn:hover { color: var(--nav-link-hover); background: var(--nav-link-active-bg); }
 
-/* ── Animated Section Divider ───────────────────────────── */
+/* ═══════════════════════════════════════════════════════════
+   ANIMATED SECTION DIVIDER
+═══════════════════════════════════════════════════════════ */
 .hero-divider {
   position: relative;
   height: 1px;
@@ -326,9 +244,6 @@ a, button {
   transition: opacity 0.3s ease;
   background: radial-gradient(ellipse 120px 3px at center, var(--divider-glow) 0%, transparent 100%);
   filter: blur(1px);
-  /* Own layer so glow doesn't repaint surrounding content */
-  will-change: transform, opacity;
-  backface-visibility: hidden;
 }
 .hero-divider-container {
   position: relative;
@@ -340,7 +255,7 @@ a, button {
   inset: 0; left: -100vw; right: -100vw;
   height: 1px; top: 50%;
   background: var(--divider-color);
-  transition: background 0.2s ease;
+  transition: background 0.2s;
 }
 .hero-divider-container .glow-line {
   position: absolute;
@@ -353,19 +268,16 @@ a, button {
   filter: blur(2px);
   transform: translateX(-50%);
   width: 300px;
-  will-change: transform, opacity;
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
 }
 
-/* ── Typography ─────────────────────────────────────────── */
+/* ═══════════════════════════════════════════════════════════
+   TYPOGRAPHY
+═══════════════════════════════════════════════════════════ */
 .section-label {
   font-size: 11px; font-weight: 600;
   letter-spacing: 0.08em; text-transform: uppercase;
   color: var(--text-muted); margin-bottom: 16px;
   font-family: 'Geist Mono', monospace;
-  /* Balance short labels for crisp layout */
-  text-wrap: balance;
 }
 
 .about-heading {
@@ -375,8 +287,6 @@ a, button {
   display: inline-block;
   background: transparent;
   padding: 0;
-  /* Balance multi-line headings */
-  text-wrap: balance;
 }
 
 .gold-word {
@@ -400,234 +310,14 @@ a, button {
   font-size: 22px; font-weight: 700;
   letter-spacing: -0.03em; color: var(--text-primary);
   margin-bottom: 20px; line-height: 1.25;
-  text-wrap: balance;
 }
-
-/* ── Tag Pills ──────────────────────────────────────────── */
-.tag {
-  display: inline-flex; align-items: center;
-  padding: 2px 9px; border-radius: 5px;
-  font-size: 12px; font-weight: 500;
-  background: var(--tag-bg); color: var(--tag-text); border: 1px solid var(--tag-border);
-  transition: background 0.15s ease, border-color 0.15s ease;
-  white-space: nowrap;
-  /* No transform — avoid compositor layer explosion on many tags */
-}
-.tag:hover { background: var(--bg-hover); border-color: var(--text-muted); }
-
-/* ── Social Links ───────────────────────────────────────── */
-.social-link {
-  display: inline-flex; align-items: center; justify-content: center;
-  height: 32px; padding: 0 10px; gap: 5px; border-radius: 6px;
-  border: 1px solid var(--border); color: var(--text-secondary);
-  font-size: 12px; font-weight: 500; background: transparent;
-  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
-  cursor: pointer;
-  transform: translateZ(0);
-}
-.social-link:hover { background: var(--bg-hover); color: var(--text-primary); border-color: var(--text-muted); }
-
-/* ── List Items ─────────────────────────────────────────── */
-.overview-item {
-  display: flex; align-items: center; gap: 10px; padding: 7px 8px; margin: 0 -8px;
-  border-radius: 7px; color: var(--text-secondary); font-size: 13.5px;
-  transition: background 0.12s ease, color 0.12s ease;
-  /* Contain paint — no overflow */
-  contain: style;
-}
-.overview-item:hover { background: var(--bg-hover); color: var(--text-primary); }
-.overview-item .icon { width: 16px; height: 16px; flex-shrink: 0; color: var(--text-muted); }
-
-.about-item {
-  display: flex; gap: 10px; font-size: 13.5px; color: var(--text-secondary); line-height: 1.7; padding: 3px 0;
-}
-.about-item::before { content: '—'; color: var(--text-muted); flex-shrink: 0; margin-top: 1px; font-family: 'Geist Mono', monospace; }
-
-/* ── Marquee — GPU composited via transform3d ───────────── */
-.marquee-track {
-  overflow: hidden;
-  /* Own layer for marquee container */
-  transform: translateZ(0);
-  /* Contain overflow paint */
-  contain: paint layout;
-}
-.marquee-inner {
-  display: flex; gap: 8px; width: max-content;
-  animation: marquee 32s linear infinite;
-  will-change: transform;
-  transform: translate3d(0, 0, 0);
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
-}
-.marquee-inner:hover { animation-play-state: paused; }
-.marquee-fade {
-  mask: linear-gradient(90deg,transparent,black 6%,black 94%,transparent);
-  -webkit-mask: linear-gradient(90deg,transparent,black 6%,black 94%,transparent);
-}
-
-/* ── Cards ──────────────────────────────────────────────── */
-.proj-card {
-  padding: 18px 12px; margin: 0 -12px; border-radius: 8px;
-  border-bottom: 1px solid var(--border);
-  transition: background 0.15s ease;
-  /* contain:style — safe, no fixed descendants, saves paint cost */
-  contain: style;
-}
-.proj-card:last-child { border-bottom: none; }
-.proj-card:hover { background: var(--bg-hover); }
-
-.exp-card {
-  padding: 16px 0; border-bottom: 1px solid var(--border);
-  contain: style;
-}
-.exp-card:last-child { border-bottom: none; }
-
-.cert-card {
-  display: flex; align-items: flex-start; gap: 12px;
-  padding: 12px 8px; margin: 0 -8px; border-radius: 7px;
-  font-size: 13px; transition: background 0.12s ease;
-  cursor: pointer; border-bottom: 1px solid var(--border);
-  contain: style;
-}
-.cert-card:last-child { border-bottom: none; }
-.cert-card:hover { background: var(--bg-hover); }
-
-.contact-row {
-  display: flex; align-items: center; gap: 10px;
-  padding: 10px 8px; margin: 0 -8px; border-radius: 7px;
-  font-size: 13.5px; color: var(--text-secondary);
-  transition: background 0.12s ease, color 0.12s ease;
-  contain: style;
-}
-.contact-row:hover { background: var(--bg-hover); color: var(--text-primary); }
-.contact-row + .contact-row { border-top: 1px solid var(--border); }
-
-/* ── Form ───────────────────────────────────────────────── */
-.field-input {
-  width: 100%; padding: 9px 12px; border-radius: 7px;
-  border: 1px solid var(--border);
-  background: var(--bg-secondary); color: var(--text-primary);
-  font-size: 13.5px; outline: none; font-family: inherit;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
-  /* Accent color for native focus ring */
-  accent-color: var(--link);
-}
-.field-input:focus {
-  border-color: var(--text-secondary);
-  box-shadow: 0 0 0 3px color-mix(in oklab, var(--text-muted) 12%, transparent);
-}
-
-/* ── Buttons ────────────────────────────────────────────── */
-.btn-primary {
-  display: inline-flex; align-items: center; gap: 6px;
-  padding: 9px 20px; border-radius: 7px;
-  border: 1px solid var(--border);
-  background: var(--accent); color: var(--accent-fg);
-  font-size: 13.5px; font-weight: 600; cursor: pointer;
-  font-family: inherit;
-  transition: opacity 0.15s ease, transform 0.15s ease;
-  position: relative; overflow: hidden;
-  transform: translateZ(0);
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
-}
-.btn-primary:hover { opacity: 0.88; transform: translate3d(0, -1px, 0); }
-.btn-primary:active { transform: translate3d(0, 0, 0); }
-.btn-primary.sent { background: var(--success); border-color: var(--success); color: #fff; }
-
-.btn-ghost {
-  display: inline-flex; align-items: center; gap: 5px;
-  padding: 5px 10px; border-radius: 6px;
-  border: 1px solid var(--border);
-  background: transparent; color: var(--text-muted);
-  font-size: 12px; font-weight: 500; cursor: pointer;
-  font-family: inherit;
-  transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
-  transform: translateZ(0);
-}
-.btn-ghost:hover { color: var(--text-primary); border-color: var(--text-muted); background: var(--bg-hover); }
-
-/* ── Misc UI ────────────────────────────────────────────── */
-.kbd {
-  display: inline-flex; align-items: center;
-  padding: 1px 5px; border-radius: 4px; font-size: 11px;
-  font-family: 'Geist Mono', monospace;
-  background: var(--tag-bg); border: 1px solid var(--border); color: var(--text-muted);
-}
-
-.stat-badge {
-  display: flex; flex-direction: column; align-items: center;
-  padding: 16px 24px; border: 1px solid var(--border); border-radius: 10px;
-  background: var(--bg-secondary);
-  transition: border-color 0.15s ease, background 0.15s ease;
-  flex: 1; min-width: 80px;
-  /* Safe to contain — no fixed descendants, no negative margins */
-  contain: content;
-}
-.stat-badge:hover { border-color: var(--text-muted); background: var(--bg-hover); }
-.stat-badge .stat-num {
-  font-size: 24px; font-weight: 700; letter-spacing: -0.04em;
-  color: var(--text-primary); font-family: 'Geist Mono', monospace;
-  /* Tabular nums for clean number display */
-  font-variant-numeric: tabular-nums;
-}
-.stat-badge .stat-label {
-  font-size: 11px; color: var(--text-muted); margin-top: 2px;
-  text-align: center; line-height: 1.3;
-}
-
-.contrib-cell {
-  width: 10px; height: 10px; border-radius: 2px;
-  background: var(--bg-hover);
-  transition: transform 0.1s ease;
-  cursor: default;
-  /* Each cell gets its own layer only on hover — not always */
-}
-.contrib-cell:hover { transform: scale(1.4) translateZ(0); }
-.contrib-cell[data-level="1"] { background: color-mix(in oklab, var(--success) 25%, var(--bg-hover)); }
-.contrib-cell[data-level="2"] { background: color-mix(in oklab, var(--success) 50%, var(--bg-hover)); }
-.contrib-cell[data-level="3"] { background: color-mix(in oklab, var(--success) 75%, var(--bg-hover)); }
-.contrib-cell[data-level="4"] { background: var(--success); }
-
-/* ── Avatar ─────────────────────────────────────────────── */
-.avatar-wrap { position: relative; cursor: pointer; }
-.avatar-lights-off { transition: opacity 1.2s cubic-bezier(0.42,0,0.58,1); }
-.avatar-lights-on  {
-  opacity: 0; transition: opacity 1.2s cubic-bezier(0.42,0,0.58,1);
-  position: absolute; inset: 0; border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
-  will-change: opacity;
-}
-.avatar-wrap.lit .avatar-lights-off { opacity: 0; }
-.avatar-wrap.lit .avatar-lights-on  { opacity: 1; }
-
-/* ── Flip Sentences ─────────────────────────────────────── */
-.flip-wrap {
-  height: 36px; overflow: hidden;
-  perspective: 600px;
-  transform: translateZ(0);
-  /* Contain layout — nothing inside affects siblings */
-  contain: content;
-}
-.flip-item {
-  display: block;
-  transform-origin: top center;
-  animation-fill-mode: both;
-  will-change: transform, opacity;
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
-}
-.flip-item.in  { animation: flipIn  0.4s var(--expo-out) forwards; }
-.flip-item.out { animation: flipOut 0.3s ease-in forwards; }
-
 
 /* ═══════════════════════════════════════════════════════════
    ANIMATIONS — 144FPS / 8K QUALITY OPTIMIZED
    All keyframes use ONLY transform + opacity (compositor-only)
    Never animate width/height/top/left/padding/margin (layout)
+   Spring-tuned easing for silky high-refresh motion
 ═══════════════════════════════════════════════════════════ */
-
-
 @keyframes fadeUp  {
   from { opacity: 0; transform: translate3d(0, 18px, 0) scale3d(0.98, 0.98, 1); }
   to   { opacity: 1; transform: translate3d(0, 0, 0) scale3d(1, 1, 1); }
@@ -653,21 +343,17 @@ a, button {
   from { background-position: -200% center; }
   to   { background-position:  200% center; }
 }
+/* Slide handle glow pulse */
 @keyframes glowPulse {
   0%, 100% { box-shadow: 0 0 0 0 rgba(255,255,255,0); }
   50% { box-shadow: 0 0 16px 4px rgba(255,255,255,0.18); }
 }
+/* Track shimmer for slide-to-unlock */
 @keyframes trackShimmer {
   0% { background-position: -300% center; }
   100% { background-position: 300% center; }
 }
-@keyframes chevronPulse {
-  0%, 100% { opacity: 0.22; transform: translateX(0px); }
-  50%       { opacity: 1;    transform: translateX(2.5px); }
-}
-@keyframes themeWipe { to { mask-size: 200vmax; } }
 
-/* ── Animation utility classes ──────────────────────────── */
 .pulse    { animation: pulse 2s ease infinite; }
 .fade-up  { animation: fadeUp 0.5s var(--expo-out) forwards; }
 
@@ -685,8 +371,8 @@ a, button {
   opacity: 0;
   transform: translate3d(0, 20px, 0) scale3d(0.985, 0.985, 1);
   transition:
-    opacity    0.55s var(--expo-out),
-    transform  0.55s var(--expo-out);
+    opacity 0.6s var(--expo-out),
+    transform 0.6s var(--expo-out);
   will-change: opacity, transform;
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
@@ -694,41 +380,194 @@ a, button {
 .reveal.visible {
   opacity: 1;
   transform: translate3d(0, 0, 0) scale3d(1, 1, 1);
-  /* Release the layer immediately after animation — frees GPU memory */
+  /* Release the layer after animation — critical for memory */
   will-change: auto;
-  /* No more transitions needed — static after reveal */
-  transition: none;
 }
 
-/* ── View Transition — triangular corner wipe ───────────── */
-::view-transition-group(root) {
-  animation-timing-function: var(--expo-out);
+/* ═══════════════════════════════════════════════════════════
+   AVATAR
+═══════════════════════════════════════════════════════════ */
+.avatar-wrap { position: relative; cursor: pointer; }
+.avatar-lights-off { transition: opacity 1.2s cubic-bezier(0.42,0,0.58,1); }
+.avatar-lights-on  { opacity: 0; transition: opacity 1.2s cubic-bezier(0.42,0,0.58,1); position: absolute; inset: 0; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+.avatar-wrap.lit .avatar-lights-off { opacity: 0; }
+.avatar-wrap.lit .avatar-lights-on  { opacity: 1; }
+
+/* ═══════════════════════════════════════════════════════════
+   FLIP SENTENCES
+═══════════════════════════════════════════════════════════ */
+.flip-wrap {
+  height: 36px; overflow: hidden;
+  perspective: 600px;
+  /* Own layer so flip doesn't repaint surrounding content */
+  transform: translateZ(0);
 }
-::view-transition-new(root) {
-  mask: url('data:image/svg+xml,<svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M0 0H40L0 40V0Z" fill="url(%23paint0_linear_16_14)"/><defs><linearGradient id="paint0_linear_16_14" x1="0" y1="0" x2="20.5" y2="20.5" gradientUnits="userSpaceOnUse"><stop stop-color="white"/><stop offset="0.84506" stop-color="white" stop-opacity="0.99"/><stop offset="0.9506" stop-color="white" stop-opacity="0"/><stop offset="1" stop-color="white" stop-opacity="0"/></linearGradient></defs></svg>')
-    top left / 0 no-repeat;
-  mask-origin: top left;
-  animation: themeWipe 1.1s;
+.flip-item {
+  display: block;
+  transform-origin: top center;
   animation-fill-mode: both;
+  will-change: transform, opacity;
 }
-::view-transition-old(root),
-.dark::view-transition-old(root) {
-  animation: themeWipe 1.1s;
-  animation-fill-mode: both;
-  z-index: -1;
-  transform-origin: top left;
+.flip-item.in  { animation: flipIn  0.4s var(--expo-out) forwards; }
+.flip-item.out { animation: flipOut 0.3s ease-in forwards; }
+
+/* ═══════════════════════════════════════════════════════════
+   TAG PILLS
+═══════════════════════════════════════════════════════════ */
+.tag {
+  display: inline-flex; align-items: center;
+  padding: 2px 9px; border-radius: 5px;
+  font-size: 12px; font-weight: 500;
+  background: var(--tag-bg); color: var(--tag-text); border: 1px solid var(--tag-border);
+  transition: background 0.15s, border-color 0.15s;
+  white-space: nowrap;
 }
-/* View-transition GPU hints */
-::view-transition-group(*) {
-  will-change: clip-path, opacity;
+.tag:hover { background: var(--bg-hover); border-color: var(--text-muted); }
+
+/* ═══════════════════════════════════════════════════════════
+   MISC UI
+═══════════════════════════════════════════════════════════ */
+.social-link {
+  display: inline-flex; align-items: center; justify-content: center;
+  height: 32px; padding: 0 10px; gap: 5px; border-radius: 6px;
+  border: 1px solid var(--border); color: var(--text-secondary);
+  font-size: 12px; font-weight: 500; background: transparent;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  cursor: pointer;
+}
+.social-link:hover { background: var(--bg-hover); color: var(--text-primary); border-color: var(--text-muted); }
+
+.overview-item { display: flex; align-items: center; gap: 10px; padding: 7px 8px; margin: 0 -8px; border-radius: 7px; color: var(--text-secondary); font-size: 13.5px; transition: background 0.12s, color 0.12s; }
+.overview-item:hover { background: var(--bg-hover); color: var(--text-primary); }
+.overview-item .icon { width: 16px; height: 16px; flex-shrink: 0; color: var(--text-muted); }
+
+.about-item { display: flex; gap: 10px; font-size: 13.5px; color: var(--text-secondary); line-height: 1.7; padding: 3px 0; }
+.about-item::before { content: '—'; color: var(--text-muted); flex-shrink: 0; margin-top: 1px; font-family: 'Geist Mono', monospace; }
+
+/* Marquee — GPU composited via transform3d, ultra-smooth */
+.marquee-track { overflow: hidden; }
+.marquee-inner {
+  display: flex; gap: 8px; width: max-content;
+  animation: marquee 32s linear infinite;
+  will-change: transform;
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+.marquee-inner:hover { animation-play-state: paused; }
+.marquee-fade {
+  mask: linear-gradient(90deg,transparent,black 6%,black 94%,transparent);
+  -webkit-mask: linear-gradient(90deg,transparent,black 6%,black 94%,transparent);
 }
 
+/* Cards — hover only uses transform3d (compositor) */
+.proj-card {
+  padding: 18px 12px; margin: 0 -12px; border-radius: 8px;
+  border-bottom: 1px solid var(--border);
+  transition: background 0.15s;
+}
+.proj-card:last-child { border-bottom: none; }
+.proj-card:hover { background: var(--bg-hover); }
+
+.exp-card { padding: 16px 0; border-bottom: 1px solid var(--border); }
+.exp-card:last-child { border-bottom: none; }
+
+.cert-card {
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 12px 8px; margin: 0 -8px; border-radius: 7px;
+  font-size: 13px; transition: background 0.12s;
+  cursor: pointer; border-bottom: 1px solid var(--border);
+}
+.cert-card:last-child { border-bottom: none; }
+.cert-card:hover { background: var(--bg-hover); }
+
+.contact-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 8px; margin: 0 -8px; border-radius: 7px;
+  font-size: 13.5px; color: var(--text-secondary);
+  transition: background 0.12s, color 0.12s;
+}
+.contact-row:hover { background: var(--bg-hover); color: var(--text-primary); }
+.contact-row + .contact-row { border-top: 1px solid var(--border); }
+
+.field-input {
+  width: 100%; padding: 9px 12px; border-radius: 7px;
+  border: 1px solid var(--border);
+  background: var(--bg-secondary); color: var(--text-primary);
+  font-size: 13.5px; outline: none; font-family: inherit;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.field-input:focus {
+  border-color: var(--text-secondary);
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--text-muted) 12%, transparent);
+}
+
+.btn-primary {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 9px 20px; border-radius: 7px;
+  border: 1px solid var(--border);
+  background: var(--accent); color: var(--accent-fg);
+  font-size: 13.5px; font-weight: 600; cursor: pointer;
+  font-family: inherit;
+  transition: opacity 0.15s, transform 0.15s;
+  position: relative; overflow: hidden;
+  /* Compositor-only hover */
+  transform: translateZ(0);
+}
+.btn-primary:hover { opacity: 0.88; transform: translate3d(0, -1px, 0); }
+.btn-primary:active { transform: translate3d(0, 0, 0); }
+.btn-primary.sent { background: var(--success); border-color: var(--success); color: #fff; }
+
+.btn-ghost {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 5px 10px; border-radius: 6px;
+  border: 1px solid var(--border);
+  background: transparent; color: var(--text-muted);
+  font-size: 12px; font-weight: 500; cursor: pointer;
+  font-family: inherit;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+}
+.btn-ghost:hover { color: var(--text-primary); border-color: var(--text-muted); background: var(--bg-hover); }
+
+.kbd {
+  display: inline-flex; align-items: center;
+  padding: 1px 5px; border-radius: 4px; font-size: 11px;
+  font-family: 'Geist Mono', monospace;
+  background: var(--tag-bg); border: 1px solid var(--border); color: var(--text-muted);
+}
+
+.stat-badge {
+  display: flex; flex-direction: column; align-items: center;
+  padding: 16px 24px; border: 1px solid var(--border); border-radius: 10px;
+  background: var(--bg-secondary);
+  transition: border-color 0.15s, background 0.15s;
+  flex: 1; min-width: 80px;
+}
+.stat-badge:hover { border-color: var(--text-muted); background: var(--bg-hover); }
+.stat-badge .stat-num {
+  font-size: 24px; font-weight: 700; letter-spacing: -0.04em;
+  color: var(--text-primary); font-family: 'Geist Mono', monospace;
+}
+.stat-badge .stat-label {
+  font-size: 11px; color: var(--text-muted); margin-top: 2px;
+  text-align: center; line-height: 1.3;
+}
+
+.contrib-cell {
+  width: 10px; height: 10px; border-radius: 2px;
+  background: var(--bg-hover);
+  transition: transform 0.1s;
+  cursor: default;
+}
+.contrib-cell:hover { transform: scale(1.4); }
+.contrib-cell[data-level="1"] { background: color-mix(in oklab, var(--success) 25%, var(--bg-hover)); }
+.contrib-cell[data-level="2"] { background: color-mix(in oklab, var(--success) 50%, var(--bg-hover)); }
+.contrib-cell[data-level="3"] { background: color-mix(in oklab, var(--success) 75%, var(--bg-hover)); }
+.contrib-cell[data-level="4"] { background: var(--success); }
 
 /* ═══════════════════════════════════════════════════════════
    RESPONSIVE
 ═══════════════════════════════════════════════════════════ */
-
-
 @media (max-width: 760px) {
   .desktop-nav { display: none !important; }
   .page-wrapper { padding: 0; }
@@ -758,26 +597,14 @@ a, button {
     border-bottom: 1px solid var(--border) !important;
   }
   .hero-social a:last-child { border-bottom: none !important; }
-
-  /* Avoid expensive hover states on touch devices — prevents paint on scroll */
-  .proj-card:hover,
-  .cert-card:hover,
-  .stat-badge:hover,
-  .overview-item:hover,
-  .contact-row:hover {
-    background: transparent;
-  }
-
-  /* Reduce backdrop-filter cost on mobile — major GPU memory saving */
-  .nav-root {
-    backdrop-filter: blur(8px) saturate(120%);
-    -webkit-backdrop-filter: blur(8px) saturate(120%);
-  }
 }
 
 /* ── Mobile (≤ 600px) ── */
 @media (max-width: 600px) {
+  /* Hero profile row keeps side-by-side layout */
   .h-profile { flex-direction: row !important; }
+
+  /* Avatar box — responsive width, always square */
   .h-avatar {
     width: clamp(100px, 28vw, 150px) !important;
     min-width: clamp(100px, 28vw, 150px) !important;
@@ -789,33 +616,51 @@ a, button {
     padding: 0 !important;
     flex-shrink: 0 !important;
   }
+
+  /* Hero info grid → single col */
   .h-grid { grid-template-columns: 1fr !important; gap: 11px 0 !important; }
+
+  /* Social tiles → vertical */
   .h-social { flex-direction: column !important; }
   .s-tile {
     border-right: none !important;
     border-bottom: 1px solid #27272a !important;
   }
   .s-tile:last-child { border-bottom: none !important; }
+
+  /* Sections full width */
   section, .section-inner { padding-left: 14px !important; padding-right: 14px !important; }
   section#about { padding-left: 0 !important; padding-right: 0 !important; }
+
+  /* Skills */
   .skills-strip-offset { margin-left: -14px !important; margin-right: -14px !important; }
+
+  /* Projects */
   .proj-tags { flex-wrap: wrap; }
+
+  /* Education / bottom — single col */
   .bottom-grid { grid-template-columns: 1fr !important; }
+
+  /* Contact form */
   .contact-cols { flex-direction: column !important; }
+
+  /* Stat badges */
   .stat-badges-row { flex-wrap: wrap; gap: 8px !important; }
   .stat-badge { min-width: calc(50% - 4px) !important; padding: 12px 16px !important; }
+
+  /* Typography */
   .about-heading, h1 { font-size: clamp(18px, 5.5vw, 26px) !important; }
   .section-title { font-size: 18px !important; }
+
+  /* Contrib graph */
   .contrib-wrap { overflow-x: auto; padding-bottom: 6px; }
+
+  /* Overview section */
   .overview-cols { flex-direction: column !important; }
+
+  /* About text alignment fix */
   .about-para { text-align: left !important; }
   .about-content { padding-left: 14px !important; padding-right: 14px !important; }
-
-  /* Notch / safe area insets for iPhone Pro */
-  .nav-root {
-    padding-left: env(safe-area-inset-left);
-    padding-right: env(safe-area-inset-right);
-  }
 }
 
 /* ── Small mobile (≤ 400px) ── */
@@ -827,6 +672,7 @@ a, button {
     height: clamp(90px, 26vw, 120px) !important;
     min-height: clamp(90px, 26vw, 120px) !important;
   }
+  /* Compact nav */
   .nav-inner { height: 46px; }
   .nav-root  { height: 46px; }
 }
@@ -841,131 +687,84 @@ a, button {
   .page-wrapper { max-width: 1060px; }
 }
 
+/* ═══════════════════════════════════════════════════════════
+   VIEW TRANSITION — triangular corner wipe from top-left
+═══════════════════════════════════════════════════════════ */
+::view-transition-group(root) {
+  animation-timing-function: var(--expo-out);
+}
+::view-transition-new(root) {
+  mask: url('data:image/svg+xml,<svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M0 0H40L0 40V0Z" fill="url(%23paint0_linear_16_14)"/><defs><linearGradient id="paint0_linear_16_14" x1="0" y1="0" x2="20.5" y2="20.5" gradientUnits="userSpaceOnUse"><stop stop-color="white"/><stop offset="0.84506" stop-color="white" stop-opacity="0.99"/><stop offset="0.9506" stop-color="white" stop-opacity="0"/><stop offset="1" stop-color="white" stop-opacity="0"/></linearGradient></defs></svg>')
+    top left / 0 no-repeat;
+  mask-origin: top left;
+  animation: themeWipe 1.1s;
+  animation-fill-mode: both;
+}
+::view-transition-old(root),
+.dark::view-transition-old(root) {
+  animation: themeWipe 1.1s;
+  animation-fill-mode: both;
+  z-index: -1;
+  transform-origin: top left;
+}
+@keyframes themeWipe { to { mask-size: 200vmax; } }
 
 /* ═══════════════════════════════════════════════════════════
-   PERFORMANCE ENGINE — GPU COMPOSITING & 144Hz SMOOTHNESS
-   Ordered by compositor impact (highest first)
+   120 FPS PERFORMANCE ENGINE
+   Rules ordered by GPU compositor impact
 ═══════════════════════════════════════════════════════════ */
 
-
-/* 1. Subpixel text — crisp at any DPI, including 4K/8K */
+/* 1. Subpixel text — crisp at any DPI */
 body, h1, h2, h3, p, span, a, button {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
 }
 
-/* 2. Retina subpixel — sharper on HiDPI (2×+) */
+/* 2. High-DPI subpixel smoothing */
 @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
   body { -webkit-font-smoothing: subpixel-antialiased; }
 }
 
-/* 3. Canvas (Avatar WebGL) — own compositing layer, crisp rendering */
+/* 3. Canvas (Avatar WebGL) — own compositing layer */
 canvas {
   transform: translateZ(0);
   image-rendering: auto;
-  /* Prevent canvas from causing repaints to siblings */
-  isolation: isolate;
 }
 
-/* 4. SVG — geometric precision rendering for crisp icons */
+/* 4. SVG — crisp geometric rendering */
 svg {
   shape-rendering: geometricPrecision;
   vector-effect: non-scaling-stroke;
-  /* Stroke on top of fill for sharp edges */
-  paint-order: fill stroke;
 }
 
-/* 5. Images — always high quality, lazy loading hint */
+/* 5. Images — always high quality */
 img {
   image-rendering: auto;
-  /* Prevent image decode blocking main thread */
-  content-visibility: auto;
 }
 
-/* 6. Marquee container — isolated compositor layer */
+/* 6. Marquee — isolated compositor layer */
 .marquee-track { transform: translateZ(0); }
 
-/* 7. Framer Motion / animated elements — isolate so repaints don't cascade */
-[data-framer-motion],
-[data-framer-appear],
-[style*="translateY"],
-[style*="opacity"] {
-  transform: translateZ(0);
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
-  will-change: transform, opacity;
-}
-
-/* 8. Off-screen sections — skip rendering until near viewport */
-@supports (content-visibility: auto) {
-  .reveal-section {
-    content-visibility: auto;
-    /* Estimated section height — prevents layout shift during reveal */
-    contain-intrinsic-size: 0 600px;
-  }
-}
-
-/* 9. Force GPU layer for frequently animated elements */
-.h-profile,
-.h-info-wrap,
-.h-avatar,
-.logo-avatar,
-.logo-i,
-[class*="fs-"],
-.s-tile,
-.lang-pill-item,
-.gh-cell,
-.stat-card-3d,
-.nav-root,
-.mobile-menu {
-  will-change: transform;
+/* 7. Section reveal animations — isolate so they don't repaint siblings */
+[data-framer-motion] {
   transform: translateZ(0);
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
 }
 
-/* 10. Sections — hardware accelerated base */
-section,
-.about-panels > *,
-.edu-card,
-.proj-card {
-  transform: translateZ(0);
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
+/* 8. content-visibility for off-screen sections */
+.reveal-section {
+  content-visibility: auto;
+  contain-intrinsic-size: 0 600px;
 }
 
-/* 11. Interaction tiles — compositor-only transitions */
-.s-tile,
-.cert-item,
-.lang-pill-item,
-.gh-cell {
-  transform: translateZ(0);
-  transition-property: transform, opacity, background, box-shadow;
-  transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+/* 9. View-transition GPU hints */
+::view-transition-group(*) {
+  will-change: clip-path, opacity;
 }
 
-/* 12. Contribution cell hover — compositor only, no layout */
-.gh-cell:hover {
-  transform: scale(1.35) translateZ(0);
-}
-
-/* 13. Stat card 3D hover — compositor only */
-.stat-card-3d {
-  transition: transform 0.28s cubic-bezier(0.16,1,0.3,1),
-              box-shadow 0.28s cubic-bezier(0.16,1,0.3,1);
-  transform: translateZ(0);
-}
-.stat-card-3d:hover {
-  transform: translateY(-5px) rotateX(2deg) rotateY(-1deg) translateZ(0);
-}
-
-/* 14. Lang pill hover — compositor only */
-.lang-pill-item:hover {
-  transform: translateY(-2px) translateZ(0);
-}
-
-/* 15. Light mode card polish */
+/* 10. Light mode — crisp cards */
 html.light .proj-card,
 html.light .cert-card,
 html.light .stat-badge {
@@ -974,11 +773,11 @@ html.light .stat-badge {
   border-color: #d8d8d4;
 }
 
-/* 16. Theme color transition — ONLY color, never geometry */
+/* 11. Theme color transition — color ONLY, never geometry */
 body  { transition: color 0.1s ease; }
 html  { transition: background-color 0.1s ease; }
 
-/* 17. Retina borders — crisp at 2× DPI */
+/* 12. Retina borders */
 @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
   .nav-root, .edu-outer, .cert-section-box, .contact-outer, .footer-root {
     border-width: 0.5px !important;
@@ -988,30 +787,9 @@ html  { transition: background-color 0.1s ease; }
   }
 }
 
-/* 18. Project grid — base GPU layer */
-.proj-grid > * {
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
-  transform: translate3d(0, 0, 0);
-}
-
-/* 19. Slide-to-unlock — zero lag, Framer Motion controls transforms */
-.slide-handle {
-  will-change: transform;
-  transform: translate3d(0, 0, 0);
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
-}
-.slide-handle:active { cursor: grabbing !important; }
-
-/* 20. Touch scroll momentum for overflow containers */
-.contrib-wrap,
-.marquee-track,
-.marquee-fade {
-  -webkit-overflow-scrolling: touch;
-}
-
-/* ── Gold Word — visible in both themes ─────────────────── */
+/* ═══════════════════════════════════════════════════════════
+   GOLD WORD — visible in both themes
+═══════════════════════════════════════════════════════════ */
 .gold-word {
   display: inline;
   font-weight: 700;
@@ -1034,9 +812,124 @@ html.light .gold-word {
   text-shadow: none;
 }
 
-/* ── Low-end device optimizations ─── */
+/* ═══════════════════════════════════════════════════════════
+   MOBILE PERFORMANCE — prevent layout/paint on touch scroll
+═══════════════════════════════════════════════════════════ */
+@media (max-width: 860px) {
+  /* Avoid expensive hover states on touch devices */
+  .proj-card:hover,
+  .cert-card:hover,
+  .stat-badge:hover,
+  .overview-item:hover,
+  .contact-row:hover {
+    background: transparent;
+  }
+  /* Reduce blur cost on mobile */
+  .nav-root {
+    backdrop-filter: blur(8px) saturate(120%);
+    -webkit-backdrop-filter: blur(8px) saturate(120%);
+  }
+}
+
+/* Touch devices — enable momentum scroll on overflow containers */
+.contrib-wrap,
+.marquee-track,
+.marquee-fade {
+  -webkit-overflow-scrolling: touch;
+}
+/* 
+* ═══════════════════════════════════════════════════════════
+   PERFORMANCE — GPU COMPOSITING & 144Hz SMOOTHNESS
+   All animations are compositor-only (transform/opacity).
+   No layout or paint triggers in animation paths.
+═══════════════════════════════════════════════════════════ */
+
+/* Force GPU layer for every animated element */
+.h-profile,
+.h-info-wrap,
+.h-avatar,
+.logo-avatar,
+.logo-i,
+[class*="fs-"],
+.s-tile,
+.lang-pill-item,
+.gh-cell,
+.stat-card-3d,
+.nav-root,
+.mobile-menu {
+  will-change: transform;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+/* Section reveal — use transform+opacity only (no layout props) */
+section,
+.about-panels > *,
+.edu-card,
+.proj-card {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+/* Smooth scroll — native, GPU composited */
+html {
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Prevent costly repaints on hover for interactive tiles */
+.s-tile,
+.cert-item,
+.lang-pill-item,
+.gh-cell {
+  transform: translateZ(0);
+  transition-property: transform, opacity, background, box-shadow;
+  transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* GitHub contribution cell hover — compositor only */
+.gh-cell:hover {
+  transform: scale(1.35) translateZ(0);
+}
+
+/* Stat card hover — compositor only */
+.stat-card-3d {
+  transition: transform 0.28s cubic-bezier(0.16,1,0.3,1),
+              box-shadow 0.28s cubic-bezier(0.16,1,0.3,1);
+  transform: translateZ(0);
+}
+.stat-card-3d:hover {
+  transform: translateY(-5px) rotateX(2deg) rotateY(-1deg) translateZ(0);
+}
+
+/* Lang pill hover — compositor only */
+.lang-pill-item:hover {
+  transform: translateY(-2px) translateZ(0);
+}
+
+/* Page wrapper — isolate stacking context */
+.page-wrapper {
+  isolation: isolate;
+  /* FIX: contain removed — breaks fixed-position navbar compositing */
+}
+
+/* Reduce motion for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ── Low-end device optimizations ── */
 @media (max-width: 760px) {
-  /* Cheaper backdrop on small screens — less GPU memory pressure */
+  /* Cheaper backdrop on mobile — less GPU memory pressure */
   .nav-root {
     backdrop-filter: blur(10px) saturate(140%);
     -webkit-backdrop-filter: blur(10px) saturate(140%);
@@ -1046,56 +939,235 @@ html.light .gold-word {
     -webkit-backdrop-filter: blur(10px) saturate(140%);
   }
 
-  /* Disable 3D perspective on mobile — avoids compositing layer explosion */
+  /* Disable 3D perspective on low-width — avoids compositing explosion */
   .stat-card-3d {
     transform: none !important;
-    transition: box-shadow 0.2s ease, background 0.2s ease;
+    transition: box-shadow 0.2s, background 0.2s;
   }
   .stat-card-3d:hover {
     transform: translateY(-3px) translateZ(0) !important;
   }
 
-  /* Disable gold-word glow on mobile — filter is expensive */
+  /* Disable gold-word glow on mobile — expensive filter */
   .name-highlight {
     box-shadow: none !important;
   }
+}
 
-  /* Disable will-change on mobile — GPU memory is scarce */
-  .h-profile,
-  .h-info-wrap,
-  .s-tile,
-  .lang-pill-item {
-    will-change: auto;
+/* ── Framer Motion velocity hints ── */
+[data-framer-appear],
+[style*="translateY"],
+[style*="opacity"] {
+  will-change: transform, opacity;
+}
+/* ═══════════════════════════════════════════════════════════
+   SLIDE-TO-UNLOCK — Ultra smooth 144hz
+═══════════════════════════════════════════════════════════ */
+.slide-handle {
+  will-change: transform;
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+  animation: glowPulse 2.4s ease-in-out infinite;
+}
+.slide-handle:active { animation: none; }
+
+/* Theme btn spring bounce */
+.theme-btn {
+  transform: translateZ(0);
+  transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1),
+              background 0.15s ease;
+}
+.theme-btn:hover  { transform: translateZ(0) scale(1.12); }
+.theme-btn:active { transform: translateZ(0) scale(0.88); transition-duration: 0.08s; }
+
+/* Project cards spring hover */
+.proj-grid > * {
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  transform: translate3d(0, 0, 0);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   ULTRA SMOOTH — ADVANCED 8K / 144Hz PERFORMANCE UPGRADE
+   Applied on top of existing rules.
+═══════════════════════════════════════════════════════════ */
+
+/* ── @property declarations: GPU-interpolated custom props ── */
+@property --skill-glow {
+  syntax: "<color>";
+  inherits: false;
+  initial-value: transparent;
+}
+@property --slide-progress {
+  syntax: "<number>";
+  inherits: false;
+  initial-value: 0;
+}
+
+/* ── Precision scroll engine ──────────────────────────────
+   scroll-timeline + interpolate-size for native smooth scroll
+   on supporting browsers, pure CSS fallback elsewhere.     */
+@supports (scroll-behavior: smooth) {
+  html {
+    scroll-behavior: smooth;
+    /* Stronger overscroll lock — prevents iOS bounce jank */
+    overscroll-behavior: none;
+    /* GPU-promoted scroll container */
+    -webkit-overflow-scrolling: touch;
   }
 }
 
-/* ── Reduce Motion — full accessibility support ─────────── */
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
-    will-change: auto !important;
+/* ── Lenis-style momentum feel via scroll-snap-type ────── */
+.page-wrapper {
+  scroll-snap-type: none; /* sections handle their own snap */
+}
+
+/* ── Advanced GPU compositing for every interactive element ──
+   Promote transform + opacity to compositor before any hover
+   is triggered, not after. Eliminates first-hover jank.    */
+.proj-grid > *,
+.skills-lamp-grid > *,
+.s-tile,
+.stat-badge,
+.cert-item,
+.edu-card,
+.overview-item {
+  will-change: transform;
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  /* 3D rendering context — prevents Chrome layer squash */
+  transform-style: preserve-3d;
+}
+
+/* ── Slide-to-unlock — precision handle + improved shimmer ── */
+.slide-handle {
+  will-change: transform, background;
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+  /* glow pulse pauses on active (during drag) */
+  animation: glowPulse 2.6s cubic-bezier(0.45,0,0.55,1) infinite;
+}
+.slide-handle:active { animation: none; }
+
+/* Improved shimmer: smooth backgroundPosition sweep */
+@keyframes trackShimmer {
+  0%   { background-position: -300% center; }
+  100% { background-position:  300% center; }
+}
+
+/* ── Skills strip — Framer Motion handles the translate now ─ */
+.skills-strip-inner {
+  will-change: transform;
+  transform: translate3d(0, 0, 0);
+}
+
+/* ── Section reveals — spring-style cubic-bezier ──────────
+   Matches [0.22, 1, 0.36, 1] in JS — browsers can use this
+   for CSS transition fallbacks.                            */
+:root {
+  --spring-smooth: cubic-bezier(0.22, 1, 0.36, 1);
+  --spring-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --spring-fast:   cubic-bezier(0.16, 1, 0.30, 1);
+}
+
+/* ── Improved reveal transitions ─────────────────────────── */
+.reveal {
+  transition:
+    opacity  0.65s var(--spring-smooth),
+    transform 0.65s var(--spring-smooth) !important;
+}
+
+/* ── Subpixel-perfect borders on HiDPI ───────────────────── */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .skills-lamp-grid > div {
+    border-width: 0.5px;
   }
-  /* Keep content visible even without animations */
-  .reveal { opacity: 1 !important; transform: none !important; }
-  .stagger > * { opacity: 1 !important; animation: none !important; }
 }
 
-/* ── Page-visibility optimization: pause animations when tab is hidden ── */
-@media (prefers-reduced-motion: no-preference) {
-  /* Smooth scroll only when motion is OK */
-  html { scroll-behavior: smooth; }
-}
-
-/* ── High-contrast mode support ─────────────────────────── */
-@media (forced-colors: active) {
-  .tag, .social-link, .btn-primary, .btn-ghost {
-    border: 1px solid ButtonText;
+/* ── Reduce paint during scroll — skip hover on scroll ────── */
+@media (pointer: fine) {
+  /* Only apply hover states when pointer is fine (mouse) not touch */
+  .proj-grid > *:hover,
+  .skills-lamp-grid > *:hover {
+    /* Framer Motion handles this — no CSS override needed */
   }
-  .nav-root { border-bottom: 1px solid ButtonText; }
 }
 
+/* ── High-DPI image crisping ──────────────────────────────── */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 2dppx) {
+  img {
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+  }
+  /* Override crisp-edges for photos — keep them smooth */
+  img[src*="unsplash"],
+  img[src*="devicons"],
+  img[src*="wikimedia"],
+  img[src*="chartjs"],
+  img[src*="jwt"] {
+    image-rendering: auto;
+  }
+}
+
+/* ── content-visibility upgrade — skip off-screen paint ──── */
+#projects, #skills, #about, #education, #contact {
+  content-visibility: auto;
+  contain-intrinsic-size: 0 700px;
+}
+
+/* ── Zero-jitter text during animation (subpixel lock) ─────── */
+h1, h2, h3, .section-title {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: geometricPrecision;
+  /* Prevent CLS from font-feature-settings changes */
+  font-feature-settings: "kern" 1, "liga" 1, "calt" 1;
+}
+
+/* ── Moving strip: override Framer's inline animation state ── */
+.skills-strip-inner[style*="animationPlayState"] {
+  animation-play-state: var(--strip-play-state, running) !important;
+}
+
+/* ── Framer Motion appear animation GPU hints ─────────────── */
+[data-framer-appear],
+[data-framer-motion-appear-animation],
+[style*="translateY"],
+[style*="opacity"] {
+  will-change: transform, opacity;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+/* ── Advanced scroll smoothness using scroll-timeline API ──
+   Only applies in browsers that support it (Chrome 115+).  */
+@supports (animation-timeline: scroll()) {
+  .reveal-section {
+    animation-fill-mode: both;
+  }
+}
+
+/* ── Momentum scroll for overflow containers ──────────────── */
+.contrib-wrap,
+.modal-scroll,
+.proj-grid,
+[style*="overflowY: auto"] {
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+}
+
+/* ── Compositor-only transitions for interactive elements ──── */
+a, button, [role="button"] {
+  transition-property: color, background-color, border-color, opacity, transform, box-shadow;
+  transition-timing-function: var(--spring-smooth);
+  transition-duration: 0.18s;
+}
+
+/* ── Project modal — crisp blur */
+[style*="backdropFilter"],
+[style*="backdrop-filter"] {
+  /* Force GPU layer before blur renders — prevents first-open blur flash */
+  transform: translateZ(0);
+  will-change: opacity;
+}
