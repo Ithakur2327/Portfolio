@@ -139,251 +139,181 @@ const ExternalIcon = () => (
 );
 
 /* ─────────────────────────────────────────────────────────
-   SLIDE-TO-UNLOCK  ─  Ultra smooth, reactive track width
+   SLIDE-TO-UNLOCK
+   Root cause of lag was dragConstraints={ref} — Framer calls
+   getBoundingClientRect every frame. Fix: numeric constraints.
+   No rotateY (3D + drag = compositor conflict = glitch).
 ───────────────────────────────────────────────────────── */
 const HANDLE_W = 56;
+const TRACK_H  = 52;
 
 function SlideToUnlock({ onUnlock }: { onUnlock: () => void }) {
-  const trackRef        = useRef<HTMLDivElement>(null);
-  const audioCtxRef     = useRef<AudioContext | null>(null);
-  const lastTickZone    = useRef(-1);
-  const [isDragging, setIsDragging] = useState(false);
+  const audioCtxRef  = useRef<AudioContext | null>(null);
+  const lastTickZone = useRef(-1);
+  const trackRef     = useRef<HTMLDivElement>(null);
+  const [trackW, setTrackW] = useState(244);
   const [unlockDone, setUnlockDone] = useState(false);
 
-  /* ── Reactive track width via ResizeObserver ──────────
-     This is the critical fix: trackRef width was previously
-     read at render time (always null/default). Now it stays
-     accurate for progress + snap calculations.            */
-  const [trackW, setTrackW] = useState(224); // default 280 - 56
+  /* Measure track once on mount + resize */
   useEffect(() => {
-    const el = trackRef.current;
-    if (!el) return;
-    const ro = new ResizeObserver(([entry]) => {
-      setTrackW(Math.max(entry.contentRect.width - HANDLE_W, 1));
-    });
-    ro.observe(el);
-    return () => ro.disconnect();
+    const measure = () => {
+      if (trackRef.current)
+        setTrackW(Math.max(trackRef.current.offsetWidth - HANDLE_W, 1));
+    };
+    measure();
+    window.addEventListener("resize", measure);
+    return () => window.removeEventListener("resize", measure);
   }, []);
 
   const x = useMotionValue(0);
 
-  /* Shimmer text fades out as handle moves right */
-  const textOpacity = useTransform(x, [0, HANDLE_W * 0.8], [1, 0]);
+  /* Derived motion values — all compositor-only, zero JS per frame */
+  const textOpacity  = useTransform(x, [0, HANDLE_W * 1.5], [1, 0]);
+  const fillScaleX   = useTransform(x, [0, trackW], [0, 1]);
 
-  /* Handle background: white → emerald — uses live trackW */
-  const handleBg = useTransform(
-    x,
-    [0, trackW],
-    ["rgba(255,255,255,0.95)", "rgba(52,211,153,0.97)"]
-  );
-
-  /* Progress fraction 0→1 — drives icon rotation */
-  const arrowRotate = useTransform(x, [0, trackW], [0, 360]);
-
-  /* Lazy-init AudioContext on first interaction */
-  const getAudioCtx = useCallback(() => {
-    if (!audioCtxRef.current) {
-      audioCtxRef.current = new AudioContext();
-    }
-    if (audioCtxRef.current.state === "suspended") {
-      audioCtxRef.current.resume();
-    }
+  /* AudioContext — lazy init */
+  const getCtx = useCallback(() => {
+    if (!audioCtxRef.current) audioCtxRef.current = new AudioContext();
+    if (audioCtxRef.current.state === "suspended") audioCtxRef.current.resume();
     return audioCtxRef.current;
   }, []);
 
-  /* Ascending ticks — 6 zones */
-  useEffect(() => {
-    const unsubscribe = x.on("change", (v) => {
-      if (trackW <= 0 || v < 4) return;
-      const zone = Math.floor((v / trackW) * 6);
-      if (zone !== lastTickZone.current && zone >= 0 && zone <= 5) {
-        lastTickZone.current = zone;
-        const pitch = 0.72 + (zone / 5) * 0.80; // 0.72 → 1.52 ascending
-        try { playTickSound(getAudioCtx(), pitch); } catch { /* */ }
-      }
-    });
-    return unsubscribe;
-  }, [x, getAudioCtx, trackW]);
+  /* Tick sounds on drag */
+  useEffect(() => x.on("change", (v) => {
+    if (v < 2 || trackW <= 0) return;
+    const zone = Math.floor((v / trackW) * 6);
+    if (zone !== lastTickZone.current && zone >= 0 && zone <= 5) {
+      lastTickZone.current = zone;
+      try { playTickSound(getCtx(), 0.8 + (zone / 5) * 0.5); } catch { /**/ }
+    }
+  }), [x, trackW, getCtx]);
 
   const onDragStart = useCallback(() => {
-    setIsDragging(true);
     lastTickZone.current = -1;
-    getAudioCtx(); // warm up AudioContext on first touch
-  }, [getAudioCtx]);
+    getCtx();
+  }, [getCtx]);
 
   const onDragEnd = useCallback(() => {
-    setIsDragging(false);
     const cur = x.get();
-
-    if (cur >= trackW * 0.88) {
-      /* Snap to end with satisfying spring */
-      animate(x, trackW, {
-        type: "spring",
-        stiffness: 480,
-        damping: 38,
-        mass: 0.55,
-      });
-      /* Premium 3-note iOS chime */
-      playIOSUnlockSound(getAudioCtx());
+    if (cur >= trackW * 0.82) {
+      /* Snap to end */
+      animate(x, trackW, { type: "spring", stiffness: 800, damping: 50, mass: 0.4 });
+      playIOSUnlockSound(getCtx());
       setUnlockDone(true);
-      setTimeout(() => onUnlock(), 180);
+      setTimeout(() => onUnlock(), 220);
     } else {
-      /* Snap back — zero bounce, fast */
-      animate(x, 0, {
-        type: "spring",
-        stiffness: 520,
-        damping: 42,
-        mass: 0.5,
-        bounce: 0,
-      });
+      /* Snap back */
+      animate(x, 0, { type: "spring", stiffness: 900, damping: 55, mass: 0.35, bounce: 0 });
       lastTickZone.current = -1;
     }
-  }, [x, trackW, onUnlock, getAudioCtx]);
+  }, [x, trackW, onUnlock, getCtx]);
 
   return (
-    <div
-      style={{
-        width: 300,
-        borderRadius: 20,
-        background: "var(--bg-card)",
-        border: "1px solid var(--border)",
-        boxShadow:
-          "0 2px 20px rgba(0,0,0,0.12), inset 0 1px 0 rgba(255,255,255,0.05)",
-        padding: 4,
-        userSelect: "none",
-        WebkitUserSelect: "none",
-        position: "relative",
-        overflow: "hidden",
-      }}
-    >
-      {/* Shimmer sweep — GPU layer via backgroundSize animation */}
-      <div
-        style={{
-          position: "absolute",
-          inset: 0,
-          background:
-            "linear-gradient(90deg,transparent 0%,rgba(255,255,255,0.042) 38%,rgba(255,255,255,0.088) 50%,rgba(255,255,255,0.042) 62%,transparent 100%)",
-          backgroundSize: "300% 100%",
-          animation: "trackShimmer 3.2s linear infinite",
-          borderRadius: "inherit",
-          pointerEvents: "none",
-        }}
-      />
-
-      {/* Track */}
+    <div style={{
+      width: 300, borderRadius: 16,
+      background: "var(--bg-card)",
+      border: "1px solid var(--border)",
+      boxShadow: "0 2px 16px rgba(0,0,0,0.12), inset 0 1px 0 rgba(255,255,255,0.05)",
+      padding: 4,
+      userSelect: "none", WebkitUserSelect: "none",
+    }}>
+      {/* Track — fixed numeric size, no overflow:hidden on drag parent */}
       <div
         ref={trackRef}
         style={{
           position: "relative",
-          height: 54,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          overflow: "hidden",
-          borderRadius: 16,
+          height: TRACK_H,
+          borderRadius: 12,
+          background: "var(--bg-secondary)",
+          border: "1px solid var(--border)",
           touchAction: "none",
+          overflow: "hidden",
         }}
       >
-        {/* Label — fades out as handle moves right */}
-        <motion.span
-          style={{
-            opacity: textOpacity,
-            marginLeft: HANDLE_W + 12,
-            pointerEvents: "none",
-            userSelect: "none",
-            WebkitUserSelect: "none",
-            position: "absolute",
-            left: 0,
-            right: 0,
-            textAlign: "center",
-          }}
-        >
-          <span
-            style={{
-              fontSize: 13,
-              fontWeight: 600,
-              fontFamily: SF,
-              color: "var(--text-muted)",
-              letterSpacing: "0.025em",
-            }}
-          >
-            {isDragging ? "release to unlock ›" : "slide to unlock  ›"}
-          </span>
-        </motion.span>
+        {/* Progress fill — scaleX from left, GPU only */}
+        <motion.div style={{
+          position: "absolute", inset: 0,
+          background: "linear-gradient(90deg, rgba(99,102,241,0.15) 0%, transparent 100%)",
+          scaleX: fillScaleX,
+          transformOrigin: "left center",
+          pointerEvents: "none",
+        }} />
 
-        {/* Handle */}
+        {/* Label */}
+        <motion.div style={{
+          opacity: textOpacity,
+          position: "absolute", inset: 0,
+          display: "flex", alignItems: "center", justifyContent: "center",
+          paddingLeft: HANDLE_W + 4,
+          pointerEvents: "none",
+          gap: 6,
+        }}>
+          <span style={{
+            fontSize: 12, fontWeight: 500, fontFamily: SF,
+            color: "var(--text-muted)", letterSpacing: "0.04em",
+          }}>
+            slide to unlock
+          </span>
+          <span style={{ color: "var(--text-muted)", fontSize: 11, opacity: 0.6 }}>›</span>
+        </motion.div>
+
+        {/* Handle — NUMERIC dragConstraints = no DOM reads per frame */}
         <motion.div
-          className="slide-handle"
           drag="x"
-          dragConstraints={trackRef}
+          dragConstraints={{ left: 0, right: trackW }}
           dragElastic={0}
           dragMomentum={false}
-          dragTransition={{ bounceStiffness: 700, bounceDamping: 45 }}
           onDragStart={onDragStart}
           onDragEnd={onDragEnd}
           style={{
             position: "absolute",
-            top: 0,
-            left: 0,
-            width: HANDLE_W,
-            height: 54,
+            top: 0, left: 0,
+            width: HANDLE_W, height: TRACK_H,
             x,
-            background: handleBg,
-            borderRadius: 13,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            color: "#1a1a1a",
-            boxShadow:
-              "0 2px 12px rgba(0,0,0,0.22), 0 1px 3px rgba(0,0,0,0.10)",
+            background: "var(--slide-handle-bg)",
+            borderRadius: 10,
+            display: "flex", alignItems: "center", justifyContent: "center", gap: 2,
+            color: "var(--slide-handle-fg)",
+            boxShadow: "0 2px 10px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.12)",
             cursor: "grab",
             zIndex: 2,
             touchAction: "none",
             willChange: "transform",
           }}
-          whileTap={{ cursor: "grabbing", scale: 0.96 }}
-          whileHover={{
-            boxShadow: "0 4px 20px rgba(0,0,0,0.30)",
-            transition: { duration: 0.16 },
-          }}
+          whileTap={{ scale: 0.93 }}
         >
-          <motion.svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="currentColor"
-            style={{ rotate: arrowRotate }}
-          >
-            <path d="M24 12 12.75 3v4.696H0v8.608h12.75V21z" />
-          </motion.svg>
+          {/* Chevron arrows → → */}
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="9 18 15 12 9 6"/>
+          </svg>
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
+            style={{ opacity: 0.45, marginLeft: -5 }}>
+            <polyline points="9 18 15 12 9 6"/>
+          </svg>
         </motion.div>
 
-        {/* Success checkmark — appears when unlocked */}
+        {/* Checkmark on unlock */}
         <AnimatePresence>
           {unlockDone && (
             <motion.div
-              initial={{ opacity: 0, scale: 0.6 }}
+              initial={{ opacity: 0, scale: 0.4 }}
               animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.6 }}
-              transition={{ type: "spring", stiffness: 500, damping: 28 }}
+              transition={{ type: "spring", stiffness: 700, damping: 24 }}
               style={{
-                position: "absolute",
-                right: 12,
-                width: 28,
-                height: 28,
-                borderRadius: "50%",
-                background: "rgba(52,211,153,0.15)",
-                border: "1px solid rgba(52,211,153,0.4)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                color: "#34d399",
-                pointerEvents: "none",
+                position: "absolute", right: 12, top: "50%",
+                transform: "translateY(-50%)",
+                width: 24, height: 24, borderRadius: "50%",
+                background: "rgba(34,197,94,0.14)",
+                border: "1px solid rgba(34,197,94,0.4)",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                color: "#22c55e", pointerEvents: "none",
               }}
             >
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <polyline points="20 6 9 17 4 12" />
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="20 6 9 17 4 12"/>
               </svg>
             </motion.div>
           )}
