@@ -15,6 +15,7 @@ export default function Home() {
       <main style={{ paddingTop: 33 }}>
         <SparklesBridge />
         <HeroSection />
+        {/* page-wrapper constrains center content + provides side borders */}
         <div className="page-wrapper" style={{ marginTop: 34 }}>
           <AboutSection />
           <SkillsSection />

@@ -613,13 +613,10 @@ export function ProjectsSection() {
         id="projects"
         ref={setRefs}
         style={{
-          paddingTop: 0,
-          paddingBottom: 0,
-          marginBottom: 55,
+          marginBottom: 0,
           opacity: visible ? 1 : 0,
           transform: visible ? "none" : "translateY(14px)",
           transition: "opacity 0.65s var(--expo-out), transform 0.65s var(--expo-out)",
-          borderBottom: "1px solid var(--line)",
         }}
       >
         <div style={{

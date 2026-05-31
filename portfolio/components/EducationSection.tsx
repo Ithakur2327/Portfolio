@@ -460,7 +460,7 @@ export function EducationSection() {
         ref={ref2}
         style={{
           marginTop: 0,
-          marginBottom: 55,
+          marginBottom: 0,
           opacity: vis2 ? 1 : 0,
           transform: vis2 ? "none" : "translateY(14px)",
           transition: "opacity 0.55s var(--expo-out), transform 0.55s var(--expo-out)",
