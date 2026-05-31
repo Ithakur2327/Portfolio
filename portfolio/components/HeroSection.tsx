@@ -193,7 +193,7 @@ export function HeroSection() {
 
   return (
     <>
-      <style>{`
+      <style suppressHydrationWarning>{`
         @keyframes fsIn  { from{transform:translateY(7px);opacity:0} to{transform:none;opacity:1} }
         @keyframes fsOut { from{transform:none;opacity:1} to{transform:translateY(-7px);opacity:0} }
         .fs-in  { animation: fsIn  0.28s cubic-bezier(0.16,1,0.3,1) forwards }

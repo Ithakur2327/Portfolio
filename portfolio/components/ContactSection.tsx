@@ -83,7 +83,7 @@ export function ContactSection() {
 
   return (
     <>
-      <style>{`
+      <style suppressHydrationWarning>{`
         @keyframes contact-spin { to { transform: rotate(360deg); } }
 
         .contact-outer {

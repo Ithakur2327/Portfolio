@@ -771,7 +771,7 @@ export function AboutSection() {
 
   return (
     <>
-      <style>{`
+      <style suppressHydrationWarning>{`
         @keyframes spin { to { transform: rotate(360deg); } }
 
         /* Name highlight — green */

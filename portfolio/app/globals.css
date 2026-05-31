@@ -795,6 +795,23 @@ section, .edu-card, .proj-card {
   transform: translateY(-5px) translateZ(0);
 }
 
+/* Skills lamp grid — layout */
+.skills-lamp-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  align-items: stretch;
+}
+@media (max-width: 1100px) {
+  .skills-lamp-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 560px) {
+  .skills-lamp-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 480px) {
+  .skills-lamp-grid { gap: 10px; }
+}
+
 /* Skills lamp grid — NO preserve-3d */
 .proj-grid > *,
 .skills-lamp-grid > * {
@@ -804,11 +821,7 @@ section, .edu-card, .proj-card {
   -webkit-backface-visibility: hidden;
 }
 
-/* content-visibility for off-screen sections */
-#skills, #projects, #education, #contact {
-  content-visibility: auto;
-  contain-intrinsic-size: 0 700px;
-}
+/* content-visibility removed — it applies contain:paint which clips 100vw full-bleed backgrounds */
 
 /* Light mode card shadows */
 html.light .proj-card,

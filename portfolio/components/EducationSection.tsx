@@ -149,7 +149,7 @@ export function EducationSection() {
 
   return (
     <>
-      <style>{`
+      <style suppressHydrationWarning>{`
         /* ── shared section wrapper (same as Skills / Projects) ── */
         .edu-outer {
           position: relative;

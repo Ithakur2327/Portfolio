@@ -284,26 +284,6 @@ export function SkillsSection() {
 
   return (
     <>
-      <style>{`
-        * { -webkit-tap-highlight-color: transparent; }
-
-        .skills-lamp-grid {
-          display: grid;
-          grid-template-columns: repeat(4, minmax(0,1fr));
-          gap: 12px;
-          align-items: stretch;
-        }
-        @media (max-width: 1100px) {
-          .skills-lamp-grid { grid-template-columns: repeat(2, minmax(0,1fr)); }
-        }
-        @media (max-width: 560px) {
-          .skills-lamp-grid { grid-template-columns: 1fr; }
-        }
-        @media (max-width: 480px) {
-          .skills-lamp-grid { gap: 10px; }
-        }
-      `}</style>
-
       <section
         ref={ref}
         id="skills"
@@ -314,7 +294,6 @@ export function SkillsSection() {
           transition: "opacity 0.6s cubic-bezier(0.22,1,0.36,1), transform 0.6s cubic-bezier(0.22,1,0.36,1)",
         }}
       >
-        {/* Full-bleed background — same pattern as About/Education/Contact */}
         <div style={{
           position: "relative",
           left: "50%", marginLeft: "-50vw",
@@ -324,7 +303,6 @@ export function SkillsSection() {
           borderBottom: "1px solid var(--line)",
         }}>
           <div style={{ maxWidth: 1060, margin: "0 auto", padding: "0 20px 40px" }}>
-            {/* Title */}
             <div style={{ paddingTop: 28, marginBottom: 4 }}>
               <span style={{
                 fontSize: 28, fontWeight: 700,
@@ -335,18 +313,12 @@ export function SkillsSection() {
                 Skills
               </span>
             </div>
-
-            {/* Divider */}
             <div style={{ height: 1, background: "var(--border)", margin: "18px 0 24px" }} />
-
-            {/* Lamp cards */}
             <div className="skills-lamp-grid">
               {LAMP_GROUPS.map((g) => (
                 <LampSkillBox key={g.title} {...g} />
               ))}
             </div>
-
-            {/* Moving strip */}
             <div style={{ marginTop: 28, marginLeft: -20, marginRight: -20 }}>
               <MovingStrip items={STRIP_NAMES} />
             </div>

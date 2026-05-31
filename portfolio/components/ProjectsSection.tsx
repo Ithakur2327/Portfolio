@@ -409,7 +409,7 @@ function ProjectModal({
             pointerEvents: "auto",
           }}
         >
-          <style>{`
+          <style suppressHydrationWarning>{`
             .modal-scroll::-webkit-scrollbar { display: none; }
             .modal-two-col {
               display: grid;
@@ -652,7 +652,7 @@ export function ProjectsSection() {
               transition: "margin 0.35s cubic-bezier(0.22,1,0.36,1)",
             }} />
 
-            <style>{`
+            <style suppressHydrationWarning>{`
               .proj-grid {
                 display: grid;
                 grid-template-columns: repeat(4, 1fr);

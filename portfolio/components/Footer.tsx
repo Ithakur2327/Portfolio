@@ -104,7 +104,7 @@ export function Footer() {
 
   return (
     <>
-      <style>{`
+      <style suppressHydrationWarning>{`
         .footer-root {
           position: relative;
           left: 50%;
