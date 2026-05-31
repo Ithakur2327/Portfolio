@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef, useState, useEffect } from "react";
+import React, { useRef, useState, useEffect, useCallback } from "react";
 import {
   motion,
   useScroll,
@@ -605,8 +605,32 @@ function DiffCard({ label, solved, total, color }: { label: string; solved: numb
   const pct = Math.round((solved / total) * 100);
   const bgAlpha  = label === "Easy" ? "rgba(74,222,128,0.07)"   : label === "Medium" ? "rgba(251,146,60,0.07)"  : "rgba(248,113,113,0.07)";
   const bdrAlpha = label === "Easy" ? "rgba(74,222,128,0.18)"   : label === "Medium" ? "rgba(251,146,60,0.18)"  : "rgba(248,113,113,0.18)";
+  const cardRef = useRef<HTMLDivElement>(null);
+
+  const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    const el = cardRef.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    const cx = rect.left + rect.width / 2;
+    const cy = rect.top + rect.height / 2;
+    const dx = (e.clientX - cx) / (rect.width / 2);
+    const dy = (e.clientY - cy) / (rect.height / 2);
+    const rotX = -dy * 12;
+    const rotY = dx * 12;
+    el.style.transform = `perspective(500px) rotateX(${rotX}deg) rotateY(${rotY}deg) translateY(-4px) scale(1.04) translateZ(0)`;
+    el.style.boxShadow = `0 8px 24px rgba(0,0,0,0.22), 0 0 16px ${color}30`;
+  }, [color]);
+
+  const handleMouseLeave = useCallback(() => {
+    const el = cardRef.current;
+    if (!el) return;
+    el.style.transform = "perspective(500px) rotateX(0deg) rotateY(0deg) translateY(0) scale(1) translateZ(0)";
+    el.style.boxShadow = `0 2px 8px rgba(0,0,0,0.12)`;
+  }, []);
+
   return (
     <div
+      ref={cardRef}
       className="diff-card-hover"
       style={{
         flex: 1,
@@ -617,16 +641,13 @@ function DiffCard({ label, solved, total, color }: { label: string; solved: numb
         border: `1px solid ${bdrAlpha}`,
         boxShadow: `0 2px 8px rgba(0,0,0,0.12)`,
         cursor: "default",
-        transition: "transform 0.2s cubic-bezier(0.16,1,0.3,1), box-shadow 0.2s",
+        transition: "transform 0.25s cubic-bezier(0.16,1,0.3,1), box-shadow 0.25s cubic-bezier(0.16,1,0.3,1)",
         willChange: "transform",
         transform: "translateZ(0)",
+        transformStyle: "preserve-3d",
       }}
-      onMouseEnter={e => {
-        (e.currentTarget as HTMLElement).style.transform = "translateY(-3px) scale(1.03) translateZ(0)";
-      }}
-      onMouseLeave={e => {
-        (e.currentTarget as HTMLElement).style.transform = "translateZ(0)";
-      }}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
     >
       <div style={{ fontSize: 10, fontWeight: 700, color, fontFamily: MONO, letterSpacing: "0.05em", marginBottom: 5 }}>{label.toUpperCase()}</div>
       <div style={{ fontSize: 20, fontWeight: 800, color: "var(--text-primary)", fontFamily: MONO, letterSpacing: "-0.04em", lineHeight: 1 }}>{solved}</div>

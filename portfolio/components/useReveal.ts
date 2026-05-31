@@ -3,32 +3,29 @@ import { useEffect, useRef, useState } from "react";
 
 export function useReveal(threshold = 0.08) {
   const ref = useRef<HTMLDivElement>(null);
-  const [visible, setVisible] = useState(false);
+  // FIX: Start as `undefined` (not false) so server and client first render match.
+  // Only after mount do we set actual visibility state.
+  const [visible, setVisible] = useState<boolean | undefined>(undefined);
 
   useEffect(() => {
+    // After mount: default to false, then observe
+    setVisible(false);
     const el = ref.current;
     if (!el) return;
 
-    // rootMargin: trigger 80px BEFORE element enters viewport
-    // This gives the animation time to begin before user sees the element
-    // Result: content feels instantly visible, never "pops in"
     const obs = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
           setVisible(true);
-          // Disconnect immediately — one-shot, no wasted observers
           obs.disconnect();
         }
       },
       {
         threshold,
-        // Pre-trigger: start animation before element is fully in view
         rootMargin: "0px 0px -60px 0px",
       }
     );
 
-    // Use requestIdleCallback to schedule observer setup off critical path
-    // Falls back to setTimeout for Safari compatibility
     if ("requestIdleCallback" in window) {
       const id = (window as Window & { requestIdleCallback: (cb: () => void, opts?: { timeout: number }) => number })
         .requestIdleCallback(() => obs.observe(el), { timeout: 200 });
@@ -45,5 +42,10 @@ export function useReveal(threshold = 0.08) {
     }
   }, [threshold]);
 
-  return { ref, visible };
+  // undefined = not yet mounted (SSR) → treat as visible=true so server HTML has no opacity/transform
+  // false = mounted, not yet in view → animate from hidden
+  // true = in view → animate to visible
+  const isVisible = visible === undefined ? true : visible;
+
+  return { ref, visible: isVisible };
 }

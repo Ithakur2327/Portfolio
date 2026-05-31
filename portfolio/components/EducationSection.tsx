@@ -274,29 +274,46 @@ export function EducationSection() {
           padding-top: 2px;
         }
 
-        /* ── language pills ── */
+        /* ── language row — enhanced box layout ── */
         .lang-row {
           display: flex;
           align-items: center;
-          gap: 8px;
+          gap: 0;
           flex-wrap: nowrap;
           overflow-x: auto;
           -webkit-overflow-scrolling: touch;
           scrollbar-width: none;
           margin-top: 8px;
-          padding-top: 18px;
+          padding: 14px 16px;
           border-top: 1px solid var(--border);
+          border: 1px solid rgba(59,130,246,0.22);
+          border-radius: 10px;
+          background: rgba(59,130,246,0.04);
+          box-shadow: 0 0 0 1px rgba(59,130,246,0.08) inset;
         }
         .lang-row::-webkit-scrollbar { display: none; }
         .lang-label-txt {
-          font-size: 11px;
+          font-size: 12px;
           font-weight: 800;
-          letter-spacing: 0.07em;
+          letter-spacing: 0.06em;
           text-transform: uppercase;
+          color: var(--text-primary);
+          font-family: ${MONO};
+          flex-shrink: 0;
+        }
+        .lang-dash {
+          font-size: 13px;
+          font-weight: 400;
           color: var(--text-muted);
           font-family: ${MONO};
-          margin-right: 4px;
+          margin: 0 12px;
           flex-shrink: 0;
+        }
+        .lang-pills-wrap {
+          display: flex;
+          gap: 7px;
+          align-items: center;
+          flex-wrap: nowrap;
         }
         .lang-pill-item {
           display: inline-flex;
@@ -319,6 +336,10 @@ export function EducationSection() {
           transform: translateY(-2px);
           box-shadow: 0 4px 14px rgba(59,130,246,0.20);
           background: rgba(59,130,246,0.14);
+        }
+        html.light .lang-row {
+          border-color: rgba(29,78,216,0.20);
+          background: rgba(29,78,216,0.03);
         }
         html.light .lang-pill-item {
           color: #1d4ed8;
@@ -446,9 +467,12 @@ export function EducationSection() {
             {/* Languages */}
             <div className="lang-row">
               <span className="lang-label-txt">Languages</span>
-              {LANGUAGES.map((lang, i) => (
-                <LangPill key={i} name={lang.name} delay={0.18 + i * 0.08} />
-              ))}
+              <span className="lang-dash">—</span>
+              <div className="lang-pills-wrap">
+                {LANGUAGES.map((lang, i) => (
+                  <LangPill key={i} name={lang.name} delay={0.18 + i * 0.08} />
+                ))}
+              </div>
             </div>
           </div>
         </div>

@@ -144,8 +144,8 @@ const ExternalIcon = () => (
    getBoundingClientRect every frame. Fix: numeric constraints.
    No rotateY (3D + drag = compositor conflict = glitch).
 ───────────────────────────────────────────────────────── */
-const HANDLE_W = 56;
-const TRACK_H  = 52;
+const HANDLE_W = 46;
+const TRACK_H  = 42;
 
 function SlideToUnlock({ onUnlock }: { onUnlock: () => void }) {
   const audioCtxRef  = useRef<AudioContext | null>(null);
@@ -210,11 +210,11 @@ function SlideToUnlock({ onUnlock }: { onUnlock: () => void }) {
 
   return (
     <div style={{
-      width: 300, borderRadius: 16,
+      width: 260, borderRadius: 14,
       background: "var(--bg-card)",
       border: "1px solid var(--border)",
       boxShadow: "0 2px 16px rgba(0,0,0,0.12), inset 0 1px 0 rgba(255,255,255,0.05)",
-      padding: 4,
+      padding: 3,
       userSelect: "none", WebkitUserSelect: "none",
     }}>
       {/* Track — fixed numeric size, no overflow:hidden on drag parent */}
@@ -397,14 +397,14 @@ function ProjectModal({
         <div
           style={{
             width: "100%",
-            maxWidth: 860,
+            maxWidth: 900,
             maxHeight: "calc(100vh - 24px)",
             overflowY: "auto",
             background: "var(--bg-card)",
             border: `1px solid ${proj.accentBorder}`,
             borderTop: `3px solid ${proj.accent}`,
-            borderRadius: 18,
-            boxShadow: `0 0 0 1px ${proj.accentBorder}, 0 32px 96px rgba(0,0,0,0.65)`,
+            borderRadius: 20,
+            boxShadow: `0 0 0 1px ${proj.accentBorder}, 0 40px 100px rgba(0,0,0,0.70), 0 0 60px ${proj.accent}18`,
             scrollbarWidth: "none" as const,
             pointerEvents: "auto",
           }}
@@ -413,51 +413,87 @@ function ProjectModal({
             .modal-scroll::-webkit-scrollbar { display: none; }
             .modal-two-col {
               display: grid;
-              grid-template-columns: 260px 1fr;
+              grid-template-columns: 280px 1fr;
               gap: 24px;
               align-items: start;
             }
             @media (max-width: 600px) {
-              .modal-two-col { grid-template-columns: 1fr; gap: 14px; }
+              .modal-two-col { grid-template-columns: 1fr; gap: 16px; }
             }
+            .modal-tag-badge {
+              display: inline-flex;
+              align-items: center;
+              gap: 4px;
+              font-size: 10.5px;
+              padding: 4px 10px;
+              border-radius: 7px;
+              font-family: 'Geist Mono', monospace;
+              transition: opacity 0.15s;
+            }
+            .modal-tag-badge:hover { opacity: 0.75; }
+            .modal-action-btn {
+              display: inline-flex;
+              align-items: center;
+              gap: 7px;
+              padding: 10px 22px;
+              border-radius: 10px;
+              font-size: 13px;
+              font-weight: 600;
+              text-decoration: none;
+              transition: opacity 0.15s, transform 0.15s;
+            }
+            .modal-action-btn:hover { opacity: 0.85; transform: translateY(-1px); }
           `}</style>
-          <div className="modal-scroll" style={{ padding: "20px" }}>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, marginBottom: 18, flexWrap: "wrap" as const }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 9, flexWrap: "wrap" as const }}>
-                <h3 style={{ fontSize: "clamp(16px, 2.5vw, 22px)", fontWeight: 800, color: "var(--text-primary)", letterSpacing: "-0.03em", fontFamily: SF, margin: 0 }}>{proj.name}</h3>
-                <span style={{ fontFamily: MONO, fontSize: 10.5, color: "var(--text-muted)" }}>{proj.year}</span>
-                {proj.featured && (
-                  <span style={{ fontSize: 8.5, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase" as const, color: proj.accent, background: proj.accentBg, border: `1px solid ${proj.accentBorder}`, padding: "2px 7px", borderRadius: 20 }}>Featured</span>
-                )}
+          <div className="modal-scroll" style={{ padding: "22px 22px 26px" }}>
+            {/* Header */}
+            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12, marginBottom: 18 }}>
+              <div>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" as const, marginBottom: 4 }}>
+                  <h3 style={{ fontSize: "clamp(18px, 2.5vw, 24px)", fontWeight: 800, color: "var(--text-primary)", letterSpacing: "-0.03em", fontFamily: SF, margin: 0 }}>{proj.name}</h3>
+                  <span style={{ fontFamily: MONO, fontSize: 11, color: "var(--text-muted)", background: "var(--bg-secondary)", border: "1px solid var(--border)", padding: "2px 8px", borderRadius: 6 }}>{proj.year}</span>
+                </div>
+                <p style={{ fontSize: 13, color: "var(--text-secondary)", lineHeight: 1.6, margin: 0, maxWidth: 520 }}>{proj.desc}</p>
               </div>
               <button
                 onClick={onClose}
-                style={{ width: 32, height: 32, borderRadius: "50%", flexShrink: 0, background: "var(--bg-hover)", border: "1px solid var(--border)", color: "var(--text-muted)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}
+                style={{ width: 34, height: 34, borderRadius: "50%", flexShrink: 0, background: "var(--bg-hover)", border: "1px solid var(--border)", color: "var(--text-muted)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", transition: "background 0.15s" }}
               >
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
                   <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
                 </svg>
               </button>
             </div>
+
+            {/* Divider */}
+            <div style={{ height: 1, background: `linear-gradient(90deg, ${proj.accent}44, var(--border), transparent)`, marginBottom: 20 }} />
+
             <div className="modal-two-col">
-              <img src={proj.img} alt={proj.name} style={{ width: "100%", height: 180, objectFit: "cover", objectPosition: "center top", display: "block", borderRadius: 10 }} />
+              {/* Image */}
               <div>
-                <p style={{ fontSize: 13, color: "var(--text-secondary)", lineHeight: 1.8, marginBottom: 16 }}>{proj.longDesc}</p>
-                <p style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase" as const, color: "var(--text-muted)", marginBottom: 8, fontFamily: MONO }}>Tech Stack</p>
-                <div style={{ display: "flex", flexWrap: "wrap" as const, gap: 5, marginBottom: 18 }}>
+                <div style={{ borderRadius: 12, overflow: "hidden", border: `1px solid ${proj.accentBorder}`, boxShadow: `0 4px 20px rgba(0,0,0,0.3)` }}>
+                  <img src={proj.img} alt={proj.name} style={{ width: "100%", height: 190, objectFit: "cover", objectPosition: "center top", display: "block" }} />
+                </div>
+                {/* Action buttons under image */}
+                <div style={{ display: "flex", gap: 9, marginTop: 14, flexWrap: "wrap" as const }}>
+                  <a href={proj.github} target="_blank" rel="noreferrer" className="modal-action-btn" style={{ background: "var(--bg-hover)", border: "1px solid var(--border)", color: "var(--text-primary)", fontFamily: SF }}><GithubIcon /> GitHub</a>
+                  <a href={proj.live} target="_blank" rel="noreferrer" className="modal-action-btn" style={{ background: proj.accentBg, border: `1px solid ${proj.accentBorder}`, color: proj.accent, fontFamily: SF }}><ExternalIcon /> Live Demo</a>
+                </div>
+              </div>
+
+              {/* Details */}
+              <div>
+                <p style={{ fontSize: 13.5, color: "var(--text-secondary)", lineHeight: 1.85, marginBottom: 20, fontFamily: SF }}>{proj.longDesc}</p>
+                <p style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase" as const, color: "var(--text-muted)", marginBottom: 10, fontFamily: MONO }}>Tech Stack</p>
+                <div style={{ display: "flex", flexWrap: "wrap" as const, gap: 6 }}>
                   {proj.tags.map(tag => {
                     const tech = TECH_MAP[tag];
                     return (
-                      <span key={tag} style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 10.5, color: "var(--tag-text)", background: "var(--tag-bg)", border: "1px solid var(--tag-border)", padding: "3px 9px", borderRadius: 6, fontFamily: MONO }}>
+                      <span key={tag} className="modal-tag-badge" style={{ color: "var(--tag-text)", background: "var(--tag-bg)", border: "1px solid var(--tag-border)" }}>
                         {tech && <img src={tech.logo} alt={tag} width={11} height={11} style={{ objectFit: "contain", flexShrink: 0, filter: tag === "Express.js" ? "brightness(0) invert(0.6)" : "none" }} />}
                         {tag}
                       </span>
                     );
                   })}
-                </div>
-                <div style={{ display: "flex", gap: 9, flexWrap: "wrap" as const }}>
-                  <a href={proj.github} target="_blank" rel="noreferrer" style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "9px 18px", borderRadius: 9, background: "var(--bg-hover)", border: "1px solid var(--border)", color: "var(--text-primary)", fontSize: 12.5, fontWeight: 600, textDecoration: "none", fontFamily: SF }}><GithubIcon /> GitHub</a>
-                  <a href={proj.live} target="_blank" rel="noreferrer" style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "9px 18px", borderRadius: 9, background: proj.accentBg, border: `1px solid ${proj.accentBorder}`, color: proj.accent, fontSize: 12.5, fontWeight: 700, textDecoration: "none", fontFamily: SF }}><ExternalIcon /> Live Demo</a>
                 </div>
               </div>
             </div>
@@ -526,14 +562,13 @@ function ProjectCard({ proj, index, visible, onOpen }: {
         }, 300);
       }}
       whileHover={{
-        y: -5,
-        scale: 1.018,
-        /* No boxShadow, no borderColor — both are paint triggers */
-        transition: { type: "spring", stiffness: 420, damping: 26, mass: 0.6 },
+        y: -6,
+        scale: 1.022,
+        transition: { type: "spring", stiffness: 480, damping: 30, mass: 0.5 },
       }}
       whileTap={{
-        scale: 0.975,
-        transition: { type: "spring", stiffness: 600, damping: 34 },
+        scale: 0.972,
+        transition: { type: "spring", stiffness: 700, damping: 38 },
       }}
     >
       <div style={{ overflow: "hidden", flexShrink: 0 }}>
@@ -563,9 +598,6 @@ function ProjectCard({ proj, index, visible, onOpen }: {
         <div style={{ display: "flex", alignItems: "center", gap: 5, marginBottom: 5, flexWrap: "wrap" as const }}>
           <span style={{ fontSize: 12.5, fontWeight: 700, color: "var(--text-primary)", letterSpacing: "-0.02em", fontFamily: SF, lineHeight: 1.2 }}>{proj.name}</span>
           <span style={{ fontFamily: MONO, fontSize: 9.5, color: "var(--text-muted)" }}>{proj.year}</span>
-          {proj.featured && (
-            <span style={{ fontSize: 8, fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase" as const, color: proj.accent, background: proj.accentBg, border: `1px solid ${proj.accentBorder}`, padding: "1px 5px", borderRadius: 20 }}>Featured</span>
-          )}
         </div>
         <p style={{ fontSize: 11, color: "var(--text-secondary)", lineHeight: 1.55, margin: "0 0 auto", fontFamily: SF, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" as const, overflow: "hidden" }}>
           {proj.desc}
