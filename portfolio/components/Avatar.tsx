@@ -29,8 +29,8 @@ export function Avatar() {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const DPR  = Math.min(window.devicePixelRatio || 1, 4);  // 4x for 4K/8K-equivalent crisp
-    const SIZE = 1024;  // doubled base size for ultra-HD quality
+    const DPR  = Math.min(window.devicePixelRatio || 1, 2);
+    const SIZE = 512;
     canvas.width  = SIZE * DPR;
     canvas.height = SIZE * DPR;
 
@@ -173,21 +173,8 @@ export function Avatar() {
     const mkTex = (src: HTMLImageElement | HTMLCanvasElement): WebGLTexture => {
       const tx = gl.createTexture()!;
       gl.bindTexture(gl.TEXTURE_2D, tx);
-      // Upscale image before uploading to GL for ultra-HD quality
-      if (src instanceof HTMLImageElement && src.naturalWidth > 0) {
-        const upscale = document.createElement("canvas");
-        upscale.width = Math.max(src.naturalWidth * 2, SIZE);
-        upscale.height = Math.max(src.naturalHeight * 2, SIZE);
-        const uctx = upscale.getContext("2d")!;
-        uctx.imageSmoothingEnabled = true;
-        uctx.imageSmoothingQuality = "high";
-        uctx.drawImage(src, 0, 0, upscale.width, upscale.height);
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, upscale);
-      } else {
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, src);
-      }
-      gl.generateMipmap(gl.TEXTURE_2D);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, src);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);

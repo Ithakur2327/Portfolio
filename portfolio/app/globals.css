@@ -927,20 +927,3 @@ a, button, [role="button"] {
   inherits: false;
   initial-value: 0;
 }
-/* ═══════════════════════════════════════════════════════════
-   PERFORMANCE — safe-only rules (zero design change)
-═══════════════════════════════════════════════════════════ */
-
-/* Avatar canvas: crisp on retina/4K */
-canvas {
-  image-rendering: -webkit-optimize-contrast;
-  image-rendering: high-quality;
-}
-
-/* Reduced motion */
-@media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
-    animation-duration: 0.01ms !important;
-    transition-duration: 0.01ms !important;
-  }
-}
