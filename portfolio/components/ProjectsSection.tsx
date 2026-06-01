@@ -644,6 +644,7 @@ export function ProjectsSection() {
       <div
         id="projects"
         ref={setRefs}
+        suppressHydrationWarning
         style={{
           marginBottom: 0,
           opacity: visible ? 1 : 0,

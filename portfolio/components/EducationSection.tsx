@@ -435,6 +435,7 @@ export function EducationSection() {
       <section
         id="education"
         ref={ref}
+        suppressHydrationWarning
         style={{
           marginBottom: 0,
           opacity: visible ? 1 : 0,
@@ -482,6 +483,7 @@ export function EducationSection() {
       <section
         id="certifications"
         ref={ref2}
+        suppressHydrationWarning
         style={{
           marginTop: 0,
           marginBottom: 0,

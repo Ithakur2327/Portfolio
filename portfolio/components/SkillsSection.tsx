@@ -287,6 +287,7 @@ export function SkillsSection() {
       <section
         ref={ref}
         id="skills"
+        suppressHydrationWarning
         style={{
           marginBottom: 0,
           opacity: visible ? 1 : 0,

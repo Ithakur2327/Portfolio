@@ -947,8 +947,9 @@ export function AboutSection() {
 
       <motion.section
         ref={ref}
-        initial={{ opacity: 0, y: 14 }}
-        animate={visible ? { opacity: 1, y: 0 } : {}}
+        suppressHydrationWarning
+        initial={false}
+        animate={visible ? { opacity: 1, y: 0 } : { opacity: 0, y: 14 }}
         transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
       >
         <div style={{ position: "relative", left: "50%", marginLeft: "-50vw", width: "100vw", background: "var(--bg-base)", borderTop: "1px solid var(--line)", borderBottom: "1px solid var(--line)" }}>

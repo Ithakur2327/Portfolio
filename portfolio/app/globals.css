@@ -1,9 +1,28 @@
 @import url('https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500&display=swap');
 
 /* ═══════════════════════════════════════════════════════════
+   @property — GPU-interpolated custom properties
+   Registered FIRST so they apply globally from load.
+═══════════════════════════════════════════════════════════ */
+@property --skill-glow {
+  syntax: "<color>";
+  inherits: false;
+  initial-value: transparent;
+}
+@property --slide-progress {
+  syntax: "<number>";
+  inherits: false;
+  initial-value: 0;
+}
+/* Scroll-fade mask custom props (chanhdai pattern) */
+@property --top-mask-height    { syntax: "<length>"; inherits: true; initial-value: 0px; }
+@property --bottom-mask-height { syntax: "<length>"; inherits: true; initial-value: 64px; }
+@property --left-mask-width    { syntax: "<length>"; inherits: true; initial-value: 0px; }
+@property --right-mask-width   { syntax: "<length>"; inherits: true; initial-value: 64px; }
+
+/* ═══════════════════════════════════════════════════════════
    THEME TOKENS
 ═══════════════════════════════════════════════════════════ */
-
 :root, html.dark {
   --bg-base:        #09090b;
   --bg-secondary:   rgba(17,17,19,0.6);
@@ -33,7 +52,13 @@
   --divider-glow:   rgba(139,92,246,0.6);
   --slide-handle-bg: #fafafa;
   --slide-handle-fg: #09090b;
-  --expo-out: linear(0 0%,0.1684 2.66%,0.3165 5.49%,0.446 8.52%,0.5581 11.78%,0.6535 15.29%,0.7341 19.11%,0.8011 23.3%,0.8557 27.93%,0.8962 32.68%,0.9283 38.01%,0.9529 44.08%,0.9711 51.14%,0.9833 59.06%,0.9915 68.74%,1 100%);
+  /* Easing functions — chanhdai expo-out pattern */
+  --expo-out: linear(
+    0 0%,0.1684 2.66%,0.3165 5.49%,0.446 8.52%,0.5581 11.78%,
+    0.6535 15.29%,0.7341 19.11%,0.8011 23.3%,0.8557 27.93%,
+    0.8962 32.68%,0.9283 38.01%,0.9529 44.08%,0.9711 51.14%,
+    0.9833 59.06%,0.9915 68.74%,1 100%
+  );
   --spring-smooth: cubic-bezier(0.22, 1, 0.36, 1);
   --spring-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
   --spring-fast:   cubic-bezier(0.16, 1, 0.30, 1);
@@ -70,9 +95,11 @@ html.light {
   --slide-handle-fg: #f5f5f3;
 }
 
-/* ── Page background ── */
+/* Page background — set early to prevent flash */
 html       { background: #09090b; }
 html.light { background: #f5f5f3; }
+/* Theme background transition — color only, never geometry */
+html { transition: background-color 0.12s ease; }
 
 /* ═══════════════════════════════════════════════════════════
    RESET
@@ -83,44 +110,85 @@ html.light { background: #f5f5f3; }
   padding: 0;
 }
 
+/* ═══════════════════════════════════════════════════════════
+   HTML & BODY — scroll, rendering, font smoothing
+═══════════════════════════════════════════════════════════ */
 html {
   scroll-behavior: smooth;
   scroll-padding-top: 64px;
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
   overflow-y: scroll;
+  /* Prevents rubber-band bounce from triggering layout */
   overscroll-behavior-y: none;
+  /* GPU-composited text rendering */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
+  /* Momentum scrolling on iOS */
   -webkit-overflow-scrolling: touch;
+  /* hint to browser this element scrolls — enables async scroll */
+  will-change: scroll-position;
 }
 
 body {
   background: transparent;
   color: var(--text-primary);
-  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', Arial, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text',
+               'Helvetica Neue', Arial, sans-serif;
   font-size: 14px;
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  /* Only transition color, never layout props */
   transition: color 0.1s ease;
-  -webkit-overflow-scrolling: touch;
 }
 
-a { color: inherit; text-decoration: none; }
-::selection { background: var(--accent); color: var(--accent-fg); }
-::-webkit-scrollbar { width: 4px; }
+/* ═══════════════════════════════════════════════════════════
+   SCROLL SNAPPING — chanhdai-inspired section smoothness
+   Only on section scroll, not the main document (prevents jank)
+═══════════════════════════════════════════════════════════ */
+@supports (scroll-behavior: smooth) {
+  html {
+    scroll-behavior: smooth;
+    overscroll-behavior: none;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   SCROLLBAR
+═══════════════════════════════════════════════════════════ */
+::-webkit-scrollbar       { width: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+* { scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
 
-a, button {
+/* ═══════════════════════════════════════════════════════════
+   SELECTION & BASE LINKS
+═══════════════════════════════════════════════════════════ */
+::selection { background: var(--accent); color: var(--accent-fg); }
+a { color: inherit; text-decoration: none; }
+
+/* Remove tap highlight + enable fast tap on all interactive elements */
+a, button, [role="button"], label {
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
 }
 
 /* ═══════════════════════════════════════════════════════════
-   LAYOUT
+   COMPOSITOR-ONLY TRANSITIONS
+   Only animate properties that don't trigger layout or paint.
+   transform, opacity, filter, clip-path → GPU composited.
+═══════════════════════════════════════════════════════════ */
+a, button, [role="button"] {
+  transition-property: color, background-color, border-color, opacity, transform, box-shadow;
+  transition-timing-function: var(--spring-smooth);
+  transition-duration: 0.18s;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   LAYOUT — page-wrapper
 ═══════════════════════════════════════════════════════════ */
 .page-wrapper {
   max-width: 1060px;
@@ -134,7 +202,17 @@ a, button {
   isolation: isolate;
 }
 
-/* Full-bleed horizontal lines */
+/* ── Section gap fix ──────────────────────────────────────
+   Each section uses full-bleed 100vw inner divs with
+   border-top + border-bottom. Adjacent borders collapse via
+   negative margin so there's never a double-border gap.
+   ──────────────────────────────────────────────────────── */
+.page-wrapper > * + * {
+  /* Pull each section up by 1px to collapse the stacked borders */
+  margin-top: -1px;
+}
+
+/* Full-bleed horizontal lines (chanhdai screen-line pattern) */
 .screen-line-top    { position: relative; }
 .screen-line-top::before {
   content: ''; position: absolute;
@@ -157,10 +235,12 @@ a, button {
   position: fixed; top: 0; left: 0; right: 0; z-index: 100;
   height: 52px;
   background: var(--nav-bg);
+  /* Reduced blur on all devices — expensive on mobile */
   backdrop-filter: blur(16px) saturate(180%);
   -webkit-backdrop-filter: blur(16px) saturate(180%);
   border-bottom: 1px solid var(--nav-border);
   transition: background 0.2s, border-color 0.2s;
+  /* Own compositing layer — prevents repaints on scroll */
   will-change: transform;
   transform: translateZ(0);
 }
@@ -216,54 +296,31 @@ a, button {
    ANIMATED SECTION DIVIDER
 ═══════════════════════════════════════════════════════════ */
 .hero-divider {
-  position: relative;
-  height: 1px;
-  margin: 0;
-  background: var(--divider-color);
-  overflow: visible;
-  left: -100vw;
-  width: 200vw;
+  position: relative; height: 1px; margin: 0;
+  background: var(--divider-color); overflow: visible;
+  left: -100vw; width: 200vw;
 }
-.hero-divider-wrap {
-  position: relative;
-  height: 1px;
-  margin: 0;
-  overflow: hidden;
-}
+.hero-divider-wrap { position: relative; height: 1px; margin: 0; overflow: hidden; }
 .hero-divider-glow {
-  position: absolute;
-  top: 50%; transform: translateY(-50%);
-  width: 240px; height: 1px;
-  border-radius: 9999px;
-  pointer-events: none;
-  opacity: 0;
+  position: absolute; top: 50%; transform: translateY(-50%);
+  width: 240px; height: 1px; border-radius: 9999px;
+  pointer-events: none; opacity: 0;
   transition: opacity 0.3s ease;
   background: radial-gradient(ellipse 120px 3px at center, var(--divider-glow) 0%, transparent 100%);
   filter: blur(1px);
 }
-.hero-divider-container {
-  position: relative;
-  height: 2px;
-  margin: 20px 0 0;
-}
+.hero-divider-container { position: relative; height: 2px; margin: 20px 0 0; }
 .hero-divider-container .base-line {
-  position: absolute;
-  inset: 0; left: -100vw; right: -100vw;
-  height: 1px; top: 50%;
-  background: var(--divider-color);
+  position: absolute; inset: 0; left: -100vw; right: -100vw;
+  height: 1px; top: 50%; background: var(--divider-color);
   transition: background 0.2s;
 }
 .hero-divider-container .glow-line {
-  position: absolute;
-  height: 4px; top: calc(50% - 2px);
-  border-radius: 9999px;
-  pointer-events: none;
-  opacity: 0;
+  position: absolute; height: 4px; top: calc(50% - 2px);
+  border-radius: 9999px; pointer-events: none; opacity: 0;
   transition: opacity 0.25s ease;
   background: linear-gradient(90deg, transparent, var(--divider-glow), transparent);
-  filter: blur(2px);
-  transform: translateX(-50%);
-  width: 300px;
+  filter: blur(2px); transform: translateX(-50%); width: 300px;
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -291,11 +348,8 @@ h1, h2, h3, .section-title {
 }
 
 .gold-box {
-  display: inline;
-  font-weight: 600;
-  color: var(--text-primary);
-  border: 1px solid rgba(212,160,23,0.5);
-  border-radius: 4px;
+  display: inline; font-weight: 600; color: var(--text-primary);
+  border: 1px solid rgba(212,160,23,0.5); border-radius: 4px;
   padding: 1px 5px;
   box-shadow: 0 0 8px rgba(212,160,23,0.15), inset 0 0 8px rgba(212,160,23,0.05);
   letter-spacing: -0.01em;
@@ -308,7 +362,9 @@ h1, h2, h3, .section-title {
 }
 
 /* ═══════════════════════════════════════════════════════════
-   ANIMATIONS — compositor-only (transform + opacity)
+   KEYFRAME ANIMATIONS — compositor-only (transform + opacity)
+   NEVER animate: width, height, top, left, margin, padding,
+   background, border, font-size — these trigger layout.
 ═══════════════════════════════════════════════════════════ */
 @keyframes fadeUp {
   from { opacity: 0; transform: translate3d(0, 18px, 0) scale3d(0.98, 0.98, 1); }
@@ -348,6 +404,12 @@ h1, h2, h3, .section-title {
   100% { transform: translateX(calc(-100% / 3)); }
 }
 @keyframes contact-spin { to { transform: rotate(360deg); } }
+@keyframes spin { to { transform: rotate(360deg); } }
+/* Scroll-fade mask animations (chanhdai) */
+@keyframes show-top-mask    { to { --top-mask-height: var(--mask-height); } }
+@keyframes hide-bottom-mask { to { --bottom-mask-height: 0px; } }
+@keyframes show-left-mask   { to { --left-mask-width: var(--mask-width); } }
+@keyframes hide-right-mask  { to { --right-mask-width: 0px; } }
 
 .pulse   { animation: pulse 2s ease infinite; }
 .fade-up { animation: fadeUp 0.5s var(--expo-out) forwards; }
@@ -361,7 +423,7 @@ h1, h2, h3, .section-title {
 .stagger > *:nth-child(6) { animation-delay: 0.25s }
 .stagger > *:nth-child(7) { animation-delay: 0.29s }
 
-/* Reveal — compositor-only transition */
+/* ── Reveal scroll animation — compositor-only ── */
 .reveal {
   opacity: 0;
   transform: translate3d(0, 20px, 0) scale3d(0.985, 0.985, 1);
@@ -375,7 +437,24 @@ h1, h2, h3, .section-title {
 .reveal.visible {
   opacity: 1;
   transform: translate3d(0, 0, 0) scale3d(1, 1, 1);
+  /* Remove will-change after animation completes — saves memory */
   will-change: auto;
+}
+
+/* ── Scroll-fade effect (chanhdai pattern) ── */
+.scroll-fade-effect-y {
+  --mask-height: 64px;
+  mask-image:
+    linear-gradient(to top, transparent, black 90%),
+    linear-gradient(to bottom, transparent 0%, black 100%),
+    linear-gradient(black, black);
+  mask-size: 100% var(--top-mask-height), 100% var(--bottom-mask-height), 100% 100%;
+  mask-repeat: no-repeat, no-repeat, no-repeat;
+  mask-composite: exclude;
+  animation-name: show-top-mask, hide-bottom-mask;
+  animation-timeline: scroll(self), scroll(self);
+  animation-range: 0 2rem, calc(100% - 2rem) 100%;
+  animation-fill-mode: both;
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -384,8 +463,7 @@ h1, h2, h3, .section-title {
 .avatar-wrap { position: relative; cursor: pointer; }
 .avatar-lights-off { transition: opacity 1.2s cubic-bezier(0.42,0,0.58,1); }
 .avatar-lights-on  {
-  opacity: 0;
-  transition: opacity 1.2s cubic-bezier(0.42,0,0.58,1);
+  opacity: 0; transition: opacity 1.2s cubic-bezier(0.42,0,0.58,1);
   position: absolute; inset: 0; border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
 }
@@ -401,8 +479,7 @@ h1, h2, h3, .section-title {
   transform: translateZ(0);
 }
 .flip-item {
-  display: block;
-  transform-origin: top center;
+  display: block; transform-origin: top center;
   animation-fill-mode: both;
   will-change: transform, opacity;
 }
@@ -442,7 +519,7 @@ h1, h2, h3, .section-title {
 .about-item { display: flex; gap: 10px; font-size: 13.5px; color: var(--text-secondary); line-height: 1.7; padding: 3px 0; }
 .about-item::before { content: '—'; color: var(--text-muted); flex-shrink: 0; margin-top: 1px; font-family: 'Geist Mono', monospace; }
 
-/* Marquee */
+/* ── Marquee ── */
 .marquee-track {
   overflow: hidden;
   transform: translateZ(0);
@@ -461,7 +538,7 @@ h1, h2, h3, .section-title {
   -webkit-mask: linear-gradient(90deg,transparent,black 6%,black 94%,transparent);
 }
 
-/* Cards */
+/* ── Cards ── */
 .proj-card {
   padding: 18px 12px; margin: 0 -12px; border-radius: 8px;
   border-bottom: 1px solid var(--border);
@@ -578,31 +655,195 @@ h1, h2, h3, .section-title {
    GOLD WORD
 ═══════════════════════════════════════════════════════════ */
 .gold-word {
-  display: inline;
-  font-weight: 700;
-  letter-spacing: -0.01em;
-  color: #e6b84a;
+  display: inline; font-weight: 700; letter-spacing: -0.01em; color: #e6b84a;
 }
 html.dark .gold-word {
   color: #f5c842;
-  background: rgba(245,200,66,0.08);
-  border-radius: 3px;
-  padding: 1px 3px;
+  background: rgba(245,200,66,0.08); border-radius: 3px; padding: 1px 3px;
   box-shadow: 0 0 0 1px rgba(245,200,66,0.12), 0 0 16px rgba(245,200,66,0.08);
 }
 html.light .gold-word {
   color: #92400e;
-  background: rgba(217,119,6,0.11);
-  border-radius: 3px;
-  padding: 1px 3px;
+  background: rgba(217,119,6,0.11); border-radius: 3px; padding: 1px 3px;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   VIEW TRANSITION — theme wipe (chanhdai-inspired)
+═══════════════════════════════════════════════════════════ */
+::view-transition-group(root) {
+  animation-timing-function: var(--expo-out);
+}
+::view-transition-new(root) {
+  mask: url('data:image/svg+xml,<svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M0 0H40L0 40V0Z" fill="url(%23paint0_linear_16_14)"/><defs><linearGradient id="paint0_linear_16_14" x1="0" y1="0" x2="20.5" y2="20.5" gradientUnits="userSpaceOnUse"><stop stop-color="white"/><stop offset="0.84506" stop-color="white" stop-opacity="0.99"/><stop offset="0.9506" stop-color="white" stop-opacity="0"/><stop offset="1" stop-color="white" stop-opacity="0"/></linearGradient></defs></svg>')
+    top left / 0 no-repeat;
+  mask-origin: top left;
+  animation: themeWipe 1.1s;
+  animation-fill-mode: both;
+}
+::view-transition-old(root),
+.dark::view-transition-old(root) {
+  animation: themeWipe 1.1s; animation-fill-mode: both;
+  z-index: -1; transform-origin: top left;
+}
+@keyframes themeWipe { to { mask-size: 200vmax; } }
+
+/* ═══════════════════════════════════════════════════════════
+   GPU COMPOSITING — 120Hz/144Hz/200Hz PERFORMANCE
+   Rules:
+   1. Only promote layers that actually animate (no blanket will-change)
+   2. Use translate3d/translateZ(0) to promote to GPU — but ONLY on
+      elements that animate. Blanket translate3d causes layer explosion.
+   3. will-change: auto after animation ends
+   4. backface-visibility: hidden prevents unnecessary layer creation
+      on elements that don't need it
+═══════════════════════════════════════════════════════════ */
+
+/* Subpixel text — ALL text elements */
+body, h1, h2, h3, p, span, a, button {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* HiDPI — retina borders + sharper images */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  body { -webkit-font-smoothing: subpixel-antialiased; }
+  .nav-root, .edu-outer, .cert-section-box, .contact-outer, .footer-root {
+    border-width: 0.5px !important;
+  }
+  .edu-sec-icon, .edu-card-icon, .cert-icon-box, .contact-sec-icon, .footer-avatar-wrap {
+    box-shadow: 0 0.5px 2px rgba(0,0,0,0.18), 0 1px 5px rgba(0,0,0,0.12);
+  }
+  img { image-rendering: -webkit-optimize-contrast; }
+  img[src*="devicons"], img[src*="wikimedia"], img[src*="chartjs"], img[src*="jwt"] {
+    image-rendering: auto;
+  }
+}
+
+/* Canvas */
+canvas {
+  transform: translateZ(0);
+  image-rendering: auto;
+}
+
+/* SVG */
+svg {
+  shape-rendering: geometricPrecision;
+  vector-effect: non-scaling-stroke;
+}
+
+/* Images — lazy decode hint */
+img {
+  image-rendering: auto;
+  /* hint to decode off main thread */
+  content-visibility: auto;
+}
+
+/* Elements that animate — own compositing layer */
+.h-profile, .h-info-wrap, .h-avatar,
+.logo-avatar, .logo-i,
+.nav-root {
+  will-change: transform;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+/* Section GPU hint — NO transform-style: preserve-3d */
+section, .edu-card, .proj-card {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+/* Interactive tiles — promote on hover via CSS, not permanently */
+.s-tile, .cert-item {
+  transform: translateZ(0);
+  transition-property: transform, opacity, background, box-shadow;
+  transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* GitHub cell */
+.gh-cell { transform: translateZ(0); }
+.gh-cell:hover { transform: scale(1.35) translateZ(0); }
+
+/* Stat card 3D hover — compositor only */
+.stat-card-3d {
+  transition: transform 0.28s cubic-bezier(0.16,1,0.3,1),
+              box-shadow 0.28s cubic-bezier(0.16,1,0.3,1);
+  transform: translateZ(0);
+}
+.stat-card-3d:hover { transform: translateY(-5px) translateZ(0); }
+
+/* Skills lamp grid */
+.skills-lamp-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  align-items: stretch;
+}
+
+/* Proj grid GPU */
+.proj-grid > *,
+.skills-lamp-grid > * {
+  will-change: transform;
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+/* Light mode cards */
+html.light .proj-card,
+html.light .cert-card,
+html.light .stat-badge {
+  background: #ffffff;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.05);
+  border-color: #d8d8d4;
+}
+
+/* Framer Motion layer hints */
+[data-framer-appear],
+[data-framer-motion-appear-animation] {
+  will-change: transform, opacity;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+/* Backdrop-filter elements — force GPU layer BEFORE blur */
+[style*="backdropFilter"],
+[style*="backdrop-filter"] {
+  transform: translateZ(0);
+  will-change: opacity;
+}
+
+/* Skills strip GPU */
+.skills-strip-inner {
+  will-change: transform;
+  transform: translate3d(0, 0, 0);
+}
+
+/* Momentum scroll for overflow containers */
+.contrib-wrap, .marquee-track, .marquee-fade,
+.modal-scroll, [style*="overflowY: auto"] {
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
 }
 
 /* ═══════════════════════════════════════════════════════════
    RESPONSIVE
 ═══════════════════════════════════════════════════════════ */
+@media (max-width: 1100px) {
+  .skills-lamp-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
 @media (max-width: 760px) {
   .desktop-nav { display: none !important; }
   .page-wrapper { padding: 0; }
+  /* Cheaper blur on mobile */
+  .nav-root {
+    backdrop-filter: blur(10px) saturate(140%);
+    -webkit-backdrop-filter: blur(10px) saturate(140%);
+  }
 }
 
 @media (max-width: 860px) {
@@ -628,14 +869,13 @@ html.light .gold-word {
     border-bottom: 1px solid var(--border) !important;
   }
   .hero-social a:last-child { border-bottom: none !important; }
-  /* Disable hover states on touch */
+  /* Disable hover states on touch — prevents stuck hover */
   .proj-card:hover, .cert-card:hover, .stat-badge:hover,
   .overview-item:hover, .contact-row:hover { background: transparent; }
-  /* Cheaper blur on mobile */
-  .nav-root {
-    backdrop-filter: blur(8px) saturate(120%);
-    -webkit-backdrop-filter: blur(8px) saturate(120%);
-  }
+  /* Disable 3D on mobile — GPU memory concern */
+  .stat-card-3d { transform: none !important; transition: box-shadow 0.2s, background 0.2s; }
+  .stat-card-3d:hover { transform: translateY(-3px) translateZ(0) !important; }
+  .name-highlight { box-shadow: none !important; }
 }
 
 @media (max-width: 600px) {
@@ -661,6 +901,7 @@ html.light .gold-word {
   section, .section-inner { padding-left: 14px !important; padding-right: 14px !important; }
   section#about { padding-left: 0 !important; padding-right: 0 !important; }
   .skills-strip-offset { margin-left: -14px !important; margin-right: -14px !important; }
+  .skills-lamp-grid { grid-template-columns: 1fr; }
   .proj-tags { flex-wrap: wrap; }
   .bottom-grid { grid-template-columns: 1fr !important; }
   .contact-cols { flex-direction: column !important; }
@@ -672,6 +913,14 @@ html.light .gold-word {
   .overview-cols { flex-direction: column !important; }
   .about-para { text-align: left !important; }
   .about-content { padding-left: 14px !important; padding-right: 14px !important; }
+}
+
+@media (max-width: 560px) {
+  .skills-lamp-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 480px) {
+  .skills-lamp-grid { gap: 10px; }
 }
 
 @media (max-width: 400px) {
@@ -695,169 +944,10 @@ html.light .gold-word {
 }
 
 /* ═══════════════════════════════════════════════════════════
-   VIEW TRANSITION
+   REDUCED MOTION — accessibility + battery
+   Respects user's OS "reduce motion" preference.
+   Disables all animations/transitions except for opacity.
 ═══════════════════════════════════════════════════════════ */
-::view-transition-group(root) {
-  animation-timing-function: var(--expo-out);
-}
-::view-transition-new(root) {
-  mask: url('data:image/svg+xml,<svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M0 0H40L0 40V0Z" fill="url(%23paint0_linear_16_14)"/><defs><linearGradient id="paint0_linear_16_14" x1="0" y1="0" x2="20.5" y2="20.5" gradientUnits="userSpaceOnUse"><stop stop-color="white"/><stop offset="0.84506" stop-color="white" stop-opacity="0.99"/><stop offset="0.9506" stop-color="white" stop-opacity="0"/><stop offset="1" stop-color="white" stop-opacity="0"/></linearGradient></defs></svg>')
-    top left / 0 no-repeat;
-  mask-origin: top left;
-  animation: themeWipe 1.1s;
-  animation-fill-mode: both;
-}
-::view-transition-old(root),
-.dark::view-transition-old(root) {
-  animation: themeWipe 1.1s;
-  animation-fill-mode: both;
-  z-index: -1;
-  transform-origin: top left;
-}
-@keyframes themeWipe { to { mask-size: 200vmax; } }
-
-/* ═══════════════════════════════════════════════════════════
-   GPU COMPOSITING — 144Hz PERFORMANCE
-═══════════════════════════════════════════════════════════ */
-
-/* Subpixel text */
-body, h1, h2, h3, p, span, a, button {
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-rendering: optimizeLegibility;
-}
-
-/* HiDPI */
-@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
-  body { -webkit-font-smoothing: subpixel-antialiased; }
-  .nav-root, .edu-outer, .cert-section-box, .contact-outer, .footer-root {
-    border-width: 0.5px !important;
-  }
-  .edu-sec-icon, .edu-card-icon, .cert-icon-box, .contact-sec-icon, .footer-avatar-wrap {
-    box-shadow: 0 0.5px 2px rgba(0,0,0,0.18), 0 1px 5px rgba(0,0,0,0.12);
-  }
-  img { image-rendering: -webkit-optimize-contrast; }
-  img[src*="devicons"], img[src*="wikimedia"], img[src*="chartjs"], img[src*="jwt"] {
-    image-rendering: auto;
-  }
-}
-
-/* Canvas — own compositing layer */
-canvas {
-  transform: translateZ(0);
-  image-rendering: auto;
-}
-
-/* SVG */
-svg {
-  shape-rendering: geometricPrecision;
-  vector-effect: non-scaling-stroke;
-}
-
-/* Images */
-img { image-rendering: auto; }
-
-/* GPU layer for animated elements */
-.h-profile, .h-info-wrap, .h-avatar,
-.logo-avatar, .logo-i,
-.s-tile, .nav-root {
-  will-change: transform;
-  transform: translateZ(0);
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
-}
-
-/* Section base GPU hint — NO transform-style: preserve-3d (causes layer explosion) */
-section, .edu-card, .proj-card {
-  transform: translateZ(0);
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
-}
-
-/* Interactive tiles — only promote on hover, not permanently */
-.s-tile, .cert-item {
-  transform: translateZ(0);
-  transition-property: transform, opacity, background, box-shadow;
-  transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-/* GitHub cell hover */
-.gh-cell { transform: translateZ(0); }
-.gh-cell:hover { transform: scale(1.35) translateZ(0); }
-
-/* Stat card hover — compositor only */
-.stat-card-3d {
-  transition: transform 0.28s cubic-bezier(0.16,1,0.3,1),
-              box-shadow 0.28s cubic-bezier(0.16,1,0.3,1);
-  transform: translateZ(0);
-}
-.stat-card-3d:hover {
-  transform: translateY(-5px) translateZ(0);
-}
-
-/* Skills lamp grid — layout */
-.skills-lamp-grid {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 12px;
-  align-items: stretch;
-}
-@media (max-width: 1100px) {
-  .skills-lamp-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-}
-@media (max-width: 560px) {
-  .skills-lamp-grid { grid-template-columns: 1fr; }
-}
-@media (max-width: 480px) {
-  .skills-lamp-grid { gap: 10px; }
-}
-
-/* Skills lamp grid — NO preserve-3d */
-.proj-grid > *,
-.skills-lamp-grid > * {
-  will-change: transform;
-  transform: translate3d(0, 0, 0);
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
-}
-
-/* content-visibility removed — it applies contain:paint which clips 100vw full-bleed backgrounds */
-
-/* Light mode card shadows */
-html.light .proj-card,
-html.light .cert-card,
-html.light .stat-badge {
-  background: #ffffff;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.05);
-  border-color: #d8d8d4;
-}
-
-/* Theme transition — color only, never geometry */
-html { transition: background-color 0.1s ease; }
-
-/* Framer Motion hints */
-[data-framer-appear],
-[data-framer-motion-appear-animation] {
-  will-change: transform, opacity;
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
-}
-
-/* Modal blur — force GPU layer before blur */
-[style*="backdropFilter"],
-[style*="backdrop-filter"] {
-  transform: translateZ(0);
-  will-change: opacity;
-}
-
-/* Project card grid hover */
-.proj-grid > * {
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
-  transform: translate3d(0, 0, 0);
-}
-
-/* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
@@ -865,65 +955,7 @@ html { transition: background-color 0.1s ease; }
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
-}
-
-/* Mobile performance */
-@media (max-width: 760px) {
-  .nav-root {
-    backdrop-filter: blur(10px) saturate(140%);
-    -webkit-backdrop-filter: blur(10px) saturate(140%);
-  }
-  .stat-card-3d {
-    transform: none !important;
-    transition: box-shadow 0.2s, background 0.2s;
-  }
-  .stat-card-3d:hover {
-    transform: translateY(-3px) translateZ(0) !important;
-  }
-  .name-highlight { box-shadow: none !important; }
-}
-
-/* Momentum scroll for overflow containers */
-.contrib-wrap, .marquee-track, .marquee-fade {
-  -webkit-overflow-scrolling: touch;
-}
-
-/* Compositor-only transitions for interactive elements */
-a, button, [role="button"] {
-  transition-property: color, background-color, border-color, opacity, transform, box-shadow;
-  transition-timing-function: var(--spring-smooth);
-  transition-duration: 0.18s;
-}
-
-/* Scroll smoothness */
-@supports (scroll-behavior: smooth) {
-  html {
-    scroll-behavior: smooth;
-    overscroll-behavior: none;
-    -webkit-overflow-scrolling: touch;
-  }
-}
-
-/* Skills strip inner */
-.skills-strip-inner {
-  will-change: transform;
-  transform: translate3d(0, 0, 0);
-}
-
-/* Momentum scroll */
-.contrib-wrap, .modal-scroll, .proj-grid, [style*="overflowY: auto"] {
-  -webkit-overflow-scrolling: touch;
-  scroll-behavior: smooth;
-}
-
-/* @property for GPU-interpolated custom props */
-@property --skill-glow {
-  syntax: "<color>";
-  inherits: false;
-  initial-value: transparent;
-}
-@property --slide-progress {
-  syntax: "<number>";
-  inherits: false;
-  initial-value: 0;
+  .marquee-inner { animation: none; }
+  .flip-item { animation: none; }
+  .reveal { opacity: 1; transform: none; transition: none; }
 }

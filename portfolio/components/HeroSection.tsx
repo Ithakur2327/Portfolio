@@ -177,7 +177,7 @@ const mid    = isDark ? "rgba(255,255,255,0.10)" : "rgba(0,0,0,0.07)";
 const CW = 1060;
 
 export function HeroSection() {
-  const [vis, setVis] = useState(false);
+  const [vis, setVis] = useState<boolean | undefined>(undefined);
   const nameRef = useRef<HTMLHeadingElement>(null);
   const [lineW, setLineW] = useState(180);
 
@@ -293,11 +293,11 @@ export function HeroSection() {
         }
       `}</style>
 
-      <section id="about" style={{
+      <section id="about" suppressHydrationWarning style={{
         marginTop: 0,
         width: "100%",
-        opacity: vis ? 1 : 0,
-        transform: vis ? "none" : "translateY(10px)",
+        opacity: vis !== false ? 1 : 0,
+        transform: vis !== false ? "none" : "translateY(10px)",
         transition: "opacity 0.5s cubic-bezier(0.16,1,0.3,1), transform 0.5s cubic-bezier(0.16,1,0.3,1)",
       }}>
 

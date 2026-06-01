@@ -196,6 +196,7 @@ export function ContactSection() {
       <section
         id="contact"
         ref={ref}
+        suppressHydrationWarning
         style={{
           marginBottom: 0,
           opacity: visible ? 1 : 0,

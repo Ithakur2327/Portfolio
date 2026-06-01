@@ -1,14 +1,24 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 
+/**
+ * PERMANENT HYDRATION FIX
+ *
+ * Root cause: SSR renders `visible=true` (opacity:1, transform:none).
+ * But on client, initial state was `false` (opacity:0, translateY) → MISMATCH.
+ *
+ * Fix: SSR always sees `undefined` → returns visible=true → no style diffs.
+ * After hydration, sets to `false` → observer takes over. Zero mismatch.
+ *
+ * The key insight: `useState(undefined)` means server + first client render
+ * both see `isVisible = true`. After mount, `setVisible(false)` runs in
+ * useEffect (client only, never on server). This eliminates the mismatch.
+ */
 export function useReveal(threshold = 0.08) {
-  const ref = useRef<HTMLDivElement>(null);
-  // FIX: Start as `undefined` (not false) so server and client first render match.
-  // Only after mount do we set actual visibility state.
+  const ref = useRef<HTMLElement>(null);
   const [visible, setVisible] = useState<boolean | undefined>(undefined);
 
   useEffect(() => {
-    // After mount: default to false, then observe
     setVisible(false);
     const el = ref.current;
     if (!el) return;
@@ -20,31 +30,29 @@ export function useReveal(threshold = 0.08) {
           obs.disconnect();
         }
       },
-      {
-        threshold,
-        rootMargin: "0px 0px -60px 0px",
-      }
+      { threshold, rootMargin: "0px 0px -60px 0px" }
     );
 
+    let rafId: number;
     if ("requestIdleCallback" in window) {
-      const id = (window as Window & { requestIdleCallback: (cb: () => void, opts?: { timeout: number }) => number })
+      const id = (window as unknown as { requestIdleCallback: (cb: () => void, opts?: { timeout: number }) => number })
         .requestIdleCallback(() => obs.observe(el), { timeout: 200 });
       return () => {
-        (window as Window & { cancelIdleCallback: (id: number) => void }).cancelIdleCallback(id);
+        (window as unknown as { cancelIdleCallback: (id: number) => void }).cancelIdleCallback(id);
         obs.disconnect();
       };
     } else {
-      const id = setTimeout(() => obs.observe(el), 0);
+      rafId = requestAnimationFrame(() => obs.observe(el));
       return () => {
-        clearTimeout(id);
+        cancelAnimationFrame(rafId);
         obs.disconnect();
       };
     }
   }, [threshold]);
 
-  // undefined = not yet mounted (SSR) → treat as visible=true so server HTML has no opacity/transform
-  // false = mounted, not yet in view → animate from hidden
-  // true = in view → animate to visible
+  // undefined = SSR / not yet mounted  → treat as visible (no transform applied)
+  // false     = mounted, not in view   → hidden, ready to animate in
+  // true      = in view                → fully visible
   const isVisible = visible === undefined ? true : visible;
 
   return { ref, visible: isVisible };

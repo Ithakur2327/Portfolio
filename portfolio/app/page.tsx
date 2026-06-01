@@ -12,11 +12,14 @@ export default function Home() {
   return (
     <>
       <Navbar />
-      <main style={{ paddingTop: 33 }}>
+      <main style={{ paddingTop: 52 }}>
         <SparklesBridge />
-        <HeroSection />
-        {/* page-wrapper constrains center content + provides side borders */}
-        <div className="page-wrapper" style={{ marginTop: 34 }}>
+        {/*
+          All sections now share the same page-wrapper so HeroSection
+          gets the same side borders as the rest. No marginTop gap.
+        */}
+        <div className="page-wrapper">
+          <HeroSection />
           <AboutSection />
           <SkillsSection />
           <ProjectsSection />
