@@ -517,10 +517,27 @@ function ProjectCard({ proj, index, visible, onOpen }: {
   onOpen: (rect: DOMRect) => void;
 }) {
   const cardRef = useRef<HTMLDivElement>(null);
+  const imgRef  = useRef<HTMLImageElement>(null);
   const handleClick = useCallback(() => {
     const rect = cardRef.current?.getBoundingClientRect() ?? null;
     onOpen(rect as DOMRect);
   }, [onOpen]);
+
+  const handleImgEnter = useCallback(() => {
+    const el = imgRef.current;
+    if (!el) return;
+    el.style.willChange = "transform";
+    el.style.transform  = "translateZ(0) scale(1.08)";
+  }, []);
+
+  const handleImgLeave = useCallback(() => {
+    const el = imgRef.current;
+    if (!el) return;
+    el.style.transform = "translateZ(0) scale(1)";
+    setTimeout(() => {
+      if (el.isConnected) el.style.willChange = "auto";
+    }, 500);
+  }, []);
 
   return (
     <motion.div
@@ -573,6 +590,7 @@ function ProjectCard({ proj, index, visible, onOpen }: {
     >
       <div style={{ overflow: "hidden", flexShrink: 0 }}>
         <img
+          ref={imgRef}
           src={proj.img}
           alt={proj.name}
           style={{
@@ -582,17 +600,8 @@ function ProjectCard({ proj, index, visible, onOpen }: {
             transition: "transform 0.5s cubic-bezier(0.22,1,0.36,1)",
             willChange: "auto",
           }}
-          onMouseEnter={e => {
-            (e.currentTarget as HTMLImageElement).style.willChange = "transform";
-            (e.currentTarget as HTMLImageElement).style.transform = "translateZ(0) scale(1.08)";
-          }}
-          onMouseLeave={e => {
-            const img = e.currentTarget as HTMLImageElement;
-            img.style.transform = "translateZ(0) scale(1)";
-            setTimeout(() => {
-              if (img) img.style.willChange = "auto";
-            }, 500);
-          }}
+          onMouseEnter={handleImgEnter}
+          onMouseLeave={handleImgLeave}
         />
       </div>
       <div style={{ padding: "10px 12px 10px", display: "flex", flexDirection: "column" as const, flex: 1 }}>
@@ -694,14 +703,14 @@ export function ProjectsSection() {
             <motion.div
               className="proj-grid"
               animate={{
-                opacity: unlocked ? 1 : 0.72,
+                opacity: unlocked ? 1 : 0.55,
                 scale:   unlocked ? 1 : 0.997,
-                filter:  unlocked ? "none" : "none",
+                filter:  unlocked ? "blur(0px)" : "blur(5px)",
               }}
-              transition={{ duration: 0.42, ease: [0.22, 1, 0.36, 1] }}
+              transition={{ duration: 0.48, ease: [0.22, 1, 0.36, 1] }}
               style={{
                 pointerEvents: unlocked ? "auto" : "none",
-                willChange: "transform, opacity",
+                willChange: "transform, opacity, filter",
                 backfaceVisibility: "hidden",
                 WebkitBackfaceVisibility: "hidden",
               }}

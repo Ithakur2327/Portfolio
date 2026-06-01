@@ -163,7 +163,7 @@ function LampBeam({ glowColor, visible }: { glowColor: string; visible: boolean 
 /* ── Lamp Skill Box ── */
 function LampSkillBox({ title, glowColor, items }: { title: string; glowColor: string; items: string[] }) {
   const ref = useRef<HTMLDivElement>(null);
-  const isInView = useInView(ref, { margin: "-80px 0px -80px 0px", once: false });
+  const isInView = useInView(ref, { margin: "-60px 0px -60px 0px", once: false });
 
   return (
     <div

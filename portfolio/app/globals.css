@@ -779,7 +779,7 @@ section, .edu-card, .proj-card {
 /* Skills lamp grid */
 .skills-lamp-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 12px;
   align-items: stretch;
 }
@@ -834,7 +834,7 @@ html.light .stat-badge {
    RESPONSIVE
 ═══════════════════════════════════════════════════════════ */
 @media (max-width: 1100px) {
-  .skills-lamp-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .skills-lamp-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 }
 
 @media (max-width: 760px) {
@@ -963,4 +963,64 @@ html.light .stat-badge {
   .marquee-inner { animation: none; }
   .flip-item { animation: none; }
   .reveal { opacity: 1; transform: none; transition: none; }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   NAVBAR — mobile nav & link styles (moved from Navbar.tsx
+   inline <style> to avoid Next.js 15 hydration mismatch)
+═══════════════════════════════════════════════════════════ */
+.mobile-nav-btn { display: none; }
+.mobile-menu {
+  display: none;
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: var(--nav-bg);
+  backdrop-filter: blur(24px) saturate(220%);
+  -webkit-backdrop-filter: blur(24px) saturate(220%);
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  z-index: 99;
+  padding: 20px;
+  opacity: 0;
+  transform: translateY(-8px);
+  transition: opacity 0.22s var(--spring-smooth), transform 0.22s var(--spring-smooth);
+  pointer-events: none;
+}
+.mobile-menu.open {
+  display: flex;
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+.mobile-menu a {
+  width: 100%; max-width: 320px;
+  padding: 14px 24px; border-radius: 10px;
+  font-size: 18px; font-weight: 600;
+  color: var(--nav-link-color);
+  background: transparent;
+  text-decoration: none;
+  text-align: center;
+  transition: color 0.15s, background 0.15s;
+  border: 1px solid transparent;
+}
+.mobile-menu a:hover,
+.mobile-menu a.active {
+  color: var(--nav-link-hover);
+  background: var(--nav-link-active-bg);
+  border-color: var(--nav-border);
+}
+.mobile-menu-close {
+  position: absolute; top: 16px; right: 16px;
+  display: flex; align-items: center; justify-content: center;
+  width: 36px; height: 36px; border-radius: 50%;
+  background: var(--bg-hover); border: 1px solid var(--nav-border);
+  color: var(--text-muted); cursor: pointer;
+  transition: background 0.15s;
+}
+
+@media (max-width: 760px) {
+  .mobile-nav-btn { display: flex !important; }
+  .desktop-nav    { display: none !important; }
 }
