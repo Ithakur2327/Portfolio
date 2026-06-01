@@ -2,58 +2,65 @@
 import { useEffect, useRef, useState } from "react";
 
 /**
- * PERMANENT HYDRATION FIX
+ * PERMANENT HYDRATION FIX — v3
  *
- * Root cause: SSR renders `visible=true` (opacity:1, transform:none).
- * But on client, initial state was `false` (opacity:0, translateY) → MISMATCH.
+ * Previous approaches failed because inline style values (opacity:0 vs "1")
+ * differ between SSR string serialization and React client rendering.
  *
- * Fix: SSR always sees `undefined` → returns visible=true → no style diffs.
- * After hydration, sets to `false` → observer takes over. Zero mismatch.
+ * THE ACTUAL FIX:
+ * Return a CSS className string instead of inline styles.
+ * CSS classes exist identically on SSR and client — no mismatch possible.
  *
- * The key insight: `useState(undefined)` means server + first client render
- * both see `isVisible = true`. After mount, `setVisible(false)` runs in
- * useEffect (client only, never on server). This eliminates the mismatch.
+ * SSR:    className=""           → element has no reveal class → browser applies nothing
+ * Mount:  className="reveal"     → element animates in via CSS
+ * Inview: className="reveal visible" → element is fully visible
+ *
+ * The element starts with no class on SSR, so React sees the same
+ * empty string on first client render → ZERO MISMATCH.
  */
 export function useReveal(threshold = 0.08) {
   const ref = useRef<HTMLElement>(null);
-  const [visible, setVisible] = useState<boolean | undefined>(undefined);
+  const [state, setState] = useState<"ssr" | "hidden" | "visible">("ssr");
 
   useEffect(() => {
-    setVisible(false);
+    // After hydration: start hidden, then observe
+    setState("hidden");
     const el = ref.current;
     if (!el) return;
 
     const obs = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
-          setVisible(true);
+          setState("visible");
           obs.disconnect();
         }
       },
       { threshold, rootMargin: "0px 0px -60px 0px" }
     );
 
-    let rafId: number;
     if ("requestIdleCallback" in window) {
-      const id = (window as unknown as { requestIdleCallback: (cb: () => void, opts?: { timeout: number }) => number })
-        .requestIdleCallback(() => obs.observe(el), { timeout: 200 });
+      const handle = (window as unknown as {
+        requestIdleCallback: (cb: () => void, opts?: { timeout: number }) => number;
+      }).requestIdleCallback(() => obs.observe(el), { timeout: 200 });
       return () => {
-        (window as unknown as { cancelIdleCallback: (id: number) => void }).cancelIdleCallback(id);
+        (window as unknown as { cancelIdleCallback: (id: number) => void })
+          .cancelIdleCallback(handle);
         obs.disconnect();
       };
     } else {
-      rafId = requestAnimationFrame(() => obs.observe(el));
-      return () => {
-        cancelAnimationFrame(rafId);
-        obs.disconnect();
-      };
+      const raf = requestAnimationFrame(() => obs.observe(el));
+      return () => { cancelAnimationFrame(raf); obs.disconnect(); };
     }
   }, [threshold]);
 
-  // undefined = SSR / not yet mounted  → treat as visible (no transform applied)
-  // false     = mounted, not in view   → hidden, ready to animate in
-  // true      = in view                → fully visible
-  const isVisible = visible === undefined ? true : visible;
-
-  return { ref, visible: isVisible };
+  return {
+    ref,
+    // "ssr"     → no class  → no styles → matches SSR HTML exactly
+    // "hidden"  → "reveal"         → opacity:0, translateY
+    // "visible" → "reveal visible" → opacity:1, translateY(0)
+    revealClass: state === "ssr" ? "" : state === "visible" ? "reveal visible" : "reveal",
+    // For components that still need a boolean (Framer Motion animate prop)
+    // SSR returns true so framer doesn't inject hidden initial styles
+    visible: state !== "hidden",
+  };
 }

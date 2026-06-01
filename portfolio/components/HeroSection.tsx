@@ -177,11 +177,11 @@ const mid    = isDark ? "rgba(255,255,255,0.10)" : "rgba(0,0,0,0.07)";
 const CW = 1060;
 
 export function HeroSection() {
-  const [vis, setVis] = useState<boolean | undefined>(undefined);
+  const [vis, setVis] = useState<"ssr" | "visible">("ssr");
   const nameRef = useRef<HTMLHeadingElement>(null);
   const [lineW, setLineW] = useState(180);
 
-  useEffect(() => { setTimeout(() => setVis(true), 50); }, []);
+  useEffect(() => { setTimeout(() => setVis("visible"), 50); }, []);
   useEffect(() => {
     const upd = () => { if (nameRef.current) setLineW(nameRef.current.offsetWidth); };
     upd(); window.addEventListener("resize", upd);
@@ -293,13 +293,9 @@ export function HeroSection() {
         }
       `}</style>
 
-      <section id="about" suppressHydrationWarning style={{
-        marginTop: 0,
-        width: "100%",
-        opacity: vis !== false ? 1 : 0,
-        transform: vis !== false ? "none" : "translateY(10px)",
-        transition: "opacity 0.5s cubic-bezier(0.16,1,0.3,1), transform 0.5s cubic-bezier(0.16,1,0.3,1)",
-      }}>
+      <section id="about"
+        className={vis === "ssr" ? "" : "reveal visible"}
+      >
 
         {/* ── PROFILE ROW — full viewport width bg, centered content ── */}
         <div style={{

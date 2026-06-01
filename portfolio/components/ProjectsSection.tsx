@@ -616,7 +616,7 @@ function ProjectCard({ proj, index, visible, onOpen }: {
    SECTION
 ───────────────────────────────────────────────────────── */
 export function ProjectsSection() {
-  const { ref: revealRef, visible } = useReveal();
+  const { ref: revealRef, revealClass, visible } = useReveal();
   const [unlocked, setUnlocked] = useState(false);
   const [active, setActive] = useState<{ proj: typeof PROJECTS[0]; rect: DOMRect | null } | null>(null);
   const sectionNodeRef = useRef<HTMLDivElement>(null);
@@ -644,13 +644,7 @@ export function ProjectsSection() {
       <div
         id="projects"
         ref={setRefs}
-        suppressHydrationWarning
-        style={{
-          marginBottom: 0,
-          opacity: visible ? 1 : 0,
-          transform: visible ? "none" : "translateY(14px)",
-          transition: "opacity 0.65s var(--expo-out), transform 0.65s var(--expo-out)",
-        }}
+        className={revealClass}
       >
         <div style={{
           position: "relative", left: "50%", marginLeft: "-50vw",

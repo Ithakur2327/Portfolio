@@ -24,7 +24,7 @@ function MailIcon() {
 }
 
 export function ContactSection() {
-  const { ref, visible } = useReveal();
+  const { ref, revealClass, visible } = useReveal();
   const [form, setForm] = useState({ name: "", email: "", message: "" });
   const [sent, setSent] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -196,13 +196,7 @@ export function ContactSection() {
       <section
         id="contact"
         ref={ref}
-        suppressHydrationWarning
-        style={{
-          marginBottom: 0,
-          opacity: visible ? 1 : 0,
-          transform: visible ? "none" : "translate3d(0, 14px, 0)",
-          transition: "opacity 0.55s var(--expo-out), transform 0.55s var(--expo-out)",
-        }}
+        className={revealClass}
       >
         <div className="contact-outer">
           <div className="contact-inner">
@@ -217,8 +211,8 @@ export function ContactSection() {
             <div className="contact-divider" />
 
             <motion.div
-              initial={{ opacity: 0, y: 12 }}
-              animate={visible ? { opacity: 1, y: 0 } : {}}
+              initial={false}
+              animate={visible ? { opacity: 1, y: 0 } : { opacity: 0, y: 12 }}
               transition={{ duration: 0.48, ease: [0.22, 1, 0.36, 1], delay: 0.06 }}
             >
               <p className="contact-headline">Let&apos;s Build Together</p>
@@ -232,8 +226,8 @@ export function ContactSection() {
 
             <motion.form
               onSubmit={handleSubmit}
-              initial={{ opacity: 0, y: 14 }}
-              animate={visible ? { opacity: 1, y: 0 } : {}}
+              initial={false}
+              animate={visible ? { opacity: 1, y: 0 } : { opacity: 0, y: 14 }}
               transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1], delay: 0.14 }}
             >
               <div className="contact-form-grid">

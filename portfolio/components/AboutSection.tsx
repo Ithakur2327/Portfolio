@@ -788,7 +788,7 @@ function Spin({ color }: { color: string }) {
    MAIN
 ────────────────────────────────────────────────────────── */
 export function AboutSection() {
-  const { ref, visible } = useReveal();
+  const { ref, revealClass, visible } = useReveal();
 
   return (
     <>
@@ -945,12 +945,9 @@ export function AboutSection() {
         }
       `}</style>
 
-      <motion.section
+      <section
         ref={ref}
-        suppressHydrationWarning
-        initial={false}
-        animate={visible ? { opacity: 1, y: 0 } : { opacity: 0, y: 14 }}
-        transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+        className={revealClass}
       >
         <div style={{ position: "relative", left: "50%", marginLeft: "-50vw", width: "100vw", background: "var(--bg-base)", borderTop: "1px solid var(--line)", borderBottom: "1px solid var(--line)" }}>
           <div className="about-content">
@@ -979,7 +976,7 @@ export function AboutSection() {
             </div>
           </div>
         </div>
-      </motion.section>
+      </section>
     </>
   );
 }

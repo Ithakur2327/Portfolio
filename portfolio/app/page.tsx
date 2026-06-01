@@ -12,7 +12,7 @@ export default function Home() {
   return (
     <>
       <Navbar />
-      <main style={{ paddingTop: 52 }}>
+      <main style={{ paddingTop: 38 }}>
         <SparklesBridge />
         {/*
           All sections now share the same page-wrapper so HeroSection

@@ -144,8 +144,8 @@ function EduCard({ school, degree, short, period, index, sectionVisible }: {
 }
 
 export function EducationSection() {
-  const { ref, visible } = useReveal();
-  const { ref: ref2, visible: vis2 } = useReveal();
+  const { ref, revealClass, visible } = useReveal();
+  const { ref: ref2, revealClass: revealClass2, visible: vis2 } = useReveal();
 
   return (
     <>
@@ -435,13 +435,7 @@ export function EducationSection() {
       <section
         id="education"
         ref={ref}
-        suppressHydrationWarning
-        style={{
-          marginBottom: 0,
-          opacity: visible ? 1 : 0,
-          transform: visible ? "none" : "translateY(14px)",
-          transition: "opacity 0.55s var(--expo-out), transform 0.55s var(--expo-out)",
-        }}
+        className={revealClass}
       >
         <div className="edu-outer">
           <div className="edu-inner">
@@ -483,14 +477,7 @@ export function EducationSection() {
       <section
         id="certifications"
         ref={ref2}
-        suppressHydrationWarning
-        style={{
-          marginTop: 0,
-          marginBottom: 0,
-          opacity: vis2 ? 1 : 0,
-          transform: vis2 ? "none" : "translateY(14px)",
-          transition: "opacity 0.55s var(--expo-out), transform 0.55s var(--expo-out)",
-        }}
+        className={revealClass2}
       >
         <div className="edu-outer">
           <div className="edu-inner">

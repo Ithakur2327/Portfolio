@@ -280,20 +280,14 @@ function MovingStrip({ items }: { items: string[] }) {
 
 /* ── Main ── */
 export function SkillsSection() {
-  const { ref, visible } = useReveal();
+  const { ref, revealClass, visible } = useReveal();
 
   return (
     <>
       <section
         ref={ref}
         id="skills"
-        suppressHydrationWarning
-        style={{
-          marginBottom: 0,
-          opacity: visible ? 1 : 0,
-          transform: visible ? "none" : "translateY(14px)",
-          transition: "opacity 0.6s cubic-bezier(0.22,1,0.36,1), transform 0.6s cubic-bezier(0.22,1,0.36,1)",
-        }}
+        className={revealClass}
       >
         <div style={{
           position: "relative",
