@@ -91,26 +91,52 @@ export function Navbar() {
         .mobile-menu {
           display: none;
           position: fixed;
-          top: 52px; left: 0; right: 0;
+          top: 0; left: 0; right: 0; bottom: 0;
           background: var(--nav-bg);
-          backdrop-filter: blur(20px) saturate(200%);
-          -webkit-backdrop-filter: blur(20px) saturate(200%);
-          border-bottom: 1px solid var(--nav-border);
-          padding: 12px 16px;
+          backdrop-filter: blur(24px) saturate(220%);
+          -webkit-backdrop-filter: blur(24px) saturate(220%);
           flex-direction: column;
-          gap: 2px;
+          align-items: center;
+          justify-content: center;
+          gap: 4px;
           z-index: 99;
+          padding: 20px;
+          opacity: 0;
+          transform: translateY(-8px);
+          transition: opacity 0.22s var(--spring-smooth), transform 0.22s var(--spring-smooth);
+          pointer-events: none;
         }
-        .mobile-menu.open { display: flex; }
+        .mobile-menu.open {
+          display: flex;
+          opacity: 1;
+          transform: translateY(0);
+          pointer-events: auto;
+        }
         .mobile-menu a {
-          padding: 10px 14px; border-radius: 7px;
-          font-size: 14.5px; font-weight: 500;
+          width: 100%; max-width: 320px;
+          padding: 14px 24px; border-radius: 10px;
+          font-size: 18px; font-weight: 600;
           color: var(--nav-link-color);
+          background: transparent;
           text-decoration: none;
-          transition: color 0.15s;
+          text-align: center;
+          transition: color 0.15s, background 0.15s;
+          border: 1px solid transparent;
         }
         .mobile-menu a:hover,
-        .mobile-menu a.active { color: var(--nav-link-hover); }
+        .mobile-menu a.active {
+          color: var(--nav-link-hover);
+          background: var(--nav-link-active-bg);
+          border-color: var(--nav-border);
+        }
+        .mobile-menu-close {
+          position: absolute; top: 16px; right: 16px;
+          display: flex; align-items: center; justify-content: center;
+          width: 36px; height: 36px; border-radius: 50%;
+          background: var(--bg-hover); border: 1px solid var(--nav-border);
+          color: var(--text-muted); cursor: pointer;
+          transition: background 0.15s;
+        }
 
         /* Nav links — colour-only hover, NO background box */
         .nav-link {
@@ -201,8 +227,15 @@ export function Navbar() {
         </div>
       </header>
 
-      {/* Mobile dropdown */}
+      {/* Mobile full-screen menu */}
       <nav className={`mobile-menu${mobileOpen ? " open" : ""}`}>
+        <button
+          className="mobile-menu-close"
+          onClick={() => setMobileOpen(false)}
+          aria-label="Close menu"
+        >
+          <CloseIcon />
+        </button>
         {NAV_LINKS.map(({ label, href }) => (
           <a
             key={href}

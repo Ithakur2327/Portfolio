@@ -587,9 +587,10 @@ function ProjectCard({ proj, index, visible, onOpen }: {
             (e.currentTarget as HTMLImageElement).style.transform = "translateZ(0) scale(1.08)";
           }}
           onMouseLeave={e => {
-            (e.currentTarget as HTMLImageElement).style.transform = "translateZ(0) scale(1)";
+            const img = e.currentTarget as HTMLImageElement;
+            img.style.transform = "translateZ(0) scale(1)";
             setTimeout(() => {
-              (e.currentTarget as HTMLImageElement).style.willChange = "auto";
+              if (img) img.style.willChange = "auto";
             }, 500);
           }}
         />
@@ -693,8 +694,9 @@ export function ProjectsSection() {
             <motion.div
               className="proj-grid"
               animate={{
-                opacity: unlocked ? 1 : 0.55,
-                scale:   unlocked ? 1 : 0.992,
+                opacity: unlocked ? 1 : 0.72,
+                scale:   unlocked ? 1 : 0.997,
+                filter:  unlocked ? "none" : "none",
               }}
               transition={{ duration: 0.42, ease: [0.22, 1, 0.36, 1] }}
               style={{

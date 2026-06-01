@@ -169,7 +169,7 @@ const DAYS   = ["","Mon","","Wed","","Fri",""];
 function buildMockWeeks(): Week[] {
   const weeks: Week[] = [];
   const now = new Date();
-  for (let w = 8; w >= 0; w--) {
+  for (let w = 15; w >= 0; w--) {
     const days: ContribDay[] = [];
     const isRecent = w <= 3;
     for (let d = 0; d < 7; d++) {
@@ -220,7 +220,7 @@ function GitHubGraph({ username = "Ithakur2327" }: { username?: string }) {
           for (let i = 0; i < c.length; i += 7) {
             ws.push({ days: c.slice(i, i + 7).map((x) => ({ contributionCount: x.count, date: x.date })) });
           }
-          setWeeks(ws.slice(-9));
+          setWeeks(ws.slice(-16));
           setIsLive(true);
           setLoading(false);
           return;
@@ -252,7 +252,7 @@ function GitHubGraph({ username = "Ithakur2327" }: { username?: string }) {
   const lvl = (n: number) => n === 0 ? 0 : n < 3 ? 1 : n < 6 ? 2 : n < 10 ? 3 : 4;
 
   const monthLabels: { label: string; col: number }[] = [];
-  const MIN_COLS_BETWEEN = 2; // minimum week-columns between labels to avoid overlap
+  const MIN_COLS_BETWEEN = 1; // minimum week-columns between labels to avoid overlap
   weeks.forEach((w, wi) => {
     if (w.days[0]) {
       const d = new Date(w.days[0].date);
@@ -283,7 +283,11 @@ function GitHubGraph({ username = "Ithakur2327" }: { username?: string }) {
           </div>
           <div>
             <div style={{ fontSize: 13, fontWeight: 700, color: "var(--text-primary)", fontFamily: SF }}>GitHub</div>
-            <div style={{ fontSize: 10, color: "var(--text-muted)", fontFamily: MONO }}>@{username}</div>
+            <a href={`https://github.com/${username}`} target="_blank" rel="noreferrer"
+              style={{ fontSize: 10, color: "var(--text-muted)", fontFamily: MONO, textDecoration: "none", transition: "color 0.15s" }}
+              onMouseEnter={e => (e.currentTarget as HTMLElement).style.color = "var(--text-secondary)"}
+              onMouseLeave={e => (e.currentTarget as HTMLElement).style.color = "var(--text-muted)"}
+            >@{username} ↗</a>
           </div>
         </div>
         <div style={{ textAlign: "right" }}>
@@ -591,8 +595,9 @@ function ProgressBar({ pct, color }: { pct: number; color: string }) {
           borderRadius: 99, background: color,
           width: `${pct}%`,
           transform: "translateZ(0)",
-          animation: "progressFill 1.2s cubic-bezier(0.16, 1, 0.3, 1) 0.2s both",
-        }}
+          animation: `progressFill 1.2s cubic-bezier(0.16, 1, 0.3, 1) 0.2s both`,
+          ["--target-pct" as string]: `${pct}%`,
+        } as React.CSSProperties}
       />
     </div>
   );
@@ -794,6 +799,10 @@ export function AboutSection() {
     <>
       <style suppressHydrationWarning>{`
         @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes progressFill {
+          from { width: 0%; }
+          to   { width: var(--target-pct, 100%); }
+        }
 
         /* Name highlight — green */
         .name-highlight {

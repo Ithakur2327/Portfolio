@@ -203,15 +203,16 @@ a, button, [role="button"] {
 }
 
 /* ── Section gap fix ──────────────────────────────────────
-   Each section uses full-bleed 100vw inner divs with
-   border-top + border-bottom. Adjacent borders collapse via
-   negative margin so there's never a double-border gap.
+   38px gap between every section, matching chanhdai rhythm.
    ──────────────────────────────────────────────────────── */
 .page-wrapper > * + * {
-  /* Pull each section up by 1px to collapse the stacked borders */
-  margin-top: -1px;
+  margin-top: 38px;
 }
 
+/* Hero + Sparkles ke beech gap remove */
+.page-wrapper > :first-child + * {
+  margin-top: 0 !important;
+}
 /* Full-bleed horizontal lines (chanhdai screen-line pattern) */
 .screen-line-top    { position: relative; }
 .screen-line-top::before {
@@ -778,7 +779,7 @@ section, .edu-card, .proj-card {
 /* Skills lamp grid */
 .skills-lamp-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 12px;
   align-items: stretch;
 }
@@ -833,6 +834,10 @@ html.light .stat-badge {
    RESPONSIVE
 ═══════════════════════════════════════════════════════════ */
 @media (max-width: 1100px) {
+  .skills-lamp-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+@media (max-width: 760px) {
   .skills-lamp-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
