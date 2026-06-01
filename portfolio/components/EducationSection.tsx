@@ -102,9 +102,9 @@ function LangPill({ name, delay }: { name: string; delay: number }) {
     <motion.span
       ref={ref}
       className="lang-pill-item"
-      initial={{ opacity: 0, scale: 0.82, y: 8 }}
-      animate={inView ? { opacity: 1, scale: 1, y: 0 } : {}}
-      transition={{ duration: 0.42, ease: [0.22, 1, 0.36, 1], delay }}
+      initial={false}
+      animate={inView ? { opacity: 1, scale: 1, y: 0 } : { opacity: 0, scale: 0.82, y: 8 }}
+      transition={{ duration: 0.42, ease: [0.22, 1, 0.36, 1], delay: inView ? delay : 0 }}
     >
       <span className="lang-pill-dot" />
       {name}
@@ -119,9 +119,9 @@ function EduCard({ school, degree, short, period, index, sectionVisible }: {
   return (
     <motion.div
       className="edu-card"
-      initial={{ opacity: 0, y: 22, rotateX: 8 }}
-      animate={sectionVisible ? { opacity: 1, y: 0, rotateX: 0 } : {}}
-      transition={{ duration: 0.52, ease: [0.22, 1, 0.36, 1], delay: index * 0.1 }}
+      initial={false}
+      animate={sectionVisible ? { opacity: 1, y: 0, rotateX: 0 } : { opacity: 0, y: 22, rotateX: 8 }}
+      transition={{ duration: 0.52, ease: [0.22, 1, 0.36, 1], delay: sectionVisible ? index * 0.1 : 0 }}
     >
       {/* left graduation icon */}
       <div className="edu-card-icon">
@@ -500,9 +500,9 @@ export function EducationSection() {
                 target="_blank"
                 rel="noreferrer"
                 className="cert-item"
-                initial={{ opacity: 0, y: 14, rotateX: 6 }}
-                animate={vis2 ? { opacity: 1, y: 0, rotateX: 0 } : {}}
-                transition={{ duration: 0.46, ease: [0.22, 1, 0.36, 1], delay: i * 0.08 }}
+                initial={false}
+                animate={vis2 ? { opacity: 1, y: 0, rotateX: 0 } : { opacity: 0, y: 14, rotateX: 6 }}
+                transition={{ duration: 0.46, ease: [0.22, 1, 0.36, 1], delay: vis2 ? i * 0.08 : 0 }}
               >
                 <div className="cert-icon-box"><CertIcon /></div>
                 <div style={{ flex: 1 }}>

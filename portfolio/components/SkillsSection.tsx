@@ -59,9 +59,9 @@ const SkillChip = memo(function SkillChip({
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={visible ? { opacity: 1, y: 0 } : { opacity: 0.25, y: 5 }}
-      transition={{ delay, duration: 0.48, ease: [0.22, 1, 0.36, 1] }}
+      initial={false}
+      animate={visible ? { opacity: 1, y: 0 } : { opacity: 0, y: 10 }}
+      transition={{ delay: visible ? delay : 0, duration: 0.48, ease: [0.22, 1, 0.36, 1] }}
       style={{
         display: "flex", flexDirection: "column", alignItems: "center",
         gap: 7, width: 68, cursor: "default",
@@ -184,6 +184,7 @@ function LampSkillBox({ title, glowColor, items }: { title: string; glowColor: s
       <div style={{ position: "relative", zIndex: 1, paddingTop: 20, display: "flex", flexDirection: "column", height: "100%" }}>
         <div style={{ textAlign: "center", marginBottom: 12 }}>
           <motion.span
+            initial={false}
             animate={{ opacity: isInView ? 1 : 0.22, y: isInView ? 0 : 4 }}
             transition={{ duration: 0.48, ease: [0.22, 1, 0.36, 1] }}
             style={{

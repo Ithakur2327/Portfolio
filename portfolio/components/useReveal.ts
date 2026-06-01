@@ -2,36 +2,53 @@
 import { useEffect, useRef, useState } from "react";
 
 /**
- * PERMANENT HYDRATION FIX — v3
+ * PERMANENT HYDRATION FIX — v4
  *
- * Previous approaches failed because inline style values (opacity:0 vs "1")
- * differ between SSR string serialization and React client rendering.
+ * Root cause of all hydration errors in this codebase:
  *
- * THE ACTUAL FIX:
- * Return a CSS className string instead of inline styles.
- * CSS classes exist identically on SSR and client — no mismatch possible.
+ * The previous `visible: state !== "hidden"` returned TRUE during SSR
+ * (when state === "ssr"). This caused Framer Motion to render components
+ * with animate={opacity:1, y:0} on the server, but on the first client
+ * render after hydration the state flipped to "hidden" → visible=false,
+ * so Framer rendered animate={opacity:0.25, y:5}. The inline style objects
+ * produced by Framer differ → React hydration mismatch.
  *
- * SSR:    className=""           → element has no reveal class → browser applies nothing
- * Mount:  className="reveal"     → element animates in via CSS
- * Inview: className="reveal visible" → element is fully visible
+ * THE PERMANENT FIX:
+ * 1. `visible` is always false until the IntersectionObserver fires.
+ *    On SSR it's false. On first client render it's false. No mismatch.
+ * 2. All Framer Motion components driven by `visible` MUST use
+ *    `initial={false}` so Framer doesn't inject its own initial inline
+ *    styles during SSR (those would also differ from client styles).
+ * 3. `revealClass` still uses the CSS-class approach (SSR → "", client → "reveal"
+ *    or "reveal visible") because CSS classes are identical on SSR and client —
+ *    React never serializes class names as inline style attributes.
  *
- * The element starts with no class on SSR, so React sees the same
- * empty string on first client render → ZERO MISMATCH.
+ * Usage pattern for Framer Motion children:
+ *   <motion.div
+ *     initial={false}                        ← REQUIRED
+ *     animate={visible ? {opacity:1} : {opacity:0}}
+ *   />
+ *
+ * Never use `initial={{ opacity:0 }}` together with `animate={visible ? ... : ...}`
+ * because Framer will inject those initial inline styles during SSR,
+ * which won't match after the first client render changes `visible`.
  */
 export function useReveal(threshold = 0.08) {
   const ref = useRef<HTMLElement>(null);
-  const [state, setState] = useState<"ssr" | "hidden" | "visible">("ssr");
+  // Start as false on both SSR and client → no mismatch
+  const [visible, setVisible] = useState(false);
+  // Separate mounted flag so revealClass can distinguish SSR vs hidden
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    // After hydration: start hidden, then observe
-    setState("hidden");
+    setMounted(true);
     const el = ref.current;
     if (!el) return;
 
     const obs = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
-          setState("visible");
+          setVisible(true);
           obs.disconnect();
         }
       },
@@ -55,12 +72,12 @@ export function useReveal(threshold = 0.08) {
 
   return {
     ref,
-    // "ssr"     → no class  → no styles → matches SSR HTML exactly
-    // "hidden"  → "reveal"         → opacity:0, translateY
-    // "visible" → "reveal visible" → opacity:1, translateY(0)
-    revealClass: state === "ssr" ? "" : state === "visible" ? "reveal visible" : "reveal",
-    // For components that still need a boolean (Framer Motion animate prop)
-    // SSR returns true so framer doesn't inject hidden initial styles
-    visible: state !== "hidden",
+    // SSR  → ""              (no styles, matches client's first render exactly)
+    // mounted, not visible → "reveal"        (hidden state via CSS)
+    // mounted + visible    → "reveal visible" (animated in via CSS)
+    revealClass: !mounted ? "" : visible ? "reveal visible" : "reveal",
+    // false on SSR and first client render → true only after IntersectionObserver
+    // All Framer Motion components using this MUST have initial={false}
+    visible,
   };
 }
