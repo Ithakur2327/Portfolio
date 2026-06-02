@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useRef, memo } from "react";
-import { motion, useInView } from "framer-motion";
+import { useInView } from "framer-motion";
 import { useReveal } from "./useReveal";
 
 const MONO = "'Geist Mono', 'SF Mono', monospace";
@@ -58,33 +58,35 @@ const SkillChip = memo(function SkillChip({
   const tech = TECH[name] ?? { color: "#71717a", logo: "" };
 
   return (
-    <motion.div
-      initial={false}
-      animate={visible ? { opacity: 1, y: 0 } : { opacity: 0, y: 10 }}
-      transition={{ delay: visible ? delay : 0, duration: 0.48, ease: [0.22, 1, 0.36, 1] }}
+    // CSS transitions instead of motion.div — no MotionValue per chip
+    <div
       style={{
         display: "flex", flexDirection: "column", alignItems: "center",
         gap: 7, width: 68, cursor: "default",
-        willChange: "transform, opacity",
-        transform: "translateZ(0)",
+        opacity: visible ? 1 : 0,
+        transform: visible ? "none" : "translateY(10px)",
+        transition: `opacity 0.48s cubic-bezier(0.22,1,0.36,1) ${visible ? delay : 0}s,
+                     transform 0.48s cubic-bezier(0.22,1,0.36,1) ${visible ? delay : 0}s`,
       }}
     >
-      <motion.div
-        whileHover={visible ? {
-          y: -5, scale: 1.10,
-          boxShadow: `0 10px 28px ${tech.color}50`,
-          transition: { type: "spring", stiffness: 420, damping: 22, mass: 0.6 },
-        } : {}}
+      <div
         style={{
           width: 46, height: 46,
           display: "flex", alignItems: "center", justifyContent: "center",
           borderRadius: 12,
           background: visible ? `${tech.color}18` : `${tech.color}08`,
           border: `1px solid ${tech.color}${visible ? "42" : "20"}`,
-          willChange: "transform",
           backfaceVisibility: "hidden",
-          transform: "translateZ(0)",
-          transition: "background 0.4s ease, border-color 0.4s ease",
+          transition: "background 0.4s ease, border-color 0.4s ease, transform 0.22s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.22s ease",
+        }}
+        onMouseEnter={e => {
+          if (!visible) return;
+          (e.currentTarget as HTMLElement).style.transform = "translateY(-5px) scale(1.10)";
+          (e.currentTarget as HTMLElement).style.boxShadow = `0 10px 28px ${tech.color}50`;
+        }}
+        onMouseLeave={e => {
+          (e.currentTarget as HTMLElement).style.transform = "";
+          (e.currentTarget as HTMLElement).style.boxShadow = "";
         }}
       >
         {tech.logo && (
@@ -97,12 +99,11 @@ const SkillChip = memo(function SkillChip({
               userSelect: "none", pointerEvents: "none",
               filter: visible ? "none" : "grayscale(1) opacity(.35)",
               transition: "filter 0.38s ease",
-              transform: "translateZ(0)",
             }}
             onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
           />
         )}
-      </motion.div>
+      </div>
       <span style={{
         fontSize: 9.5, fontWeight: 500,
         color: visible ? "var(--text-secondary)" : "var(--text-muted)",
@@ -112,7 +113,7 @@ const SkillChip = memo(function SkillChip({
       }}>
         {name}
       </span>
-    </motion.div>
+    </div>
   );
 });
 
@@ -120,40 +121,41 @@ const SkillChip = memo(function SkillChip({
 function LampBeam({ glowColor, visible }: { glowColor: string; visible: boolean }) {
   return (
     <div style={{ position: "absolute", inset: 0, overflow: "hidden", pointerEvents: "none", zIndex: 0 }}>
-      <motion.div
-        initial={false}
-        animate={{ opacity: visible ? 1 : 0, scaleX: visible ? 1 : 0.2 }}
-        transition={{ duration: 0.72, ease: [0.22, 1, 0.36, 1] }}
+      {/* Top beam line */}
+      <div
         style={{
-          position: "absolute", top: 0, left: "50%", x: "-50%",
+          position: "absolute", top: 0, left: "50%",
+          transform: "translateX(-50%)",
           width: "74%", height: 1.5, borderRadius: 999,
           background: `linear-gradient(90deg,transparent 0%,${glowColor} 18%,${glowColor} 82%,transparent 100%)`,
           boxShadow: visible ? `0 0 10px ${glowColor},0 0 24px ${glowColor}66` : "none",
           transformOrigin: "center",
-          willChange: "transform, opacity", backfaceVisibility: "hidden",
-        }}
+          opacity: visible ? 1 : 0,
+          scaleX: visible ? 1 : 0.2,
+          transition: "opacity 0.72s cubic-bezier(0.22,1,0.36,1), transform 0.72s cubic-bezier(0.22,1,0.36,1), box-shadow 0.72s ease",
+        } as React.CSSProperties}
       />
-      <motion.div
-        initial={false}
-        animate={{ opacity: visible ? 1 : 0 }}
-        transition={{ duration: 0.90, ease: [0.22, 1, 0.36, 1] }}
+      {/* Wide glow */}
+      <div
         style={{
-          position: "absolute", left: "50%", top: 0, x: "-50%",
+          position: "absolute", left: "50%", top: 0,
+          transform: "translate3d(-50%,0,0)",
           width: "180%", height: "145%",
           background: `radial-gradient(ellipse 60% 70% at 50% 0%,${glowColor}2e 0%,${glowColor}16 25%,${glowColor}0e 45%,${glowColor}08 60%,transparent 82%)`,
-          filter: "blur(18px)", willChange: "opacity", backfaceVisibility: "hidden",
-          transform: "translate3d(-50%,0,0)",
+          filter: "blur(18px)",
+          opacity: visible ? 1 : 0,
+          transition: "opacity 0.90s cubic-bezier(0.22,1,0.36,1)",
         }}
       />
-      <motion.div
-        initial={false}
-        animate={{ opacity: visible ? 1 : 0 }}
-        transition={{ duration: 0.78, delay: 0.06, ease: [0.22, 1, 0.36, 1] }}
+      {/* Inner glow */}
+      <div
         style={{
           position: "absolute", left: "50%", top: 0,
           transform: "translateX(-50%)", width: "120%", height: "100%",
           background: `radial-gradient(ellipse 42% 38% at 50% 0%,${glowColor}40 0%,${glowColor}1e 35%,${glowColor}0e 55%,transparent 78%)`,
-          filter: "blur(10px)", willChange: "opacity", backfaceVisibility: "hidden",
+          filter: "blur(10px)",
+          opacity: visible ? 1 : 0,
+          transition: `opacity 0.78s cubic-bezier(0.22,1,0.36,1) ${visible ? "0.06s" : "0s"}`,
         }}
       />
     </div>
@@ -183,19 +185,20 @@ function LampSkillBox({ title, glowColor, items }: { title: string; glowColor: s
       <LampBeam glowColor={glowColor} visible={isInView} />
       <div style={{ position: "relative", zIndex: 1, paddingTop: 20, display: "flex", flexDirection: "column", height: "100%" }}>
         <div style={{ textAlign: "center", marginBottom: 12 }}>
-          <motion.span
-            initial={false}
-            animate={{ opacity: isInView ? 1 : 0.22, y: isInView ? 0 : 4 }}
-            transition={{ duration: 0.48, ease: [0.22, 1, 0.36, 1] }}
+          <span
             style={{
+              display: "inline-block",
               fontSize: 10, fontWeight: 700, letterSpacing: "0.12em",
               textTransform: "uppercase",
               color: isInView ? glowColor : "var(--text-muted)",
-              fontFamily: MONO, transition: "color 0.42s ease",
+              fontFamily: MONO,
+              opacity: isInView ? 1 : 0.22,
+              transform: isInView ? "none" : "translateY(4px)",
+              transition: "opacity 0.48s cubic-bezier(0.22,1,0.36,1), transform 0.48s cubic-bezier(0.22,1,0.36,1), color 0.42s ease",
             }}
           >
             {title}
-          </motion.span>
+          </span>
         </div>
         <div style={{
           height: 1, margin: "0 14px 18px",

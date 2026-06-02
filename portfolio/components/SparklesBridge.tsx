@@ -65,8 +65,15 @@ export function SparklesBridge() {
     }
 
     let raf: number;
+    let lastTs = 0;
+    const FRAME_MS = 1000 / 15; // 15fps — tiny dots look fine, halves CPU vs 30fps
 
-    function draw() {
+    function draw(ts: number) {
+      raf = requestAnimationFrame(draw);
+      if (document.hidden) return;           // pause when tab hidden
+      if (ts - lastTs < FRAME_MS) return;    // 15fps throttle
+      lastTs = ts;
+
       if (!ctx || !canvas) return;
       const W = getW();
 
@@ -101,11 +108,9 @@ export function SparklesBridge() {
       ctx.fillStyle = isDark ? "#ffffff" : "#000000";
       ctx.fill();
       ctx.globalAlpha = 1;
-
-      raf = requestAnimationFrame(draw);
     }
 
-    draw();
+    raf = requestAnimationFrame(draw);
     return () => {
       cancelAnimationFrame(raf);
       window.removeEventListener("resize", resize);

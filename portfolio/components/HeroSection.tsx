@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Avatar } from "./Avatar";
 import { useTheme } from "./ThemeProvider";
 
@@ -96,63 +96,55 @@ function SocialTile({href,label,icon,iconBg,iconBorder,iconColor}:{href:string;l
   );
 }
 
-/* ─── HoverBorderGradient ────────────────────────────── 
-   Moving white/black border around the info box.
-   Dark theme  → white border light
-   Light theme → black border light
-   NO blue background effect — only border glow moves.
+/* ─── HoverBorderGradient ─────────────────────────────
+   Pure CSS @keyframes rotation — zero JS overhead.
+   Replaces the old rAF loop (was running every frame ~16ms).
+   CSS animation runs entirely on the compositor thread.
 */
-type Dir = "TOP"|"LEFT"|"BOTTOM"|"RIGHT";
-
 function HoverBorderGradient({ children }: { children: React.ReactNode }) {
   const { theme } = useTheme();
   const isDark = theme === "dark";
-  // angle goes 0→360 continuously using rAF — smooth orbit, no jump
-  const angleRef = useRef(0);
-  const divRef   = useRef<HTMLDivElement>(null);
-  const rafRef   = useRef<number>(0);
-
-  useEffect(() => {
-    // Animate a single conic gradient that rotates continuously.
-    // Pure CSS via requestAnimationFrame — zero repaint, only style.background update
-    const SPEED = 0.06; // degrees per ms — matches original ~1800ms cadence
-    let last = 0;
-    const tick = (ts: number) => {
-      rafRef.current = requestAnimationFrame(tick);
-      const dt = ts - last;
-      last = ts;
-      angleRef.current = (angleRef.current + SPEED * dt) % 360;
-      if (!divRef.current) return;
-      const a = angleRef.current;
-      // AFTER
-const strong = isDark ? "rgba(255,255,255,0.40)" : "rgba(0,0,0,0.32)";
-const mid    = isDark ? "rgba(255,255,255,0.10)" : "rgba(0,0,0,0.07)";
-      const none   = "transparent";
-      // Conic gradient: bright arc rotates around the border
-      divRef.current.style.background =
-        `conic-gradient(from ${a}deg, ${none} 0deg, ${none} 60deg, ${mid} 90deg, ${strong} 120deg, ${mid} 150deg, ${none} 180deg, ${none} 360deg)`;
-    };
-    rafRef.current = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(rafRef.current);
-  }, [isDark]);
 
   return (
-    <div style={{ position:"relative" }}>
-      {/* Rotating border glow layer — sits 1.5px outside content, filtered for softness */}
+    <div style={{ position: "relative" }}>
+      <style suppressHydrationWarning>{`
+        @keyframes border-spin { to { --border-angle: 360deg; } }
+        @property --border-angle {
+          syntax: "<angle>";
+          inherits: false;
+          initial-value: 0deg;
+        }
+        .hbg-glow {
+          animation: border-spin 6s linear infinite;
+          background: conic-gradient(
+            from var(--border-angle),
+            transparent 0deg,
+            transparent 60deg,
+            ${isDark ? "rgba(255,255,255,0.10)" : "rgba(0,0,0,0.07)"} 90deg,
+            ${isDark ? "rgba(255,255,255,0.40)" : "rgba(0,0,0,0.32)"} 120deg,
+            ${isDark ? "rgba(255,255,255,0.10)" : "rgba(0,0,0,0.07)"} 150deg,
+            transparent 180deg,
+            transparent 360deg
+          );
+          filter: blur(3px);
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .hbg-glow { animation: none; }
+        }
+      `}</style>
+      {/* CSS-animated glow layer — compositor thread only */}
       <div
-        ref={divRef}
+        className="hbg-glow"
         aria-hidden
         style={{
           position: "absolute",
           inset: -1.5,
           zIndex: 0,
           borderRadius: 1,
-          filter: "blur(3px)",
           pointerEvents: "none",
-          willChange: "background",
         }}
       />
-      {/* Sharp inner glow — thinner, faster fade, adds crispness to border */}
+      {/* Static sharp border */}
       <div
         aria-hidden
         style={{
@@ -164,7 +156,7 @@ const mid    = isDark ? "rgba(255,255,255,0.10)" : "rgba(0,0,0,0.07)";
           border: isDark ? "1px solid rgba(255,255,255,0.12)" : "1px solid rgba(0,0,0,0.10)",
         }}
       />
-      <div style={{ position:"relative", zIndex:1 }}>
+      <div style={{ position: "relative", zIndex: 1 }}>
         {children}
       </div>
     </div>

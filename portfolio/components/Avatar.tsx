@@ -226,8 +226,24 @@ export function Avatar() {
 
     const startLoop = () => {
       let last = 0;
+      let isVisible = true;
+
+      // Pause WebGL loop when avatar scrolls off-screen — saves significant GPU
+      const observer = new IntersectionObserver(
+        (entries) => { isVisible = entries[0].isIntersecting; },
+        { threshold: 0 }
+      );
+      observer.observe(canvas);
+
+      // Also pause when tab is hidden
+      const onVisChange = () => { isVisible = !document.hidden; };
+      document.addEventListener("visibilitychange", onVisChange, { passive: true });
+
+      const FRAME_MS = 1000 / 30; // 30fps cap — WebGL hair warp looks fine at 30fps
       const loop = (ts: number) => {
         G.raf = requestAnimationFrame(loop);
+        if (!isVisible) return; // skip render when off-screen / tab hidden
+        if (ts - last < FRAME_MS) return; // 30fps throttle
         const dt = Math.min((ts - last) / 1000, 0.033);
         last = ts;
         G.t += dt;
@@ -264,6 +280,10 @@ export function Avatar() {
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
       };
       G.raf = requestAnimationFrame(loop);
+
+      // Store cleanup refs on G for the return function
+      (G as any)._observer = observer;
+      (G as any)._onVisChange = onVisChange;
     };
 
     const onEnter = () => {
@@ -282,6 +302,8 @@ export function Avatar() {
       if (G.tid) clearTimeout(G.tid);
       canvas.removeEventListener("mouseenter", onEnter);
       canvas.removeEventListener("mouseleave", onLeave);
+      if ((G as any)._observer) (G as any)._observer.disconnect();
+      if ((G as any)._onVisChange) document.removeEventListener("visibilitychange", (G as any)._onVisChange);
       if (G.texD) gl.deleteTexture(G.texD);
       if (G.texL) gl.deleteTexture(G.texL);
       gl.deleteBuffer(buf);

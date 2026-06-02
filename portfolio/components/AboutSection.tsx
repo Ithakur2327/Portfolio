@@ -1,13 +1,7 @@
 "use client";
 
 import React, { useRef, useState, useEffect, useCallback } from "react";
-import {
-  motion,
-  useScroll,
-  useSpring,
-  useTransform,
-  MotionValue,
-} from "framer-motion";
+import { motion } from "framer-motion";
 
 import { useReveal } from "./useReveal";
 import { useTheme } from "./ThemeProvider";
@@ -88,46 +82,63 @@ function parse(raw: string): Token[][] {
 }
 
 /* ──────────────────────────────────────────────────────────
-   GOLD WORD
+   GOLD WORD — simple opacity, no scroll tracking per-word
 ────────────────────────────────────────────────────────── */
 function GoldWord({
-  text, idx, total, progress, isName,
+  text, idx, isName, visible,
 }: {
-  text: string; idx: number; total: number; progress: MotionValue<number>; isName: boolean;
+  text: string; idx: number; isName: boolean; visible: boolean;
 }) {
-  const s = Math.max(0, (idx - 0.2) / total);
-  const e = Math.min(1, (idx + 0.4) / total);
-  const raw = useTransform(progress, [s, e], [0, 1]);
-  const p = useSpring(raw, { stiffness: 400, damping: 28, mass: 0.2 });
-  const opacity = useTransform(p, [0, 0.15, 1], [0.25, 0.65, 1]);
+  const delay = Math.min(idx * 0.035, 1.2);
 
   if (isName) {
     return (
-      <motion.span style={{ opacity, display: "inline", verticalAlign: "baseline" }}>
-        <span className="name-highlight">{text}</span>
-      </motion.span>
+      <span
+        className="name-highlight"
+        style={{
+          display: "inline",
+          verticalAlign: "baseline",
+          opacity: visible ? 1 : 0.25,
+          transition: `opacity 0.5s ease ${delay}s`,
+        }}
+      >{text}</span>
     );
   }
 
   return (
-    <motion.span
+    <span
       className="gold-box-word"
-      style={{ opacity, display: "inline", verticalAlign: "baseline" }}
+      style={{
+        display: "inline",
+        verticalAlign: "baseline",
+        opacity: visible ? 1 : 0.25,
+        transition: `opacity 0.5s ease ${delay}s`,
+      }}
     >
       {text}
-    </motion.span>
+    </span>
   );
 }
 
 /* ──────────────────────────────────────────────────────────
-   SCROLL REVEAL TEXT
+   SCROLL REVEAL TEXT — IntersectionObserver replaces
+   useScroll+useSpring (was firing on every scroll event)
 ────────────────────────────────────────────────────────── */
 function ScrollRevealText() {
   const ref = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll({ target: ref, offset: ["start 0.85", "center 0.6"] });
-  const smooth = useSpring(scrollYProgress, { stiffness: 120, damping: 20, restDelta: 0.001 });
+  const [visible, setVisible] = useState(false);
   const paras = parse(ABOUT_TEXT);
-  const total = paras.flat().filter((t) => t.hl).length;
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) { setVisible(true); obs.disconnect(); } },
+      { threshold: 0.15 }
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
 
   return (
     <div ref={ref} style={{ display: "flex", flexDirection: "column", gap: 20 }}>
@@ -149,7 +160,7 @@ function ScrollRevealText() {
         >
           {tokens.map((t, ti) =>
             t.hl ? (
-              <GoldWord key={ti} text={t.text} idx={t.idx} total={total} progress={smooth} isName={t.isName} />
+              <GoldWord key={ti} text={t.text} idx={t.idx} isName={t.isName} visible={visible} />
             ) : (
               <span key={ti} style={{ color: "var(--text-primary)", display: "inline" }}>{t.text}</span>
             )

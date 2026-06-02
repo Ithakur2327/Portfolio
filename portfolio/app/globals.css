@@ -740,39 +740,43 @@ img {
   content-visibility: auto;
 }
 
-/* Elements that animate — own compositing layer */
-.h-profile, .h-info-wrap, .h-avatar,
-.logo-avatar, .logo-i,
+/* Elements that animate — own compositing layer ONLY where needed */
+/* nav-root: fixed + backdrop-filter = must have own layer */
 .nav-root {
   will-change: transform;
   transform: translateZ(0);
+}
+
+/* h-profile, h-avatar: no animations → remove permanent layer promotion
+   Only promote during hover via :hover selector */
+.h-profile, .h-info-wrap, .h-avatar,
+.logo-avatar, .logo-i {
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
 }
 
-/* Section GPU hint — NO transform-style: preserve-3d */
-section, .edu-card, .proj-card {
-  transform: translateZ(0);
+/* Section GPU hint — remove blanket translateZ (creates layers for all sections) */
+.edu-card, .proj-card {
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
 }
 
 /* Interactive tiles — promote on hover via CSS, not permanently */
 .s-tile, .cert-item {
-  transform: translateZ(0);
   transition-property: transform, opacity, background, box-shadow;
   transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
 }
+.s-tile:hover, .cert-item:hover {
+  transform: translateZ(0);
+}
 
 /* GitHub cell */
-.gh-cell { transform: translateZ(0); }
 .gh-cell:hover { transform: scale(1.35) translateZ(0); }
 
 /* Stat card 3D hover — compositor only */
 .stat-card-3d {
   transition: transform 0.28s cubic-bezier(0.16,1,0.3,1),
               box-shadow 0.28s cubic-bezier(0.16,1,0.3,1);
-  transform: translateZ(0);
 }
 .stat-card-3d:hover { transform: translateY(-5px) translateZ(0); }
 
@@ -784,13 +788,15 @@ section, .edu-card, .proj-card {
   align-items: stretch;
 }
 
-/* Proj grid GPU */
+/* Proj grid / skills grid — only promote on hover */
 .proj-grid > *,
 .skills-lamp-grid > * {
-  will-change: transform;
-  transform: translate3d(0, 0, 0);
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
+}
+.proj-grid > *:hover,
+.skills-lamp-grid > *:hover {
+  will-change: transform;
 }
 
 /* Light mode cards */
