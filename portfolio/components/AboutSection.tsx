@@ -994,7 +994,6 @@ export function AboutSection() {
       <section
         ref={ref}
         className={revealClass}
-        style={{ marginTop: 23 }}
       >
         <div style={{ position: "relative", left: "50%", marginLeft: "-50vw", width: "100vw", background: "var(--bg-base)", borderTop: "1px solid var(--line)", borderBottom: "1px solid var(--line)" }}>
           <div className="about-content">
