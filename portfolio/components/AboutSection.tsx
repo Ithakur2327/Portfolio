@@ -116,29 +116,28 @@ function Spin({ color }: { color: string }) {
 }
 
 /* ──────────────────────────────────────────────────────────
-   ANIMATED LEETCODE LOGO (exact match to image 4)
+   ANIMATED LEETCODE LOGO — fixed background for dark mode
 ────────────────────────────────────────────────────────── */
 function LeetCodeLogo({ size = 34 }: { size?: number }) {
   return (
     <div style={{
       width: size, height: size, borderRadius: Math.round(size * 0.26),
-      background: "#1a1a1a",
+      // Changed: warm dark amber instead of #1a1a1a — logo pops on dark backgrounds
+      background: "#2d2208",
+      border: "1px solid rgba(255,161,22,0.25)",
       display: "flex", alignItems: "center", justifyContent: "center",
       flexShrink: 0, overflow: "hidden", position: "relative",
     }}>
       <svg width={size * 0.65} height={size * 0.65} viewBox="0 0 24 24" fill="none">
-        {/* grey bar */}
         <rect x="8.5" y="11.2" width="8.5" height="2" rx="1" fill="#9ca3af" className="lc-logo-bar" />
-        {/* orange outer arc */}
         <path
           d="M13.483 0a1.374 1.374 0 0 0-.961.438L7.116 6.226l-3.854 4.126a5.266 5.266 0 0 0-1.209 2.104 5.35 5.35 0 0 0-.125.513 5.527 5.527 0 0 0 .062 2.362 5.83 5.83 0 0 0 .349 1.017 5.938 5.938 0 0 0 1.271 1.818l4.277 4.193.039.038c2.248 2.165 5.852 2.133 8.063-.074l2.396-2.392c.54-.54.54-1.414.003-1.955a1.378 1.378 0 0 0-1.951-.003l-2.396 2.392a3.021 3.021 0 0 1-4.205.038l-.02-.019-4.276-4.193c-.652-.64-.972-1.469-.948-2.263a2.68 2.68 0 0 1 .066-.523 2.545 2.545 0 0 1 .619-1.164L9.13 8.114c1.058-1.134 3.204-1.27 4.43-.278l3.501 2.831c.593.48 1.461.387 1.94-.207a1.384 1.384 0 0 0-.207-1.943l-3.5-2.831c-.8-.647-1.766-1.045-2.774-1.202l2.015-2.158A1.384 1.384 0 0 0 13.483 0z"
           fill="#FFA116"
           className="lc-logo-outer"
         />
-        {/* black inner C shape */}
         <path
           d="M13.483 0a1.374 1.374 0 0 0-.961.438L7.116 6.226l-3.854 4.126a5.266 5.266 0 0 0-1.209 2.104 5.35 5.35 0 0 0-.125.513 5.527 5.527 0 0 0 .062 2.362 5.83 5.83 0 0 0 .349 1.017 5.938 5.938 0 0 0 1.271 1.818l4.277 4.193.039.038c2.248 2.165 5.852 2.133 8.063-.074l2.396-2.392c.54-.54.54-1.414.003-1.955a1.378 1.378 0 0 0-1.951-.003l-2.396 2.392a3.021 3.021 0 0 1-4.205.038l-.02-.019-4.276-4.193c-.652-.64-.972-1.469-.948-2.263a2.68 2.68 0 0 1 .066-.523 2.545 2.545 0 0 1 .619-1.164L9.13 8.114c1.058-1.134 3.204-1.27 4.43-.278"
-          fill="#282828"
+          fill="#3d2e08"
           opacity="0.85"
         />
       </svg>
@@ -175,7 +174,7 @@ function GitHubLogo({ size = 34, isDark }: { size?: number; isDark: boolean }) {
 }
 
 /* ──────────────────────────────────────────────────────────
-   DONUT CHART — exact match to image 3
+   DONUT CHART
 ────────────────────────────────────────────────────────── */
 function DonutChart({ easy, medium, hard, totalSolved, totalProblems, attempting }: {
   easy: number; medium: number; hard: number;
@@ -185,7 +184,6 @@ function DonutChart({ easy, medium, hard, totalSolved, totalProblems, attempting
   const CX = size / 2, CY = size / 2;
   const R = 62;
   const STROKE = 11;
-  const circumference = 2 * Math.PI * R;
   const gap = 3;
 
   const easyFrac = easy / totalProblems;
@@ -222,7 +220,6 @@ function DonutChart({ easy, medium, hard, totalSolved, totalProblems, attempting
         {paths.map(p => (
           <path key={p.key} d={p.d} fill="none" stroke={p.color} strokeWidth={STROKE} strokeLinecap="round" />
         ))}
-        {/* Center */}
         <text x={CX} y={CY - 12} textAnchor="middle" fill="var(--text-primary)"
           style={{ fontFamily: MONO, fontSize: 22, fontWeight: 800, letterSpacing: "-0.04em" }}>
           {totalSolved}
@@ -246,6 +243,8 @@ function DonutChart({ easy, medium, hard, totalSolved, totalProblems, attempting
 
 /* ──────────────────────────────────────────────────────────
    LEETCODE PANEL
+   API: leetcode-stats-api.herokuapp.com (CORS-open, reliable)
+   Fallback to hardcoded values if API fails
 ────────────────────────────────────────────────────────── */
 const LC_TOTAL = 3949;
 const GLOBAL_RANK = 150000;
@@ -256,61 +255,60 @@ function LeetCodeStats({ username = "IThakur09" }: { username?: string }) {
   const [data, setData] = useState<LC | null>(null);
   const [loading, setLoading] = useState(true);
   const [calData, setCalData] = useState<LCCalDay[]>([]);
-  const [streak, setStreak] = useState<LCStreak | null>(null);
   const [hoveredSubmissions, setHoveredSubmissions] = useState<{ date: string; count: number } | null>(null);
 
+  // ── FIXED: switched to leetcode-stats-api.herokuapp.com ──
   useEffect(() => {
     const run = async () => {
       try {
-        const [r1, r2] = await Promise.all([
-          fetch(`https://alfa-leetcode-api.onrender.com/${username}/solved`),
-          fetch(`https://alfa-leetcode-api.onrender.com/userProfile/${username}`),
-        ]);
-        const [j1, j2] = await Promise.all([r1.json(), r2.json()]);
-        const easySolved  = j2.easySolved  ?? 0;
-        const mediumSolved = j2.mediumSolved ?? 0;
-        const hardSolved  = j2.hardSolved  ?? 0;
-        setData({
-          easySolved, totalEasy: 947,
-          mediumSolved, totalMedium: 2063,
-          hardSolved, totalHard: 939,
-          totalSolved: j1.solvedProblem ?? (easySolved + mediumSolved + hardSolved),
-          ranking: GLOBAL_RANK,
-        });
-      } catch { /* use fallback */ }
+        const r = await fetch(
+          `https://leetcode-stats-api.herokuapp.com/${username}`,
+          { signal: AbortSignal.timeout(8000) }
+        );
+        if (r.ok) {
+          const j = await r.json();
+          if (j && !j.error) {
+            setData({
+              easySolved:   j.easySolved   ?? 0,
+              totalEasy:    j.totalEasy    ?? 947,
+              mediumSolved: j.mediumSolved ?? 0,
+              totalMedium:  j.totalMedium  ?? 2063,
+              hardSolved:   j.hardSolved   ?? 0,
+              totalHard:    j.totalHard    ?? 939,
+              totalSolved:  j.totalSolved  ?? (j.easySolved + j.mediumSolved + j.hardSolved),
+              ranking:      j.ranking      ?? GLOBAL_RANK,
+            });
+          }
+        }
+      } catch { /* fall through to hardcoded data */ }
       finally { setLoading(false); }
     };
     run();
   }, [username]);
 
+  // Calendar data via alfa API (best-effort, graceful degradation)
   useEffect(() => {
     const run = async () => {
       try {
-        const [sr, cr] = await Promise.all([
-          fetch(`https://alfa-leetcode-api.onrender.com/${username}/streak`),
-          fetch(`https://alfa-leetcode-api.onrender.com/${username}/calendar`),
-        ]);
-        const [sj, cj] = await Promise.all([sr.json(), cr.json()]);
-        if (sj) {
-          setStreak({
-            currentStreak: sj.currentStreak ?? sj.streak ?? 0,
-            maxStreak: sj.maxStreak ?? sj.longestStreak ?? 0,
-            totalActiveDays: sj.totalActiveDays ?? 0,
-          });
-        }
+        const cr = await fetch(
+          `https://alfa-leetcode-api.onrender.com/${username}/calendar`,
+          { signal: AbortSignal.timeout(6000) }
+        );
+        if (!cr.ok) return;
+        const cj = await cr.json();
         const calStr = cj?.submissionCalendar ?? cj?.calendar ?? "{}";
-        const calObj: Record<string, number> = typeof calStr === "string" ? JSON.parse(calStr) : calStr;
+        const calObj: Record<string, number> =
+          typeof calStr === "string" ? JSON.parse(calStr) : calStr;
         const days: LCCalDay[] = Object.entries(calObj).map(([ts, cnt]) => ({
           date: Number(ts), count: Number(cnt),
         }));
         setCalData(days.sort((a, b) => a.date - b.date));
-      } catch {
-        setStreak(null);
-      }
+      } catch { /* no calendar data, grid stays empty */ }
     };
     run();
   }, [username]);
 
+  // Hardcoded fallback (shown if API is down)
   const displayData = data ?? {
     easySolved: 197, totalEasy: 947,
     mediumSolved: 223, totalMedium: 2063,
@@ -363,6 +361,67 @@ function LeetCodeStats({ username = "IThakur09" }: { username?: string }) {
   const diffColors = { Easy: "#00b8a3", Medium: "#ffc01e", Hard: "#ef4743" };
   const attempting = 5;
 
+  /* ── Contribution grid (shared between desktop right-col & mobile bottom) ── */
+  const ContribGrid = () => (
+    <div style={{
+      overflowX: "auto", overflowY: "hidden",
+      scrollbarWidth: "thin", scrollbarColor: "rgba(255,161,22,0.3) transparent",
+    }}>
+      <div style={{ display: "inline-flex", flexDirection: "column", paddingBottom: 4 }}>
+        <div style={{ display: "flex", marginBottom: 3, paddingLeft: 22 }}>
+          {lcMonthLabels.map((m, i) => {
+            const nextCol = lcMonthLabels[i + 1]?.col ?? lcWeeks.length;
+            return (
+              <div key={i} style={{
+                width: (nextCol - m.col) * STEP, flexShrink: 0,
+                fontSize: 8, color: "var(--text-muted)", fontFamily: MONO,
+                overflow: "hidden", whiteSpace: "nowrap",
+              }}>
+                {m.label}
+              </div>
+            );
+          })}
+        </div>
+        <div style={{ display: "flex", gap: 0 }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: GAP, marginRight: 3 }}>
+            {DAY_LABELS.map((d, i) => (
+              <div key={i} style={{
+                height: CELL, fontSize: 8, color: "var(--text-muted)", fontFamily: MONO,
+                lineHeight: `${CELL}px`, width: 20,
+              }}>{d}</div>
+            ))}
+          </div>
+          <div style={{ display: "flex", gap: GAP }}>
+            {lcWeeks.map((wk, wi) => (
+              <div key={wi} style={{ display: "flex", flexDirection: "column", gap: GAP }}>
+                {wk.map((day, di) => (
+                  <div
+                    key={di}
+                    className={`lc-cell lc-cell-${lcLvl(day.count)}`}
+                    style={{ width: CELL, height: CELL, borderRadius: 2, cursor: "default", transition: "transform 0.1s" }}
+                    onMouseEnter={e => {
+                      (e.currentTarget as HTMLElement).style.transform = "scale(1.5)";
+                      setHoveredSubmissions({ date: day.date.toISOString().split("T")[0], count: day.count });
+                    }}
+                    onMouseLeave={e => {
+                      (e.currentTarget as HTMLElement).style.transform = "";
+                      setHoveredSubmissions(null);
+                    }}
+                  />
+                ))}
+              </div>
+            ))}
+          </div>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 3, marginTop: 5 }}>
+          <span style={{ fontSize: 8, color: "var(--text-muted)", fontFamily: MONO, marginRight: 3 }}>Less</span>
+          {[0,1,2,3,4].map(l => <div key={l} className={`lc-cell lc-cell-${l}`} style={{ width: 9, height: 9, borderRadius: 2 }} />)}
+          <span style={{ fontSize: 8, color: "var(--text-muted)", fontFamily: MONO, marginLeft: 3 }}>More</span>
+        </div>
+      </div>
+    </div>
+  );
+
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
       {/* Header */}
@@ -378,16 +437,37 @@ function LeetCodeStats({ username = "IThakur09" }: { username?: string }) {
         <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
           <span style={{ fontSize: 11, color: "var(--text-muted)", fontFamily: MONO }}>Rank</span>
           <span style={{ fontSize: 18, fontWeight: 800, color: "var(--text-primary)", fontFamily: MONO, letterSpacing: "-0.04em" }}>
-            #{GLOBAL_RANK.toLocaleString()}
+            #{(displayData.ranking || GLOBAL_RANK).toLocaleString()}
           </span>
         </div>
       </div>
 
       <div style={{ height: 1, background: "var(--border)", marginBottom: 12 }} />
 
-      {/* Body: left donut + right calendar */}
-      <div style={{ display: "flex", gap: 0, flex: 1, minHeight: 0 }}>
-        {/* Left 42% */}
+      {/* Hover tooltip */}
+      <div style={{ height: 44, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 6 }}>
+        {hoveredSubmissions && (
+          <motion.div
+            initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }}
+            style={{
+              padding: "6px 14px", borderRadius: 8,
+              background: "var(--bg-secondary)", border: "1px solid rgba(255,161,22,0.35)",
+              textAlign: "center",
+            }}
+          >
+            <div style={{ fontSize: 16, fontWeight: 800, color: "#FFA116", fontFamily: MONO, letterSpacing: "-0.04em", lineHeight: 1 }}>
+              {hoveredSubmissions.count}
+            </div>
+            <div style={{ fontSize: 9, color: "var(--text-muted)", fontFamily: MONO, marginTop: 2 }}>
+              submissions on {hoveredSubmissions.date}
+            </div>
+          </motion.div>
+        )}
+      </div>
+
+      {/* ── DESKTOP LAYOUT: side-by-side ── */}
+      <div className="lc-body-desktop" style={{ display: "flex", gap: 0, flex: 1, minHeight: 0 }}>
+        {/* Left 42%: donut + difficulty */}
         <div style={{ width: "42%", flexShrink: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 10 }}>
           {loading ? <Spin color="#FFA116" /> : (
             <>
@@ -423,79 +503,56 @@ function LeetCodeStats({ username = "IThakur09" }: { username?: string }) {
 
         <div style={{ width: 1, background: "var(--border)", flexShrink: 0, margin: "0 10px" }} />
 
-        {/* Right 58% */}
+        {/* Right 58%: contribution graph */}
         <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column" }}>
-          <div style={{ height: 44, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 6 }}>
-            {hoveredSubmissions && (
-              <motion.div
-                initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }}
-                style={{
-                  padding: "6px 14px", borderRadius: 8,
-                  background: "var(--bg-secondary)", border: "1px solid rgba(255,161,22,0.35)",
-                  textAlign: "center",
-                }}
-              >
-                <div style={{ fontSize: 16, fontWeight: 800, color: "#FFA116", fontFamily: MONO, letterSpacing: "-0.04em", lineHeight: 1 }}>
-                  {hoveredSubmissions.count}
-                </div>
-                <div style={{ fontSize: 9, color: "var(--text-muted)", fontFamily: MONO, marginTop: 2 }}>
-                  submissions on {hoveredSubmissions.date}
-                </div>
-              </motion.div>
-            )}
-          </div>
-
           <div style={{ fontSize: 9, color: "var(--text-muted)", fontFamily: MONO, marginBottom: 3 }}>2026 activity</div>
-          <div style={{
-            overflowX: "auto", overflowY: "hidden", flex: 1,
-            scrollbarWidth: "thin", scrollbarColor: "rgba(255,161,22,0.3) transparent",
-          }}>
-            <div style={{ display: "inline-flex", flexDirection: "column", paddingBottom: 4 }}>
-              <div style={{ display: "flex", marginBottom: 3, paddingLeft: 22 }}>
-                {lcMonthLabels.map((m, i) => {
-                  const nextCol = lcMonthLabels[i + 1]?.col ?? lcWeeks.length;
-                  return (
-                    <div key={i} style={{ width: (nextCol - m.col) * STEP, flexShrink: 0, fontSize: 8, color: "var(--text-muted)", fontFamily: MONO, overflow: "hidden", whiteSpace: "nowrap" }}>
-                      {m.label}
-                    </div>
-                  );
-                })}
+          <ContribGrid />
+        </div>
+      </div>
+
+      {/* ── MOBILE LAYOUT: stacked (donut+diff on top, graph below) ── */}
+      <div className="lc-body-mobile" style={{ display: "none", flexDirection: "column", gap: 14 }}>
+        {/* Top: donut + difficulty side by side on mobile */}
+        <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+          {loading ? <Spin color="#FFA116" /> : (
+            <>
+              <DonutChart
+                easy={displayData.easySolved}
+                medium={displayData.mediumSolved}
+                hard={displayData.hardSolved}
+                totalSolved={displayData.totalSolved}
+                totalProblems={LC_TOTAL}
+                attempting={attempting}
+              />
+              <div style={{ display: "flex", flexDirection: "column", gap: 5, flex: 1 }}>
+                {[
+                  { label: "Easy",  solved: displayData.easySolved,   total: displayData.totalEasy,   color: diffColors.Easy },
+                  { label: "Med.",  solved: displayData.mediumSolved,  total: displayData.totalMedium, color: diffColors.Medium },
+                  { label: "Hard",  solved: displayData.hardSolved,    total: displayData.totalHard,   color: diffColors.Hard },
+                ].map(d => (
+                  <div key={d.label} style={{
+                    display: "flex", alignItems: "center", justifyContent: "space-between",
+                    padding: "5px 8px", borderRadius: 7,
+                    background: "var(--bg-secondary)", border: "1px solid var(--border)",
+                  }}>
+                    <span style={{ fontSize: 11, fontWeight: 700, color: d.color, fontFamily: MONO }}>{d.label}</span>
+                    <span style={{ fontSize: 11, fontWeight: 700, color: "var(--text-primary)", fontFamily: MONO }}>
+                      {d.solved}<span style={{ color: "var(--text-muted)", fontWeight: 400 }}>/{d.total}</span>
+                    </span>
+                  </div>
+                ))}
               </div>
-              <div style={{ display: "flex", gap: 0 }}>
-                <div style={{ display: "flex", flexDirection: "column", gap: GAP, marginRight: 3 }}>
-                  {DAY_LABELS.map((d, i) => (
-                    <div key={i} style={{ height: CELL, fontSize: 8, color: "var(--text-muted)", fontFamily: MONO, lineHeight: `${CELL}px`, width: 20 }}>{d}</div>
-                  ))}
-                </div>
-                <div style={{ display: "flex", gap: GAP }}>
-                  {lcWeeks.map((wk, wi) => (
-                    <div key={wi} style={{ display: "flex", flexDirection: "column", gap: GAP }}>
-                      {wk.map((day, di) => (
-                        <div
-                          key={di}
-                          className={`lc-cell lc-cell-${lcLvl(day.count)}`}
-                          style={{ width: CELL, height: CELL, borderRadius: 2, cursor: "default", transition: "transform 0.1s" }}
-                          onMouseEnter={e => {
-                            (e.currentTarget as HTMLElement).style.transform = "scale(1.5)";
-                            setHoveredSubmissions({ date: day.date.toISOString().split("T")[0], count: day.count });
-                          }}
-                          onMouseLeave={e => {
-                            (e.currentTarget as HTMLElement).style.transform = "";
-                            setHoveredSubmissions(null);
-                          }}
-                        />
-                      ))}
-                    </div>
-                  ))}
-                </div>
-              </div>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 3, marginTop: 5 }}>
-                <span style={{ fontSize: 8, color: "var(--text-muted)", fontFamily: MONO, marginRight: 3 }}>Less</span>
-                {[0,1,2,3,4].map(l => <div key={l} className={`lc-cell lc-cell-${l}`} style={{ width: 9, height: 9, borderRadius: 2 }} />)}
-                <span style={{ fontSize: 8, color: "var(--text-muted)", fontFamily: MONO, marginLeft: 3 }}>More</span>
-              </div>
-            </div>
-          </div>
+            </>
+          )}
+        </div>
+
+        {/* Horizontal divider */}
+        <div style={{ height: 1, background: "var(--border)" }} />
+
+        {/* Bottom: contribution graph */}
+        <div>
+          <div style={{ fontSize: 9, color: "var(--text-muted)", fontFamily: MONO, marginBottom: 3 }}>2026 activity</div>
+          <ContribGrid />
         </div>
       </div>
     </div>
@@ -595,7 +652,6 @@ function GitHubGraph({ username = "Ithakur2327" }: { username?: string }) {
     }
   });
 
-  // theme-aware contribution count color
   const contribColor = isDark ? "#ffffff" : "#000000";
 
   return (
@@ -654,7 +710,6 @@ function GitHubGraph({ username = "Ithakur2327" }: { username?: string }) {
       {loading ? <Spin color="#FFA116" /> : (
         <div style={{ overflowX: "auto", overflowY: "hidden", scrollbarWidth: "thin", scrollbarColor: "rgba(255,161,22,0.3) transparent" }}>
           <div style={{ display: "inline-flex", flexDirection: "column", paddingBottom: 4 }}>
-            {/* Month labels */}
             <div style={{ display: "flex", marginBottom: 4, paddingLeft: 26 }}>
               {monthLabels.map((m, i) => {
                 const nextCol = monthLabels[i + 1]?.col ?? weeks.length;
@@ -668,7 +723,6 @@ function GitHubGraph({ username = "Ithakur2327" }: { username?: string }) {
                 );
               })}
             </div>
-            {/* Grid */}
             <div style={{ display: "flex", gap: 0 }}>
               <div style={{ display: "flex", flexDirection: "column", gap: GAP, marginRight: 4 }}>
                 {DAYS.map((d, i) => (
@@ -697,7 +751,6 @@ function GitHubGraph({ username = "Ithakur2327" }: { username?: string }) {
                 ))}
               </div>
             </div>
-            {/* Legend */}
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 8 }}>
               <span style={{ fontSize: 9, color: "var(--text-muted)", fontFamily: MONO }}>
                 {isLive ? "Contribution activity" : "Contribution activity (preview)"}
@@ -726,7 +779,6 @@ export function AboutSection() {
       <style suppressHydrationWarning>{`
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        /* LeetCode logo animations */
         @keyframes lcPulse {
           0%,100% { opacity:1; }
           50%      { opacity:0.7; }
@@ -734,7 +786,6 @@ export function AboutSection() {
         .lc-logo-outer { animation: lcPulse 2.4s ease-in-out infinite; }
         .lc-logo-bar   { animation: lcPulse 2.4s ease-in-out infinite 0.6s; }
 
-        /* GitHub logo hover spin */
         .gh-logo-wrap:hover .gh-logo-svg {
           transform: rotate(360deg);
           transition: transform 0.6s cubic-bezier(0.34,1.56,0.64,1);
@@ -762,7 +813,7 @@ export function AboutSection() {
           margin: 0 1px;
         }
 
-        /* ── GitHub graph — Halloween orange palette (image 2) ── */
+        /* ── GitHub graph — Halloween orange palette ── */
         .gh-cell   { background: rgba(255,165,0,0.08); }
         .gh-cell-0 { background: rgba(30,20,10,0.55); }
         .gh-cell-1 { background: #fac68f; }
@@ -770,13 +821,13 @@ export function AboutSection() {
         .gh-cell-3 { background: #984b10; }
         .gh-cell-4 { background: #e3d04f; }
 
-        /* ── LeetCode graph — orange palette ── */
+        /* ── LeetCode graph — SAME Halloween orange palette as GitHub ── */
         .lc-cell   { background: rgba(255,165,0,0.08); }
-        .lc-cell-0 { background: rgba(255,165,0,0.08); }
-        .lc-cell-1 { background: rgba(255,161,22,0.28); }
-        .lc-cell-2 { background: rgba(255,161,22,0.52); }
-        .lc-cell-3 { background: rgba(255,161,22,0.76); }
-        .lc-cell-4 { background: #FFA116; }
+        .lc-cell-0 { background: rgba(30,20,10,0.55); }
+        .lc-cell-1 { background: #fac68f; }
+        .lc-cell-2 { background: #c46212; }
+        .lc-cell-3 { background: #984b10; }
+        .lc-cell-4 { background: #e3d04f; }
 
         /* light mode overrides */
         html.light .name-highlight {
@@ -795,11 +846,15 @@ export function AboutSection() {
         html.light .gh-cell-2 { background: #c46212; }
         html.light .gh-cell-3 { background: #984b10; }
         html.light .gh-cell-4 { background: #1f2328; }
-        html.light .lc-cell-0 { background: rgba(180,120,0,0.10); }
-        html.light .lc-cell-1 { background: rgba(200,130,0,0.28); }
-        html.light .lc-cell-2 { background: rgba(200,130,0,0.52); }
-        html.light .lc-cell-3 { background: rgba(200,130,0,0.76); }
-        html.light .lc-cell-4 { background: #d97706; }
+        /* LeetCode light mode — identical to GitHub light mode */
+        html.light .lc-cell-0 { background: #eff2f5; }
+        html.light .lc-cell-1 { background: #fac68f; }
+        html.light .lc-cell-2 { background: #c46212; }
+        html.light .lc-cell-3 { background: #984b10; }
+        html.light .lc-cell-4 { background: #1f2328; }
+
+        /* LeetCode logo light mode tweak */
+        html.light .lc-logo-bg { background: #fff8e6 !important; }
 
         /* ── 3D card ── */
         .stat-card-3d {
@@ -814,7 +869,6 @@ export function AboutSection() {
             0 2px 4px rgba(0,0,0,0.45),
             0 8px 20px rgba(0,0,0,0.32),
             0 16px 32px rgba(0,0,0,0.18);
-          /* ensure equal height in grid */
           display: flex;
           flex-direction: column;
         }
@@ -840,10 +894,8 @@ export function AboutSection() {
           display: grid;
           gap: 14px;
           align-items: stretch;
-          /* 2 columns default (≥640px) */
           grid-template-columns: 1fr 1fr;
         }
-        /* single column on small screens */
         @media (max-width: 639px) {
           .about-panels { grid-template-columns: 1fr; }
         }
@@ -860,6 +912,10 @@ export function AboutSection() {
           .about-content  { padding: 0 14px 28px; }
           .about-para     { font-size: 14px !important; line-height: 1.8 !important; }
           .stat-card-3d   { width: 100% !important; min-width: 0 !important; padding: 12px !important; }
+
+          /* ── Mobile LeetCode layout switch ── */
+          .lc-body-desktop { display: none !important; }
+          .lc-body-mobile  { display: flex !important; }
         }
 
         /* Scrollbar styling */
