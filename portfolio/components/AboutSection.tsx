@@ -140,9 +140,9 @@ function DonutChart({ easy, medium, hard, totalSolved, totalProblems, attempting
   easy: number; medium: number; hard: number;
   totalSolved: number; totalProblems: number; attempting: number;
 }) {
-  const R = 70;
-  const CX = 90, CY = 90;
-  const STROKE = 10;
+  const R = 54;
+  const CX = 72, CY = 72;
+  const STROKE = 9;
   const circumference = 2 * Math.PI * R;
   const gap = 4; // gap in degrees between segments
   const gapFraction = gap / 360;
@@ -192,23 +192,18 @@ function DonutChart({ easy, medium, hard, totalSolved, totalProblems, attempting
         />
       ))}
       {/* Center text */}
-      <text x={CX} y={CY - 10} textAnchor="middle" fill="var(--text-primary)"
-        style={{ fontFamily: MONO, fontSize: 22, fontWeight: 800, letterSpacing: "-0.04em" }}>
+      <text x={CX} y={CY - 8} textAnchor="middle" fill="var(--text-primary)"
+        style={{ fontFamily: MONO, fontSize: 18, fontWeight: 800, letterSpacing: "-0.04em" }}>
         {totalSolved}
       </text>
-      <text x={CX} y={CY + 6} textAnchor="middle" fill="var(--text-muted)"
-        style={{ fontFamily: MONO, fontSize: 10 }}>
+      <text x={CX} y={CY + 5} textAnchor="middle" fill="var(--text-muted)"
+        style={{ fontFamily: MONO, fontSize: 9 }}>
         /{totalProblems}
       </text>
       {/* Solved tick */}
-      <text x={CX} y={CY + 22} textAnchor="middle" fill="#4ade80"
-        style={{ fontFamily: SF, fontSize: 11, fontWeight: 600 }}>
+      <text x={CX} y={CY + 18} textAnchor="middle" fill="#4ade80"
+        style={{ fontFamily: SF, fontSize: 10, fontWeight: 600 }}>
         ✓ Solved
-      </text>
-      {/* Attempting */}
-      <text x={CX} y={CY + 54} textAnchor="middle" fill="var(--text-muted)"
-        style={{ fontFamily: MONO, fontSize: 9 }}>
-        {attempting} Attempting
       </text>
     </svg>
   );
@@ -308,28 +303,33 @@ function LeetCodeStats({ username = "IThakur09" }: { username?: string }) {
 
   const countMap = new Map<string, number>();
   calData.forEach(d => {
-    const k = new Date(d.date * 1000).toISOString().split("T")[0];
-    countMap.set(k, (countMap.get(k) ?? 0) + d.count);
+    const dateObj = new Date(d.date * 1000);
+    if (dateObj.getFullYear() === 2026) {
+      const k = dateObj.toISOString().split("T")[0];
+      countMap.set(k, (countMap.get(k) ?? 0) + d.count);
+    }
   });
 
-  // Build 53 weeks (full year) ending today
+  // Build weeks for 2026: Jan 1 to today
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-  const todayDay = today.getDay();
-  const endDate = new Date(today);
-  const daysToSat = (6 - todayDay + 7) % 7;
-  endDate.setDate(endDate.getDate() + daysToSat);
+  const jan1_2026 = new Date(2026, 0, 1);
+  // Start from Sunday on or before Jan 1, 2026
+  const startSunday = new Date(jan1_2026);
+  startSunday.setDate(startSunday.getDate() - startSunday.getDay());
 
   const lcWeeks: { date: Date; count: number }[][] = [];
-  for (let w = 52; w >= 0; w--) {
+  let cursor = new Date(startSunday);
+  while (cursor <= today) {
     const week: { date: Date; count: number }[] = [];
     for (let d = 0; d < 7; d++) {
-      const dt = new Date(endDate);
-      dt.setDate(endDate.getDate() - w * 7 - (6 - d));
+      const dt = new Date(cursor);
+      dt.setDate(cursor.getDate() + d);
       const k = dt.toISOString().split("T")[0];
       week.push({ date: dt, count: countMap.get(k) ?? 0 });
     }
     lcWeeks.push(week);
+    cursor.setDate(cursor.getDate() + 7);
   }
 
   // Month labels
@@ -420,12 +420,12 @@ function LeetCodeStats({ username = "IThakur09" }: { username?: string }) {
 
         {/* ── RIGHT 60%: Hover tooltip + scrollable streak calendar ── */}
         <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column" }}>
-          {/* Hover tooltip area — above streak graph */}
+          {/* Hover tooltip area — above streak graph, only visible on hover */}
           <div style={{
             height: 44, display: "flex", alignItems: "center", justifyContent: "center",
             marginBottom: 6,
           }}>
-            {hoveredSubmissions ? (
+            {hoveredSubmissions && (
               <motion.div
                 initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }}
                 style={{
@@ -441,38 +441,12 @@ function LeetCodeStats({ username = "IThakur09" }: { username?: string }) {
                   submissions on {hoveredSubmissions.date}
                 </div>
               </motion.div>
-            ) : (
-              <div style={{ fontSize: 10, color: "var(--text-muted)", fontFamily: MONO, opacity: 0.6 }}>
-                hover a cell to see submissions
-              </div>
             )}
           </div>
 
-          {/* Streak stats row */}
-          {streak && (
-            <div style={{ display: "flex", gap: 5, marginBottom: 8 }}>
-              {[
-                { label: "Current", value: streak.currentStreak, suffix: "d", color: "#fb923c" },
-                { label: "Max", value: streak.maxStreak, suffix: "d", color: "#f87171" },
-                { label: "Active", value: streak.totalActiveDays, suffix: "", color: "#FFA116" },
-              ].map(s => (
-                <div key={s.label} style={{
-                  flex: 1, padding: "5px 4px", borderRadius: 7,
-                  background: "var(--bg-secondary)", border: "1px solid var(--border)",
-                  textAlign: "center",
-                }}>
-                  <div style={{ fontSize: 14, fontWeight: 800, color: s.color, fontFamily: MONO, letterSpacing: "-0.04em", lineHeight: 1 }}>
-                    {s.value}{s.suffix}
-                  </div>
-                  <div style={{ fontSize: 8, color: "var(--text-muted)", fontFamily: MONO, marginTop: 1 }}>{s.label}</div>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {/* Scrollable streak calendar — full year, horizontal scroll */}
+          {/* Scrollable streak calendar — 2026 only, horizontal scroll */}
           <div style={{ fontSize: 9, color: "var(--text-muted)", fontFamily: MONO, marginBottom: 3 }}>
-            This year's activity
+            2026 activity
           </div>
           <div style={{ overflowX: "auto", overflowY: "hidden", flex: 1,
             scrollbarWidth: "thin",
@@ -542,25 +516,26 @@ function LeetCodeStats({ username = "IThakur09" }: { username?: string }) {
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 const DAYS = ["", "Mon", "", "Wed", "", "Fri", ""];
 
-function buildMockWeeks(): Week[] {
+function buildMockWeeks2026(): Week[] {
   const weeks: Week[] = [];
-  const now = new Date();
-  for (let w = 52; w >= 0; w--) {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const jan1 = new Date(2026, 0, 1);
+  const startSunday = new Date(jan1);
+  startSunday.setDate(startSunday.getDate() - startSunday.getDay());
+
+  let cursor = new Date(startSunday);
+  while (cursor <= today) {
     const days: ContribDay[] = [];
-    const isRecent = w <= 3;
     for (let d = 0; d < 7; d++) {
-      const date = new Date(now);
-      date.setDate(date.getDate() - (w * 7 + (6 - d)));
+      const date = new Date(cursor);
+      date.setDate(cursor.getDate() + d);
       const r = Math.random();
-      let count: number;
-      if (isRecent) {
-        count = r < 0.15 ? 0 : r < 0.35 ? 1 : r < 0.55 ? 3 : r < 0.72 ? 6 : r < 0.88 ? 9 : 12;
-      } else {
-        count = r < 0.40 ? 0 : r < 0.58 ? 1 : r < 0.74 ? 3 : r < 0.87 ? 6 : r < 0.94 ? 9 : 12;
-      }
+      const count = r < 0.40 ? 0 : r < 0.58 ? 1 : r < 0.74 ? 3 : r < 0.87 ? 6 : r < 0.94 ? 9 : 12;
       days.push({ contributionCount: count, date: date.toISOString().split("T")[0] });
     }
     weeks.push({ days });
+    cursor.setDate(cursor.getDate() + 7);
   }
   return weeks;
 }
@@ -575,7 +550,7 @@ function GitHubGraph({ username = "Ithakur2327" }: { username?: string }) {
   useEffect(() => {
     const fetchContributions = async () => {
       const apis = [
-        `https://github-contributions-api.jogruber.de/v4/${username}?y=last`,
+        `https://github-contributions-api.jogruber.de/v4/${username}?y=2026`,
         `https://github-contributions-api.jogruber.de/v4/${username}`,
       ];
       for (const url of apis) {
@@ -586,19 +561,38 @@ function GitHubGraph({ username = "Ithakur2327" }: { username?: string }) {
           let c: { date: string; count: number }[] | undefined =
             json.contributions ?? json.data ?? json;
           if (!Array.isArray(c) || !c.length) continue;
-          const tot = c.reduce((a: number, b: { count: number }) => a + b.count, 0);
+          // Filter to 2026 only
+          const c2026 = c.filter(x => x.date && x.date.startsWith("2026"));
+          if (!c2026.length) continue;
+          const tot = c2026.reduce((a: number, b: { count: number }) => a + b.count, 0);
           setTotal(tot);
+          // Build weekly grid from 2026 data
+          const today = new Date();
+          today.setHours(0, 0, 0, 0);
+          const jan1 = new Date(2026, 0, 1);
+          const startSunday = new Date(jan1);
+          startSunday.setDate(startSunday.getDate() - startSunday.getDay());
+          const dateMap = new Map(c2026.map(x => [x.date, x.count]));
           const ws: Week[] = [];
-          for (let i = 0; i < c.length; i += 7) {
-            ws.push({ days: c.slice(i, i + 7).map((x) => ({ contributionCount: x.count, date: x.date })) });
+          let cursor = new Date(startSunday);
+          while (cursor <= today) {
+            const days: ContribDay[] = [];
+            for (let d = 0; d < 7; d++) {
+              const dt = new Date(cursor);
+              dt.setDate(cursor.getDate() + d);
+              const k = dt.toISOString().split("T")[0];
+              days.push({ contributionCount: dateMap.get(k) ?? 0, date: k });
+            }
+            ws.push({ days });
+            cursor.setDate(cursor.getDate() + 7);
           }
-          setWeeks(ws.slice(-53));
+          setWeeks(ws);
           setIsLive(true);
           setLoading(false);
           return;
         } catch { /* try next */ }
       }
-      setWeeks(buildMockWeeks());
+      setWeeks(buildMockWeeks2026());
       setIsLive(false);
       setLoading(false);
     };
@@ -659,38 +653,34 @@ function GitHubGraph({ username = "Ithakur2327" }: { username?: string }) {
 
       <div style={{ height: 1, background: "var(--border)", marginBottom: 10 }} />
 
-      {/* Hover tooltip — above graph, centered */}
+      {/* Hover tooltip — above graph, centered, only visible on hover */}
       <div style={{
         height: 42, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 6,
       }}>
-        {hoveredCell ? (
+        {hoveredCell && (
           <motion.div
             initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }}
             style={{
               padding: "6px 14px", borderRadius: 8,
-              background: "var(--bg-secondary)", border: "1px solid rgba(74,222,128,0.35)",
+              background: "var(--bg-secondary)", border: "1px solid rgba(255,161,22,0.35)",
               textAlign: "center",
             }}
           >
-            <div style={{ fontSize: 16, fontWeight: 800, color: "#4ade80", fontFamily: MONO, letterSpacing: "-0.04em", lineHeight: 1 }}>
+            <div style={{ fontSize: 16, fontWeight: 800, color: "#FFA116", fontFamily: MONO, letterSpacing: "-0.04em", lineHeight: 1 }}>
               {hoveredCell.count}
             </div>
             <div style={{ fontSize: 9, color: "var(--text-muted)", fontFamily: MONO, marginTop: 2 }}>
               contributions on {hoveredCell.date}
             </div>
           </motion.div>
-        ) : (
-          <div style={{ fontSize: 10, color: "var(--text-muted)", fontFamily: MONO, opacity: 0.6 }}>
-            hover a cell to see contributions
-          </div>
         )}
       </div>
 
-      {loading ? <Spin color="#4ade80" /> : (
+      {loading ? <Spin color="#FFA116" /> : (
         /* Scrollable graph */
         <div style={{
           overflowX: "auto", overflowY: "hidden",
-          scrollbarWidth: "thin", scrollbarColor: "rgba(74,222,128,0.3) transparent",
+          scrollbarWidth: "thin", scrollbarColor: "rgba(255,161,22,0.3) transparent",
         }}>
           <div style={{ display: "inline-flex", flexDirection: "column", paddingBottom: 4 }}>
             {/* Month labels */}
