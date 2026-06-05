@@ -60,6 +60,7 @@ const SkillChip = memo(function SkillChip({
   return (
     // CSS transitions instead of motion.div — no MotionValue per chip
     <div
+      className="skill-chip"
       style={{
         display: "flex", flexDirection: "column", alignItems: "center",
         gap: 7, width: 68, cursor: "default",
@@ -70,6 +71,7 @@ const SkillChip = memo(function SkillChip({
       }}
     >
       <div
+        className="skill-chip-box"
         style={{
           width: 46, height: 46,
           display: "flex", alignItems: "center", justifyContent: "center",
@@ -78,15 +80,6 @@ const SkillChip = memo(function SkillChip({
           border: `1px solid ${tech.color}${visible ? "42" : "20"}`,
           backfaceVisibility: "hidden",
           transition: "background 0.4s ease, border-color 0.4s ease, transform 0.22s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.22s ease",
-        }}
-        onMouseEnter={e => {
-          if (!visible) return;
-          (e.currentTarget as HTMLElement).style.transform = "translateY(-5px) scale(1.10)";
-          (e.currentTarget as HTMLElement).style.boxShadow = `0 10px 28px ${tech.color}50`;
-        }}
-        onMouseLeave={e => {
-          (e.currentTarget as HTMLElement).style.transform = "";
-          (e.currentTarget as HTMLElement).style.boxShadow = "";
         }}
       >
         {tech.logo && (
@@ -233,8 +226,7 @@ function MovingStrip({ items }: { items: string[] }) {
       WebkitMaskImage: "linear-gradient(to right,transparent,black 8%,black 92%,transparent)",
     }}>
       <div
-        onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.animationPlayState = "paused"; }}
-        onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.animationPlayState = "running"; }}
+        className="skills-strip"
         style={{
           display: "flex", gap: 10, width: "max-content",
           animation: "skills-scroll-left 32s linear infinite",

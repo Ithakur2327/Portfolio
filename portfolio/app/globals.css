@@ -149,8 +149,15 @@ body {
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
   /* Only transition color, never layout props */
   transition: color 0.1s ease;
+}
+
+img, svg, canvas {
+  image-rendering: optimizeQuality;
+  backface-visibility: hidden;
+  transform: translateZ(0);
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -506,6 +513,11 @@ h1, h2, h3, .section-title {
   white-space: nowrap;
 }
 .tag:hover { background: var(--bg-hover); border-color: var(--text-muted); }
+
+.hero-link-hover:hover { opacity: 0.75; }
+.bg-hoverable:hover { background: var(--bg-secondary); }
+.skill-chip:hover .skill-chip-box { transform: translateY(-5px) scale(1.10); }
+.skills-strip:hover { animation-play-state: paused; }
 
 /* ═══════════════════════════════════════════════════════════
    MISC UI

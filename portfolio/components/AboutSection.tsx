@@ -275,9 +275,8 @@ function GitHubGraph({ username = "Ithakur2327" }: { username?: string }) {
           <div>
             <div style={{ fontSize: 13, fontWeight: 700, color: "var(--text-primary)", fontFamily: SF }}>GitHub</div>
             <a href={`https://github.com/${username}`} target="_blank" rel="noreferrer"
+              className="hero-link-hover"
               style={{ fontSize: 10, color: "var(--text-muted)", fontFamily: MONO, textDecoration: "none", transition: "color 0.15s" }}
-              onMouseEnter={e => (e.currentTarget as HTMLElement).style.color = "var(--text-secondary)"}
-              onMouseLeave={e => (e.currentTarget as HTMLElement).style.color = "var(--text-muted)"}
             >@{username} ↗</a>
           </div>
         </div>
@@ -554,11 +553,9 @@ function LCStreakGraph({ username }: { username: string }) {
                   {wk.map((day, di) => (
                     <div
                       key={di}
-                      className={`lc-cell lc-cell-${lvl(day.count)}`}
+                      className={`lc-cell lc-cell-${lvl(day.count)} lc-cell-hover`}
                       title={`${day.date.toISOString().split("T")[0]}: ${day.count} submission${day.count !== 1 ? "s":"" }`}
-                      style={{ width:CELL, height:CELL, borderRadius:2, cursor:"default", transition:"transform 0.1s" }}
-                      onMouseEnter={e => (e.currentTarget as HTMLElement).style.transform = "scale(1.4)"}
-                      onMouseLeave={e => (e.currentTarget as HTMLElement).style.transform = ""}
+                      style={{ width:CELL, height:CELL, borderRadius:2, cursor:"default" }}
                     />
                   ))}
                 </div>
@@ -583,11 +580,14 @@ function ProgressBar({ pct, color }: { pct: number; color: string }) {
       <div
         style={{
           position: "absolute", left: 0, top: 0, bottom: 0,
-          borderRadius: 99, background: color,
-          width: `${pct}%`,
-          transform: "translateZ(0)",
+          width: "100%",
+          borderRadius: 99,
+          background: color,
+          transform: "scaleX(0)",
+          transformOrigin: "left",
+          willChange: "transform",
           animation: `progressFill 1.2s cubic-bezier(0.16, 1, 0.3, 1) 0.2s both`,
-          ["--target-pct" as string]: `${pct}%`,
+          ["--target-scale" as string]: "1",
         } as React.CSSProperties}
       />
     </div>
@@ -602,6 +602,30 @@ function DiffCard({ label, solved, total, color }: { label: string; solved: numb
   const bgAlpha  = label === "Easy" ? "rgba(74,222,128,0.07)"   : label === "Medium" ? "rgba(251,146,60,0.07)"  : "rgba(248,113,113,0.07)";
   const bdrAlpha = label === "Easy" ? "rgba(74,222,128,0.18)"   : label === "Medium" ? "rgba(251,146,60,0.18)"  : "rgba(248,113,113,0.18)";
   const cardRef = useRef<HTMLDivElement>(null);
+  const rafRef = useRef<number | null>(null);
+  const nextStyleRef = useRef<{ transform: string; boxShadow: string } | null>(null);
+
+  const flushStyle = useCallback(() => {
+    rafRef.current = null;
+    const el = cardRef.current;
+    if (!el || !nextStyleRef.current) return;
+    el.style.transform = nextStyleRef.current.transform;
+    el.style.boxShadow = nextStyleRef.current.boxShadow;
+    nextStyleRef.current = null;
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
+    };
+  }, []);
+
+  const scheduleUpdate = useCallback((transform: string, boxShadow: string) => {
+    nextStyleRef.current = { transform, boxShadow };
+    if (rafRef.current === null) {
+      rafRef.current = requestAnimationFrame(flushStyle);
+    }
+  }, [flushStyle]);
 
   const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     const el = cardRef.current;
@@ -613,16 +637,25 @@ function DiffCard({ label, solved, total, color }: { label: string; solved: numb
     const dy = (e.clientY - cy) / (rect.height / 2);
     const rotX = -dy * 12;
     const rotY = dx * 12;
-    el.style.transform = `perspective(500px) rotateX(${rotX}deg) rotateY(${rotY}deg) translateY(-4px) scale(1.04) translateZ(0)`;
-    el.style.boxShadow = `0 8px 24px rgba(0,0,0,0.22), 0 0 16px ${color}30`;
-  }, [color]);
+    scheduleUpdate(
+      `perspective(500px) rotateX(${rotX}deg) rotateY(${rotY}deg) translateY(-4px) scale(1.04) translateZ(0)`,
+      `0 8px 24px rgba(0,0,0,0.22), 0 0 16px ${color}30`
+    );
+  }, [color, scheduleUpdate]);
 
   const handleMouseLeave = useCallback(() => {
-    const el = cardRef.current;
-    if (!el) return;
-    el.style.transform = "perspective(500px) rotateX(0deg) rotateY(0deg) translateY(0) scale(1) translateZ(0)";
-    el.style.boxShadow = `0 2px 8px rgba(0,0,0,0.12)`;
-  }, []);
+    scheduleUpdate(
+      "perspective(500px) rotateX(0deg) rotateY(0deg) translateY(0) scale(1) translateZ(0)",
+      "0 2px 8px rgba(0,0,0,0.12)"
+    );
+  }, [scheduleUpdate]);
+
+  const handleMouseEnter = useCallback(() => {
+    scheduleUpdate(
+      "perspective(500px) rotateX(0deg) rotateY(0deg) translateY(-2px) scale(1.02) translateZ(0)",
+      `0 6px 18px rgba(0,0,0,0.18), 0 0 12px ${color}30`
+    );
+  }, [color, scheduleUpdate]);
 
   return (
     <div
@@ -642,6 +675,7 @@ function DiffCard({ label, solved, total, color }: { label: string; solved: numb
         transform: "translateZ(0)",
         transformStyle: "preserve-3d",
       }}
+      onMouseEnter={handleMouseEnter}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
     >
@@ -712,9 +746,8 @@ function LeetCodeStats({ username = "IThakur09" }: { username?: string }) {
       {/* HEADER */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14, flexWrap: "wrap", gap: 8 }}>
         <a href={`https://leetcode.com/${username}`} target="_blank" rel="noreferrer"
+          className="leetcode-head"
           style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none", cursor: "pointer" }}
-          onMouseEnter={e => (e.currentTarget as HTMLElement).style.opacity = "0.75"}
-          onMouseLeave={e => (e.currentTarget as HTMLElement).style.opacity = "1"}
         >
           <div style={{ width: 36, height: 36, borderRadius: 9, background: isDark ? "#1a1200" : "#fff7e6", border: `1px solid ${isDark ? "#3d2e00" : "#f0c070"}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
             <svg width="21" height="21" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -791,9 +824,11 @@ export function AboutSection() {
       <style suppressHydrationWarning>{`
         @keyframes spin { to { transform: rotate(360deg); } }
         @keyframes progressFill {
-          from { width: 0%; }
-          to   { width: var(--target-pct, 100%); }
+          from { transform: scaleX(0); }
+          to   { transform: scaleX(1); }
         }
+
+        .diff-card-hover { will-change: transform, box-shadow; }
 
         /* Name highlight — green */
         .name-highlight {
@@ -906,6 +941,15 @@ export function AboutSection() {
           flex-direction: column;
         }
 
+        /* LeetCode header hover */
+        .leetcode-head {
+          transition: opacity 0.15s ease, transform 0.15s ease;
+        }
+        .leetcode-head:hover {
+          opacity: 0.82;
+          transform: translateY(-1px);
+        }
+
         /* LeetCode streak calendar cells */
         .lc-cell   { background: rgba(255,165,0,0.08); }
         .lc-cell-0 { background: rgba(255,165,0,0.08); }
@@ -913,7 +957,9 @@ export function AboutSection() {
         .lc-cell-2 { background: rgba(255,161,22,0.52); }
         .lc-cell-3 { background: rgba(255,161,22,0.76); }
         .lc-cell-4 { background: #FFA116; }
-        html.light .lc-cell-0 { background: rgba(180,120,0,0.10); }
+        .lc-cell-hover { transition: transform 0.1s ease; }
+        .lc-cell-hover:hover { transform: scale(1.4); }
+        html.light .lc-cell-0 { background: rgba(180,120,0.10); }
         html.light .lc-cell-1 { background: rgba(200,130,0,0.28); }
         html.light .lc-cell-2 { background: rgba(200,130,0,0.52); }
         html.light .lc-cell-3 { background: rgba(200,130,0,0.76); }

@@ -63,7 +63,7 @@ export function SparklesBridge() {
     let raf: number;
     let lastTs = 0;
     let isVisible = true;
-    const FRAME_MS = 1000 / 12; // 12fps — tiny sparkles look fine
+    const FRAME_MS = 1000 / 24; // 24fps — smoother sparkle movement without adding much CPU
 
     // Pause when scrolled out of view
     const observer = new IntersectionObserver(

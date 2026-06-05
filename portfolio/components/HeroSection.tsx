@@ -65,9 +65,8 @@ function Row({icon, href, newTab, children}:{icon:React.ReactNode; href?:string;
   };
   if (href) return (
     <a href={href} target={newTab?"_blank":undefined} rel="noreferrer"
+      className="hero-link-hover"
       style={{...s, cursor:"pointer", transition:"opacity 0.15s"}}
-      onMouseEnter={e=>(e.currentTarget as HTMLElement).style.opacity="0.7"}
-      onMouseLeave={e=>(e.currentTarget as HTMLElement).style.opacity="1"}
     >{icon}<span style={{borderBottom:"1px solid rgba(128,128,128,0.2)"}}>{children}</span></a>
   );
   return <div style={{...s}}>{icon}<span>{children}</span></div>;
@@ -84,8 +83,7 @@ function SocialTile({href,label,icon,iconBg,iconBorder,iconColor}:{href:string;l
         textDecoration:"none", position:"relative",
         transition:"background 0.12s", minWidth:0,
       }}
-      onMouseEnter={e=>(e.currentTarget as HTMLElement).style.background="var(--bg-secondary)"}
-      onMouseLeave={e=>(e.currentTarget as HTMLElement).style.background="var(--bg-base)"}
+
     >
       <div style={{width:32,height:32,borderRadius:8,background:iconBg,border:iconBorder,display:"flex",alignItems:"center",justifyContent:"center",color:iconColor,flexShrink:0}}>{icon}</div>
       <span style={{fontWeight:600,fontSize:13.5,fontFamily:"'Geist',sans-serif"}}>{label}</span>
@@ -233,7 +231,12 @@ export function HeroSection() {
 
         /* ── Social row ── */
         .h-social { display: flex; flex-direction: row; }
-        .s-tile   { border-right: 1px solid var(--border); }
+        .s-tile {
+          border-right: 1px solid var(--border);
+          transition: background 0.18s var(--spring-fast), transform 0.18s var(--spring-fast);
+          will-change: transform, opacity;
+        }
+        .s-tile:hover { background: var(--bg-secondary); }
         .s-tile:last-child { border-right: none !important; }
 
         @media (max-width: 600px) {
