@@ -95,7 +95,7 @@ html.light {
 
 /* Page background — set early to prevent flash */
 html {
-  background: #09090b;
+  background: #000000;
 }
 html.light {
   background: #f5f5f3;
