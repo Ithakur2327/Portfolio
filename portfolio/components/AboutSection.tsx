@@ -115,10 +115,10 @@ function GoldWord({
 /* ──────────────────────────────────────────────────────────
    SCROLL REVEAL TEXT
 ────────────────────────────────────────────────────────── */
-function ScrollRevealText() {
+function ScrollRevealText({ visible }: { visible: boolean }) {
   const paras = parse(ABOUT_TEXT);
   const total = paras.flat().filter((t) => t.hl).length;
-  const progress = 1;
+  const progress = visible ? 1 : 0;
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
@@ -1008,7 +1008,7 @@ export function AboutSection() {
 
             {/* TEXT */}
             <div style={{ marginBottom: 32 }}>
-              <ScrollRevealText />
+              <ScrollRevealText visible={visible} />
             </div>
 
             {/* PANELS */}

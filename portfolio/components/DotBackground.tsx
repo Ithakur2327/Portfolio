@@ -20,7 +20,7 @@ function DotCanvas({ dotColor, activeDotColor }: { dotColor: string; activeDotCo
     const ctx = canvas.getContext("2d", { willReadFrequently: false, colorSpace: "srgb" });
     if (!ctx) return;
 
-    const SPACING = 24; // Increased from 4.5 → 24: same visual effect, 28x fewer dots
+    const SPACING = 5; // Increased from 4.5 → 24: same visual effect, 28x fewer dots
     const RADIUS   = 130;
     const RADIUS2  = RADIUS * RADIUS;
 
