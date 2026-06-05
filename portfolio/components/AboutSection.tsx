@@ -112,7 +112,6 @@ function Spin({ color }: { color: string }) {
   );
 }
 
-/* ── LeetCode Logo ── */
 function LeetCodeLogo({ size = 30 }: { size?: number }) {
   return (
     <div style={{
@@ -137,7 +136,6 @@ function LeetCodeLogo({ size = 30 }: { size?: number }) {
   );
 }
 
-/* ── GitHub Logo ── */
 function GitHubLogo({ size = 30, isDark }: { size?: number; isDark: boolean }) {
   return (
     <div className="gh-logo-wrap" style={{
@@ -156,15 +154,15 @@ function GitHubLogo({ size = 30, isDark }: { size?: number; isDark: boolean }) {
   );
 }
 
-/* ── Donut Chart — smaller: size=120 ── */
 function DonutChart({ easy, medium, hard, totalSolved, totalProblems, attempting }: {
   easy: number; medium: number; hard: number;
   totalSolved: number; totalProblems: number; attempting: number;
 }) {
-  const size = 120;
+  // FIX: reduced size from 120 to 100 so left panel can be narrower
+  const size = 100;
   const CX = size / 2, CY = size / 2;
-  const R = 46;
-  const STROKE = 9;
+  const R = 38;
+  const STROKE = 8;
   const gap = 3;
 
   const easyFrac = easy / totalProblems;
@@ -201,20 +199,20 @@ function DonutChart({ easy, medium, hard, totalSolved, totalProblems, attempting
         {paths.map(p => (
           <path key={p.key} d={p.d} fill="none" stroke={p.color} strokeWidth={STROKE} strokeLinecap="round" />
         ))}
-        <text x={CX} y={CY - 8} textAnchor="middle" fill="var(--text-primary)"
-          style={{ fontFamily: MONO, fontSize: 18, fontWeight: 800, letterSpacing: "-0.04em" }}>
+        <text x={CX} y={CY - 7} textAnchor="middle" fill="var(--text-primary)"
+          style={{ fontFamily: MONO, fontSize: 16, fontWeight: 800, letterSpacing: "-0.04em" }}>
           {totalSolved}
         </text>
-        <text x={CX} y={CY + 6} textAnchor="middle" fill="var(--text-muted)"
-          style={{ fontFamily: MONO, fontSize: 9 }}>
+        <text x={CX} y={CY + 5} textAnchor="middle" fill="var(--text-muted)"
+          style={{ fontFamily: MONO, fontSize: 8 }}>
           /{totalProblems}
         </text>
-        <text x={CX} y={CY + 19} textAnchor="middle" fill="#4ade80"
-          style={{ fontFamily: SF, fontSize: 9, fontWeight: 600 }}>
+        <text x={CX} y={CY + 16} textAnchor="middle" fill="#4ade80"
+          style={{ fontFamily: SF, fontSize: 8, fontWeight: 600 }}>
           ✓ Solved
         </text>
-        <text x={CX} y={CY + 31} textAnchor="middle" fill="var(--text-muted)"
-          style={{ fontFamily: SF, fontSize: 8 }}>
+        <text x={CX} y={CY + 27} textAnchor="middle" fill="var(--text-muted)"
+          style={{ fontFamily: SF, fontSize: 7 }}>
           {attempting} Attempting
         </text>
       </svg>
@@ -222,10 +220,6 @@ function DonutChart({ easy, medium, hard, totalSolved, totalProblems, attempting
   );
 }
 
-/* ──────────────────────────────────────────────────────────
-   FLOATING TOOLTIP — appears above graph on cell hover
-   position:absolute inside a position:relative wrapper
-────────────────────────────────────────────────────────── */
 function HoverTooltip({ data, accentColor }: {
   data: { date: string; count: number; label: string } | null;
   accentColor: string;
@@ -263,9 +257,6 @@ function HoverTooltip({ data, accentColor }: {
   );
 }
 
-/* ──────────────────────────────────────────────────────────
-   LEETCODE PANEL
-────────────────────────────────────────────────────────── */
 const LC_TOTAL = 3949;
 const GLOBAL_RANK = 150000;
 
@@ -274,7 +265,6 @@ function LeetCodeStats({ username = "IThakur09" }: { username?: string }) {
   const [loading, setLoading] = useState(true);
   const [calData, setCalData] = useState<LCCalDay[]>([]);
   const [hovered, setHovered] = useState<{ date: string; count: number } | null>(null);
-  // ref so tooltip wrapper knows its position
   const graphWrapRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -378,24 +368,25 @@ function LeetCodeStats({ username = "IThakur09" }: { username?: string }) {
   const diffColors = { Easy: "#00b8a3", Medium: "#ffc01e", Hard: "#ef4743" };
   const attempting = 5;
 
-  /* ── Contribution grid with fixed scroll ── */
+  // FIX: grid wrapper gets onMouseLeave to clear stuck tooltip
   const ContribGrid = () => (
-    /* outer: position:relative so tooltip can anchor; width:100% to fill column */
     <div ref={graphWrapRef} style={{ position: "relative", width: "100%" }}>
-      {/* tooltip floats above the grid */}
       <HoverTooltip
         data={hovered ? { ...hovered, label: "submissions" } : null}
         accentColor="#FFA116"
       />
-      {/* scrollable wrapper — needs explicit width so overflow kicks in */}
-      <div style={{
-        width: "100%",
-        overflowX: "auto",
-        overflowY: "hidden",
-        WebkitOverflowScrolling: "touch",
-        scrollbarWidth: "thin",
-        scrollbarColor: "rgba(255,161,22,0.3) transparent",
-      }}>
+      <div
+        style={{
+          width: "100%",
+          overflowX: "auto",
+          overflowY: "hidden",
+          WebkitOverflowScrolling: "touch",
+          scrollbarWidth: "thin",
+          scrollbarColor: "rgba(255,161,22,0.3) transparent",
+        }}
+        // FIX: clear tooltip when mouse leaves the entire scroll container
+        onMouseLeave={() => setHovered(null)}
+      >
         <div style={{ display: "inline-flex", flexDirection: "column", paddingBottom: 4, minWidth: "max-content" }}>
           {/* Month labels */}
           <div style={{ display: "flex", marginBottom: 3, paddingLeft: 22 }}>
@@ -477,10 +468,10 @@ function LeetCodeStats({ username = "IThakur09" }: { username?: string }) {
 
       <div style={{ height: 1, background: "var(--border)", marginBottom: 10 }} />
 
-      {/* ── DESKTOP LAYOUT: side-by-side ── */}
+      {/* ── DESKTOP LAYOUT ── */}
+      {/* FIX: left panel narrowed to 33% so graph gets 67% */}
       <div className="lc-body-desktop" style={{ display: "flex", gap: 0, flex: 1, minHeight: 0 }}>
-        {/* Left: donut + difficulty rows — smaller gap */}
-        <div style={{ width: "40%", flexShrink: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 6 }}>
+        <div style={{ width: "33%", flexShrink: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 5 }}>
           {loading ? <Spin color="#FFA116" /> : (
             <>
               <DonutChart
@@ -491,7 +482,7 @@ function LeetCodeStats({ username = "IThakur09" }: { username?: string }) {
                 totalProblems={LC_TOTAL}
                 attempting={attempting}
               />
-              <div style={{ display: "flex", flexDirection: "column", gap: 4, width: "100%", padding: "0 4px" }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: 3, width: "100%", padding: "0 2px" }}>
                 {[
                   { label: "Easy", solved: displayData.easySolved,   total: displayData.totalEasy,   color: diffColors.Easy },
                   { label: "Med.", solved: displayData.mediumSolved,  total: displayData.totalMedium, color: diffColors.Medium },
@@ -499,11 +490,11 @@ function LeetCodeStats({ username = "IThakur09" }: { username?: string }) {
                 ].map(d => (
                   <div key={d.label} style={{
                     display: "flex", alignItems: "center", justifyContent: "space-between",
-                    padding: "3px 7px", borderRadius: 6,
+                    padding: "2px 6px", borderRadius: 5,
                     background: "var(--bg-secondary)", border: "1px solid var(--border)",
                   }}>
-                    <span style={{ fontSize: 10, fontWeight: 700, color: d.color, fontFamily: MONO }}>{d.label}</span>
-                    <span style={{ fontSize: 10, fontWeight: 700, color: "var(--text-primary)", fontFamily: MONO }}>
+                    <span style={{ fontSize: 9, fontWeight: 700, color: d.color, fontFamily: MONO }}>{d.label}</span>
+                    <span style={{ fontSize: 9, fontWeight: 700, color: "var(--text-primary)", fontFamily: MONO }}>
                       {d.solved}<span style={{ color: "var(--text-muted)", fontWeight: 400 }}>/{d.total}</span>
                     </span>
                   </div>
@@ -515,14 +506,14 @@ function LeetCodeStats({ username = "IThakur09" }: { username?: string }) {
 
         <div style={{ width: 1, background: "var(--border)", flexShrink: 0, margin: "0 8px" }} />
 
-        {/* Right: contribution graph — width:0 + flex:1 forces proper shrink so scroll works */}
+        {/* Graph — gets remaining 67% width */}
         <div style={{ flex: 1, minWidth: 0, width: 0, display: "flex", flexDirection: "column" }}>
           <div style={{ fontSize: 9, color: "var(--text-muted)", fontFamily: MONO, marginBottom: 4 }}>2026 activity</div>
           <ContribGrid />
         </div>
       </div>
 
-      {/* ── MOBILE LAYOUT: stacked ── */}
+      {/* ── MOBILE LAYOUT ── */}
       <div className="lc-body-mobile" style={{ display: "none", flexDirection: "column", gap: 12 }}>
         <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
           {loading ? <Spin color="#FFA116" /> : (
@@ -566,9 +557,6 @@ function LeetCodeStats({ username = "IThakur09" }: { username?: string }) {
   );
 }
 
-/* ──────────────────────────────────────────────────────────
-   GITHUB GRAPH
-────────────────────────────────────────────────────────── */
 const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 const DAYS = ["","Mon","","Wed","","Fri",""];
 
@@ -689,7 +677,6 @@ function GitHubGraph({ username = "Ithakur2327" }: { username?: string }) {
       <div style={{ height: 1, background: "var(--border)", marginBottom: 10 }} />
 
       {loading ? <Spin color="#FFA116" /> : (
-        /* position:relative so the floating tooltip anchors here */
         <div style={{ position: "relative", flex: 1 }}>
           <HoverTooltip
             data={hovered ? { ...hovered, label: "contributions" } : null}
@@ -698,15 +685,18 @@ function GitHubGraph({ username = "Ithakur2327" }: { username?: string }) {
           <div style={{ fontSize: 9, color: "var(--text-muted)", fontFamily: MONO, marginBottom: 4 }}>
             {isLive ? "2026 contributions" : "2026 activity (preview)"}
           </div>
-          {/* scrollable grid */}
-          <div style={{
-            width: "100%",
-            overflowX: "auto",
-            overflowY: "hidden",
-            WebkitOverflowScrolling: "touch",
-            scrollbarWidth: "thin",
-            scrollbarColor: "rgba(255,161,22,0.3) transparent",
-          }}>
+          {/* FIX: onMouseLeave on scroll container clears stuck tooltip */}
+          <div
+            style={{
+              width: "100%",
+              overflowX: "auto",
+              overflowY: "hidden",
+              WebkitOverflowScrolling: "touch",
+              scrollbarWidth: "thin",
+              scrollbarColor: "rgba(255,161,22,0.3) transparent",
+            }}
+            onMouseLeave={() => setHovered(null)}
+          >
             <div style={{ display: "inline-flex", flexDirection: "column", paddingBottom: 4, minWidth: "max-content" }}>
               {/* Month labels */}
               <div style={{ display: "flex", marginBottom: 4, paddingLeft: 26 }}>
@@ -770,9 +760,6 @@ function GitHubGraph({ username = "Ithakur2327" }: { username?: string }) {
   );
 }
 
-/* ──────────────────────────────────────────────────────────
-   MAIN EXPORT
-────────────────────────────────────────────────────────── */
 export function AboutSection() {
   const { ref, revealClass } = useReveal();
 
@@ -811,23 +798,31 @@ export function AboutSection() {
           margin: 0 1px;
         }
 
-        /* GitHub graph — Halloween orange */
-        .gh-cell   { background: rgba(255,165,0,0.08); }
-        .gh-cell-0 { background: rgba(30,20,10,0.55); }
+        /* ── GitHub graph cells ── */
+        /* FIX: level-0 now has a visible subtle border so empty days show in dark mode */
+        .gh-cell-0 {
+          background: rgba(255,255,255,0.04);
+          outline: 1px solid rgba(255,255,255,0.10);
+          outline-offset: -1px;
+        }
         .gh-cell-1 { background: #fac68f; }
         .gh-cell-2 { background: #c46212; }
         .gh-cell-3 { background: #984b10; }
         .gh-cell-4 { background: #e3d04f; }
 
-        /* LeetCode graph — same Halloween palette */
-        .lc-cell   { background: rgba(255,165,0,0.08); }
-        .lc-cell-0 { background: rgba(30,20,10,0.55); }
+        /* ── LeetCode graph cells ── */
+        /* FIX: same treatment for lc level-0 */
+        .lc-cell-0 {
+          background: rgba(255,255,255,0.04);
+          outline: 1px solid rgba(255,255,255,0.10);
+          outline-offset: -1px;
+        }
         .lc-cell-1 { background: #fac68f; }
         .lc-cell-2 { background: #c46212; }
         .lc-cell-3 { background: #984b10; }
         .lc-cell-4 { background: #e3d04f; }
 
-        /* Light mode */
+        /* Light mode overrides */
         html.light .name-highlight {
           color: #16a34a; background: rgba(22,163,74,0.08);
           border-color: rgba(22,163,74,0.20); box-shadow: none;
@@ -837,12 +832,21 @@ export function AboutSection() {
           background: rgba(245,158,11,0.13) !important;
           border-color: rgba(217,119,6,0.45) !important;
         }
-        html.light .gh-cell-0 { background: #eff2f5; }
+        /* FIX: light mode level-0 — subtle gray so empty days are visible */
+        html.light .gh-cell-0 {
+          background: #e8eaec;
+          outline: 1px solid rgba(0,0,0,0.08);
+          outline-offset: -1px;
+        }
         html.light .gh-cell-1 { background: #fac68f; }
         html.light .gh-cell-2 { background: #c46212; }
         html.light .gh-cell-3 { background: #984b10; }
         html.light .gh-cell-4 { background: #1f2328; }
-        html.light .lc-cell-0 { background: #eff2f5; }
+        html.light .lc-cell-0 {
+          background: #e8eaec;
+          outline: 1px solid rgba(0,0,0,0.08);
+          outline-offset: -1px;
+        }
         html.light .lc-cell-1 { background: #fac68f; }
         html.light .lc-cell-2 { background: #c46212; }
         html.light .lc-cell-3 { background: #984b10; }
@@ -863,7 +867,6 @@ export function AboutSection() {
             0 16px 32px rgba(0,0,0,0.18);
           display: flex;
           flex-direction: column;
-          /* overflow:visible so tooltip can escape the card boundary */
           overflow: visible;
         }
         .stat-card-3d:hover {
@@ -883,7 +886,6 @@ export function AboutSection() {
           box-shadow: 0 6px 14px rgba(0,0,0,0.09),0 12px 28px rgba(0,0,0,0.07);
         }
 
-        /* Grid layout */
         .about-panels {
           display: grid;
           gap: 14px;
@@ -910,7 +912,6 @@ export function AboutSection() {
           .lc-body-mobile  { display: flex !important; }
         }
 
-        /* Scrollbars */
         .stat-card-3d ::-webkit-scrollbar { height: 4px; }
         .stat-card-3d ::-webkit-scrollbar-track { background: transparent; }
         .stat-card-3d ::-webkit-scrollbar-thumb { border-radius: 2px; background: rgba(128,128,128,0.25); }
