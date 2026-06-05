@@ -699,14 +699,16 @@ export function ProjectsSection() {
               and stay on the compositor thread — zero layout/paint cost.
             */}
             <motion.div
-              className="proj-grid"
+               className="proj-grid"
               animate={{
                 opacity: unlocked ? 1 : 0.55,
                 scale:   unlocked ? 1 : 0.997,
+                filter:  unlocked ? "blur(0px)" : "blur(5px)",
               }}
-              transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+              transition={{ duration: 0.48, ease: [0.22, 1, 0.36, 1] }}
               style={{
                 pointerEvents: unlocked ? "auto" : "none",
+                willChange: "transform, opacity, filter",
                 backfaceVisibility: "hidden",
                 WebkitBackfaceVisibility: "hidden",
               }}
