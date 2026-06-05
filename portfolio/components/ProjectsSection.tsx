@@ -140,9 +140,6 @@ const ExternalIcon = () => (
 
 /* ─────────────────────────────────────────────────────────
    SLIDE-TO-UNLOCK
-   Root cause of lag was dragConstraints={ref} — Framer calls
-   getBoundingClientRect every frame. Fix: numeric constraints.
-   No rotateY (3D + drag = compositor conflict = glitch).
 ───────────────────────────────────────────────────────── */
 const HANDLE_W = 46;
 const TRACK_H  = 42;
@@ -154,7 +151,6 @@ function SlideToUnlock({ onUnlock }: { onUnlock: () => void }) {
   const [trackW, setTrackW] = useState(244);
   const [unlockDone, setUnlockDone] = useState(false);
 
-  /* Measure track once on mount + resize */
   useEffect(() => {
     const measure = () => {
       if (trackRef.current)
@@ -166,19 +162,15 @@ function SlideToUnlock({ onUnlock }: { onUnlock: () => void }) {
   }, []);
 
   const x = useMotionValue(0);
+  const textOpacity = useTransform(x, [0, HANDLE_W * 1.5], [1, 0]);
+  const fillScaleX  = useTransform(x, [0, trackW], [0, 1]);
 
-  /* Derived motion values — all compositor-only, zero JS per frame */
-  const textOpacity  = useTransform(x, [0, HANDLE_W * 1.5], [1, 0]);
-  const fillScaleX   = useTransform(x, [0, trackW], [0, 1]);
-
-  /* AudioContext — lazy init */
   const getCtx = useCallback(() => {
     if (!audioCtxRef.current) audioCtxRef.current = new AudioContext();
     if (audioCtxRef.current.state === "suspended") audioCtxRef.current.resume();
     return audioCtxRef.current;
   }, []);
 
-  /* Tick sounds on drag */
   useEffect(() => x.on("change", (v) => {
     if (v < 2 || trackW <= 0) return;
     const zone = Math.floor((v / trackW) * 6);
@@ -196,13 +188,11 @@ function SlideToUnlock({ onUnlock }: { onUnlock: () => void }) {
   const onDragEnd = useCallback(() => {
     const cur = x.get();
     if (cur >= trackW * 0.82) {
-      /* Snap to end — tight spring, zero overshoot */
       animate(x, trackW, { type: "spring", stiffness: 900, damping: 60, mass: 0.35 });
       playIOSUnlockSound(getCtx());
       setUnlockDone(true);
       setTimeout(() => onUnlock(), 200);
     } else {
-      /* Snap back — fast spring, no bounce */
       animate(x, 0, { type: "spring", stiffness: 1100, damping: 70, mass: 0.3, bounce: 0 });
       lastTickZone.current = -1;
     }
@@ -217,7 +207,6 @@ function SlideToUnlock({ onUnlock }: { onUnlock: () => void }) {
       padding: 3,
       userSelect: "none", WebkitUserSelect: "none",
     }}>
-      {/* Track — fixed numeric size, no overflow:hidden on drag parent */}
       <div
         ref={trackRef}
         style={{
@@ -230,7 +219,6 @@ function SlideToUnlock({ onUnlock }: { onUnlock: () => void }) {
           overflow: "hidden",
         }}
       >
-        {/* Progress fill — scaleX from left, GPU only */}
         <motion.div style={{
           position: "absolute", inset: 0,
           background: "linear-gradient(90deg, rgba(99,102,241,0.15) 0%, transparent 100%)",
@@ -239,7 +227,6 @@ function SlideToUnlock({ onUnlock }: { onUnlock: () => void }) {
           pointerEvents: "none",
         }} />
 
-        {/* Label */}
         <motion.div style={{
           opacity: textOpacity,
           position: "absolute", inset: 0,
@@ -257,13 +244,11 @@ function SlideToUnlock({ onUnlock }: { onUnlock: () => void }) {
           <span style={{ color: "var(--text-muted)", fontSize: 11, opacity: 0.6 }}>›</span>
         </motion.div>
 
-        {/* Handle — NUMERIC dragConstraints = no DOM reads per frame */}
         <motion.div
           drag="x"
           dragConstraints={{ left: 0, right: trackW }}
           dragElastic={0}
           dragMomentum={false}
-          /* dragTransition: controls physics when drag released — spring to snap point */
           dragTransition={{ bounceStiffness: 1100, bounceDamping: 70 }}
           onDragStart={onDragStart}
           onDragEnd={onDragEnd}
@@ -286,7 +271,6 @@ function SlideToUnlock({ onUnlock }: { onUnlock: () => void }) {
           }}
           whileTap={{ scale: 0.91, cursor: "grabbing" }}
         >
-          {/* Chevron arrows → → */}
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
             stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <polyline points="9 18 15 12 9 6"/>
@@ -298,7 +282,6 @@ function SlideToUnlock({ onUnlock }: { onUnlock: () => void }) {
           </svg>
         </motion.div>
 
-        {/* Checkmark on unlock */}
         <AnimatePresence>
           {unlockDone && (
             <motion.div
@@ -329,6 +312,9 @@ function SlideToUnlock({ onUnlock }: { onUnlock: () => void }) {
 
 /* ─────────────────────────────────────────────────────────
    PROJECT MODAL
+   FIX: backdrop blur reduced (4px), spring replaced with
+   fast tween, scale delta minimized — all reduce GPU load
+   on mobile which was the primary cause of open-lag.
 ───────────────────────────────────────────────────────── */
 function ProjectModal({
   proj,
@@ -358,31 +344,33 @@ function ProjectModal({
 
   const content = (
     <>
+      {/* Backdrop — FIX: blur 4px instead of 10px + saturate */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        exit={{ opacity: 0, transition: { duration: 0.18 } }}
-        transition={{ duration: 0.22 }}
+        exit={{ opacity: 0, transition: { duration: 0.15 } }}
+        transition={{ duration: 0.18 }}
         onClick={onClose}
         style={{
           position: "fixed",
           top: 0, left: 0, right: 0, bottom: 0,
-          background: "rgba(0,0,0,0.80)",
-          backdropFilter: "blur(10px) saturate(160%)",
-          WebkitBackdropFilter: "blur(10px) saturate(160%)",
+          background: "rgba(0,0,0,0.78)",
+          backdropFilter: "blur(4px)",
+          WebkitBackdropFilter: "blur(4px)",
           zIndex: 9000,
         }}
       />
+      {/* Modal — FIX: tween instead of heavy spring, smaller scale delta */}
       <motion.div
-        initial={{ opacity: 0, scale: 0.88, y: 28 }}
+        initial={{ opacity: 0, scale: 0.96, y: 12 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{
           opacity: 0,
-          scale: 0.88,
-          y: 28,
-          transition: { duration: 0.18, ease: [0.4, 0, 1, 1] },
+          scale: 0.96,
+          y: 12,
+          transition: { duration: 0.14, ease: [0.4, 0, 1, 1] },
         }}
-        transition={{ type: "spring", stiffness: 380, damping: 28, mass: 0.85 }}
+        transition={{ type: "tween", duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
         style={{
           position: "fixed",
           top: 0, left: 0, right: 0, bottom: 0,
@@ -404,7 +392,7 @@ function ProjectModal({
             border: `1px solid ${proj.accentBorder}`,
             borderTop: `3px solid ${proj.accent}`,
             borderRadius: 20,
-            boxShadow: `0 0 0 1px ${proj.accentBorder}, 0 40px 100px rgba(0,0,0,0.70), 0 0 60px ${proj.accent}18`,
+            boxShadow: `0 0 0 1px ${proj.accentBorder}, 0 40px 100px rgba(0,0,0,0.70)`,
             scrollbarWidth: "none" as const,
             pointerEvents: "auto",
           }}
@@ -464,7 +452,6 @@ function ProjectModal({
               </button>
             </div>
 
-            {/* Divider */}
             <div style={{ height: 1, background: `linear-gradient(90deg, ${proj.accent}44, var(--border), transparent)`, marginBottom: 20 }} />
 
             <div className="modal-two-col">
@@ -473,7 +460,6 @@ function ProjectModal({
                 <div style={{ borderRadius: 12, overflow: "hidden", border: `1px solid ${proj.accentBorder}`, boxShadow: `0 4px 20px rgba(0,0,0,0.3)` }}>
                   <img src={proj.img} alt={proj.name} style={{ width: "100%", height: 190, objectFit: "cover", objectPosition: "center top", display: "block" }} />
                 </div>
-                {/* Action buttons under image */}
                 <div style={{ display: "flex", gap: 9, marginTop: 14, flexWrap: "wrap" as const }}>
                   <a href={proj.github} target="_blank" rel="noreferrer" className="modal-action-btn" style={{ background: "var(--bg-hover)", border: "1px solid var(--border)", color: "var(--text-primary)", fontFamily: SF }}><GithubIcon /> GitHub</a>
                   <a href={proj.live} target="_blank" rel="noreferrer" className="modal-action-btn" style={{ background: proj.accentBg, border: `1px solid ${proj.accentBorder}`, color: proj.accent, fontFamily: SF }}><ExternalIcon /> Live Demo</a>
@@ -508,6 +494,9 @@ function ProjectModal({
 
 /* ─────────────────────────────────────────────────────────
    PROJECT CARD
+   FIX: whileHover uses tween (no spring mass overhead),
+   scale delta reduced. onHoverStart/End willChange pattern
+   kept — releases GPU layer after hover.
 ───────────────────────────────────────────────────────── */
 function ProjectCard({ proj, index, visible, onOpen }: {
   proj: typeof PROJECTS[0];
@@ -518,6 +507,7 @@ function ProjectCard({ proj, index, visible, onOpen }: {
 }) {
   const cardRef = useRef<HTMLDivElement>(null);
   const imgRef  = useRef<HTMLImageElement>(null);
+
   const handleClick = useCallback(() => {
     const rect = cardRef.current?.getBoundingClientRect() ?? null;
     onOpen(rect as DOMRect);
@@ -563,7 +553,6 @@ function ProjectCard({ proj, index, visible, onOpen }: {
         position: "relative" as const,
         display: "flex",
         flexDirection: "column" as const,
-        /* willChange only set during hover via onHoverStart — not permanently */
         backfaceVisibility: "hidden" as const,
         WebkitBackfaceVisibility: "hidden" as const,
         transform: "translateZ(0)",
@@ -573,19 +562,20 @@ function ProjectCard({ proj, index, visible, onOpen }: {
         if (cardRef.current) cardRef.current.style.willChange = "transform";
       }}
       onHoverEnd={() => {
-        /* Release GPU layer after hover — frees memory */
         setTimeout(() => {
           if (cardRef.current) cardRef.current.style.willChange = "auto";
         }, 300);
       }}
+      /* FIX: tween instead of spring — no mass/damping overhead on mobile */
       whileHover={{
-        y: -6,
-        scale: 1.022,
-        transition: { type: "spring", stiffness: 480, damping: 30, mass: 0.5 },
+        y: -4,
+        scale: 1.012,
+        transition: { type: "tween", duration: 0.15, ease: "easeOut" },
       }}
+      /* FIX: tap also uses tween — instant response on mobile */
       whileTap={{
         scale: 0.972,
-        transition: { type: "spring", stiffness: 700, damping: 38 },
+        transition: { type: "tween", duration: 0.1 },
       }}
     >
       <div style={{ overflow: "hidden", flexShrink: 0 }}>
@@ -624,6 +614,10 @@ function ProjectCard({ proj, index, visible, onOpen }: {
 
 /* ─────────────────────────────────────────────────────────
    SECTION
+   FIX: grid motion.div — filter removed entirely (was the
+   main jank source: blur on 6 cards simultaneously on every
+   interaction caused full compositor layer repaints on mobile).
+   opacity transition kept, scale transition kept (cheap).
 ───────────────────────────────────────────────────────── */
 export function ProjectsSection() {
   const { ref: revealRef, revealClass, visible } = useReveal();
@@ -637,7 +631,6 @@ export function ProjectsSection() {
     (sectionNodeRef as React.MutableRefObject<HTMLDivElement | null>).current = node;
   }, [revealRef]);
 
-  // Reset lock when section scrolls fully out of view
   useEffect(() => {
     const el = sectionNodeRef.current;
     if (!el) return;
@@ -666,7 +659,6 @@ export function ProjectsSection() {
               <span style={{ fontSize: 28, fontWeight: 700, letterSpacing: "-0.03em", lineHeight: 1, fontFamily: SF, color: "var(--text-primary)" }}>Projects</span>
             </div>
 
-            {/* Slide-to-unlock — AnimatePresence for smooth exit */}
             <AnimatePresence mode="wait">
               {!unlocked && (
                 <motion.div
@@ -700,17 +692,21 @@ export function ProjectsSection() {
               @media (max-width: 400px) { .proj-grid { grid-template-columns: 1fr; } }
             `}</style>
 
+            {/*
+              FIX: filter removed — blur(5px) on 6 cards was the #1 cause of
+              click lag on mobile. GPU had to repaint all compositor layers
+              on every state change. opacity + scale alone are transform-only
+              and stay on the compositor thread — zero layout/paint cost.
+            */}
             <motion.div
               className="proj-grid"
               animate={{
                 opacity: unlocked ? 1 : 0.55,
                 scale:   unlocked ? 1 : 0.997,
-                filter:  unlocked ? "blur(0px)" : "blur(5px)",
               }}
-              transition={{ duration: 0.48, ease: [0.22, 1, 0.36, 1] }}
+              transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
               style={{
                 pointerEvents: unlocked ? "auto" : "none",
-                willChange: "transform, opacity, filter",
                 backfaceVisibility: "hidden",
                 WebkitBackfaceVisibility: "hidden",
               }}
