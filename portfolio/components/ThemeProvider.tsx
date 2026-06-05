@@ -1,6 +1,5 @@
 "use client";
 import { createContext, useContext, useEffect, useState } from "react";
-import { playThemeToggleSound } from "../lib/soundcn/sounds";
 
 export type Theme = "dark" | "light";
 
@@ -30,23 +29,9 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const setTheme = (t: Theme) => {
-    // Two-tone directional sound: going dark = lower, going light = higher
-    playThemeToggleSound(t === "dark");
-
-    if (
-      typeof document !== "undefined" &&
-      typeof (document as unknown as { startViewTransition?: (cb: () => void) => void }).startViewTransition === "function"
-    ) {
-      (document as unknown as { startViewTransition: (cb: () => void) => void }).startViewTransition(() => {
-        setThemeState(t);
-        applyTheme(t);
-        localStorage.setItem("theme", t);
-      });
-    } else {
-      setThemeState(t);
-      applyTheme(t);
-      localStorage.setItem("theme", t);
-    }
+    setThemeState(t);
+    applyTheme(t);
+    localStorage.setItem("theme", t);
   };
 
   return (

@@ -96,8 +96,15 @@ html.light {
 }
 
 /* Page background — set early to prevent flash */
-html       { background: #09090b; }
-html.light { background: #f5f5f3; }
+html {
+  background: #09090b;
+  background-image: radial-gradient(circle, rgba(255,255,255,0.08) 0.5px, transparent 0.5px);
+  background-size: 5px 5px;
+}
+html.light {
+  background: #f5f5f3;
+  background-image: radial-gradient(circle, rgba(0,0,0,0.10) 0.5px, transparent 0.5px);
+}
 /* Theme background transition — color only, never geometry */
 html { transition: background-color 0.12s ease; }
 
@@ -119,6 +126,7 @@ html {
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
   overflow-y: scroll;
+  overflow-x: hidden;
   /* Prevents rubber-band bounce from triggering layout */
   overscroll-behavior-y: none;
   /* GPU-composited text rendering */
@@ -134,6 +142,7 @@ html {
 body {
   background: transparent;
   color: var(--text-primary);
+  overflow-x: hidden;
   font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text',
                'Helvetica Neue', Arial, sans-serif;
   font-size: 14px;
@@ -194,8 +203,6 @@ a, button, [role="button"] {
   max-width: 1060px;
   margin: 0 auto;
   padding: 0;
-  border-left:  1px solid var(--line);
-  border-right: 1px solid var(--line);
   min-height: 100vh;
   position: relative;
   z-index: 1;
