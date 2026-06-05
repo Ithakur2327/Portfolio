@@ -323,7 +323,7 @@ export function HeroSection() {
           </div>
         </div>
 
-        <div style={{height:20, maxWidth:CW, margin:"0 auto"}}/>
+        <div style={{height:23, maxWidth:CW, margin:"0 auto"}}/>
 
         {/* ── INFO + SOCIAL wrapped in HoverBorderGradient ── */}
         <div className="h-info-wrap" style={{borderLeft:B, borderRight:B}}>
