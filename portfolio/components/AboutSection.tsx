@@ -31,7 +31,6 @@ interface LC {
   hardSolved: number; totalHard: number;
   totalSolved: number; ranking: number;
 }
-interface LCStreak { currentStreak: number; maxStreak: number; totalActiveDays: number; }
 interface LCCalDay { date: number; count: number; }
 
 function parse(raw: string): Token[][] {
@@ -59,7 +58,6 @@ function GoldWord({ text, idx, total, progress, isName }: {
   const raw = useTransform(progress, [s, e], [0, 1]);
   const p = useSpring(raw, { stiffness: 400, damping: 28, mass: 0.2 });
   const opacity = useTransform(p, [0, 0.15, 1], [0.25, 0.65, 1]);
-
   if (isName) {
     return (
       <motion.span style={{ opacity, display: "inline", verticalAlign: "baseline" }}>
@@ -80,7 +78,6 @@ function ScrollRevealText() {
   const smooth = useSpring(scrollYProgress, { stiffness: 120, damping: 20, restDelta: 0.001 });
   const paras = parse(ABOUT_TEXT);
   const total = paras.flat().filter((t) => t.hl).length;
-
   return (
     <div ref={ref} style={{ display: "flex", flexDirection: "column", gap: 20 }}>
       {paras.map((tokens, pi) => (
@@ -115,75 +112,59 @@ function Spin({ color }: { color: string }) {
   );
 }
 
-/* ──────────────────────────────────────────────────────────
-   ANIMATED LEETCODE LOGO — fixed background for dark mode
-────────────────────────────────────────────────────────── */
-function LeetCodeLogo({ size = 34 }: { size?: number }) {
+/* ── LeetCode Logo ── */
+function LeetCodeLogo({ size = 30 }: { size?: number }) {
   return (
     <div style={{
       width: size, height: size, borderRadius: Math.round(size * 0.26),
-      // Changed: warm dark amber instead of #1a1a1a — logo pops on dark backgrounds
       background: "#2d2208",
       border: "1px solid rgba(255,161,22,0.25)",
       display: "flex", alignItems: "center", justifyContent: "center",
-      flexShrink: 0, overflow: "hidden", position: "relative",
+      flexShrink: 0, overflow: "hidden",
     }}>
       <svg width={size * 0.65} height={size * 0.65} viewBox="0 0 24 24" fill="none">
         <rect x="8.5" y="11.2" width="8.5" height="2" rx="1" fill="#9ca3af" className="lc-logo-bar" />
         <path
           d="M13.483 0a1.374 1.374 0 0 0-.961.438L7.116 6.226l-3.854 4.126a5.266 5.266 0 0 0-1.209 2.104 5.35 5.35 0 0 0-.125.513 5.527 5.527 0 0 0 .062 2.362 5.83 5.83 0 0 0 .349 1.017 5.938 5.938 0 0 0 1.271 1.818l4.277 4.193.039.038c2.248 2.165 5.852 2.133 8.063-.074l2.396-2.392c.54-.54.54-1.414.003-1.955a1.378 1.378 0 0 0-1.951-.003l-2.396 2.392a3.021 3.021 0 0 1-4.205.038l-.02-.019-4.276-4.193c-.652-.64-.972-1.469-.948-2.263a2.68 2.68 0 0 1 .066-.523 2.545 2.545 0 0 1 .619-1.164L9.13 8.114c1.058-1.134 3.204-1.27 4.43-.278l3.501 2.831c.593.48 1.461.387 1.94-.207a1.384 1.384 0 0 0-.207-1.943l-3.5-2.831c-.8-.647-1.766-1.045-2.774-1.202l2.015-2.158A1.384 1.384 0 0 0 13.483 0z"
-          fill="#FFA116"
-          className="lc-logo-outer"
+          fill="#FFA116" className="lc-logo-outer"
         />
         <path
           d="M13.483 0a1.374 1.374 0 0 0-.961.438L7.116 6.226l-3.854 4.126a5.266 5.266 0 0 0-1.209 2.104 5.35 5.35 0 0 0-.125.513 5.527 5.527 0 0 0 .062 2.362 5.83 5.83 0 0 0 .349 1.017 5.938 5.938 0 0 0 1.271 1.818l4.277 4.193.039.038c2.248 2.165 5.852 2.133 8.063-.074l2.396-2.392c.54-.54.54-1.414.003-1.955a1.378 1.378 0 0 0-1.951-.003l-2.396 2.392a3.021 3.021 0 0 1-4.205.038l-.02-.019-4.276-4.193c-.652-.64-.972-1.469-.948-2.263a2.68 2.68 0 0 1 .066-.523 2.545 2.545 0 0 1 .619-1.164L9.13 8.114c1.058-1.134 3.204-1.27 4.43-.278"
-          fill="#3d2e08"
-          opacity="0.85"
+          fill="#3d2e08" opacity="0.85"
         />
       </svg>
     </div>
   );
 }
 
-/* ──────────────────────────────────────────────────────────
-   ANIMATED GITHUB LOGO
-────────────────────────────────────────────────────────── */
-function GitHubLogo({ size = 34, isDark }: { size?: number; isDark: boolean }) {
+/* ── GitHub Logo ── */
+function GitHubLogo({ size = 30, isDark }: { size?: number; isDark: boolean }) {
   return (
-    <div
-      className="gh-logo-wrap"
-      style={{
-        width: size, height: size, borderRadius: Math.round(size * 0.26),
-        background: isDark ? "#161b22" : "#f0f6ff",
-        border: `1px solid ${isDark ? "rgba(255,255,255,0.10)" : "rgba(0,0,0,0.12)"}`,
-        display: "flex", alignItems: "center", justifyContent: "center",
-        flexShrink: 0, cursor: "pointer", overflow: "hidden",
-      }}
-    >
-      <svg
-        className="gh-logo-svg"
-        width={size * 0.58} height={size * 0.58}
-        viewBox="0 0 24 24"
+    <div className="gh-logo-wrap" style={{
+      width: size, height: size, borderRadius: Math.round(size * 0.26),
+      background: isDark ? "#161b22" : "#f0f6ff",
+      border: `1px solid ${isDark ? "rgba(255,255,255,0.10)" : "rgba(0,0,0,0.12)"}`,
+      display: "flex", alignItems: "center", justifyContent: "center",
+      flexShrink: 0, cursor: "pointer", overflow: "hidden",
+    }}>
+      <svg className="gh-logo-svg" width={size * 0.58} height={size * 0.58} viewBox="0 0 24 24"
         fill={isDark ? "#ffffff" : "#24292f"}
-        style={{ transition: "transform 0.4s cubic-bezier(0.34,1.56,0.64,1)" }}
-      >
+        style={{ transition: "transform 0.4s cubic-bezier(0.34,1.56,0.64,1)" }}>
         <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z" />
       </svg>
     </div>
   );
 }
 
-/* ──────────────────────────────────────────────────────────
-   DONUT CHART
-────────────────────────────────────────────────────────── */
+/* ── Donut Chart — smaller: size=120 ── */
 function DonutChart({ easy, medium, hard, totalSolved, totalProblems, attempting }: {
   easy: number; medium: number; hard: number;
   totalSolved: number; totalProblems: number; attempting: number;
 }) {
-  const size = 160;
+  const size = 120;
   const CX = size / 2, CY = size / 2;
-  const R = 62;
-  const STROKE = 11;
+  const R = 46;
+  const STROKE = 9;
   const gap = 3;
 
   const easyFrac = easy / totalProblems;
@@ -214,26 +195,26 @@ function DonutChart({ easy, medium, hard, totalSolved, totalProblems, attempting
   });
 
   return (
-    <div style={{ position: "relative", width: size, height: size }}>
+    <div style={{ position: "relative", width: size, height: size, flexShrink: 0 }}>
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
         <circle cx={CX} cy={CY} r={R} fill="none" stroke="rgba(255,255,255,0.07)" strokeWidth={STROKE} />
         {paths.map(p => (
           <path key={p.key} d={p.d} fill="none" stroke={p.color} strokeWidth={STROKE} strokeLinecap="round" />
         ))}
-        <text x={CX} y={CY - 12} textAnchor="middle" fill="var(--text-primary)"
-          style={{ fontFamily: MONO, fontSize: 22, fontWeight: 800, letterSpacing: "-0.04em" }}>
+        <text x={CX} y={CY - 8} textAnchor="middle" fill="var(--text-primary)"
+          style={{ fontFamily: MONO, fontSize: 18, fontWeight: 800, letterSpacing: "-0.04em" }}>
           {totalSolved}
         </text>
-        <text x={CX} y={CY + 4} textAnchor="middle" fill="var(--text-muted)"
-          style={{ fontFamily: MONO, fontSize: 11 }}>
+        <text x={CX} y={CY + 6} textAnchor="middle" fill="var(--text-muted)"
+          style={{ fontFamily: MONO, fontSize: 9 }}>
           /{totalProblems}
         </text>
-        <text x={CX} y={CY + 20} textAnchor="middle" fill="#4ade80"
-          style={{ fontFamily: SF, fontSize: 11, fontWeight: 600 }}>
+        <text x={CX} y={CY + 19} textAnchor="middle" fill="#4ade80"
+          style={{ fontFamily: SF, fontSize: 9, fontWeight: 600 }}>
           ✓ Solved
         </text>
-        <text x={CX} y={CY + 36} textAnchor="middle" fill="var(--text-muted)"
-          style={{ fontFamily: SF, fontSize: 9 }}>
+        <text x={CX} y={CY + 31} textAnchor="middle" fill="var(--text-muted)"
+          style={{ fontFamily: SF, fontSize: 8 }}>
           {attempting} Attempting
         </text>
       </svg>
@@ -242,22 +223,60 @@ function DonutChart({ easy, medium, hard, totalSolved, totalProblems, attempting
 }
 
 /* ──────────────────────────────────────────────────────────
+   FLOATING TOOLTIP — appears above graph on cell hover
+   position:absolute inside a position:relative wrapper
+────────────────────────────────────────────────────────── */
+function HoverTooltip({ data, accentColor }: {
+  data: { date: string; count: number; label: string } | null;
+  accentColor: string;
+}) {
+  if (!data) return null;
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 4 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: 4 }}
+      transition={{ duration: 0.12 }}
+      style={{
+        position: "absolute",
+        top: 0, left: "50%",
+        transform: "translate(-50%, -100%)",
+        marginTop: -6,
+        pointerEvents: "none",
+        zIndex: 20,
+        padding: "4px 10px",
+        borderRadius: 7,
+        background: "var(--bg-secondary)",
+        border: `1px solid ${accentColor}55`,
+        textAlign: "center",
+        whiteSpace: "nowrap",
+        boxShadow: "0 4px 12px rgba(0,0,0,0.4)",
+      }}
+    >
+      <div style={{ fontSize: 14, fontWeight: 800, color: accentColor, fontFamily: MONO, letterSpacing: "-0.04em", lineHeight: 1.1 }}>
+        {data.count}
+      </div>
+      <div style={{ fontSize: 9, color: "var(--text-muted)", fontFamily: MONO, marginTop: 1 }}>
+        {data.label} on {data.date}
+      </div>
+    </motion.div>
+  );
+}
+
+/* ──────────────────────────────────────────────────────────
    LEETCODE PANEL
-   API: leetcode-stats-api.herokuapp.com (CORS-open, reliable)
-   Fallback to hardcoded values if API fails
 ────────────────────────────────────────────────────────── */
 const LC_TOTAL = 3949;
 const GLOBAL_RANK = 150000;
 
 function LeetCodeStats({ username = "IThakur09" }: { username?: string }) {
-  const { theme } = useTheme();
-  const isDark = theme === "dark";
   const [data, setData] = useState<LC | null>(null);
   const [loading, setLoading] = useState(true);
   const [calData, setCalData] = useState<LCCalDay[]>([]);
-  const [hoveredSubmissions, setHoveredSubmissions] = useState<{ date: string; count: number } | null>(null);
+  const [hovered, setHovered] = useState<{ date: string; count: number } | null>(null);
+  // ref so tooltip wrapper knows its position
+  const graphWrapRef = useRef<HTMLDivElement>(null);
 
-  // ── FIXED: switched to leetcode-stats-api.herokuapp.com ──
   useEffect(() => {
     const run = async () => {
       try {
@@ -280,13 +299,12 @@ function LeetCodeStats({ username = "IThakur09" }: { username?: string }) {
             });
           }
         }
-      } catch { /* fall through to hardcoded data */ }
+      } catch { /* fallback */ }
       finally { setLoading(false); }
     };
     run();
   }, [username]);
 
-  // Calendar data via alfa API (best-effort, graceful degradation)
   useEffect(() => {
     const run = async () => {
       try {
@@ -303,12 +321,11 @@ function LeetCodeStats({ username = "IThakur09" }: { username?: string }) {
           date: Number(ts), count: Number(cnt),
         }));
         setCalData(days.sort((a, b) => a.date - b.date));
-      } catch { /* no calendar data, grid stays empty */ }
+      } catch { /* no calendar */ }
     };
     run();
   }, [username]);
 
-  // Hardcoded fallback (shown if API is down)
   const displayData = data ?? {
     easySolved: 197, totalEasy: 947,
     mediumSolved: 223, totalMedium: 2063,
@@ -361,62 +378,78 @@ function LeetCodeStats({ username = "IThakur09" }: { username?: string }) {
   const diffColors = { Easy: "#00b8a3", Medium: "#ffc01e", Hard: "#ef4743" };
   const attempting = 5;
 
-  /* ── Contribution grid (shared between desktop right-col & mobile bottom) ── */
+  /* ── Contribution grid with fixed scroll ── */
   const ContribGrid = () => (
-    <div style={{
-      overflowX: "auto", overflowY: "hidden",
-      scrollbarWidth: "thin", scrollbarColor: "rgba(255,161,22,0.3) transparent",
-    }}>
-      <div style={{ display: "inline-flex", flexDirection: "column", paddingBottom: 4 }}>
-        <div style={{ display: "flex", marginBottom: 3, paddingLeft: 22 }}>
-          {lcMonthLabels.map((m, i) => {
-            const nextCol = lcMonthLabels[i + 1]?.col ?? lcWeeks.length;
-            return (
-              <div key={i} style={{
-                width: (nextCol - m.col) * STEP, flexShrink: 0,
-                fontSize: 8, color: "var(--text-muted)", fontFamily: MONO,
-                overflow: "hidden", whiteSpace: "nowrap",
-              }}>
-                {m.label}
-              </div>
-            );
-          })}
-        </div>
-        <div style={{ display: "flex", gap: 0 }}>
-          <div style={{ display: "flex", flexDirection: "column", gap: GAP, marginRight: 3 }}>
-            {DAY_LABELS.map((d, i) => (
-              <div key={i} style={{
-                height: CELL, fontSize: 8, color: "var(--text-muted)", fontFamily: MONO,
-                lineHeight: `${CELL}px`, width: 20,
-              }}>{d}</div>
-            ))}
+    /* outer: position:relative so tooltip can anchor; width:100% to fill column */
+    <div ref={graphWrapRef} style={{ position: "relative", width: "100%" }}>
+      {/* tooltip floats above the grid */}
+      <HoverTooltip
+        data={hovered ? { ...hovered, label: "submissions" } : null}
+        accentColor="#FFA116"
+      />
+      {/* scrollable wrapper — needs explicit width so overflow kicks in */}
+      <div style={{
+        width: "100%",
+        overflowX: "auto",
+        overflowY: "hidden",
+        WebkitOverflowScrolling: "touch",
+        scrollbarWidth: "thin",
+        scrollbarColor: "rgba(255,161,22,0.3) transparent",
+      }}>
+        <div style={{ display: "inline-flex", flexDirection: "column", paddingBottom: 4, minWidth: "max-content" }}>
+          {/* Month labels */}
+          <div style={{ display: "flex", marginBottom: 3, paddingLeft: 22 }}>
+            {lcMonthLabels.map((m, i) => {
+              const nextCol = lcMonthLabels[i + 1]?.col ?? lcWeeks.length;
+              return (
+                <div key={i} style={{
+                  width: (nextCol - m.col) * STEP, flexShrink: 0,
+                  fontSize: 8, color: "var(--text-muted)", fontFamily: MONO,
+                  overflow: "hidden", whiteSpace: "nowrap",
+                }}>
+                  {m.label}
+                </div>
+              );
+            })}
           </div>
-          <div style={{ display: "flex", gap: GAP }}>
-            {lcWeeks.map((wk, wi) => (
-              <div key={wi} style={{ display: "flex", flexDirection: "column", gap: GAP }}>
-                {wk.map((day, di) => (
-                  <div
-                    key={di}
-                    className={`lc-cell lc-cell-${lcLvl(day.count)}`}
-                    style={{ width: CELL, height: CELL, borderRadius: 2, cursor: "default", transition: "transform 0.1s" }}
-                    onMouseEnter={e => {
-                      (e.currentTarget as HTMLElement).style.transform = "scale(1.5)";
-                      setHoveredSubmissions({ date: day.date.toISOString().split("T")[0], count: day.count });
-                    }}
-                    onMouseLeave={e => {
-                      (e.currentTarget as HTMLElement).style.transform = "";
-                      setHoveredSubmissions(null);
-                    }}
-                  />
-                ))}
-              </div>
-            ))}
+          {/* Grid */}
+          <div style={{ display: "flex", gap: 0 }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: GAP, marginRight: 3 }}>
+              {DAY_LABELS.map((d, i) => (
+                <div key={i} style={{
+                  height: CELL, fontSize: 8, color: "var(--text-muted)", fontFamily: MONO,
+                  lineHeight: `${CELL}px`, width: 20,
+                }}>{d}</div>
+              ))}
+            </div>
+            <div style={{ display: "flex", gap: GAP }}>
+              {lcWeeks.map((wk, wi) => (
+                <div key={wi} style={{ display: "flex", flexDirection: "column", gap: GAP }}>
+                  {wk.map((day, di) => (
+                    <div
+                      key={di}
+                      className={`lc-cell lc-cell-${lcLvl(day.count)}`}
+                      style={{ width: CELL, height: CELL, borderRadius: 2, cursor: "default", transition: "transform 0.1s" }}
+                      onMouseEnter={e => {
+                        (e.currentTarget as HTMLElement).style.transform = "scale(1.5)";
+                        setHovered({ date: day.date.toISOString().split("T")[0], count: day.count });
+                      }}
+                      onMouseLeave={e => {
+                        (e.currentTarget as HTMLElement).style.transform = "";
+                        setHovered(null);
+                      }}
+                    />
+                  ))}
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 3, marginTop: 5 }}>
-          <span style={{ fontSize: 8, color: "var(--text-muted)", fontFamily: MONO, marginRight: 3 }}>Less</span>
-          {[0,1,2,3,4].map(l => <div key={l} className={`lc-cell lc-cell-${l}`} style={{ width: 9, height: 9, borderRadius: 2 }} />)}
-          <span style={{ fontSize: 8, color: "var(--text-muted)", fontFamily: MONO, marginLeft: 3 }}>More</span>
+          {/* Legend */}
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 3, marginTop: 5 }}>
+            <span style={{ fontSize: 8, color: "var(--text-muted)", fontFamily: MONO, marginRight: 3 }}>Less</span>
+            {[0,1,2,3,4].map(l => <div key={l} className={`lc-cell lc-cell-${l}`} style={{ width: 9, height: 9, borderRadius: 2 }} />)}
+            <span style={{ fontSize: 8, color: "var(--text-muted)", fontFamily: MONO, marginLeft: 3 }}>More</span>
+          </div>
         </div>
       </div>
     </div>
@@ -425,50 +458,29 @@ function LeetCodeStats({ username = "IThakur09" }: { username?: string }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
       {/* Header */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12, flexWrap: "wrap", gap: 8 }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10, flexWrap: "wrap", gap: 8 }}>
         <a href={`https://leetcode.com/${username}`} target="_blank" rel="noreferrer"
-          style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none" }}>
-          <LeetCodeLogo size={34} />
+          style={{ display: "flex", alignItems: "center", gap: 8, textDecoration: "none" }}>
+          <LeetCodeLogo size={30} />
           <div>
-            <div style={{ fontSize: 13, fontWeight: 700, color: "var(--text-primary)", fontFamily: SF }}>LeetCode</div>
-            <div style={{ fontSize: 10, color: "var(--text-muted)", fontFamily: MONO }}>@{username}</div>
+            <div style={{ fontSize: 12, fontWeight: 700, color: "var(--text-primary)", fontFamily: SF }}>LeetCode</div>
+            <div style={{ fontSize: 9, color: "var(--text-muted)", fontFamily: MONO }}>@{username}</div>
           </div>
         </a>
-        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-          <span style={{ fontSize: 11, color: "var(--text-muted)", fontFamily: MONO }}>Rank</span>
-          <span style={{ fontSize: 18, fontWeight: 800, color: "var(--text-primary)", fontFamily: MONO, letterSpacing: "-0.04em" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+          <span style={{ fontSize: 10, color: "var(--text-muted)", fontFamily: MONO }}>Rank</span>
+          <span style={{ fontSize: 16, fontWeight: 800, color: "var(--text-primary)", fontFamily: MONO, letterSpacing: "-0.04em" }}>
             #{(displayData.ranking || GLOBAL_RANK).toLocaleString()}
           </span>
         </div>
       </div>
 
-      <div style={{ height: 1, background: "var(--border)", marginBottom: 12 }} />
-
-      {/* Hover tooltip */}
-      <div style={{ height: 44, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 6 }}>
-        {hoveredSubmissions && (
-          <motion.div
-            initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }}
-            style={{
-              padding: "6px 14px", borderRadius: 8,
-              background: "var(--bg-secondary)", border: "1px solid rgba(255,161,22,0.35)",
-              textAlign: "center",
-            }}
-          >
-            <div style={{ fontSize: 16, fontWeight: 800, color: "#FFA116", fontFamily: MONO, letterSpacing: "-0.04em", lineHeight: 1 }}>
-              {hoveredSubmissions.count}
-            </div>
-            <div style={{ fontSize: 9, color: "var(--text-muted)", fontFamily: MONO, marginTop: 2 }}>
-              submissions on {hoveredSubmissions.date}
-            </div>
-          </motion.div>
-        )}
-      </div>
+      <div style={{ height: 1, background: "var(--border)", marginBottom: 10 }} />
 
       {/* ── DESKTOP LAYOUT: side-by-side ── */}
       <div className="lc-body-desktop" style={{ display: "flex", gap: 0, flex: 1, minHeight: 0 }}>
-        {/* Left 42%: donut + difficulty */}
-        <div style={{ width: "42%", flexShrink: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 10 }}>
+        {/* Left: donut + difficulty rows — smaller gap */}
+        <div style={{ width: "40%", flexShrink: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 6 }}>
           {loading ? <Spin color="#FFA116" /> : (
             <>
               <DonutChart
@@ -479,19 +491,19 @@ function LeetCodeStats({ username = "IThakur09" }: { username?: string }) {
                 totalProblems={LC_TOTAL}
                 attempting={attempting}
               />
-              <div style={{ display: "flex", flexDirection: "column", gap: 5, width: "100%", padding: "0 6px" }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: 4, width: "100%", padding: "0 4px" }}>
                 {[
-                  { label: "Easy",  solved: displayData.easySolved,   total: displayData.totalEasy,   color: diffColors.Easy },
-                  { label: "Med.",  solved: displayData.mediumSolved,  total: displayData.totalMedium, color: diffColors.Medium },
-                  { label: "Hard",  solved: displayData.hardSolved,    total: displayData.totalHard,   color: diffColors.Hard },
+                  { label: "Easy", solved: displayData.easySolved,   total: displayData.totalEasy,   color: diffColors.Easy },
+                  { label: "Med.", solved: displayData.mediumSolved,  total: displayData.totalMedium, color: diffColors.Medium },
+                  { label: "Hard", solved: displayData.hardSolved,    total: displayData.totalHard,   color: diffColors.Hard },
                 ].map(d => (
                   <div key={d.label} style={{
                     display: "flex", alignItems: "center", justifyContent: "space-between",
-                    padding: "5px 8px", borderRadius: 7,
+                    padding: "3px 7px", borderRadius: 6,
                     background: "var(--bg-secondary)", border: "1px solid var(--border)",
                   }}>
-                    <span style={{ fontSize: 11, fontWeight: 700, color: d.color, fontFamily: MONO }}>{d.label}</span>
-                    <span style={{ fontSize: 11, fontWeight: 700, color: "var(--text-primary)", fontFamily: MONO }}>
+                    <span style={{ fontSize: 10, fontWeight: 700, color: d.color, fontFamily: MONO }}>{d.label}</span>
+                    <span style={{ fontSize: 10, fontWeight: 700, color: "var(--text-primary)", fontFamily: MONO }}>
                       {d.solved}<span style={{ color: "var(--text-muted)", fontWeight: 400 }}>/{d.total}</span>
                     </span>
                   </div>
@@ -501,19 +513,18 @@ function LeetCodeStats({ username = "IThakur09" }: { username?: string }) {
           )}
         </div>
 
-        <div style={{ width: 1, background: "var(--border)", flexShrink: 0, margin: "0 10px" }} />
+        <div style={{ width: 1, background: "var(--border)", flexShrink: 0, margin: "0 8px" }} />
 
-        {/* Right 58%: contribution graph */}
-        <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column" }}>
-          <div style={{ fontSize: 9, color: "var(--text-muted)", fontFamily: MONO, marginBottom: 3 }}>2026 activity</div>
+        {/* Right: contribution graph — width:0 + flex:1 forces proper shrink so scroll works */}
+        <div style={{ flex: 1, minWidth: 0, width: 0, display: "flex", flexDirection: "column" }}>
+          <div style={{ fontSize: 9, color: "var(--text-muted)", fontFamily: MONO, marginBottom: 4 }}>2026 activity</div>
           <ContribGrid />
         </div>
       </div>
 
-      {/* ── MOBILE LAYOUT: stacked (donut+diff on top, graph below) ── */}
-      <div className="lc-body-mobile" style={{ display: "none", flexDirection: "column", gap: 14 }}>
-        {/* Top: donut + difficulty side by side on mobile */}
-        <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+      {/* ── MOBILE LAYOUT: stacked ── */}
+      <div className="lc-body-mobile" style={{ display: "none", flexDirection: "column", gap: 12 }}>
+        <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
           {loading ? <Spin color="#FFA116" /> : (
             <>
               <DonutChart
@@ -524,19 +535,19 @@ function LeetCodeStats({ username = "IThakur09" }: { username?: string }) {
                 totalProblems={LC_TOTAL}
                 attempting={attempting}
               />
-              <div style={{ display: "flex", flexDirection: "column", gap: 5, flex: 1 }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: 4, flex: 1 }}>
                 {[
-                  { label: "Easy",  solved: displayData.easySolved,   total: displayData.totalEasy,   color: diffColors.Easy },
-                  { label: "Med.",  solved: displayData.mediumSolved,  total: displayData.totalMedium, color: diffColors.Medium },
-                  { label: "Hard",  solved: displayData.hardSolved,    total: displayData.totalHard,   color: diffColors.Hard },
+                  { label: "Easy", solved: displayData.easySolved,   total: displayData.totalEasy,   color: diffColors.Easy },
+                  { label: "Med.", solved: displayData.mediumSolved,  total: displayData.totalMedium, color: diffColors.Medium },
+                  { label: "Hard", solved: displayData.hardSolved,    total: displayData.totalHard,   color: diffColors.Hard },
                 ].map(d => (
                   <div key={d.label} style={{
                     display: "flex", alignItems: "center", justifyContent: "space-between",
-                    padding: "5px 8px", borderRadius: 7,
+                    padding: "3px 7px", borderRadius: 6,
                     background: "var(--bg-secondary)", border: "1px solid var(--border)",
                   }}>
-                    <span style={{ fontSize: 11, fontWeight: 700, color: d.color, fontFamily: MONO }}>{d.label}</span>
-                    <span style={{ fontSize: 11, fontWeight: 700, color: "var(--text-primary)", fontFamily: MONO }}>
+                    <span style={{ fontSize: 10, fontWeight: 700, color: d.color, fontFamily: MONO }}>{d.label}</span>
+                    <span style={{ fontSize: 10, fontWeight: 700, color: "var(--text-primary)", fontFamily: MONO }}>
                       {d.solved}<span style={{ color: "var(--text-muted)", fontWeight: 400 }}>/{d.total}</span>
                     </span>
                   </div>
@@ -545,13 +556,9 @@ function LeetCodeStats({ username = "IThakur09" }: { username?: string }) {
             </>
           )}
         </div>
-
-        {/* Horizontal divider */}
         <div style={{ height: 1, background: "var(--border)" }} />
-
-        {/* Bottom: contribution graph */}
         <div>
-          <div style={{ fontSize: 9, color: "var(--text-muted)", fontFamily: MONO, marginBottom: 3 }}>2026 activity</div>
+          <div style={{ fontSize: 9, color: "var(--text-muted)", fontFamily: MONO, marginBottom: 4 }}>2026 activity</div>
           <ContribGrid />
         </div>
       </div>
@@ -572,7 +579,7 @@ function GitHubGraph({ username = "Ithakur2327" }: { username?: string }) {
   const [total, setTotal] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [isLive, setIsLive] = useState(false);
-  const [hoveredCell, setHoveredCell] = useState<{ date: string; count: number } | null>(null);
+  const [hovered, setHovered] = useState<{ date: string; count: number } | null>(null);
 
   useEffect(() => {
     const fetchContributions = async () => {
@@ -597,16 +604,16 @@ function GitHubGraph({ username = "Ithakur2327" }: { username?: string }) {
           startSunday.setDate(startSunday.getDate() - startSunday.getDay());
           const dateMap = new Map(c2026.map((x: { date: string; count: number }) => [x.date, x.count]));
           const ws: Week[] = [];
-          let cursor = new Date(startSunday);
-          while (cursor <= today) {
+          let cur = new Date(startSunday);
+          while (cur <= today) {
             const days: ContribDay[] = [];
             for (let d = 0; d < 7; d++) {
-              const dt = new Date(cursor); dt.setDate(cursor.getDate() + d);
+              const dt = new Date(cur); dt.setDate(cur.getDate() + d);
               const k = dt.toISOString().split("T")[0];
               days.push({ contributionCount: (dateMap.get(k) as number) ?? 0, date: k });
             }
             ws.push({ days });
-            cursor.setDate(cursor.getDate() + 7);
+            cur.setDate(cur.getDate() + 7);
           }
           setWeeks(ws);
           setIsLive(true);
@@ -614,21 +621,21 @@ function GitHubGraph({ username = "Ithakur2327" }: { username?: string }) {
           return;
         } catch { /* try next */ }
       }
-      // Fallback: empty weeks grid
+      // fallback empty grid
       const today = new Date(); today.setHours(0,0,0,0);
       const jan1 = new Date(2026,0,1);
       const startSunday = new Date(jan1);
       startSunday.setDate(startSunday.getDate() - startSunday.getDay());
       const ws: Week[] = [];
-      let cursor = new Date(startSunday);
-      while (cursor <= today) {
+      let cur = new Date(startSunday);
+      while (cur <= today) {
         const days: ContribDay[] = [];
         for (let d2 = 0; d2 < 7; d2++) {
-          const dt = new Date(cursor); dt.setDate(cursor.getDate() + d2);
+          const dt = new Date(cur); dt.setDate(cur.getDate() + d2);
           days.push({ contributionCount: 0, date: dt.toISOString().split("T")[0] });
         }
         ws.push({ days });
-        cursor.setDate(cursor.getDate() + 7);
+        cur.setDate(cur.getDate() + 7);
       }
       setWeeks(ws);
       setIsLive(false);
@@ -657,28 +664,23 @@ function GitHubGraph({ username = "Ithakur2327" }: { username?: string }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
       {/* Header */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12, flexWrap: "wrap", gap: 8 }}>
-        <a
-          href={`https://github.com/${username}`}
-          target="_blank" rel="noreferrer"
-          style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none" }}
-        >
-          <GitHubLogo size={34} isDark={isDark} />
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10, flexWrap: "wrap", gap: 8 }}>
+        <a href={`https://github.com/${username}`} target="_blank" rel="noreferrer"
+          style={{ display: "flex", alignItems: "center", gap: 8, textDecoration: "none" }}>
+          <GitHubLogo size={30} isDark={isDark} />
           <div>
-            <div style={{ fontSize: 13, fontWeight: 700, color: "var(--text-primary)", fontFamily: SF }}>GitHub</div>
-            <div style={{ fontSize: 10, color: "var(--text-muted)", fontFamily: MONO, transition: "color 0.15s" }}>
-              @{username} ↗
-            </div>
+            <div style={{ fontSize: 12, fontWeight: 700, color: "var(--text-primary)", fontFamily: SF }}>GitHub</div>
+            <div style={{ fontSize: 9, color: "var(--text-muted)", fontFamily: MONO }}>@{username} ↗</div>
           </div>
         </a>
         {isLive && total !== null && total > 0 ? (
           <div style={{ textAlign: "right" }}>
-            <div style={{ fontSize: 22, fontWeight: 800, color: contribColor, fontFamily: MONO, letterSpacing: "-0.05em", lineHeight: 1 }}>{total.toLocaleString()}</div>
-            <div style={{ fontSize: 10, color: "var(--text-muted)", fontFamily: MONO, marginTop: 2 }}>contributions this year</div>
+            <div style={{ fontSize: 20, fontWeight: 800, color: contribColor, fontFamily: MONO, letterSpacing: "-0.05em", lineHeight: 1 }}>{total.toLocaleString()}</div>
+            <div style={{ fontSize: 9, color: "var(--text-muted)", fontFamily: MONO, marginTop: 2 }}>contributions this year</div>
           </div>
         ) : !loading ? (
           <a href={`https://github.com/${username}`} target="_blank" rel="noreferrer"
-            style={{ fontSize: 11, color: "var(--text-muted)", fontFamily: MONO, textDecoration: "none", opacity: 0.7 }}>
+            style={{ fontSize: 10, color: "var(--text-muted)", fontFamily: MONO, textDecoration: "none", opacity: 0.7 }}>
             View on GitHub ↗
           </a>
         ) : null}
@@ -686,79 +688,79 @@ function GitHubGraph({ username = "Ithakur2327" }: { username?: string }) {
 
       <div style={{ height: 1, background: "var(--border)", marginBottom: 10 }} />
 
-      {/* Hover tooltip */}
-      <div style={{ height: 42, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 6 }}>
-        {hoveredCell && (
-          <motion.div
-            initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }}
-            style={{
-              padding: "6px 14px", borderRadius: 8,
-              background: "var(--bg-secondary)", border: "1px solid rgba(255,161,22,0.35)",
-              textAlign: "center",
-            }}
-          >
-            <div style={{ fontSize: 16, fontWeight: 800, color: "#FFA116", fontFamily: MONO, letterSpacing: "-0.04em", lineHeight: 1 }}>
-              {hoveredCell.count}
-            </div>
-            <div style={{ fontSize: 9, color: "var(--text-muted)", fontFamily: MONO, marginTop: 2 }}>
-              contributions on {hoveredCell.date}
-            </div>
-          </motion.div>
-        )}
-      </div>
-
       {loading ? <Spin color="#FFA116" /> : (
-        <div style={{ overflowX: "auto", overflowY: "hidden", scrollbarWidth: "thin", scrollbarColor: "rgba(255,161,22,0.3) transparent" }}>
-          <div style={{ display: "inline-flex", flexDirection: "column", paddingBottom: 4 }}>
-            <div style={{ display: "flex", marginBottom: 4, paddingLeft: 26 }}>
-              {monthLabels.map((m, i) => {
-                const nextCol = monthLabels[i + 1]?.col ?? weeks.length;
-                const boxW = (nextCol - m.col) * STEP;
-                return (
-                  <div key={i} style={{
-                    width: boxW, flexShrink: 0, fontSize: 9, color: "var(--text-muted)",
-                    fontFamily: MONO, overflow: "hidden", whiteSpace: "nowrap",
-                    lineHeight: "16px", visibility: boxW >= 20 ? "visible" : "hidden",
-                  }}>{m.label}</div>
-                );
-              })}
-            </div>
-            <div style={{ display: "flex", gap: 0 }}>
-              <div style={{ display: "flex", flexDirection: "column", gap: GAP, marginRight: 4 }}>
-                {DAYS.map((d, i) => (
-                  <div key={i} style={{ height: CELL, fontSize: 9, color: "var(--text-muted)", fontFamily: MONO, lineHeight: `${CELL}px`, userSelect: "none", width: 22 }}>{d}</div>
-                ))}
+        /* position:relative so the floating tooltip anchors here */
+        <div style={{ position: "relative", flex: 1 }}>
+          <HoverTooltip
+            data={hovered ? { ...hovered, label: "contributions" } : null}
+            accentColor="#FFA116"
+          />
+          <div style={{ fontSize: 9, color: "var(--text-muted)", fontFamily: MONO, marginBottom: 4 }}>
+            {isLive ? "2026 contributions" : "2026 activity (preview)"}
+          </div>
+          {/* scrollable grid */}
+          <div style={{
+            width: "100%",
+            overflowX: "auto",
+            overflowY: "hidden",
+            WebkitOverflowScrolling: "touch",
+            scrollbarWidth: "thin",
+            scrollbarColor: "rgba(255,161,22,0.3) transparent",
+          }}>
+            <div style={{ display: "inline-flex", flexDirection: "column", paddingBottom: 4, minWidth: "max-content" }}>
+              {/* Month labels */}
+              <div style={{ display: "flex", marginBottom: 4, paddingLeft: 26 }}>
+                {monthLabels.map((m, i) => {
+                  const nextCol = monthLabels[i + 1]?.col ?? weeks.length;
+                  const boxW = (nextCol - m.col) * STEP;
+                  return (
+                    <div key={i} style={{
+                      width: boxW, flexShrink: 0, fontSize: 9, color: "var(--text-muted)",
+                      fontFamily: MONO, overflow: "hidden", whiteSpace: "nowrap",
+                      lineHeight: "16px", visibility: boxW >= 20 ? "visible" : "hidden",
+                    }}>{m.label}</div>
+                  );
+                })}
               </div>
-              <div style={{ display: "flex", gap: GAP }}>
-                {weeks.map((w, wi) => (
-                  <div key={wi} style={{ display: "flex", flexDirection: "column", gap: GAP }}>
-                    {w.days.map((d, di) => (
-                      <div
-                        key={di}
-                        className={`gh-cell gh-cell-${lvl(d.contributionCount)}`}
-                        style={{ width: CELL, height: CELL, borderRadius: 2, cursor: "default", transition: "transform 0.1s" }}
-                        onMouseEnter={e => {
-                          (e.currentTarget as HTMLElement).style.transform = "scale(1.35)";
-                          setHoveredCell({ date: d.date, count: d.contributionCount });
-                        }}
-                        onMouseLeave={e => {
-                          (e.currentTarget as HTMLElement).style.transform = "";
-                          setHoveredCell(null);
-                        }}
-                      />
-                    ))}
-                  </div>
-                ))}
+              {/* Grid */}
+              <div style={{ display: "flex", gap: 0 }}>
+                <div style={{ display: "flex", flexDirection: "column", gap: GAP, marginRight: 4 }}>
+                  {DAYS.map((d, i) => (
+                    <div key={i} style={{ height: CELL, fontSize: 9, color: "var(--text-muted)", fontFamily: MONO, lineHeight: `${CELL}px`, userSelect: "none", width: 22 }}>{d}</div>
+                  ))}
+                </div>
+                <div style={{ display: "flex", gap: GAP }}>
+                  {weeks.map((w, wi) => (
+                    <div key={wi} style={{ display: "flex", flexDirection: "column", gap: GAP }}>
+                      {w.days.map((d, di) => (
+                        <div
+                          key={di}
+                          className={`gh-cell gh-cell-${lvl(d.contributionCount)}`}
+                          style={{ width: CELL, height: CELL, borderRadius: 2, cursor: "default", transition: "transform 0.1s" }}
+                          onMouseEnter={e => {
+                            (e.currentTarget as HTMLElement).style.transform = "scale(1.35)";
+                            setHovered({ date: d.date, count: d.contributionCount });
+                          }}
+                          onMouseLeave={e => {
+                            (e.currentTarget as HTMLElement).style.transform = "";
+                            setHovered(null);
+                          }}
+                        />
+                      ))}
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 8 }}>
-              <span style={{ fontSize: 9, color: "var(--text-muted)", fontFamily: MONO }}>
-                {isLive ? "Contribution activity" : "Contribution activity (preview)"}
-              </span>
-              <div style={{ display: "flex", alignItems: "center", gap: 3 }}>
-                <span style={{ fontSize: 9, color: "var(--text-muted)", fontFamily: MONO, marginRight: 3 }}>Less</span>
-                {[0,1,2,3,4].map(l => <div key={l} className={`gh-cell gh-cell-${l}`} style={{ width: 10, height: 10, borderRadius: 2 }} />)}
-                <span style={{ fontSize: 9, color: "var(--text-muted)", fontFamily: MONO, marginLeft: 3 }}>More</span>
+              {/* Legend */}
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 8 }}>
+                <span style={{ fontSize: 9, color: "var(--text-muted)", fontFamily: MONO }}>
+                  {isLive ? "Contribution activity" : "preview"}
+                </span>
+                <div style={{ display: "flex", alignItems: "center", gap: 3 }}>
+                  <span style={{ fontSize: 9, color: "var(--text-muted)", fontFamily: MONO, marginRight: 3 }}>Less</span>
+                  {[0,1,2,3,4].map(l => <div key={l} className={`gh-cell gh-cell-${l}`} style={{ width: 10, height: 10, borderRadius: 2 }} />)}
+                  <span style={{ fontSize: 9, color: "var(--text-muted)", fontFamily: MONO, marginLeft: 3 }}>More</span>
+                </div>
               </div>
             </div>
           </div>
@@ -778,11 +780,7 @@ export function AboutSection() {
     <>
       <style suppressHydrationWarning>{`
         @keyframes spin { to { transform: rotate(360deg); } }
-
-        @keyframes lcPulse {
-          0%,100% { opacity:1; }
-          50%      { opacity:0.7; }
-        }
+        @keyframes lcPulse { 0%,100%{opacity:1} 50%{opacity:0.7} }
         .lc-logo-outer { animation: lcPulse 2.4s ease-in-out infinite; }
         .lc-logo-bar   { animation: lcPulse 2.4s ease-in-out infinite 0.6s; }
 
@@ -813,7 +811,7 @@ export function AboutSection() {
           margin: 0 1px;
         }
 
-        /* ── GitHub graph — Halloween orange palette ── */
+        /* GitHub graph — Halloween orange */
         .gh-cell   { background: rgba(255,165,0,0.08); }
         .gh-cell-0 { background: rgba(30,20,10,0.55); }
         .gh-cell-1 { background: #fac68f; }
@@ -821,7 +819,7 @@ export function AboutSection() {
         .gh-cell-3 { background: #984b10; }
         .gh-cell-4 { background: #e3d04f; }
 
-        /* ── LeetCode graph — SAME Halloween orange palette as GitHub ── */
+        /* LeetCode graph — same Halloween palette */
         .lc-cell   { background: rgba(255,165,0,0.08); }
         .lc-cell-0 { background: rgba(30,20,10,0.55); }
         .lc-cell-1 { background: #fac68f; }
@@ -829,12 +827,10 @@ export function AboutSection() {
         .lc-cell-3 { background: #984b10; }
         .lc-cell-4 { background: #e3d04f; }
 
-        /* light mode overrides */
+        /* Light mode */
         html.light .name-highlight {
-          color: #16a34a;
-          background: rgba(22,163,74,0.08);
-          border-color: rgba(22,163,74,0.20);
-          box-shadow: none;
+          color: #16a34a; background: rgba(22,163,74,0.08);
+          border-color: rgba(22,163,74,0.20); box-shadow: none;
         }
         html.light .gold-box-word {
           color: #d97706 !important;
@@ -846,19 +842,15 @@ export function AboutSection() {
         html.light .gh-cell-2 { background: #c46212; }
         html.light .gh-cell-3 { background: #984b10; }
         html.light .gh-cell-4 { background: #1f2328; }
-        /* LeetCode light mode — identical to GitHub light mode */
         html.light .lc-cell-0 { background: #eff2f5; }
         html.light .lc-cell-1 { background: #fac68f; }
         html.light .lc-cell-2 { background: #c46212; }
         html.light .lc-cell-3 { background: #984b10; }
         html.light .lc-cell-4 { background: #1f2328; }
 
-        /* LeetCode logo light mode tweak */
-        html.light .lc-logo-bg { background: #fff8e6 !important; }
-
-        /* ── 3D card ── */
+        /* 3D cards */
         .stat-card-3d {
-          padding: 16px;
+          padding: 14px;
           background: #18181b;
           border: 1px solid rgba(255,255,255,0.09);
           border-radius: 12px;
@@ -871,6 +863,8 @@ export function AboutSection() {
             0 16px 32px rgba(0,0,0,0.18);
           display: flex;
           flex-direction: column;
+          /* overflow:visible so tooltip can escape the card boundary */
+          overflow: visible;
         }
         .stat-card-3d:hover {
           transform: translateY(-4px);
@@ -889,7 +883,7 @@ export function AboutSection() {
           box-shadow: 0 6px 14px rgba(0,0,0,0.09),0 12px 28px rgba(0,0,0,0.07);
         }
 
-        /* ── RESPONSIVE PANELS ── */
+        /* Grid layout */
         .about-panels {
           display: grid;
           gap: 14px;
@@ -912,13 +906,11 @@ export function AboutSection() {
           .about-content  { padding: 0 14px 28px; }
           .about-para     { font-size: 14px !important; line-height: 1.8 !important; }
           .stat-card-3d   { width: 100% !important; min-width: 0 !important; padding: 12px !important; }
-
-          /* ── Mobile LeetCode layout switch ── */
           .lc-body-desktop { display: none !important; }
           .lc-body-mobile  { display: flex !important; }
         }
 
-        /* Scrollbar styling */
+        /* Scrollbars */
         .stat-card-3d ::-webkit-scrollbar { height: 4px; }
         .stat-card-3d ::-webkit-scrollbar-track { background: transparent; }
         .stat-card-3d ::-webkit-scrollbar-thumb { border-radius: 2px; background: rgba(128,128,128,0.25); }
