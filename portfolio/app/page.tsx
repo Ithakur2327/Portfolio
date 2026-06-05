@@ -1,35 +1,12 @@
-import dynamic from "next/dynamic";
-import { Navbar } from "@/components/Navbar";
-import { HeroSection } from "@/components/HeroSection";
-
-const SparklesBridge = dynamic(
-  () => import("@/components/SparklesBridge").then((mod) => mod.SparklesBridge),
-  { ssr: false, loading: () => null }
-);
-const AboutSection = dynamic(
-  () => import("@/components/AboutSection").then((mod) => mod.AboutSection),
-  { ssr: false, loading: () => null }
-);
-const SkillsSection = dynamic(
-  () => import("@/components/SkillsSection").then((mod) => mod.SkillsSection),
-  { ssr: false, loading: () => null }
-);
-const ProjectsSection = dynamic(
-  () => import("@/components/ProjectsSection").then((mod) => mod.ProjectsSection),
-  { ssr: false, loading: () => null }
-);
-const EducationSection = dynamic(
-  () => import("@/components/EducationSection").then((mod) => mod.EducationSection),
-  { ssr: false, loading: () => null }
-);
-const ContactSection = dynamic(
-  () => import("@/components/ContactSection").then((mod) => mod.ContactSection),
-  { ssr: false, loading: () => null }
-);
-const Footer = dynamic(
-  () => import("@/components/Footer").then((mod) => mod.Footer),
-  { ssr: false, loading: () => null }
-);
+import { Navbar }          from "@/components/Navbar";
+import { HeroSection }     from "@/components/HeroSection";
+import { SparklesBridge }  from "@/components/SparklesBridge";
+import { AboutSection }    from "@/components/AboutSection";
+import { SkillsSection }   from "@/components/SkillsSection";
+import { ProjectsSection } from "@/components/ProjectsSection";
+import { EducationSection} from "@/components/EducationSection";
+import { ContactSection }  from "@/components/ContactSection";
+import { Footer }          from "@/components/Footer";
 
 export default function Home() {
   return (
