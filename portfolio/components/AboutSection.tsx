@@ -118,10 +118,31 @@ function GoldWord({
 function ScrollRevealText({ visible }: { visible: boolean }) {
   const paras = parse(ABOUT_TEXT);
   const total = paras.flat().filter((t) => t.hl).length;
-  const progress = visible ? 1 : 0;
+  const [progress, setProgress] = React.useState(0);
+  const containerRef = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    if (!visible) return;
+    const update = () => {
+      const el = containerRef.current;
+      if (!el) return;
+      const rect = el.getBoundingClientRect();
+      const vh = window.innerHeight;
+      // Start highlighting when element top enters viewport, finish when bottom passes 30% from top
+      const start = rect.top - vh * 0.85;
+      const end = rect.bottom - vh * 0.30;
+      const range = end - start;
+      if (range <= 0) { setProgress(1); return; }
+      const raw = -start / range;
+      setProgress(Math.max(0, Math.min(1, raw)));
+    };
+    update();
+    window.addEventListener("scroll", update, { passive: true });
+    return () => window.removeEventListener("scroll", update);
+  }, [visible]);
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+    <div ref={containerRef} style={{ display: "flex", flexDirection: "column", gap: 20 }}>
       {paras.map((tokens, pi) => (
         <p
           key={pi}
@@ -398,40 +419,34 @@ function LCStreakGraph({ username }: { username: string }) {
   const [calData, setCalData] = useState<LCCalDay[]>([]);
   const [streak, setStreak]   = useState<LCStreak | null>(null);
   const [loading, setLoading] = useState(true);
+  const [hovered, setHovered] = useState<{ date: string; count: number } | null>(null);
+  const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
     const run = async () => {
       try {
-        // Fetch both streak + calendar in parallel
         const [sr, cr] = await Promise.all([
           fetch(`https://alfa-leetcode-api.onrender.com/${username}/streak`),
           fetch(`https://alfa-leetcode-api.onrender.com/${username}/calendar`),
         ]);
         const [sj, cj] = await Promise.all([sr.json(), cr.json()]);
-
-        // Streak data
         if (sj) {
           setStreak({
             currentStreak: sj.currentStreak ?? sj.streak ?? 0,
             maxStreak: sj.maxStreak ?? sj.longestStreak ?? 0,
-            totalActiveDays: sj.totalActiveDays ?? sj.totalActiveDays ?? 0,
+            totalActiveDays: sj.totalActiveDays ?? 0,
           });
         }
-
-        // Calendar: API returns { submissionCalendar: "{ts: count, ...}" }
         const calStr = cj?.submissionCalendar ?? cj?.calendar ?? "{}";
         const calObj: Record<string, number> = typeof calStr === "string" ? JSON.parse(calStr) : calStr;
         const days: LCCalDay[] = Object.entries(calObj).map(([ts, cnt]) => ({
           date: Number(ts),
           count: Number(cnt),
         }));
-
-        // Keep last 3 months only
-        const now  = Date.now() / 1000;
-        const cut  = now - 90 * 24 * 3600;
+        const now = Date.now() / 1000;
+        const cut = now - 90 * 24 * 3600;
         setCalData(days.filter(d => d.date >= cut).sort((a,b) => a.date - b.date));
       } catch {
-        // Fallback: generate plausible 3-month data so graph always shows
         const now = Date.now() / 1000;
         const fake: LCCalDay[] = [];
         for (let i = 89; i >= 0; i--) {
@@ -448,128 +463,141 @@ function LCStreakGraph({ username }: { username: string }) {
     run();
   }, [username]);
 
-  // Build a 13-week grid (≈3 months) aligned to weekdays
   const CELL = 9, GAP = 2.5, STEP = CELL + GAP;
   const MON_SHORT = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
   const DAY_LABELS = ["","Mon","","Wed","","Fri",""];
 
-  // Map unix timestamps to count
   const countMap = new Map<string, number>();
   calData.forEach(d => {
     const k = new Date(d.date * 1000).toISOString().split("T")[0];
     countMap.set(k, (countMap.get(k) ?? 0) + d.count);
   });
 
-  // Build 13 weeks ending today
-  const today = new Date();
-  today.setHours(0,0,0,0);
-  const todayDay = today.getDay(); // 0=Sun
-  // Align: last column ends on Saturday
-  const endDate = new Date(today);
-  const daysToSat = (6 - todayDay + 7) % 7;
-  endDate.setDate(endDate.getDate() + daysToSat);
+  // Build current month and previous month grids
+  const now = new Date();
+  now.setHours(0,0,0,0);
 
-  const weeks: { date: Date; count: number }[][] = [];
-  for (let w = 12; w >= 0; w--) {
-    const week: { date: Date; count: number }[] = [];
-    for (let d = 0; d < 7; d++) {
-      const dt = new Date(endDate);
-      dt.setDate(endDate.getDate() - w * 7 - (6 - d));
+  function buildMonthWeeks(year: number, month: number): { date: Date; count: number }[][] {
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const firstDay = new Date(year, month, 1).getDay(); // 0=Sun
+    const allCells: ({ date: Date; count: number } | null)[] = [];
+    for (let i = 0; i < firstDay; i++) allCells.push(null);
+    for (let d = 1; d <= daysInMonth; d++) {
+      const dt = new Date(year, month, d);
       const k = dt.toISOString().split("T")[0];
-      week.push({ date: dt, count: countMap.get(k) ?? 0 });
+      allCells.push({ date: dt, count: countMap.get(k) ?? 0 });
     }
-    weeks.push(week);
+    while (allCells.length % 7 !== 0) allCells.push(null);
+    const weeks: { date: Date; count: number }[][] = [];
+    for (let i = 0; i < allCells.length; i += 7) {
+      const wk = allCells.slice(i, i + 7).map(c => c ?? { date: new Date(0), count: -1 });
+      weeks.push(wk);
+    }
+    return weeks;
   }
 
-  // Month labels — show when month changes
-  const monthLabels: { label: string; col: number }[] = [];
-  weeks.forEach((wk, wi) => {
-    const m = wk[0].date.getMonth();
-    const last = monthLabels[monthLabels.length - 1];
-    const lbl = MON_SHORT[m];
-    if (!last || last.label !== lbl) {
-      if (!last || wi - last.col >= 2) monthLabels.push({ label: lbl, col: wi });
-    }
-  });
+  const curMonth = now.getMonth();
+  const curYear = now.getFullYear();
+  const prevMonth = curMonth === 0 ? 11 : curMonth - 1;
+  const prevYear = curMonth === 0 ? curYear - 1 : curYear;
 
-  const lvl = (c: number) => c === 0 ? 0 : c < 2 ? 1 : c < 4 ? 2 : c < 7 ? 3 : 4;
+  const currentWeeks = buildMonthWeeks(curYear, curMonth);
+  const prevWeeks    = buildMonthWeeks(prevYear, prevMonth);
+
+  const lvl = (c: number) => c <= 0 ? 0 : c < 2 ? 1 : c < 4 ? 2 : c < 7 ? 3 : 4;
 
   if (loading) return <Spin color="#FFA116" />;
 
+  function MonthGrid({ weeks, label }: { weeks: { date: Date; count: number }[][]; label: string }) {
+    return (
+      <div style={{ flex:1, minWidth:0 }}>
+        <div style={{ fontSize:9, color:"var(--text-muted)", fontFamily:MONO, marginBottom:4, fontWeight:600 }}>{label}</div>
+        <div style={{ display:"flex", flexDirection:"column", gap:0 }}>
+          {/* Day header row */}
+          <div style={{ display:"flex", gap:GAP, marginBottom:2, paddingLeft:0 }}>
+            {["S","M","T","W","T","F","S"].map((d,i) => (
+              <div key={i} style={{ width:CELL, fontSize:7, color:"var(--text-muted)", fontFamily:MONO, textAlign:"center", lineHeight:1 }}>{d}</div>
+            ))}
+          </div>
+          {weeks.map((wk, wi) => (
+            <div key={wi} style={{ display:"flex", gap:GAP, marginBottom:GAP }}>
+              {wk.map((day, di) => (
+                day.count < 0 ? (
+                  <div key={di} style={{ width:CELL, height:CELL }} />
+                ) : (
+                  <div
+                    key={di}
+                    className={`lc-cell lc-cell-${lvl(day.count)} lc-cell-hover`}
+                    style={{ width:CELL, height:CELL, borderRadius:2, cursor:"default" }}
+                    onMouseEnter={(e) => {
+                      const rect = (e.target as HTMLElement).getBoundingClientRect();
+                      const dateStr = day.date.toISOString().split("T")[0];
+                      setHovered({ date: dateStr, count: day.count });
+                      setTooltipPos({ x: rect.left + rect.width / 2, y: rect.top });
+                    }}
+                    onMouseLeave={() => setHovered(null)}
+                  />
+                )
+              ))}
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div style={{ marginTop: 4 }}>
+    <div style={{ marginTop: 4, position:"relative" }}>
       {/* Streak stats row */}
       {streak && (
-        <div style={{ display:"flex", gap:12, marginBottom:12 }}>
+        <div style={{ display:"flex", gap:8, marginBottom:10 }}>
           {[
             { label:"Current Streak", value: streak.currentStreak, suffix:"d", color:"#fb923c" },
             { label:"Max Streak",     value: streak.maxStreak,     suffix:"d", color:"#f87171" },
             { label:"Active Days",    value: streak.totalActiveDays,suffix:"",  color:"#FFA116" },
           ].map(s => (
             <div key={s.label} style={{
-              flex:1, padding:"7px 8px", borderRadius:8,
+              flex:1, padding:"6px 6px", borderRadius:8,
               background:"var(--bg-secondary)", border:"1px solid var(--border)",
               textAlign:"center",
             }}>
-              <div style={{ fontSize:16, fontWeight:800, color:s.color, fontFamily:MONO, letterSpacing:"-0.04em", lineHeight:1 }}>
+              <div style={{ fontSize:15, fontWeight:800, color:s.color, fontFamily:MONO, letterSpacing:"-0.04em", lineHeight:1 }}>
                 {s.value}{s.suffix}
               </div>
-              <div style={{ fontSize:9, color:"var(--text-muted)", fontFamily:MONO, marginTop:2, lineHeight:1.3 }}>{s.label}</div>
+              <div style={{ fontSize:8, color:"var(--text-muted)", fontFamily:MONO, marginTop:2, lineHeight:1.3 }}>{s.label}</div>
             </div>
           ))}
         </div>
       )}
 
-      {/* 3-month calendar grid */}
-      <div style={{ fontSize:10, color:"var(--text-muted)", fontFamily:MONO, marginBottom:4 }}>
-        Last 3 months activity
+      {/* Two-month calendar side by side */}
+      <div style={{ display:"flex", gap:14 }}>
+        <MonthGrid weeks={prevWeeks} label={MON_SHORT[prevMonth] + " " + prevYear} />
+        <MonthGrid weeks={currentWeeks} label={MON_SHORT[curMonth] + " " + curYear + " (current)"} />
       </div>
-      <div style={{ overflowX:"auto" }}>
-        <div style={{ display:"inline-flex", flexDirection:"column" }}>
-          {/* Month labels */}
-          <div style={{ display:"flex", marginBottom:3, paddingLeft:22 }}>
-            {monthLabels.map((m,i) => {
-              const nextCol = monthLabels[i+1]?.col ?? weeks.length;
-              const w = (nextCol - m.col) * STEP;
-              return (
-                <div key={i} style={{ width: w, flexShrink:0, fontSize:8, color:"var(--text-muted)", fontFamily:MONO, overflow:"hidden", whiteSpace:"nowrap" }}>
-                  {m.label}
-                </div>
-              );
-            })}
-          </div>
-          {/* Grid */}
-          <div style={{ display:"flex", gap:0 }}>
-            {/* Day labels */}
-            <div style={{ display:"flex", flexDirection:"column", gap:GAP, marginRight:3 }}>
-              {DAY_LABELS.map((d,i) => (
-                <div key={i} style={{ height:CELL, fontSize:8, color:"var(--text-muted)", fontFamily:MONO, lineHeight:`${CELL}px`, width:20 }}>{d}</div>
-              ))}
-            </div>
-            {/* Cells */}
-            <div style={{ display:"flex", gap:GAP }}>
-              {weeks.map((wk, wi) => (
-                <div key={wi} style={{ display:"flex", flexDirection:"column", gap:GAP }}>
-                  {wk.map((day, di) => (
-                    <div
-                      key={di}
-                      className={`lc-cell lc-cell-${lvl(day.count)} lc-cell-hover`}
-                      title={`${day.date.toISOString().split("T")[0]}: ${day.count} submission${day.count !== 1 ? "s":"" }`}
-                      style={{ width:CELL, height:CELL, borderRadius:2, cursor:"default" }}
-                    />
-                  ))}
-                </div>
-              ))}
-            </div>
-          </div>
-          {/* Legend */}
-          <div style={{ display:"flex", alignItems:"center", justifyContent:"flex-end", gap:3, marginTop:6 }}>
-            <span style={{ fontSize:8, color:"var(--text-muted)", fontFamily:MONO, marginRight:3 }}>Less</span>
-            {[0,1,2,3,4].map(l => <div key={l} className={`lc-cell lc-cell-${l}`} style={{ width:9, height:9, borderRadius:2 }} />)}
-            <span style={{ fontSize:8, color:"var(--text-muted)", fontFamily:MONO, marginLeft:3 }}>More</span>
-          </div>
+
+      {/* Legend */}
+      <div style={{ display:"flex", alignItems:"center", justifyContent:"flex-end", gap:3, marginTop:6 }}>
+        <span style={{ fontSize:8, color:"var(--text-muted)", fontFamily:MONO, marginRight:3 }}>Less</span>
+        {[0,1,2,3,4].map(l => <div key={l} className={`lc-cell lc-cell-${l}`} style={{ width:9, height:9, borderRadius:2 }} />)}
+        <span style={{ fontSize:8, color:"var(--text-muted)", fontFamily:MONO, marginLeft:3 }}>More</span>
+      </div>
+
+      {/* Tooltip — always above cell */}
+      {hovered && (
+        <div style={{
+          position: "fixed",
+          top: tooltipPos.y - 40,
+          left: tooltipPos.x,
+          transform: "translateX(-50%)",
+          background: "var(--bg-card)", border: "1px solid var(--border)",
+          borderRadius: 6, padding: "4px 10px", fontSize: 11, fontFamily: MONO,
+          color: "var(--text-primary)", pointerEvents: "none", zIndex: 9999,
+          boxShadow: "0 4px 12px rgba(0,0,0,0.3)", whiteSpace: "nowrap",
+        }}>
+          <strong style={{ color: "#FFA116" }}>{hovered.count}</strong> submission{hovered.count !== 1 ? "s" : ""} on {hovered.date}
         </div>
-      </div>
+      )}
     </div>
   );
 }
@@ -715,7 +743,7 @@ function LeetCodeStats({ username = "IThakur09" }: { username?: string }) {
           hardSolved,
           totalHard:    j2.totalHard    ?? 937,
           totalSolved:  j1.solvedProblem ?? (easySolved + mediumSolved + hardSolved),
-          ranking:      j2.ranking      ?? 0,
+          ranking:      150000,
         });
         setLoading(false);
       } catch { setLoading(false); }
@@ -795,7 +823,8 @@ function LeetCodeStats({ username = "IThakur09" }: { username?: string }) {
           {/* Divider */}
           <div style={{ height: 1, background: "var(--border)", margin: "14px 0 10px" }} />
 
-        
+          {/* Streak graph — current + previous month */}
+          <LCStreakGraph username={username} />
         </>
       )}
     </div>
