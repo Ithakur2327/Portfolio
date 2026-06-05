@@ -130,8 +130,6 @@ html {
   text-rendering: optimizeLegibility;
   /* Momentum scrolling on iOS */
   -webkit-overflow-scrolling: touch;
-  /* hint to browser this element scrolls — enables async scroll */
-  will-change: scroll-position;
 }
 
 body {
@@ -150,9 +148,7 @@ body {
 }
 
 img, svg, canvas {
-  image-rendering: optimizeQuality;
-  backface-visibility: hidden;
-  transform: translateZ(0);
+  image-rendering: auto;
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -246,8 +242,8 @@ a, button, [role="button"] {
   height: 52px;
   background: var(--nav-bg);
   /* Reduced blur on all devices — expensive on mobile */
-  backdrop-filter: blur(16px) saturate(180%);
-  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  backdrop-filter: blur(10px) saturate(160%);
+  -webkit-backdrop-filter: blur(10px) saturate(160%);
   border-bottom: 1px solid var(--nav-border);
   transition: background 0.2s, border-color 0.2s;
   /* Own compositing layer — prevents repaints on scroll */
@@ -830,11 +826,10 @@ html.light .stat-badge {
   -webkit-backface-visibility: hidden;
 }
 
-/* Backdrop-filter elements — force GPU layer BEFORE blur */
+/* Backdrop-filter elements — must form their own layer */
 [style*="backdropFilter"],
 [style*="backdrop-filter"] {
   transform: translateZ(0);
-  will-change: opacity;
 }
 
 /* Skills strip GPU */
@@ -995,8 +990,8 @@ html.light .stat-badge {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
   background: var(--nav-bg);
-  backdrop-filter: blur(24px) saturate(220%);
-  -webkit-backdrop-filter: blur(24px) saturate(220%);
+  backdrop-filter: blur(12px) saturate(180%);
+  -webkit-backdrop-filter: blur(12px) saturate(180%);
   flex-direction: column;
   align-items: center;
   justify-content: center;

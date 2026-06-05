@@ -93,8 +93,8 @@ export function Navbar() {
           position: fixed;
           top: 0; left: 0; right: 0; bottom: 0;
           background: var(--nav-bg);
-          backdrop-filter: blur(24px) saturate(220%);
-          -webkit-backdrop-filter: blur(24px) saturate(220%);
+          backdrop-filter: blur(12px) saturate(180%);
+          -webkit-backdrop-filter: blur(12px) saturate(180%);
           flex-direction: column;
           align-items: center;
           justify-content: center;

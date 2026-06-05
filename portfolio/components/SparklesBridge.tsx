@@ -131,8 +131,6 @@ export function SparklesBridge() {
         display: "block",
         width: "100%",
         height: 48,
-        willChange: "transform",
-        transform: "translateZ(0)",
       }}
     />
   );
