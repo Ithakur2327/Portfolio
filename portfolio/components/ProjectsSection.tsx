@@ -368,8 +368,8 @@ function ProjectModal({
           position: "fixed",
           top: 0, left: 0, right: 0, bottom: 0,
           background: "rgba(0,0,0,0.80)",
-          backdropFilter: "blur(6px) saturate(140%)",
-          WebkitBackdropFilter: "blur(6px) saturate(140%)",
+          backdropFilter: "blur(10px) saturate(160%)",
+          WebkitBackdropFilter: "blur(10px) saturate(160%)",
           zIndex: 9000,
         }}
       />
@@ -703,12 +703,16 @@ export function ProjectsSection() {
             <motion.div
               className="proj-grid"
               animate={{
-                opacity: unlocked ? 1 : 0.45,
+                opacity: unlocked ? 1 : 0.55,
                 scale:   unlocked ? 1 : 0.997,
+                filter:  unlocked ? "blur(0px)" : "blur(5px)",
               }}
               transition={{ duration: 0.48, ease: [0.22, 1, 0.36, 1] }}
               style={{
                 pointerEvents: unlocked ? "auto" : "none",
+                willChange: "transform, opacity, filter",
+                backfaceVisibility: "hidden",
+                WebkitBackfaceVisibility: "hidden",
               }}
             >
               {PROJECTS.map((proj, i) => (
