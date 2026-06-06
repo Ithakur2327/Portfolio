@@ -1,4 +1,5 @@
 // oneko.js: https://github.com/adryd325/oneko.js
+// Modified: Day-based cat colors (Saturday = Green) + optional rainbow mode
 
 (function oneko() {
   const isReducedMotion =
@@ -21,6 +22,38 @@
   let idleAnimationFrame = 0;
 
   const nekoSpeed = 10;
+
+  // ── Day-based color filters ──────────────────────────────────────────────
+  // getDay() returns: 0=Sun, 1=Mon, 2=Tue, 3=Wed, 4=Thu, 5=Fri, 6=Sat
+  const dayFilters = {
+    0: 'brightness(0.55) sepia(0.8) saturate(4)   hue-rotate(200deg) contrast(1.3)', // Sunday    → Blue
+    1: 'brightness(0.5)  sepia(0.8) saturate(4)   hue-rotate(270deg) contrast(1.3)', // Monday    → Purple
+    2: 'brightness(0.55) sepia(0.8) saturate(5)   hue-rotate(320deg) contrast(1.3)', // Tuesday   → Pink
+    3: 'brightness(0.5)  sepia(0.9) saturate(5)   hue-rotate(0deg)   contrast(1.35)', // Wednesday → Red
+    4: 'brightness(0.5)  sepia(0.9) saturate(5)   hue-rotate(30deg)  contrast(1.35)', // Thursday  → Orange
+    5: 'brightness(0.5)  sepia(0.9) saturate(5)   hue-rotate(50deg)  contrast(1.35)', // Friday    → Yellow
+    6: 'brightness(0.45) sepia(0.8) saturate(4)   hue-rotate(80deg)  contrast(1.35)', // Saturday  → Green ✦
+  };
+
+  // ── RAINBOW MODE ─────────────────────────────────────────────────────────
+  // Set this to true for a smoothly cycling rainbow cat!
+  const RAINBOW_MODE = false;
+
+  // Rainbow cycle speed: smaller = faster (in milliseconds per full cycle)
+  const RAINBOW_CYCLE_MS = 4000;
+
+  function getRainbowFilter() {
+    const hue = (Date.now() % RAINBOW_CYCLE_MS) / RAINBOW_CYCLE_MS * 360;
+    return `brightness(0.5) sepia(0.9) saturate(5) hue-rotate(${hue.toFixed(1)}deg) contrast(1.35)`;
+  }
+
+  function getThemeFilter() {
+    if (RAINBOW_MODE) return getRainbowFilter();
+    const day = new Date().getDay();
+    return dayFilters[day];
+  }
+  // ─────────────────────────────────────────────────────────────────────────
+
   const spriteSets = {
     idle: [[-3, -3]],
     alert: [[-7, -3]],
@@ -106,10 +139,10 @@
     }
     nekoEl.style.backgroundImage = `url(${nekoFile})`;
     nekoEl.style.filter = getThemeFilter();
-    setSprite('idle', 0);
 
+    // Watch for dark/light mode class changes
     const themeObserver = new MutationObserver(() => {
-      nekoEl.style.filter = getThemeFilter();
+      if (!RAINBOW_MODE) nekoEl.style.filter = getThemeFilter();
     });
     themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
 
@@ -126,15 +159,13 @@
   let lastFrameTimestamp;
 
   function onAnimationFrame(timestamp) {
-    // Stops execution if the neko element is removed from DOM
-    if (!nekoEl.isConnected) {
-      return;
-    }
-    if (!lastFrameTimestamp) {
-      lastFrameTimestamp = timestamp;
-    }
+    if (!nekoEl.isConnected) return;
+    if (!lastFrameTimestamp) lastFrameTimestamp = timestamp;
+
     if (timestamp - lastFrameTimestamp > 100) {
       lastFrameTimestamp = timestamp;
+      // Update rainbow filter every frame tick
+      if (RAINBOW_MODE) nekoEl.style.filter = getRainbowFilter();
       frame();
     }
     window.requestAnimationFrame(onAnimationFrame);
@@ -145,10 +176,6 @@
     nekoEl.style.backgroundPosition = `${sprite[0] * 32}px ${sprite[1] * 32}px`;
   }
 
-  function getThemeFilter() {
-    return 'brightness(0.5) sepia(0.75) saturate(3.2) hue-rotate(6deg) contrast(1.35)';
-  }
-
   function resetIdleAnimation() {
     idleAnimation = null;
     idleAnimationFrame = 0;
@@ -157,41 +184,24 @@
   function idle() {
     idleTime += 1;
 
-    // every ~ 20 seconds
     if (
       idleTime > 10 &&
       Math.floor(Math.random() * 200) == 0 &&
       idleAnimation == null
     ) {
       let avalibleIdleAnimations = ['sleeping', 'scratchSelf'];
-      if (nekoPosX < 32) {
-        avalibleIdleAnimations.push('scratchWallW');
-      }
-      if (nekoPosY < 32) {
-        avalibleIdleAnimations.push('scratchWallN');
-      }
-      if (nekoPosX > window.innerWidth - 32) {
-        avalibleIdleAnimations.push('scratchWallE');
-      }
-      if (nekoPosY > window.innerHeight - 32) {
-        avalibleIdleAnimations.push('scratchWallS');
-      }
-      idleAnimation =
-        avalibleIdleAnimations[
-          Math.floor(Math.random() * avalibleIdleAnimations.length)
-        ];
+      if (nekoPosX < 32) avalibleIdleAnimations.push('scratchWallW');
+      if (nekoPosY < 32) avalibleIdleAnimations.push('scratchWallN');
+      if (nekoPosX > window.innerWidth - 32) avalibleIdleAnimations.push('scratchWallE');
+      if (nekoPosY > window.innerHeight - 32) avalibleIdleAnimations.push('scratchWallS');
+      idleAnimation = avalibleIdleAnimations[Math.floor(Math.random() * avalibleIdleAnimations.length)];
     }
 
     switch (idleAnimation) {
       case 'sleeping':
-        if (idleAnimationFrame < 8) {
-          setSprite('tired', 0);
-          break;
-        }
+        if (idleAnimationFrame < 8) { setSprite('tired', 0); break; }
         setSprite('sleeping', Math.floor(idleAnimationFrame / 4));
-        if (idleAnimationFrame > 192) {
-          resetIdleAnimation();
-        }
+        if (idleAnimationFrame > 192) resetIdleAnimation();
         break;
       case 'scratchWallN':
       case 'scratchWallS':
@@ -199,9 +209,7 @@
       case 'scratchWallW':
       case 'scratchSelf':
         setSprite(idleAnimation, idleAnimationFrame);
-        if (idleAnimationFrame > 9) {
-          resetIdleAnimation();
-        }
+        if (idleAnimationFrame > 9) resetIdleAnimation();
         break;
       default:
         setSprite('idle', 0);
@@ -226,7 +234,6 @@
 
     if (idleTime > 1) {
       setSprite('alert', 0);
-      // count down after being alerted before moving
       idleTime = Math.min(idleTime, 7);
       idleTime -= 1;
       return;
