@@ -58,7 +58,6 @@ const SkillChip = memo(function SkillChip({
   const tech = TECH[name] ?? { color: "#71717a", logo: "" };
 
   return (
-    // CSS transitions instead of motion.div — no MotionValue per chip
     <div
       className="skill-chip"
       style={{
@@ -155,8 +154,10 @@ function LampBeam({ glowColor, visible }: { glowColor: string; visible: boolean 
   );
 }
 
-/* ── Lamp Skill Box ── */
-function LampSkillBox({ title, glowColor, items }: { title: string; glowColor: string; items: string[] }) {
+/* ── Lamp Skill Box — no card background, border-only partition ── */
+function LampSkillBox({
+  title, glowColor, items, isLast,
+}: { title: string; glowColor: string; items: string[]; isLast?: boolean }) {
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, { margin: "-60px 0px -60px 0px", once: false });
 
@@ -164,12 +165,15 @@ function LampSkillBox({ title, glowColor, items }: { title: string; glowColor: s
     <div
       ref={ref}
       style={{
-        flex: 1, minWidth: 0, borderRadius: 14,
-        border: `1px solid ${glowColor}${isInView ? "28" : "12"}`,
-        background: "var(--bg-card)", overflow: "hidden",
+        flex: 1, minWidth: 0,
+        /* No card background — transparent */
+        background: "transparent",
+        overflow: "hidden",
         display: "flex", flexDirection: "column",
         position: "relative",
-        transition: "border-color 0.5s ease",
+        /* Right border as divider (except last) */
+        borderRight: isLast ? "none" : "1px solid var(--border)",
+        paddingRight: isLast ? 0 : 0,
         willChange: "transform", transform: "translateZ(0)",
         backfaceVisibility: "hidden", minHeight: 285,
         contain: "layout style",
@@ -215,16 +219,19 @@ function LampSkillBox({ title, glowColor, items }: { title: string; glowColor: s
   );
 }
 
-/* ── Moving Strip ── */
+/* ── Moving Strip — fixed with hover pause ── */
 function MovingStrip({ items }: { items: string[] }) {
   const all = [...items, ...items, ...items];
 
   return (
-    <div style={{
-      overflow: "hidden",
-      maskImage: "linear-gradient(to right,transparent,black 8%,black 92%,transparent)",
-      WebkitMaskImage: "linear-gradient(to right,transparent,black 8%,black 92%,transparent)",
-    }}>
+    <div
+      className="skills-strip-outer"
+      style={{
+        overflow: "hidden",
+        maskImage: "linear-gradient(to right,transparent,black 8%,black 92%,transparent)",
+        WebkitMaskImage: "linear-gradient(to right,transparent,black 8%,black 92%,transparent)",
+      }}
+    >
       <div
         className="skills-strip"
         style={{
@@ -280,6 +287,33 @@ export function SkillsSection() {
 
   return (
     <>
+      <style suppressHydrationWarning>{`
+        /* Hover pause fix for moving strip */
+        .skills-strip-outer:hover .skills-strip {
+          animation-play-state: paused !important;
+        }
+
+        /* Skills lamp grid */
+        .skills-lamp-grid {
+          display: flex;
+          gap: 0;
+          border: 1px solid var(--border);
+          border-radius: 14px;
+          overflow: hidden;
+        }
+        @media (max-width: 680px) {
+          .skills-lamp-grid {
+            flex-direction: column;
+          }
+          .skills-lamp-grid > div {
+            border-right: none !important;
+            border-bottom: 1px solid var(--border);
+          }
+          .skills-lamp-grid > div:last-child {
+            border-bottom: none !important;
+          }
+        }
+      `}</style>
       <section
         ref={ref}
         id="skills"
@@ -306,8 +340,12 @@ export function SkillsSection() {
             </div>
             <div style={{ height: 1, background: "var(--border)", margin: "18px 0 24px" }} />
             <div className="skills-lamp-grid">
-              {LAMP_GROUPS.map((g) => (
-                <LampSkillBox key={g.title} {...g} />
+              {LAMP_GROUPS.map((g, idx) => (
+                <LampSkillBox
+                  key={g.title}
+                  {...g}
+                  isLast={idx === LAMP_GROUPS.length - 1}
+                />
               ))}
             </div>
             <div style={{ marginTop: 28, marginLeft: -20, marginRight: -20 }}>

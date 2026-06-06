@@ -50,14 +50,11 @@ export function Navbar() {
   const [activeSection, setActiveSection] = useState("about");
   const [mounted,       setMounted]       = useState(false);
   const [mobileOpen,    setMobileOpen]    = useState(false);
-  // For staggered pill animation without gsap
-  const [pillsVisible,  setPillsVisible]  = useState(false);
-  const overlayRef = useRef<HTMLDivElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => { setMounted(true); }, []);
 
   useEffect(() => {
-    // Trigger after scroll = 40px — more transparent start
     const fn = () => setScrolled(window.scrollY > 40);
     window.addEventListener("scroll", fn, { passive: true });
     return () => window.removeEventListener("scroll", fn);
@@ -79,39 +76,33 @@ export function Navbar() {
   useEffect(() => {
     if (!mobileOpen) return;
     const fn = (e: MouseEvent) => {
-      if (overlayRef.current && overlayRef.current.contains(e.target as Node)) return;
+      if (menuRef.current && menuRef.current.contains(e.target as Node)) return;
       setMobileOpen(false);
     };
     const t = setTimeout(() => document.addEventListener("mousedown", fn), 80);
     return () => { clearTimeout(t); document.removeEventListener("mousedown", fn); };
   }, [mobileOpen]);
 
-  // Stagger pills in after overlay opens
-  useEffect(() => {
-    if (mobileOpen) {
-      const t = setTimeout(() => setPillsVisible(true), 30);
-      return () => clearTimeout(t);
-    } else {
-      setPillsVisible(false);
-    }
-  }, [mobileOpen]);
-
   const isDark = mounted ? theme === "dark" : true;
   const avatarSrc = isDark ? "/avatar-dark.jpg" : "/avatar-light.jpg";
 
-  // Transparent by default, subtle glass on scroll
-  const navBgStyle = scrolled
-    ? { background: isDark ? "rgba(9,9,11,0.70)" : "rgba(245,245,243,0.70)", borderBottomColor: isDark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.07)", backdropFilter: "blur(18px) saturate(160%)", WebkitBackdropFilter: "blur(18px) saturate(160%)" }
-    : { background: "transparent", borderBottomColor: "transparent", backdropFilter: "none", WebkitBackdropFilter: "none" };
+  // Always glass — stronger on scroll
+  const navBgStyle = {
+    background: isDark
+      ? scrolled ? "rgba(9,9,11,0.82)" : "rgba(9,9,11,0.60)"
+      : scrolled ? "rgba(245,245,243,0.82)" : "rgba(245,245,243,0.60)",
+    borderBottomColor: isDark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.07)",
+    backdropFilter: "blur(20px) saturate(160%)",
+    WebkitBackdropFilter: "blur(20px) saturate(160%)",
+  };
 
-  const menuBg = isDark ? "#111113" : "#ffffff";
   const menuFg = isDark ? "#fafafa" : "#111111";
-  const overlayBg = isDark ? "rgba(9,9,11,0.97)" : "rgba(245,245,243,0.97)";
+  const menuBg = isDark ? "rgba(14,14,16,0.96)" : "rgba(248,248,246,0.96)";
+  const menuBorder = isDark ? "rgba(255,255,255,0.10)" : "rgba(0,0,0,0.10)";
 
   return (
     <>
       <style suppressHydrationWarning>{`
-        /* Nav links — colour-only hover, no background box */
         .nav-link {
           padding: 5px 10px; border-radius: 5px;
           font-size: 13px; font-weight: 500;
@@ -124,64 +115,51 @@ export function Navbar() {
         .nav-link:hover  { color: var(--nav-link-hover); }
         .nav-link.active { color: var(--nav-link-hover); }
         .nav-partition { width:1px; height:18px; background:var(--nav-border); margin:0 6px; flex-shrink:0; }
-
-        /* Mobile btn hidden by default */
         .mobile-nav-btn { display: none !important; }
 
-        /* BubbleMenu overlay */
-        .bubble-overlay {
-          position: fixed; inset: 0; z-index: 999;
-          display: flex; align-items: center; justify-content: center;
-          flex-direction: column;
-          transition: opacity 0.22s ease;
-          pointer-events: none; opacity: 0;
+        /* Compact mobile dropdown */
+        .mobile-menu-dropdown {
+          position: fixed;
+          top: 54px;
+          right: 16px;
+          width: 190px;
+          border-radius: 14px;
+          overflow: hidden;
+          z-index: 9000;
+          animation: menuDropIn 0.18s cubic-bezier(0.22,1,0.36,1) both;
+          transform-origin: top right;
         }
-        .bubble-overlay.open { pointer-events: auto; opacity: 1; }
-
-        /* Pill links */
-        .bubble-pill {
-          width: 100%; border-radius: 9999px;
+        @keyframes menuDropIn {
+          from { opacity: 0; transform: scale(0.88) translateY(-8px); }
+          to   { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        .mobile-menu-link {
+          display: flex; align-items: center;
+          padding: 10px 16px;
+          font-size: 13.5px; font-weight: 500;
           text-decoration: none;
-          display: flex; align-items: center; justify-content: center;
-          transition: background 0.22s, color 0.22s, transform 0.22s, opacity 0.28s;
-          box-shadow: 0 4px 14px rgba(0,0,0,0.10);
-          will-change: transform, opacity;
-          white-space: nowrap; box-sizing: border-box;
+          transition: background 0.12s, color 0.12s;
+          gap: 10px;
         }
-        .bubble-pill:active { transform: scale(0.95) !important; }
+        .mobile-menu-link:hover { background: rgba(128,128,128,0.12); }
 
         @media (min-width: 761px) {
           .mobile-nav-btn { display: none !important; }
           .desktop-nav    { display: flex !important; }
           .nav-partition  { display: flex !important; }
-          /* Desktop: pills rotated, in 3-col grid */
-          .bubble-pill-col { flex: 0 0 calc(100% / 3); display: flex; justify-content: center; align-items: stretch; box-sizing: border-box; }
-          .bubble-pill { min-height: 160px; padding: clamp(1.5rem,3vw,8rem) 0; font-size: clamp(1.5rem,4vw,4rem); font-weight: 400; line-height: 0; height: 10px; }
-          .bubble-pill:hover { background: var(--pill-hover-bg) !important; color: var(--pill-hover-fg) !important; }
-          /* 4th item centering */
-          .bubble-pill-col:nth-child(4):nth-last-child(2) { margin-left: calc(100% / 6); }
-          .bubble-pill-col:nth-child(4):last-child { margin-left: calc(100% / 3); }
         }
-
         @media (max-width: 760px) {
           .mobile-nav-btn { display: flex !important; }
           .desktop-nav    { display: none !important; }
           .nav-partition  { display: none !important; }
-          /* Mobile: full-width stacked pills */
-          .bubble-overlay { padding-top: 80px; align-items: flex-start; }
-          .bubble-pill-list { width: 100%; padding: 0 20px; display: flex; flex-direction: column; gap: 10px; }
-          .bubble-pill-col { width: 100%; }
-          .bubble-pill { font-size: clamp(1.3rem,5vw,2.4rem) !important; min-height: 70px !important; padding: 20px 0 !important; font-weight: 500 !important; }
-          .bubble-pill:hover { background: var(--pill-hover-bg) !important; color: var(--pill-hover-fg) !important; }
         }
       `}</style>
 
-      {/* Inline transition for nav background */}
       <header
         className="nav-root"
         style={{
           ...navBgStyle,
-          transition: "background 0.35s ease, border-color 0.35s ease, backdrop-filter 0.35s ease",
+          transition: "background 0.35s ease, border-color 0.35s ease",
         }}
       >
         <div className="nav-inner">
@@ -238,76 +216,52 @@ export function Navbar() {
         </div>
       </header>
 
-      {/* BubbleMenu overlay — CSS-animated, no gsap needed */}
+      {/* Compact mobile dropdown */}
       {mobileOpen && (
         <div
-          ref={overlayRef}
-          className={`bubble-overlay${mobileOpen ? " open" : ""}`}
+          ref={menuRef}
+          className="mobile-menu-dropdown"
           style={{
-            background: overlayBg,
-            backdropFilter: "blur(16px) saturate(160%)",
-            WebkitBackdropFilter: "blur(16px) saturate(160%)",
+            background: menuBg,
+            border: `1px solid ${menuBorder}`,
+            backdropFilter: "blur(20px) saturate(160%)",
+            WebkitBackdropFilter: "blur(20px) saturate(160%)",
+            boxShadow: "0 8px 32px rgba(0,0,0,0.28), 0 2px 8px rgba(0,0,0,0.16)",
           }}
-          aria-hidden={!mobileOpen}
         >
-          {/* Close X */}
-          <button
-            onClick={() => setMobileOpen(false)}
-            aria-label="Close menu"
-            style={{
-              position: "absolute", top: 16, right: 16,
-              width: 38, height: 38, borderRadius: "50%",
-              background: menuBg,
-              border: `1px solid ${isDark ? "rgba(255,255,255,0.10)" : "rgba(0,0,0,0.10)"}`,
-              color: menuFg,
-              display: "flex", alignItems: "center", justifyContent: "center",
-              cursor: "pointer", zIndex: 10,
-            }}
-          >
-            <CloseIcon size={14} />
-          </button>
+          {/* Theme toggle inside menu */}
+          <div style={{
+            display: "flex", alignItems: "center", justifyContent: "space-between",
+            padding: "10px 16px 8px",
+            borderBottom: `1px solid ${menuBorder}`,
+            marginBottom: 4,
+          }}>
+            <span style={{ fontSize: 11, fontWeight: 600, color: menuFg, opacity: 0.4, letterSpacing: "0.08em", textTransform: "uppercase" }}>
+              Navigation
+            </span>
+          </div>
 
-          {/* Pills */}
-          <ul
-            className="bubble-pill-list"
-            style={{
-              listStyle: "none", margin: 0,
-              padding: "0 24px",
-              width: "100%", maxWidth: 1400,
-              display: "flex", flexWrap: "wrap",
-              gap: 0,
-            }}
-            role="menu"
-          >
-            {NAV_LINKS.map((item, idx) => (
-              <li
-                key={idx}
-                role="none"
-                className="bubble-pill-col"
-                style={{ display: "flex", justifyContent: "center", alignItems: "stretch" }}
-              >
-                <a
-                  role="menuitem"
-                  href={item.href}
-                  className="bubble-pill"
-                  onClick={() => setMobileOpen(false)}
-                  style={{
-                    background: menuBg,
-                    color: menuFg,
-                    // CSS variables for hover
-                    ["--pill-hover-bg" as string]: item.color,
-                    ["--pill-hover-fg" as string]: "#fff",
-                    // Stagger animation via CSS transition delay
-                    opacity: pillsVisible ? 1 : 0,
-                    transform: pillsVisible ? "scale(1) translateY(0)" : "scale(0.85) translateY(16px)",
-                    transitionDelay: `${idx * 0.06}s`,
-                  }}
-                >
-                  {item.label}
-                </a>
-              </li>
-            ))}
-          </ul>
+          {NAV_LINKS.map((item, idx) => (
+            <a
+              key={item.href}
+              href={item.href}
+              className="mobile-menu-link"
+              style={{
+                color: menuFg,
+                borderBottom: idx < NAV_LINKS.length - 1 ? `1px solid ${menuBorder}` : "none",
+              }}
+              onClick={() => setMobileOpen(false)}
+            >
+              <span
+                style={{
+                  width: 7, height: 7, borderRadius: "50%",
+                  background: item.color, flexShrink: 0,
+                  boxShadow: `0 0 6px ${item.color}88`,
+                }}
+              />
+              {item.label}
+            </a>
+          ))}
         </div>
       )}
     </>

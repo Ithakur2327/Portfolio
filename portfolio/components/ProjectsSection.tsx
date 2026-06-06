@@ -217,14 +217,12 @@ function SlideToUnlock({ onUnlock }: { onUnlock: () => void }) {
   );
 }
 
-/* ── Horizontal Expandable Modal ── */
+/* ── Expandable Project Modal (Horizontal, like Aceternity pattern) ── */
 function ProjectModal({
   proj,
-  uid,
   onClose,
 }: {
   proj: typeof PROJECTS[0];
-  uid: string;
   onClose: () => void;
 }) {
   const [mounted, setMounted] = useState(false);
@@ -255,7 +253,7 @@ function ProjectModal({
 
   const content = (
     <>
-      {/* Blurred backdrop */}
+      {/* Backdrop */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -264,22 +262,22 @@ function ProjectModal({
         onClick={onClose}
         style={{
           position: "fixed", inset: 0, zIndex: 9000,
-          background: "rgba(0,0,0,0.55)",
+          background: "rgba(0,0,0,0.52)",
           backdropFilter: "blur(8px)",
           WebkitBackdropFilter: "blur(8px)",
         }}
       />
 
-      {/* Modal container */}
+      {/* Modal */}
       <motion.div
-        initial={{ opacity: 0, scale: 0.96, y: 10 }}
+        initial={{ opacity: 0, scale: 0.95, y: 14 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
-        exit={{ opacity: 0, scale: 0.96, y: 10, transition: { duration: 0.14 } }}
-        transition={{ type: "tween", duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
+        exit={{ opacity: 0, scale: 0.95, y: 14, transition: { duration: 0.14 } }}
+        transition={{ type: "tween", duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
         style={{
           position: "fixed", inset: 0, zIndex: 9001,
           display: "flex", alignItems: "center", justifyContent: "center",
-          padding: "12px",
+          padding: "16px",
           pointerEvents: "none",
         }}
       >
@@ -287,28 +285,26 @@ function ProjectModal({
           ref={modalRef}
           style={{
             pointerEvents: "auto",
-            width: "100%", maxWidth: 860,
-            maxHeight: "calc(100vh - 24px)",
+            width: "100%", maxWidth: 820,
+            maxHeight: "calc(100dvh - 32px)",
             background: "var(--bg-card)",
-            border: `1px solid ${proj.accentBorder}`,
-            borderTop: `3px solid ${proj.accent}`,
+            border: "1px solid var(--border)",
             borderRadius: 20,
-            boxShadow: `0 0 0 1px ${proj.accentBorder}, 0 40px 100px rgba(0,0,0,0.65)`,
+            boxShadow: "0 40px 100px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.04)",
             overflow: "hidden",
             display: "flex", flexDirection: "column",
           }}
         >
-          {/* Styles for two-col layout */}
           <style suppressHydrationWarning>{`
             .pm-scroll::-webkit-scrollbar { display: none; }
-            .pm-two-col {
+            .pm-layout {
               display: grid;
-              grid-template-columns: 260px 1fr;
-              gap: 20px;
-              align-items: start;
+              grid-template-columns: 240px 1fr;
+              gap: 0;
             }
-            @media (max-width: 580px) {
-              .pm-two-col { grid-template-columns: 1fr; gap: 14px; }
+            @media (max-width: 560px) {
+              .pm-layout { grid-template-columns: 1fr; }
+              .pm-img-col { border-right: none !important; border-bottom: 1px solid var(--border); }
             }
             .pm-tag {
               display: inline-flex; align-items: center; gap: 4px;
@@ -317,59 +313,97 @@ function ProjectModal({
             }
           `}</style>
 
-          <div className="pm-scroll" style={{ overflowY: "auto", scrollbarWidth: "none", padding: "20px 20px 24px" }}>
-            {/* Header row */}
-            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12, marginBottom: 16 }}>
-              <div>
-                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4, flexWrap: "wrap" }}>
-                  <h3 style={{ fontSize: "clamp(17px,2.5vw,22px)", fontWeight: 800, color: "var(--text-primary)", letterSpacing: "-0.03em", fontFamily: SF, margin: 0 }}>{proj.name}</h3>
-                  <span style={{ fontFamily: MONO, fontSize: 11, color: "var(--text-muted)", background: "var(--bg-secondary)", border: "1px solid var(--border)", padding: "2px 8px", borderRadius: 6 }}>{proj.year}</span>
-                </div>
-                <p style={{ fontSize: 13, color: "var(--text-secondary)", lineHeight: 1.6, margin: 0, maxWidth: 500 }}>{proj.desc}</p>
+          {/* Header */}
+          <div style={{
+            display: "flex", alignItems: "center", justifyContent: "space-between",
+            padding: "16px 20px",
+            borderBottom: "1px solid var(--border)",
+            flexShrink: 0,
+          }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <h3 style={{ fontSize: "clamp(15px,2.2vw,19px)", fontWeight: 800, color: "var(--text-primary)", letterSpacing: "-0.03em", fontFamily: SF, margin: 0 }}>
+                {proj.name}
+              </h3>
+              <span style={{ fontFamily: MONO, fontSize: 10.5, color: "var(--text-muted)", background: "var(--bg-secondary)", border: "1px solid var(--border)", padding: "2px 8px", borderRadius: 6 }}>
+                {proj.year}
+              </span>
+            </div>
+            {/* Close X */}
+            <button
+              onClick={onClose}
+              style={{
+                width: 32, height: 32, borderRadius: "50%",
+                background: "var(--bg-hover)", border: "1px solid var(--border)",
+                color: "var(--text-muted)",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                cursor: "pointer", flexShrink: 0,
+                transition: "background 0.15s, color 0.15s",
+              }}
+              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = "var(--bg-secondary)"; }}
+              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "var(--bg-hover)"; }}
+            >
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+              </svg>
+            </button>
+          </div>
+
+          {/* Body — horizontal layout */}
+          <div className="pm-scroll pm-layout" style={{ overflowY: "auto", scrollbarWidth: "none", flex: 1 }}>
+            {/* Left: image + buttons */}
+            <div
+              className="pm-img-col"
+              style={{
+                borderRight: "1px solid var(--border)",
+                display: "flex", flexDirection: "column",
+                padding: "20px",
+                gap: 14,
+                flexShrink: 0,
+              }}
+            >
+              <div style={{ borderRadius: 12, overflow: "hidden", border: "1px solid var(--border)" }}>
+                <img
+                  src={proj.img}
+                  alt={proj.name}
+                  style={{ width: "100%", height: 160, objectFit: "cover", objectPosition: "center top", display: "block" }}
+                />
               </div>
-              {/* X close button */}
-              <button
-                onClick={onClose}
-                style={{ flexShrink: 0, width: 34, height: 34, borderRadius: "50%", background: "var(--bg-hover)", border: "1px solid var(--border)", color: "var(--text-muted)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}
-              >
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-                  <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-                </svg>
-              </button>
+
+              <p style={{ fontSize: 12.5, color: "var(--text-secondary)", lineHeight: 1.65, margin: 0, fontFamily: SF }}>
+                {proj.desc}
+              </p>
+
+              <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: "auto" }}>
+                <a
+                  href={proj.github} target="_blank" rel="noreferrer"
+                  style={{ flex: 1, minWidth: 90, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6, padding: "9px 14px", borderRadius: 10, fontSize: 12, fontWeight: 600, textDecoration: "none", fontFamily: SF, background: "var(--bg-hover)", border: "1px solid var(--border)", color: "var(--text-primary)", transition: "opacity 0.15s, transform 0.15s" }}
+                  onMouseEnter={e => { (e.currentTarget as HTMLElement).style.opacity = "0.75"; (e.currentTarget as HTMLElement).style.transform = "translateY(-1px)"; }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.opacity = "1"; (e.currentTarget as HTMLElement).style.transform = "none"; }}
+                >
+                  <GithubIcon /> GitHub
+                </a>
+                <a
+                  href={proj.live} target="_blank" rel="noreferrer"
+                  style={{ flex: 1, minWidth: 90, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6, padding: "9px 14px", borderRadius: 10, fontSize: 12, fontWeight: 600, textDecoration: "none", fontFamily: SF, background: proj.accentBg, border: `1px solid ${proj.accentBorder}`, color: proj.accent, transition: "opacity 0.15s, transform 0.15s" }}
+                  onMouseEnter={e => { (e.currentTarget as HTMLElement).style.opacity = "0.75"; (e.currentTarget as HTMLElement).style.transform = "translateY(-1px)"; }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.opacity = "1"; (e.currentTarget as HTMLElement).style.transform = "none"; }}
+                >
+                  <ExternalIcon /> Live Demo
+                </a>
+              </div>
             </div>
 
-            <div style={{ height: 1, background: `linear-gradient(90deg, ${proj.accent}44, var(--border), transparent)`, marginBottom: 18 }} />
-
-            {/* Two-col: image left, content right */}
-            <div className="pm-two-col">
-              {/* Left: image + single action button */}
+            {/* Right: full description + tech stack */}
+            <div style={{ padding: "20px", display: "flex", flexDirection: "column", gap: 20 }}>
               <div>
-                <div style={{ borderRadius: 12, overflow: "hidden", border: `1px solid ${proj.accentBorder}`, boxShadow: `0 4px 20px rgba(0,0,0,0.28)` }}>
-                  <img src={proj.img} alt={proj.name} style={{ width: "100%", height: 180, objectFit: "cover", objectPosition: "center top", display: "block" }} />
-                </div>
-                {/* Single combined GitHub + Live button */}
-                <div style={{ display: "flex", gap: 8, marginTop: 14, flexWrap: "wrap" }}>
-                  <a href={proj.github} target="_blank" rel="noreferrer"
-                    style={{ flex: 1, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6, padding: "10px 14px", borderRadius: 10, fontSize: 12.5, fontWeight: 600, textDecoration: "none", fontFamily: SF, background: "var(--bg-hover)", border: "1px solid var(--border)", color: "var(--text-primary)", transition: "opacity 0.15s, transform 0.15s" }}
-                    onMouseEnter={e => { (e.currentTarget as HTMLElement).style.opacity = "0.8"; (e.currentTarget as HTMLElement).style.transform = "translateY(-1px)"; }}
-                    onMouseLeave={e => { (e.currentTarget as HTMLElement).style.opacity = "1"; (e.currentTarget as HTMLElement).style.transform = "none"; }}
-                  >
-                    <GithubIcon /> GitHub
-                  </a>
-                  <a href={proj.live} target="_blank" rel="noreferrer"
-                    style={{ flex: 1, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6, padding: "10px 14px", borderRadius: 10, fontSize: 12.5, fontWeight: 600, textDecoration: "none", fontFamily: SF, background: proj.accentBg, border: `1px solid ${proj.accentBorder}`, color: proj.accent, transition: "opacity 0.15s, transform 0.15s" }}
-                    onMouseEnter={e => { (e.currentTarget as HTMLElement).style.opacity = "0.8"; (e.currentTarget as HTMLElement).style.transform = "translateY(-1px)"; }}
-                    onMouseLeave={e => { (e.currentTarget as HTMLElement).style.opacity = "1"; (e.currentTarget as HTMLElement).style.transform = "none"; }}
-                  >
-                    <ExternalIcon /> Live Demo
-                  </a>
-                </div>
+                <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.09em", textTransform: "uppercase", color: "var(--text-muted)", marginBottom: 10, fontFamily: MONO, margin: "0 0 8px" }}>About</p>
+                <p style={{ fontSize: 13.5, color: "var(--text-secondary)", lineHeight: 1.85, margin: 0, fontFamily: SF }}>{proj.longDesc}</p>
               </div>
 
-              {/* Right: long desc + tech stack */}
+              <div style={{ height: 1, background: "var(--border)" }} />
+
               <div>
-                <p style={{ fontSize: 13.5, color: "var(--text-secondary)", lineHeight: 1.85, marginBottom: 20, fontFamily: SF }}>{proj.longDesc}</p>
-                <p style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--text-muted)", marginBottom: 10, fontFamily: MONO }}>Tech Stack</p>
+                <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.09em", textTransform: "uppercase", color: "var(--text-muted)", fontFamily: MONO, margin: "0 0 12px" }}>Tech Stack</p>
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
                   {proj.tags.map(tag => {
                     const tech = TECH_MAP[tag];
@@ -419,7 +453,19 @@ function ProjectCard({ proj, index, visible, onOpen }: {
       initial={false}
       animate={{ opacity: visible ? 1 : 0, y: visible ? 0 : 22 }}
       transition={{ delay: visible ? 0.055 * index : 0, type: "spring", stiffness: 340, damping: 26, mass: 0.75 }}
-      style={{ borderRadius: 12, background: "var(--bg-card)", border: "1px solid var(--border)", overflow: "hidden", cursor: "pointer", position: "relative", display: "flex", flexDirection: "column", backfaceVisibility: "hidden", WebkitBackfaceVisibility: "hidden", transform: "translateZ(0)" }}
+      style={{
+        borderRadius: 12,
+        background: "var(--bg-card)",
+        border: "1px solid var(--border)",
+        overflow: "hidden",
+        cursor: "pointer",
+        position: "relative",
+        display: "flex",
+        flexDirection: "column",
+        backfaceVisibility: "hidden",
+        WebkitBackfaceVisibility: "hidden",
+        transform: "translateZ(0)",
+      }}
       onClick={onOpen}
       onHoverStart={() => { if (cardRef.current) cardRef.current.style.willChange = "transform"; }}
       onHoverEnd={() => { setTimeout(() => { if (cardRef.current) cardRef.current.style.willChange = "auto"; }, 300); }}
@@ -449,7 +495,6 @@ function ProjectCard({ proj, index, visible, onOpen }: {
           <svg width="7" height="7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="9 18 15 12 9 6"/></svg>
         </div>
       </div>
-      <div style={{ position: "absolute", bottom: 0, left: "15%", right: "15%", height: 1, background: `linear-gradient(90deg, transparent, ${proj.accent}44, transparent)`, pointerEvents: "none" }} />
     </motion.div>
   );
 }
@@ -536,7 +581,6 @@ export function ProjectsSection() {
           <ProjectModal
             key="modal"
             proj={active}
-            uid={`${uid}-${PROJECTS.indexOf(active)}`}
             onClose={() => setActive(null)}
           />
         )}
