@@ -240,12 +240,12 @@ a, button, [role="button"] {
 .nav-root {
   position: fixed; top: 0; left: 0; right: 0; z-index: 100;
   height: 52px;
-  background: var(--nav-bg);
-  /* Reduced blur on all devices — expensive on mobile */
-  backdrop-filter: blur(10px) saturate(160%);
-  -webkit-backdrop-filter: blur(10px) saturate(160%);
-  border-bottom: 1px solid var(--nav-border);
-  transition: background 0.2s, border-color 0.2s;
+  background: transparent;
+  /* No blur by default - JS handles this on scroll */
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border-bottom: 1px solid transparent;
+  transition: background 0.3s ease, border-color 0.3s ease, backdrop-filter 0.3s ease;
   /* Own compositing layer — prevents repaints on scroll */
   will-change: transform;
   transform: translateZ(0);
@@ -856,14 +856,11 @@ html.light .stat-badge {
   .skills-lamp-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
-@media (max-width: 760px) {
+@media (max-width: 860px) {
   .desktop-nav { display: none !important; }
   .page-wrapper { padding: 0; }
-  /* Cheaper blur on mobile */
-  .nav-root {
-    backdrop-filter: blur(10px) saturate(140%);
-    -webkit-backdrop-filter: blur(10px) saturate(140%);
-  }
+  /* Mobile nav btn shown */
+  .mobile-nav-btn { display: flex !important; }
 }
 
 @media (max-width: 860px) {
@@ -1035,7 +1032,7 @@ html.light .stat-badge {
   transition: background 0.15s;
 }
 
-@media (max-width: 760px) {
+@media (max-width: 860px) {
   .mobile-nav-btn { display: flex !important; }
   .desktop-nav    { display: none !important; }
 }

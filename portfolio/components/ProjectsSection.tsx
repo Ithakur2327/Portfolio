@@ -11,7 +11,6 @@ import {
 } from "motion/react";
 import { playIOSUnlockSound, playTickSound } from "../lib/soundcn/sounds";
 
-
 const MONO = "'Geist Mono', 'SF Mono', monospace";
 const SF   = "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', sans-serif";
 
@@ -43,7 +42,6 @@ const PROJECTS = [
   {
     name: "Portfolio Website",
     year: "2025",
-    featured: true,
     accent: "#6366f1",
     accentBg: "rgba(99,102,241,0.10)",
     accentBorder: "rgba(99,102,241,0.30)",
@@ -57,7 +55,6 @@ const PROJECTS = [
   {
     name: "HealthnexAI",
     year: "2025",
-    featured: true,
     accent: "#10b981",
     accentBg: "rgba(16,185,129,0.10)",
     accentBorder: "rgba(16,185,129,0.25)",
@@ -71,7 +68,6 @@ const PROJECTS = [
   {
     name: "Smart Expense Tracker",
     year: "2025",
-    featured: true,
     accent: "#f59e0b",
     accentBg: "rgba(245,158,11,0.10)",
     accentBorder: "rgba(245,158,11,0.25)",
@@ -85,7 +81,6 @@ const PROJECTS = [
   {
     name: "SnipixAI",
     year: "2025",
-    featured: true,
     accent: "#8b5cf6",
     accentBg: "rgba(139,92,246,0.10)",
     accentBorder: "rgba(139,92,246,0.25)",
@@ -99,7 +94,6 @@ const PROJECTS = [
   {
     name: "VidLearn",
     year: "2025",
-    featured: true,
     accent: "#ef4444",
     accentBg: "rgba(239,68,68,0.10)",
     accentBorder: "rgba(239,68,68,0.25)",
@@ -113,7 +107,6 @@ const PROJECTS = [
   {
     name: "Myntra Clone",
     year: "2024",
-    featured: false,
     accent: "#ec4899",
     accentBg: "rgba(236,72,153,0.10)",
     accentBorder: "rgba(236,72,153,0.25)",
@@ -127,20 +120,18 @@ const PROJECTS = [
 ];
 
 const GithubIcon = () => (
-  <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+  <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
     <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/>
   </svg>
 );
 const ExternalIcon = () => (
-  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
+  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
     <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
     <polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
   </svg>
 );
 
-/* ─────────────────────────────────────────────────────────
-   SLIDE-TO-UNLOCK
-───────────────────────────────────────────────────────── */
+/* ── Slide to Unlock ── */
 const HANDLE_W = 46;
 const TRACK_H  = 42;
 
@@ -180,10 +171,7 @@ function SlideToUnlock({ onUnlock }: { onUnlock: () => void }) {
     }
   }), [x, trackW, getCtx]);
 
-  const onDragStart = useCallback(() => {
-    lastTickZone.current = -1;
-    getCtx();
-  }, [getCtx]);
+  const onDragStart = useCallback(() => { lastTickZone.current = -1; getCtx(); }, [getCtx]);
 
   const onDragEnd = useCallback(() => {
     const cur = x.get();
@@ -199,109 +187,28 @@ function SlideToUnlock({ onUnlock }: { onUnlock: () => void }) {
   }, [x, trackW, onUnlock, getCtx]);
 
   return (
-    <div style={{
-      width: 260, borderRadius: 14,
-      background: "var(--bg-card)",
-      border: "1px solid var(--border)",
-      boxShadow: "0 2px 16px rgba(0,0,0,0.12), inset 0 1px 0 rgba(255,255,255,0.05)",
-      padding: 3,
-      userSelect: "none", WebkitUserSelect: "none",
-    }}>
-      <div
-        ref={trackRef}
-        style={{
-          position: "relative",
-          height: TRACK_H,
-          borderRadius: 12,
-          background: "var(--bg-secondary)",
-          border: "1px solid var(--border)",
-          touchAction: "none",
-          overflow: "hidden",
-        }}
-      >
-        <motion.div style={{
-          position: "absolute", inset: 0,
-          background: "linear-gradient(90deg, rgba(99,102,241,0.15) 0%, transparent 100%)",
-          scaleX: fillScaleX,
-          transformOrigin: "left center",
-          pointerEvents: "none",
-        }} />
-
-        <motion.div style={{
-          opacity: textOpacity,
-          position: "absolute", inset: 0,
-          display: "flex", alignItems: "center", justifyContent: "center",
-          paddingLeft: HANDLE_W + 4,
-          pointerEvents: "none",
-          gap: 6,
-        }}>
-          <span style={{
-            fontSize: 12, fontWeight: 500, fontFamily: SF,
-            color: "var(--text-muted)", letterSpacing: "0.04em",
-          }}>
-            slide to unlock
-          </span>
+    <div style={{ width: 260, borderRadius: 14, background: "var(--bg-card)", border: "1px solid var(--border)", boxShadow: "0 2px 16px rgba(0,0,0,0.12), inset 0 1px 0 rgba(255,255,255,0.05)", padding: 3, userSelect: "none", WebkitUserSelect: "none" }}>
+      <div ref={trackRef} style={{ position: "relative", height: TRACK_H, borderRadius: 12, background: "var(--bg-secondary)", border: "1px solid var(--border)", touchAction: "none", overflow: "hidden" }}>
+        <motion.div style={{ position: "absolute", inset: 0, background: "linear-gradient(90deg, rgba(99,102,241,0.15) 0%, transparent 100%)", scaleX: fillScaleX, transformOrigin: "left center", pointerEvents: "none" }} />
+        <motion.div style={{ opacity: textOpacity, position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", paddingLeft: HANDLE_W + 4, pointerEvents: "none", gap: 6 }}>
+          <span style={{ fontSize: 12, fontWeight: 500, fontFamily: SF, color: "var(--text-muted)", letterSpacing: "0.04em" }}>slide to unlock</span>
           <span style={{ color: "var(--text-muted)", fontSize: 11, opacity: 0.6 }}>›</span>
         </motion.div>
-
         <motion.div
-          drag="x"
-          dragConstraints={{ left: 0, right: trackW }}
-          dragElastic={0}
-          dragMomentum={false}
+          drag="x" dragConstraints={{ left: 0, right: trackW }} dragElastic={0} dragMomentum={false}
           dragTransition={{ bounceStiffness: 1100, bounceDamping: 70 }}
-          onDragStart={onDragStart}
-          onDragEnd={onDragEnd}
-          style={{
-            position: "absolute",
-            top: 0, left: 0,
-            width: HANDLE_W, height: TRACK_H,
-            x,
-            background: "var(--slide-handle-bg)",
-            borderRadius: 10,
-            display: "flex", alignItems: "center", justifyContent: "center", gap: 2,
-            color: "var(--slide-handle-fg)",
-            boxShadow: "0 2px 10px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.12)",
-            cursor: "grab",
-            zIndex: 2,
-            touchAction: "none",
-            willChange: "transform",
-            backfaceVisibility: "hidden",
-            WebkitBackfaceVisibility: "hidden",
-          }}
+          onDragStart={onDragStart} onDragEnd={onDragEnd}
+          style={{ position: "absolute", top: 0, left: 0, width: HANDLE_W, height: TRACK_H, x, background: "var(--slide-handle-bg)", borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center", gap: 2, color: "var(--slide-handle-fg)", boxShadow: "0 2px 10px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.12)", cursor: "grab", zIndex: 2, touchAction: "none", willChange: "transform" }}
           whileTap={{ scale: 0.91, cursor: "grabbing" }}
         >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
-            stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <polyline points="9 18 15 12 9 6"/>
-          </svg>
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="none"
-            stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
-            style={{ opacity: 0.45, marginLeft: -5 }}>
-            <polyline points="9 18 15 12 9 6"/>
-          </svg>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.45, marginLeft: -5 }}><polyline points="9 18 15 12 9 6"/></svg>
         </motion.div>
-
         <AnimatePresence>
           {unlockDone && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.4 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ type: "spring", stiffness: 700, damping: 24 }}
-              style={{
-                position: "absolute", right: 12, top: "50%",
-                transform: "translateY(-50%)",
-                width: 24, height: 24, borderRadius: "50%",
-                background: "rgba(34,197,94,0.14)",
-                border: "1px solid rgba(34,197,94,0.4)",
-                display: "flex", alignItems: "center", justifyContent: "center",
-                color: "#22c55e", pointerEvents: "none",
-              }}
-            >
-              <svg width="11" height="11" viewBox="0 0 24 24" fill="none"
-                stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                <polyline points="20 6 9 17 4 12"/>
-              </svg>
+            <motion.div initial={{ opacity: 0, scale: 0.4 }} animate={{ opacity: 1, scale: 1 }} transition={{ type: "spring", stiffness: 700, damping: 24 }}
+              style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", width: 24, height: 24, borderRadius: "50%", background: "rgba(34,197,94,0.14)", border: "1px solid rgba(34,197,94,0.4)", display: "flex", alignItems: "center", justifyContent: "center", color: "#22c55e", pointerEvents: "none" }}>
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
             </motion.div>
           )}
         </AnimatePresence>
@@ -310,22 +217,18 @@ function SlideToUnlock({ onUnlock }: { onUnlock: () => void }) {
   );
 }
 
-/* ─────────────────────────────────────────────────────────
-   PROJECT MODAL
-   FIX: backdrop blur reduced (4px), spring replaced with
-   fast tween, scale delta minimized — all reduce GPU load
-   on mobile which was the primary cause of open-lag.
-───────────────────────────────────────────────────────── */
+/* ── Horizontal Expandable Modal ── */
 function ProjectModal({
   proj,
+  uid,
   onClose,
 }: {
   proj: typeof PROJECTS[0];
-  cardRect: DOMRect | null;
   uid: string;
   onClose: () => void;
 }) {
   const [mounted, setMounted] = useState(false);
+  const modalRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setMounted(true);
@@ -333,10 +236,18 @@ function ProjectModal({
     document.body.style.touchAction = "none";
     const esc = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
     window.addEventListener("keydown", esc);
+    const t = setTimeout(() => {
+      const handler = (e: MouseEvent) => {
+        if (modalRef.current && !modalRef.current.contains(e.target as Node)) onClose();
+      };
+      document.addEventListener("mousedown", handler);
+      return () => document.removeEventListener("mousedown", handler);
+    }, 80);
     return () => {
       document.body.style.overflow = "";
       document.body.style.touchAction = "";
       window.removeEventListener("keydown", esc);
+      clearTimeout(t);
     };
   }, [onClose]);
 
@@ -344,107 +255,82 @@ function ProjectModal({
 
   const content = (
     <>
-      {/* Backdrop — FIX: blur 4px instead of 10px + saturate */}
+      {/* Blurred backdrop */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        exit={{ opacity: 0, transition: { duration: 0.15 } }}
+        exit={{ opacity: 0 }}
         transition={{ duration: 0.18 }}
         onClick={onClose}
         style={{
-          position: "fixed",
-          top: 0, left: 0, right: 0, bottom: 0,
-          background: "rgba(0,0,0,0.78)",
-          backdropFilter: "blur(4px)",
-          WebkitBackdropFilter: "blur(4px)",
-          zIndex: 9000,
+          position: "fixed", inset: 0, zIndex: 9000,
+          background: "rgba(0,0,0,0.55)",
+          backdropFilter: "blur(8px)",
+          WebkitBackdropFilter: "blur(8px)",
         }}
       />
-      {/* Modal — FIX: tween instead of heavy spring, smaller scale delta */}
+
+      {/* Modal container */}
       <motion.div
-        initial={{ opacity: 0, scale: 0.96, y: 12 }}
+        initial={{ opacity: 0, scale: 0.96, y: 10 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
-        exit={{
-          opacity: 0,
-          scale: 0.96,
-          y: 12,
-          transition: { duration: 0.14, ease: [0.4, 0, 1, 1] },
-        }}
+        exit={{ opacity: 0, scale: 0.96, y: 10, transition: { duration: 0.14 } }}
         transition={{ type: "tween", duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
         style={{
-          position: "fixed",
-          top: 0, left: 0, right: 0, bottom: 0,
-          zIndex: 9001,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
+          position: "fixed", inset: 0, zIndex: 9001,
+          display: "flex", alignItems: "center", justifyContent: "center",
           padding: "12px",
           pointerEvents: "none",
         }}
       >
         <div
+          ref={modalRef}
           style={{
-            width: "100%",
-            maxWidth: 900,
+            pointerEvents: "auto",
+            width: "100%", maxWidth: 860,
             maxHeight: "calc(100vh - 24px)",
-            overflowY: "auto",
             background: "var(--bg-card)",
             border: `1px solid ${proj.accentBorder}`,
             borderTop: `3px solid ${proj.accent}`,
             borderRadius: 20,
-            boxShadow: `0 0 0 1px ${proj.accentBorder}, 0 40px 100px rgba(0,0,0,0.70)`,
-            scrollbarWidth: "none" as const,
-            pointerEvents: "auto",
+            boxShadow: `0 0 0 1px ${proj.accentBorder}, 0 40px 100px rgba(0,0,0,0.65)`,
+            overflow: "hidden",
+            display: "flex", flexDirection: "column",
           }}
         >
+          {/* Styles for two-col layout */}
           <style suppressHydrationWarning>{`
-            .modal-scroll::-webkit-scrollbar { display: none; }
-            .modal-two-col {
+            .pm-scroll::-webkit-scrollbar { display: none; }
+            .pm-two-col {
               display: grid;
-              grid-template-columns: 280px 1fr;
-              gap: 24px;
+              grid-template-columns: 260px 1fr;
+              gap: 20px;
               align-items: start;
             }
-            @media (max-width: 600px) {
-              .modal-two-col { grid-template-columns: 1fr; gap: 16px; }
+            @media (max-width: 580px) {
+              .pm-two-col { grid-template-columns: 1fr; gap: 14px; }
             }
-            .modal-tag-badge {
-              display: inline-flex;
-              align-items: center;
-              gap: 4px;
-              font-size: 10.5px;
-              padding: 4px 10px;
-              border-radius: 7px;
+            .pm-tag {
+              display: inline-flex; align-items: center; gap: 4px;
+              font-size: 10.5px; padding: 4px 10px; border-radius: 7px;
               font-family: 'Geist Mono', monospace;
-              transition: opacity 0.15s;
             }
-            .modal-tag-badge:hover { opacity: 0.75; }
-            .modal-action-btn {
-              display: inline-flex;
-              align-items: center;
-              gap: 7px;
-              padding: 10px 22px;
-              border-radius: 10px;
-              font-size: 13px;
-              font-weight: 600;
-              text-decoration: none;
-              transition: opacity 0.15s, transform 0.15s;
-            }
-            .modal-action-btn:hover { opacity: 0.85; transform: translateY(-1px); }
           `}</style>
-          <div className="modal-scroll" style={{ padding: "22px 22px 26px" }}>
-            {/* Header */}
-            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12, marginBottom: 18 }}>
+
+          <div className="pm-scroll" style={{ overflowY: "auto", scrollbarWidth: "none", padding: "20px 20px 24px" }}>
+            {/* Header row */}
+            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12, marginBottom: 16 }}>
               <div>
-                <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" as const, marginBottom: 4 }}>
-                  <h3 style={{ fontSize: "clamp(18px, 2.5vw, 24px)", fontWeight: 800, color: "var(--text-primary)", letterSpacing: "-0.03em", fontFamily: SF, margin: 0 }}>{proj.name}</h3>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4, flexWrap: "wrap" }}>
+                  <h3 style={{ fontSize: "clamp(17px,2.5vw,22px)", fontWeight: 800, color: "var(--text-primary)", letterSpacing: "-0.03em", fontFamily: SF, margin: 0 }}>{proj.name}</h3>
                   <span style={{ fontFamily: MONO, fontSize: 11, color: "var(--text-muted)", background: "var(--bg-secondary)", border: "1px solid var(--border)", padding: "2px 8px", borderRadius: 6 }}>{proj.year}</span>
                 </div>
-                <p style={{ fontSize: 13, color: "var(--text-secondary)", lineHeight: 1.6, margin: 0, maxWidth: 520 }}>{proj.desc}</p>
+                <p style={{ fontSize: 13, color: "var(--text-secondary)", lineHeight: 1.6, margin: 0, maxWidth: 500 }}>{proj.desc}</p>
               </div>
+              {/* X close button */}
               <button
                 onClick={onClose}
-                style={{ width: 34, height: 34, borderRadius: "50%", flexShrink: 0, background: "var(--bg-hover)", border: "1px solid var(--border)", color: "var(--text-muted)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", transition: "background 0.15s" }}
+                style={{ flexShrink: 0, width: 34, height: 34, borderRadius: "50%", background: "var(--bg-hover)", border: "1px solid var(--border)", color: "var(--text-muted)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}
               >
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
                   <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
@@ -452,29 +338,43 @@ function ProjectModal({
               </button>
             </div>
 
-            <div style={{ height: 1, background: `linear-gradient(90deg, ${proj.accent}44, var(--border), transparent)`, marginBottom: 20 }} />
+            <div style={{ height: 1, background: `linear-gradient(90deg, ${proj.accent}44, var(--border), transparent)`, marginBottom: 18 }} />
 
-            <div className="modal-two-col">
-              {/* Image */}
+            {/* Two-col: image left, content right */}
+            <div className="pm-two-col">
+              {/* Left: image + single action button */}
               <div>
-                <div style={{ borderRadius: 12, overflow: "hidden", border: `1px solid ${proj.accentBorder}`, boxShadow: `0 4px 20px rgba(0,0,0,0.3)` }}>
-                  <img src={proj.img} alt={proj.name} style={{ width: "100%", height: 190, objectFit: "cover", objectPosition: "center top", display: "block" }} />
+                <div style={{ borderRadius: 12, overflow: "hidden", border: `1px solid ${proj.accentBorder}`, boxShadow: `0 4px 20px rgba(0,0,0,0.28)` }}>
+                  <img src={proj.img} alt={proj.name} style={{ width: "100%", height: 180, objectFit: "cover", objectPosition: "center top", display: "block" }} />
                 </div>
-                <div style={{ display: "flex", gap: 9, marginTop: 14, flexWrap: "wrap" as const }}>
-                  <a href={proj.github} target="_blank" rel="noreferrer" className="modal-action-btn" style={{ background: "var(--bg-hover)", border: "1px solid var(--border)", color: "var(--text-primary)", fontFamily: SF }}><GithubIcon /> GitHub</a>
-                  <a href={proj.live} target="_blank" rel="noreferrer" className="modal-action-btn" style={{ background: proj.accentBg, border: `1px solid ${proj.accentBorder}`, color: proj.accent, fontFamily: SF }}><ExternalIcon /> Live Demo</a>
+                {/* Single combined GitHub + Live button */}
+                <div style={{ display: "flex", gap: 8, marginTop: 14, flexWrap: "wrap" }}>
+                  <a href={proj.github} target="_blank" rel="noreferrer"
+                    style={{ flex: 1, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6, padding: "10px 14px", borderRadius: 10, fontSize: 12.5, fontWeight: 600, textDecoration: "none", fontFamily: SF, background: "var(--bg-hover)", border: "1px solid var(--border)", color: "var(--text-primary)", transition: "opacity 0.15s, transform 0.15s" }}
+                    onMouseEnter={e => { (e.currentTarget as HTMLElement).style.opacity = "0.8"; (e.currentTarget as HTMLElement).style.transform = "translateY(-1px)"; }}
+                    onMouseLeave={e => { (e.currentTarget as HTMLElement).style.opacity = "1"; (e.currentTarget as HTMLElement).style.transform = "none"; }}
+                  >
+                    <GithubIcon /> GitHub
+                  </a>
+                  <a href={proj.live} target="_blank" rel="noreferrer"
+                    style={{ flex: 1, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6, padding: "10px 14px", borderRadius: 10, fontSize: 12.5, fontWeight: 600, textDecoration: "none", fontFamily: SF, background: proj.accentBg, border: `1px solid ${proj.accentBorder}`, color: proj.accent, transition: "opacity 0.15s, transform 0.15s" }}
+                    onMouseEnter={e => { (e.currentTarget as HTMLElement).style.opacity = "0.8"; (e.currentTarget as HTMLElement).style.transform = "translateY(-1px)"; }}
+                    onMouseLeave={e => { (e.currentTarget as HTMLElement).style.opacity = "1"; (e.currentTarget as HTMLElement).style.transform = "none"; }}
+                  >
+                    <ExternalIcon /> Live Demo
+                  </a>
                 </div>
               </div>
 
-              {/* Details */}
+              {/* Right: long desc + tech stack */}
               <div>
                 <p style={{ fontSize: 13.5, color: "var(--text-secondary)", lineHeight: 1.85, marginBottom: 20, fontFamily: SF }}>{proj.longDesc}</p>
-                <p style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase" as const, color: "var(--text-muted)", marginBottom: 10, fontFamily: MONO }}>Tech Stack</p>
-                <div style={{ display: "flex", flexWrap: "wrap" as const, gap: 6 }}>
+                <p style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--text-muted)", marginBottom: 10, fontFamily: MONO }}>Tech Stack</p>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
                   {proj.tags.map(tag => {
                     const tech = TECH_MAP[tag];
                     return (
-                      <span key={tag} className="modal-tag-badge" style={{ color: "var(--tag-text)", background: "var(--tag-bg)", border: "1px solid var(--tag-border)" }}>
+                      <span key={tag} className="pm-tag" style={{ color: "var(--tag-text)", background: "var(--tag-bg)", border: "1px solid var(--tag-border)" }}>
                         {tech && <img src={tech.logo} alt={tag} width={11} height={11} style={{ objectFit: "contain", flexShrink: 0, filter: tag === "Express.js" ? "brightness(0) invert(0.6)" : "none" }} />}
                         {tag}
                       </span>
@@ -492,114 +392,56 @@ function ProjectModal({
   return createPortal(content, document.body);
 }
 
-/* ─────────────────────────────────────────────────────────
-   PROJECT CARD
-   FIX: whileHover uses tween (no spring mass overhead),
-   scale delta reduced. onHoverStart/End willChange pattern
-   kept — releases GPU layer after hover.
-───────────────────────────────────────────────────────── */
+/* ── Project Card ── */
 function ProjectCard({ proj, index, visible, onOpen }: {
   proj: typeof PROJECTS[0];
   index: number;
   visible: boolean;
-  uid: string;
-  onOpen: (rect: DOMRect) => void;
+  onOpen: () => void;
 }) {
   const cardRef = useRef<HTMLDivElement>(null);
   const imgRef  = useRef<HTMLImageElement>(null);
 
-  const handleClick = useCallback(() => {
-    const rect = cardRef.current?.getBoundingClientRect() ?? null;
-    onOpen(rect as DOMRect);
-  }, [onOpen]);
-
   const handleImgEnter = useCallback(() => {
-    const el = imgRef.current;
-    if (!el) return;
+    const el = imgRef.current; if (!el) return;
     el.style.willChange = "transform";
     el.style.transform  = "translateZ(0) scale(1.08)";
   }, []);
-
   const handleImgLeave = useCallback(() => {
-    const el = imgRef.current;
-    if (!el) return;
+    const el = imgRef.current; if (!el) return;
     el.style.transform = "translateZ(0) scale(1)";
-    setTimeout(() => {
-      if (el.isConnected) el.style.willChange = "auto";
-    }, 500);
+    setTimeout(() => { if (el.isConnected) el.style.willChange = "auto"; }, 500);
   }, []);
 
   return (
     <motion.div
       ref={cardRef}
       initial={false}
-      animate={{
-        opacity: visible ? 1 : 0,
-        y: visible ? 0 : 22,
-      }}
-      transition={{
-        delay: visible ? 0.055 * index : 0,
-        type: "spring",
-        stiffness: 340,
-        damping: 26,
-        mass: 0.75,
-      }}
-      style={{
-        borderRadius: 12,
-        background: "var(--bg-card)",
-        border: "1px solid var(--border)",
-        overflow: "hidden",
-        cursor: "pointer",
-        position: "relative" as const,
-        display: "flex",
-        flexDirection: "column" as const,
-        backfaceVisibility: "hidden" as const,
-        WebkitBackfaceVisibility: "hidden" as const,
-        transform: "translateZ(0)",
-      }}
-      onClick={handleClick}
-      onHoverStart={() => {
-        if (cardRef.current) cardRef.current.style.willChange = "transform";
-      }}
-      onHoverEnd={() => {
-        setTimeout(() => {
-          if (cardRef.current) cardRef.current.style.willChange = "auto";
-        }, 300);
-      }}
-      /* FIX: tween instead of spring — no mass/damping overhead on mobile */
-      whileHover={{
-        y: -4,
-        scale: 1.012,
-        transition: { type: "tween", duration: 0.15, ease: "easeOut" },
-      }}
-      /* FIX: tap also uses tween — instant response on mobile */
-      whileTap={{
-        scale: 0.972,
-        transition: { type: "tween", duration: 0.1 },
-      }}
+      animate={{ opacity: visible ? 1 : 0, y: visible ? 0 : 22 }}
+      transition={{ delay: visible ? 0.055 * index : 0, type: "spring", stiffness: 340, damping: 26, mass: 0.75 }}
+      style={{ borderRadius: 12, background: "var(--bg-card)", border: "1px solid var(--border)", overflow: "hidden", cursor: "pointer", position: "relative", display: "flex", flexDirection: "column", backfaceVisibility: "hidden", WebkitBackfaceVisibility: "hidden", transform: "translateZ(0)" }}
+      onClick={onOpen}
+      onHoverStart={() => { if (cardRef.current) cardRef.current.style.willChange = "transform"; }}
+      onHoverEnd={() => { setTimeout(() => { if (cardRef.current) cardRef.current.style.willChange = "auto"; }, 300); }}
+      whileHover={{ y: -4, scale: 1.012, transition: { type: "tween", duration: 0.15, ease: "easeOut" } }}
+      whileTap={{ scale: 0.972, transition: { type: "tween", duration: 0.1 } }}
     >
       <div style={{ overflow: "hidden", flexShrink: 0 }}>
         <img
           ref={imgRef}
           src={proj.img}
           alt={proj.name}
-          style={{
-            width: "100%", height: 110,
-            objectFit: "cover", objectPosition: "center top", display: "block",
-            transform: "translateZ(0) scale(1)",
-            transition: "transform 0.5s cubic-bezier(0.22,1,0.36,1)",
-            willChange: "auto",
-          }}
+          style={{ width: "100%", height: 110, objectFit: "cover", objectPosition: "center top", display: "block", transform: "translateZ(0) scale(1)", transition: "transform 0.5s cubic-bezier(0.22,1,0.36,1)", willChange: "auto" }}
           onMouseEnter={handleImgEnter}
           onMouseLeave={handleImgLeave}
         />
       </div>
-      <div style={{ padding: "10px 12px 10px", display: "flex", flexDirection: "column" as const, flex: 1 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 5, marginBottom: 5, flexWrap: "wrap" as const }}>
+      <div style={{ padding: "10px 12px 10px", display: "flex", flexDirection: "column", flex: 1 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 5, marginBottom: 5, flexWrap: "wrap" }}>
           <span style={{ fontSize: 12.5, fontWeight: 700, color: "var(--text-primary)", letterSpacing: "-0.02em", fontFamily: SF, lineHeight: 1.2 }}>{proj.name}</span>
           <span style={{ fontFamily: MONO, fontSize: 9.5, color: "var(--text-muted)" }}>{proj.year}</span>
         </div>
-        <p style={{ fontSize: 11, color: "var(--text-secondary)", lineHeight: 1.55, margin: "0 0 auto", fontFamily: SF, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" as const, overflow: "hidden" }}>
+        <p style={{ fontSize: 11, color: "var(--text-secondary)", lineHeight: 1.55, margin: "0 0 auto", fontFamily: SF, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
           {proj.desc}
         </p>
         <div style={{ borderTop: "1px solid var(--border)", paddingTop: 7, marginTop: 9, display: "flex", alignItems: "center", justifyContent: "center", gap: 4, fontSize: 10, color: "var(--text-muted)", fontFamily: SF }}>
@@ -612,17 +454,11 @@ function ProjectCard({ proj, index, visible, onOpen }: {
   );
 }
 
-/* ─────────────────────────────────────────────────────────
-   SECTION
-   FIX: grid motion.div — filter removed entirely (was the
-   main jank source: blur on 6 cards simultaneously on every
-   interaction caused full compositor layer repaints on mobile).
-   opacity transition kept, scale transition kept (cheap).
-───────────────────────────────────────────────────────── */
+/* ── Section ── */
 export function ProjectsSection() {
   const { ref: revealRef, revealClass, visible } = useReveal();
   const [unlocked, setUnlocked] = useState(false);
-  const [active, setActive] = useState<{ proj: typeof PROJECTS[0]; rect: DOMRect | null } | null>(null);
+  const [active, setActive] = useState<typeof PROJECTS[0] | null>(null);
   const sectionNodeRef = useRef<HTMLDivElement>(null);
   const uid = useId();
 
@@ -644,16 +480,8 @@ export function ProjectsSection() {
 
   return (
     <>
-      <div
-        id="projects"
-        ref={setRefs}
-        className={revealClass}
-      >
-        <div style={{
-          position: "relative", left: "50%", marginLeft: "-50vw",
-          width: "100vw", background: "var(--bg-base)",
-          borderTop: "1px solid var(--line)", borderBottom: "1px solid var(--line)",
-        }}>
+      <div id="projects" ref={setRefs} className={revealClass}>
+        <div style={{ position: "relative", left: "50%", marginLeft: "-50vw", width: "100vw", background: "var(--bg-base)", borderTop: "1px solid var(--line)", borderBottom: "1px solid var(--line)" }}>
           <div style={{ maxWidth: 1060, margin: "0 auto", padding: "0 20px 32px" }}>
             <div style={{ paddingTop: 24, marginBottom: 4 }}>
               <span style={{ fontSize: 28, fontWeight: 700, letterSpacing: "-0.03em", lineHeight: 1, fontFamily: SF, color: "var(--text-primary)" }}>Projects</span>
@@ -674,44 +502,20 @@ export function ProjectsSection() {
               )}
             </AnimatePresence>
 
-            <div style={{
-              height: 1,
-              background: "var(--border)",
-              margin: unlocked ? "20px 0 20px" : "14px 0 20px",
-              transition: "margin 0.35s cubic-bezier(0.22,1,0.36,1)",
-            }} />
+            <div style={{ height: 1, background: "var(--border)", margin: unlocked ? "20px 0 20px" : "14px 0 20px", transition: "margin 0.35s cubic-bezier(0.22,1,0.36,1)" }} />
 
             <style suppressHydrationWarning>{`
-              .proj-grid {
-                display: grid;
-                grid-template-columns: repeat(4, 1fr);
-                gap: 10px;
-              }
+              .proj-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
               @media (max-width: 980px) { .proj-grid { grid-template-columns: repeat(3, 1fr); } }
               @media (max-width: 680px) { .proj-grid { grid-template-columns: repeat(2, 1fr); } }
               @media (max-width: 400px) { .proj-grid { grid-template-columns: 1fr; } }
             `}</style>
 
-            {/*
-              FIX: filter removed — blur(5px) on 6 cards was the #1 cause of
-              click lag on mobile. GPU had to repaint all compositor layers
-              on every state change. opacity + scale alone are transform-only
-              and stay on the compositor thread — zero layout/paint cost.
-            */}
             <motion.div
-               className="proj-grid"
-              animate={{
-                opacity: unlocked ? 1 : 0.55,
-                scale:   unlocked ? 1 : 0.997,
-                filter:  unlocked ? "blur(0px)" : "blur(5px)",
-              }}
+              className="proj-grid"
+              animate={{ opacity: unlocked ? 1 : 0.55, scale: unlocked ? 1 : 0.997, filter: unlocked ? "blur(0px)" : "blur(5px)" }}
               transition={{ duration: 0.48, ease: [0.22, 1, 0.36, 1] }}
-              style={{
-                pointerEvents: unlocked ? "auto" : "none",
-                willChange: "transform, opacity, filter",
-                backfaceVisibility: "hidden",
-                WebkitBackfaceVisibility: "hidden",
-              }}
+              style={{ pointerEvents: unlocked ? "auto" : "none", willChange: "transform, opacity, filter" }}
             >
               {PROJECTS.map((proj, i) => (
                 <ProjectCard
@@ -719,8 +523,7 @@ export function ProjectsSection() {
                   proj={proj}
                   index={i}
                   visible={visible}
-                  uid={`${uid}-${i}`}
-                  onOpen={(rect) => setActive({ proj, rect })}
+                  onOpen={() => setActive(proj)}
                 />
               ))}
             </motion.div>
@@ -732,9 +535,8 @@ export function ProjectsSection() {
         {active && (
           <ProjectModal
             key="modal"
-            proj={active.proj}
-            uid={`${uid}-${PROJECTS.indexOf(active.proj)}`}
-            cardRect={active.rect}
+            proj={active}
+            uid={`${uid}-${PROJECTS.indexOf(active)}`}
             onClose={() => setActive(null)}
           />
         )}
