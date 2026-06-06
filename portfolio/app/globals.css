@@ -22,10 +22,11 @@
    THEME TOKENS
 ═══════════════════════════════════════════════════════════ */
 :root, html.dark {
-  --bg-base:        #09090b;
-  --bg-secondary:   rgba(17,17,19,0.6);
-  --bg-hover:       rgba(30,30,33,0.85);
-  --bg-card:        #111113;
+  /* ── UPDATED: #040404 base instead of #000 ── */
+  --bg-base:        #040404;
+  --bg-secondary:   rgba(10,10,12,0.55);
+  --bg-hover:       rgba(22,22,25,0.80);
+  --bg-card:        #0d0d0f;
   --border:         #27272a;
   --line:           rgba(255,255,255,0.07);
   --text-primary:   #fafafa;
@@ -41,11 +42,15 @@
   --info:           #3b82f6;
   --pattern-dot:    rgba(255,255,255,0.08);
   --pattern-dot-active: rgba(255,255,255,0.18);
-  --nav-bg:         rgba(9,9,11,0.88);
-  --nav-border:     rgba(255,255,255,0.07);
+
+  /* ── UPDATED: Glassier nav — more transparent, thinner blur ── */
+  --nav-bg:         rgba(4,4,4,0.38);
+  --nav-bg-scrolled: rgba(4,4,4,0.62);
+  --nav-border:     rgba(255,255,255,0.06);
   --nav-link-color: rgba(255,255,255,0.45);
   --nav-link-hover: #fafafa;
   --nav-link-active-bg: rgba(255,255,255,0.09);
+
   --divider-color:  #27272a;
   --divider-glow:   rgba(139,92,246,0.6);
   --slide-handle-bg: #fafafa;
@@ -82,11 +87,15 @@ html.light {
   --info:           #1d4ed8;
   --pattern-dot:    rgba(0,0,0,0.10);
   --pattern-dot-active: rgba(0,0,0,0.22);
-  --nav-bg:         rgba(242,242,240,0.90);
-  --nav-border:     rgba(0,0,0,0.08);
+
+  /* ── Light nav stays same — just glass ── */
+  --nav-bg:         rgba(242,242,240,0.38);
+  --nav-bg-scrolled: rgba(242,242,240,0.72);
+  --nav-border:     rgba(0,0,0,0.06);
   --nav-link-color: rgba(0,0,0,0.45);
   --nav-link-hover: #1a1a1a;
   --nav-link-active-bg: rgba(0,0,0,0.08);
+
   --divider-color:  #c8c8c4;
   --divider-glow:   rgba(124,58,237,0.5);
   --slide-handle-bg: #1a1a1a;
@@ -94,8 +103,9 @@ html.light {
 }
 
 /* Page background — set early to prevent flash */
+/* ── UPDATED: #040404 ── */
 html {
-  background: #000000;
+  background: #040404;
 }
 html.light {
   background: #f5f5f3;
@@ -122,13 +132,10 @@ html {
   text-size-adjust: 100%;
   overflow-y: scroll;
   overflow-x: hidden;
-  /* Prevents rubber-band bounce from triggering layout */
   overscroll-behavior-y: none;
-  /* GPU-composited text rendering */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
-  /* Momentum scrolling on iOS */
   -webkit-overflow-scrolling: touch;
 }
 
@@ -143,7 +150,6 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
-  /* Only transition color, never layout props */
   transition: color 0.1s ease;
 }
 
@@ -152,8 +158,7 @@ img, svg, canvas {
 }
 
 /* ═══════════════════════════════════════════════════════════
-   SCROLL SNAPPING — chanhdai-inspired section smoothness
-   Only on section scroll, not the main document (prevents jank)
+   SCROLL SNAPPING
 ═══════════════════════════════════════════════════════════ */
 @supports (scroll-behavior: smooth) {
   html {
@@ -177,7 +182,6 @@ img, svg, canvas {
 ::selection { background: var(--accent); color: var(--accent-fg); }
 a { color: inherit; text-decoration: none; }
 
-/* Remove tap highlight + enable fast tap on all interactive elements */
 a, button, [role="button"], label {
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
@@ -185,8 +189,6 @@ a, button, [role="button"], label {
 
 /* ═══════════════════════════════════════════════════════════
    COMPOSITOR-ONLY TRANSITIONS
-   Only animate properties that don't trigger layout or paint.
-   transform, opacity, filter, clip-path → GPU composited.
 ═══════════════════════════════════════════════════════════ */
 a, button, [role="button"] {
   transition-property: color, background-color, border-color, opacity, transform, box-shadow;
@@ -207,18 +209,14 @@ a, button, [role="button"] {
   isolation: isolate;
 }
 
-/* ── Section gap fix ──────────────────────────────────────
-   38px gap between every section, matching chanhdai rhythm.
-   ──────────────────────────────────────────────────────── */
 .page-wrapper > * + * {
   margin-top: 38px;
 }
 
-/* Hero + Sparkles ke beech gap remove */
 .page-wrapper > :first-child + * {
   margin-top: 0 !important;
 }
-/* Full-bleed horizontal lines (chanhdai screen-line pattern) */
+
 .screen-line-top    { position: relative; }
 .screen-line-top::before {
   content: ''; position: absolute;
@@ -236,20 +234,40 @@ a, button, [role="button"] {
 
 /* ═══════════════════════════════════════════════════════════
    NAVBAR
+   ── UPDATED: Glassier — less blur, more transparent,
+      content dikhta hai peeche se.
+      .scrolled class JS se lagta hai — thoda more opaque.
 ═══════════════════════════════════════════════════════════ */
 .nav-root {
   position: fixed; top: 0; left: 0; right: 0; z-index: 100;
   height: 52px;
-  background: transparent;
-  /* Always glass — JS overrides background on scroll */
-  backdrop-filter: blur(20px) saturate(160%);
-  -webkit-backdrop-filter: blur(20px) saturate(160%);
-  border-bottom: 1px solid transparent;
-  transition: background 0.3s ease, border-color 0.3s ease, backdrop-filter 0.3s ease;
-  /* Own compositing layer — prevents repaints on scroll */
+
+  /* ── Glass: sirf 8px blur, low saturation, bohot transparent ── */
+  background: var(--nav-bg);
+  backdrop-filter: blur(8px) saturate(110%);
+  -webkit-backdrop-filter: blur(8px) saturate(110%);
+  border-bottom: 1px solid var(--nav-border);
+
+  transition:
+    background 0.35s ease,
+    border-color 0.35s ease,
+    backdrop-filter 0.35s ease;
+
   will-change: transform;
   transform: translateZ(0);
 }
+
+/* JS pe .scrolled class lagao scroll par — thoda dense bano */
+.nav-root.scrolled {
+  background: var(--nav-bg-scrolled);
+  backdrop-filter: blur(14px) saturate(130%);
+  -webkit-backdrop-filter: blur(14px) saturate(130%);
+  border-bottom-color: rgba(255,255,255,0.09);
+}
+html.light .nav-root.scrolled {
+  border-bottom-color: rgba(0,0,0,0.09);
+}
+
 .nav-inner {
   max-width: 1060px; margin: 0 auto;
   padding: 0 16px; height: 52px;
@@ -369,8 +387,6 @@ h1, h2, h3, .section-title {
 
 /* ═══════════════════════════════════════════════════════════
    KEYFRAME ANIMATIONS — compositor-only (transform + opacity)
-   NEVER animate: width, height, top, left, margin, padding,
-   background, border, font-size — these trigger layout.
 ═══════════════════════════════════════════════════════════ */
 @keyframes fadeUp {
   from { opacity: 0; transform: translate3d(0, 18px, 0) scale3d(0.98, 0.98, 1); }
@@ -411,7 +427,21 @@ h1, h2, h3, .section-title {
 }
 @keyframes contact-spin { to { transform: rotate(360deg); } }
 @keyframes spin { to { transform: rotate(360deg); } }
-/* Scroll-fade mask animations (chanhdai) */
+
+/* ── UPDATED: Theme change vibrate CSS animation (subtle icon wobble) ── */
+@keyframes theme-change-wobble {
+  0%   { transform: translateZ(0) scale(1) rotate(0deg); }
+  20%  { transform: translateZ(0) scale(1.18) rotate(-8deg); }
+  45%  { transform: translateZ(0) scale(0.92) rotate(6deg); }
+  65%  { transform: translateZ(0) scale(1.08) rotate(-4deg); }
+  80%  { transform: translateZ(0) scale(0.97) rotate(2deg); }
+  100% { transform: translateZ(0) scale(1) rotate(0deg); }
+}
+.theme-btn.wobble {
+  animation: theme-change-wobble 0.42s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+/* Scroll-fade mask animations */
 @keyframes show-top-mask    { to { --top-mask-height: var(--mask-height); } }
 @keyframes hide-bottom-mask { to { --bottom-mask-height: 0px; } }
 @keyframes show-left-mask   { to { --left-mask-width: var(--mask-width); } }
@@ -429,7 +459,6 @@ h1, h2, h3, .section-title {
 .stagger > *:nth-child(6) { animation-delay: 0.25s }
 .stagger > *:nth-child(7) { animation-delay: 0.29s }
 
-/* ── Reveal scroll animation — compositor-only ── */
 .reveal {
   opacity: 0;
   transform: translate3d(0, 20px, 0) scale3d(0.985, 0.985, 1);
@@ -443,11 +472,9 @@ h1, h2, h3, .section-title {
 .reveal.visible {
   opacity: 1;
   transform: translate3d(0, 0, 0) scale3d(1, 1, 1);
-  /* Remove will-change after animation completes — saves memory */
   will-change: auto;
 }
 
-/* ── Scroll-fade effect (chanhdai pattern) ── */
 .scroll-fade-effect-y {
   --mask-height: 64px;
   mask-image:
@@ -679,7 +706,7 @@ html.light .gold-word {
 }
 
 /* ═══════════════════════════════════════════════════════════
-   VIEW TRANSITION — theme wipe (chanhdai-inspired)
+   VIEW TRANSITION — theme wipe
 ═══════════════════════════════════════════════════════════ */
 ::view-transition-group(root) {
   animation-timing-function: var(--expo-out);
@@ -699,24 +726,14 @@ html.light .gold-word {
 @keyframes themeWipe { to { mask-size: 200vmax; } }
 
 /* ═══════════════════════════════════════════════════════════
-   GPU COMPOSITING — 120Hz/144Hz/200Hz PERFORMANCE
-   Rules:
-   1. Only promote layers that actually animate (no blanket will-change)
-   2. Use translate3d/translateZ(0) to promote to GPU — but ONLY on
-      elements that animate. Blanket translate3d causes layer explosion.
-   3. will-change: auto after animation ends
-   4. backface-visibility: hidden prevents unnecessary layer creation
-      on elements that don't need it
+   GPU COMPOSITING HINTS
 ═══════════════════════════════════════════════════════════ */
-
-/* Subpixel text — ALL text elements */
 body, h1, h2, h3, p, span, a, button {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
 }
 
-/* HiDPI — retina borders + sharper images */
 @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
   body { -webkit-font-smoothing: subpixel-antialiased; }
   .nav-root, .edu-outer, .cert-section-box, .contact-outer, .footer-root {
@@ -731,47 +748,37 @@ body, h1, h2, h3, p, span, a, button {
   }
 }
 
-/* Canvas */
 canvas {
   transform: translateZ(0);
   image-rendering: auto;
 }
 
-/* SVG */
 svg {
   shape-rendering: geometricPrecision;
   vector-effect: non-scaling-stroke;
 }
 
-/* Images — lazy decode hint */
 img {
   image-rendering: auto;
-  /* hint to decode off main thread */
   content-visibility: auto;
 }
 
-/* Elements that animate — own compositing layer ONLY where needed */
-/* nav-root: fixed + backdrop-filter = must have own layer */
 .nav-root {
   will-change: transform;
   transform: translateZ(0);
 }
 
-/* h-profile, h-avatar: no animations → remove permanent layer promotion
-   Only promote during hover via :hover selector */
 .h-profile, .h-info-wrap, .h-avatar,
 .logo-avatar, .logo-i {
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
 }
 
-/* Section GPU hint — remove blanket translateZ (creates layers for all sections) */
 .edu-card, .proj-card {
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
 }
 
-/* Interactive tiles — promote on hover via CSS, not permanently */
 .s-tile, .cert-item {
   transition-property: transform, opacity, background, box-shadow;
   transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
@@ -780,17 +787,14 @@ img {
   transform: translateZ(0);
 }
 
-/* GitHub cell */
 .gh-cell:hover { transform: scale(1.35) translateZ(0); }
 
-/* Stat card 3D hover — compositor only */
 .stat-card-3d {
   transition: transform 0.28s cubic-bezier(0.16,1,0.3,1),
               box-shadow 0.28s cubic-bezier(0.16,1,0.3,1);
 }
 .stat-card-3d:hover { transform: translateY(-5px) translateZ(0); }
 
-/* Skills lamp grid */
 .skills-lamp-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -798,7 +802,6 @@ img {
   align-items: stretch;
 }
 
-/* Proj grid / skills grid — only promote on hover */
 .proj-grid > *,
 .skills-lamp-grid > * {
   backface-visibility: hidden;
@@ -809,7 +812,6 @@ img {
   will-change: transform;
 }
 
-/* Light mode cards */
 html.light .proj-card,
 html.light .cert-card,
 html.light .stat-badge {
@@ -818,7 +820,6 @@ html.light .stat-badge {
   border-color: #d8d8d4;
 }
 
-/* Framer Motion layer hints */
 [data-framer-appear],
 [data-framer-motion-appear-animation] {
   will-change: transform, opacity;
@@ -826,19 +827,16 @@ html.light .stat-badge {
   -webkit-backface-visibility: hidden;
 }
 
-/* Backdrop-filter elements — must form their own layer */
 [style*="backdropFilter"],
 [style*="backdrop-filter"] {
   transform: translateZ(0);
 }
 
-/* Skills strip GPU */
 .skills-strip-inner {
   will-change: transform;
   transform: translate3d(0, 0, 0);
 }
 
-/* Momentum scroll for overflow containers */
 .contrib-wrap, .marquee-track, .marquee-fade,
 .modal-scroll, [style*="overflowY: auto"] {
   -webkit-overflow-scrolling: touch;
@@ -859,7 +857,6 @@ html.light .stat-badge {
 @media (max-width: 860px) {
   .desktop-nav { display: none !important; }
   .page-wrapper { padding: 0; }
-  /* Mobile nav btn shown */
   .mobile-nav-btn { display: flex !important; }
 }
 
@@ -886,10 +883,8 @@ html.light .stat-badge {
     border-bottom: 1px solid var(--border) !important;
   }
   .hero-social a:last-child { border-bottom: none !important; }
-  /* Disable hover states on touch — prevents stuck hover */
   .proj-card:hover, .cert-card:hover, .stat-badge:hover,
   .overview-item:hover, .contact-row:hover { background: transparent; }
-  /* Disable 3D on mobile — GPU memory concern */
   .stat-card-3d { transform: none !important; transition: box-shadow 0.2s, background 0.2s; }
   .stat-card-3d:hover { transform: translateY(-3px) translateZ(0) !important; }
   .name-highlight { box-shadow: none !important; }
@@ -961,9 +956,7 @@ html.light .stat-badge {
 }
 
 /* ═══════════════════════════════════════════════════════════
-   REDUCED MOTION — accessibility + battery
-   Respects user's OS "reduce motion" preference.
-   Disables all animations/transitions except for opacity.
+   REDUCED MOTION
 ═══════════════════════════════════════════════════════════ */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
@@ -978,8 +971,7 @@ html.light .stat-badge {
 }
 
 /* ═══════════════════════════════════════════════════════════
-   NAVBAR — mobile nav & link styles (moved from Navbar.tsx
-   inline <style> to avoid Next.js 15 hydration mismatch)
+   NAVBAR — mobile nav
 ═══════════════════════════════════════════════════════════ */
 .mobile-nav-btn { display: none; }
 .mobile-menu {
