@@ -1,23 +1,22 @@
 "use client";
-import { useEffect } from "react";
+import Script from "next/script";
+import { useEffect, useState } from "react";
 
 export default function OnekoCatLoader() {
+  const [show, setShow] = useState(false);
+
   useEffect(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    if (document.getElementById("oneko-script")) return;
-
-    const script = document.createElement("script");
-    script.id = "oneko-script";
-    script.src = "/oneko.js";
-    script.dataset.cat = "/oneko.gif";
-    script.async = true;
-    document.body.appendChild(script);
-
-    return () => {
-      document.getElementById("oneko-script")?.remove();
-      document.getElementById("oneko")?.remove();
-    };
+    setShow(true);
   }, []);
 
-  return null;
+  if (!show) return null;
+
+  return (
+    <Script
+      id="oneko-script"
+      src="/oneko.js"
+      strategy="afterInteractive"
+    />
+  );
 }
