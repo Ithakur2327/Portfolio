@@ -877,24 +877,24 @@ html.light .stat-badge {
     0 4px 24px rgba(0,0,0,0.32);
 }
 
-/* ── Light theme ── */
+/* ── Light theme — proper frosted glass ── */
 html.light .nav-root {
-  backdrop-filter: blur(20px) saturate(180%) brightness(1.01) !important;
-  -webkit-backdrop-filter: blur(20px) saturate(180%) brightness(1.01) !important;
-  background: rgba(245,245,243,0.20) !important;
-  border-bottom: 1px solid rgba(0,0,0,0.05) !important;
-  box-shadow:
-    0 1px 0 rgba(255,255,255,0.60) inset,
-    0 1px 0 rgba(245,245,243,0.9);
-}
-html.light .nav-root.scrolled {
-  backdrop-filter: blur(28px) saturate(200%) brightness(1.02) !important;
-  -webkit-backdrop-filter: blur(28px) saturate(200%) brightness(1.02) !important;
-  background: rgba(245,245,243,0.68) !important;
+  backdrop-filter: blur(24px) saturate(200%) brightness(1.05) !important;
+  -webkit-backdrop-filter: blur(24px) saturate(200%) brightness(1.05) !important;
+  background: rgba(248,248,246,0.55) !important;
   border-bottom: 1px solid rgba(0,0,0,0.08) !important;
   box-shadow:
     0 1px 0 rgba(255,255,255,0.80) inset,
-    0 4px 20px rgba(0,0,0,0.06);
+    0 1px 6px rgba(0,0,0,0.06);
+}
+html.light .nav-root.scrolled {
+  backdrop-filter: blur(32px) saturate(220%) brightness(1.06) !important;
+  -webkit-backdrop-filter: blur(32px) saturate(220%) brightness(1.06) !important;
+  background: rgba(248,248,246,0.78) !important;
+  border-bottom: 1px solid rgba(0,0,0,0.10) !important;
+  box-shadow:
+    0 1px 0 rgba(255,255,255,0.90) inset,
+    0 4px 20px rgba(0,0,0,0.07);
 }
 
 /* Mobile nav height */
@@ -1002,12 +1002,25 @@ html.light #scroll-arrow {
     width: 100vw;
   }
   .h-tablet-outer .h-tablet-card {
-    max-width: 560px;
+    max-width: 660px;
     margin: 0 auto;
   }
   .h-desktop-profile { display: none !important; }
   .h-desktop-gap     { display: none !important; }
   .h-desktop-info    { display: none !important; }
+
+  /* Bigger hero profile on tablet */
+  .h-avatar {
+    width: 190px !important;
+    min-width: 190px !important;
+    height: 190px !important;
+    min-height: 190px !important;
+  }
+  /* Bigger name on tablet */
+  h1 { font-size: clamp(24px, 4vw, 36px) !important; }
+  /* Info section enhanced */
+  .h-info-wrap { max-width: 660px !important; margin: 0 auto !important; }
+  .h-grid { gap: 13px 40px !important; }
 }
 
 @media (max-width: 600px) {
@@ -1266,4 +1279,87 @@ html.light #scroll-arrow {
   .marquee-inner { animation: none; }
   .flip-item { animation: none; }
   .reveal { opacity: 1; transform: none; transition: none; }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   MOBILE SCROLL PERFORMANCE — aggressive optimizations
+   Target: smooth 60fps scroll on mid/low-end phones
+═══════════════════════════════════════════════════════════ */
+
+/* Force GPU layers only on elements that need it — avoid layer explosion */
+@media (max-width: 860px) {
+  /* Kill heavy animations that cause jank */
+  .hbg-glow {
+    display: none !important;
+  }
+
+  /* Remove will-change from everything except the cat */
+  .marquee-inner,
+  .reveal,
+  .s-tile,
+  .proj-card,
+  .cert-item,
+  .skill-chip,
+  .edu-card {
+    will-change: auto !important;
+  }
+
+  /* Lightweight hover states — no transform on mobile */
+  .proj-card:hover,
+  .cert-card:hover,
+  .stat-badge:hover,
+  .overview-item:hover,
+  .contact-row:hover,
+  .about-item:hover {
+    background: transparent !important;
+    transform: none !important;
+  }
+
+  /* No 3D lift on cards — causes compositing stutter */
+  .stat-card-3d,
+  .stat-card-3d:hover {
+    transform: none !important;
+    transition: box-shadow 0.2s ease, background 0.2s ease !important;
+  }
+
+  /* Reduce blur cost on the bottom fade */
+  #scroll-bottom-fade::after {
+    backdrop-filter: blur(2px) !important;
+    -webkit-backdrop-filter: blur(2px) !important;
+  }
+
+  /* Touch momentum on all scroll containers */
+  .contrib-wrap,
+  .marquee-track,
+  [style*="overflowX: auto"],
+  [style*="overflow-x: auto"] {
+    -webkit-overflow-scrolling: touch !important;
+    scroll-behavior: smooth;
+  }
+
+  /* Prevent paint on every scroll — contain:paint where safe */
+  .proj-card,
+  .cert-card,
+  .edu-card,
+  .exp-card {
+    contain: layout style;
+  }
+}
+
+/* Ultra-low-end: kill all backdrop-filter completely */
+@media (max-width: 480px) and (max-device-pixel-ratio: 1) {
+  .nav-root,
+  .mobile-menu,
+  #scroll-bottom-fade::after,
+  #scroll-arrow {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+  /* Simpler solid fallback for nav */
+  .nav-root {
+    background: rgba(4,4,4,0.92) !important;
+  }
+  html.light .nav-root {
+    background: rgba(245,245,243,0.96) !important;
+  }
 }
