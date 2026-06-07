@@ -84,7 +84,6 @@ function SocialTile({href,label,icon,iconBg,iconBorder,iconColor}:{href:string;l
         textDecoration:"none", position:"relative",
         transition:"background 0.12s", minWidth:0,
       }}
-
     >
       <div style={{width:32,height:32,borderRadius:8,background:iconBg,border:iconBorder,display:"flex",alignItems:"center",justifyContent:"center",color:iconColor,flexShrink:0}}>{icon}</div>
       <span style={{fontWeight:600,fontSize:13.5,fontFamily:"'Geist',sans-serif"}}>{label}</span>
@@ -97,8 +96,6 @@ function SocialTile({href,label,icon,iconBg,iconBorder,iconColor}:{href:string;l
 
 /* ─── HoverBorderGradient ─────────────────────────────
    Pure CSS @keyframes rotation — zero JS overhead.
-   Replaces the old rAF loop (was running every frame ~16ms).
-   CSS animation runs entirely on the compositor thread.
 */
 function HoverBorderGradient({ children }: { children: React.ReactNode }) {
   const { theme } = useTheme();
@@ -131,7 +128,6 @@ function HoverBorderGradient({ children }: { children: React.ReactNode }) {
           .hbg-glow { animation: none; }
         }
       `}</style>
-      {/* CSS-animated glow layer — compositor thread only */}
       <div
         className="hbg-glow"
         aria-hidden
@@ -143,7 +139,6 @@ function HoverBorderGradient({ children }: { children: React.ReactNode }) {
           pointerEvents: "none",
         }}
       />
-      {/* Static sharp border */}
       <div
         aria-hidden
         style={{
@@ -162,9 +157,9 @@ function HoverBorderGradient({ children }: { children: React.ReactNode }) {
   );
 }
 
-/* ═══════════════════════════════════════════════════════
+/* ═══════════════════════════════════════════════════════════
    MAIN HERO
-═══════════════════════════════════════════════════════ */
+═══════════════════════════════════════════════════════════ */
 const CW = 1060;
 
 export function HeroSection() {
@@ -197,7 +192,7 @@ export function HeroSection() {
           align-items: stretch;
         }
 
-        /* Avatar box — always square, image fills all 4 edges */
+        /* Avatar box */
         .h-avatar {
           width: 162px;
           min-width: 162px;
@@ -240,42 +235,65 @@ export function HeroSection() {
         .s-tile:hover { background: var(--bg-secondary); }
         .s-tile:last-child { border-right: none !important; }
 
-        /* ── Tablet: full viewport hero like mobile ── */
+        /* ══════════════════════════════════════
+           TABLET / iPAD — use mobile-style UI
+           Covers: iPad mini, iPad, iPad Pro,
+           any tablet 601px–1024px wide.
+        ══════════════════════════════════════ */
         @media (min-width: 601px) and (max-width: 1024px) {
           .h-profile {
-            flex-direction: column !important;
-            align-items: flex-start !important;
+            flex-direction: row !important;
+            align-items: stretch !important;
           }
           .h-avatar {
-            width: clamp(140px, 25vw, 190px) !important;
-            min-width: clamp(140px, 25vw, 190px) !important;
-            height: clamp(140px, 25vw, 190px) !important;
-            min-height: clamp(140px, 25vw, 190px) !important;
-            border-right: none !important;
-            border-bottom: 1px solid var(--border) !important;
+            width: clamp(110px, 22vw, 160px) !important;
+            min-width: clamp(110px, 22vw, 160px) !important;
+            height: clamp(110px, 22vw, 160px) !important;
+            min-height: clamp(110px, 22vw, 160px) !important;
+            border-right: 1px solid var(--border) !important;
+            border-bottom: none !important;
           }
           .h-nameblock {
             flex: 1 !important;
-            padding: 12px 20px !important;
+            padding: 0 !important;
           }
           .h-grid {
-            grid-template-columns: 1fr 1fr !important;
+            grid-template-columns: 1fr !important;
+            gap: 11px 0 !important;
           }
+          .h-spacer { display: none !important; }
+          .h-social {
+            flex-direction: column !important;
+          }
+          .s-tile {
+            border-right: none !important;
+            border-bottom: 1px solid var(--border) !important;
+          }
+          .s-tile:last-child { border-bottom: none !important; }
+          /* Lanyard visible on tablet, compact */
           .h-lanyard-col {
-            display: none !important;
+            width: 80px !important;
+            min-width: 80px !important;
+            padding: 8px 8px 8px !important;
+            border-left: 1px solid var(--border) !important;
+            display: flex !important;
+          }
+          .h-info-wrap {
+            margin-left: 12px !important;
+            margin-right: 12px !important;
           }
         }
 
+        /* ══════════════════════════════════════
+           MOBILE ≤600px
+        ══════════════════════════════════════ */
         @media (max-width: 600px) {
-          /* Side-by-side layout preserved on mobile */
           .h-profile { flex-direction: row !important; }
-
-          /* Responsive square avatar */
           .h-avatar {
-            width: clamp(100px, 28vw, 148px) !important;
-            min-width: clamp(100px, 28vw, 148px) !important;
-            height: clamp(100px, 28vw, 148px) !important;
-            min-height: clamp(100px, 28vw, 148px) !important;
+            width: clamp(90px, 28vw, 140px) !important;
+            min-width: clamp(90px, 28vw, 140px) !important;
+            height: clamp(90px, 28vw, 140px) !important;
+            min-height: clamp(90px, 28vw, 140px) !important;
             border-right: 1px solid var(--border) !important;
             border-bottom: none !important;
             overflow: hidden !important;
@@ -303,34 +321,40 @@ export function HeroSection() {
             margin-left: 12px !important;
             margin-right: 12px !important;
           }
+          /* Lanyard: small strip on right of avatar row */
+          .h-lanyard-col {
+            width: 68px !important;
+            min-width: 68px !important;
+            padding: 6px 6px 6px !important;
+            border-left: 1px solid var(--border) !important;
+            display: flex !important;
+          }
         }
 
         @media (max-width: 380px) {
           .h-avatar {
-            width: clamp(88px, 26vw, 110px) !important;
-            min-width: clamp(88px, 26vw, 110px) !important;
-            height: clamp(88px, 26vw, 110px) !important;
-            min-height: clamp(88px, 26vw, 110px) !important;
+            width: clamp(80px, 26vw, 100px) !important;
+            min-width: clamp(80px, 26vw, 100px) !important;
+            height: clamp(80px, 26vw, 100px) !important;
+            min-height: clamp(80px, 26vw, 100px) !important;
+          }
+          .h-lanyard-col {
+            width: 58px !important;
+            min-width: 58px !important;
           }
         }
 
-        /* Lanyard col — responsive */
+        /* Lanyard col — desktop default */
         .h-lanyard-col {
-          width: 142px;
-          min-width: 142px;
-        }
-        @media (max-width: 760px) {
-          .h-lanyard-col {
-            width: 110px !important;
-            min-width: 110px !important;
-            padding: 8px 10px 8px !important;
-            border-left: 1px solid var(--border) !important;
-          }
-        }
-        @media (max-width: 380px) {
-          .h-lanyard-col {
-            display: none !important;
-          }
+          width: 120px;
+          min-width: 120px;
+          display: flex;
+          align-items: flex-end;
+          justify-content: center;
+          padding: 10px 12px 8px;
+          border-left: 1px solid var(--border);
+          flex-shrink: 0;
+          min-width: 0;
         }
       `}</style>
 
@@ -338,7 +362,7 @@ export function HeroSection() {
         className={vis === "ssr" ? "" : "reveal visible"}
       >
 
-        {/* ── PROFILE ROW — full viewport width bg, centered content ── */}
+        {/* ── PROFILE ROW ── */}
         <div style={{
           position:"relative", left:"50%", marginLeft:"-50vw", width:"100vw",
           background:BG, borderTop:B, borderBottom:B,
@@ -355,7 +379,7 @@ export function HeroSection() {
               <div style={{flex:1}}/>
               <div style={{padding:"10px 20px 0"}}>
                 <h1 ref={nameRef} style={{
-                  fontSize:"clamp(20px,3.5vw,32px)", fontWeight:700,
+                  fontSize:"clamp(18px,3vw,32px)", fontWeight:700,
                   letterSpacing:"-0.04em", color:"var(--text-primary)",
                   lineHeight:1.15, margin:0,
                   fontFamily:"'Geist',sans-serif", display:"inline-block",
@@ -367,16 +391,8 @@ export function HeroSection() {
               </div>
             </div>
 
-            {/* Lanyard card — right side, aligned with Contact nav link */}
-            <div style={{
-              display: "flex",
-              alignItems: "flex-end",
-              justifyContent: "center",
-              padding: "12px 16px 10px",
-              borderLeft: "1px solid var(--border)",
-              flexShrink: 0,
-              minWidth: 0,
-            }} className="h-lanyard-col">
+            {/* Lanyard card — right side, visible on all screens */}
+            <div className="h-lanyard-col">
               <LanyardCard />
             </div>
           </div>
@@ -384,7 +400,7 @@ export function HeroSection() {
 
         <div style={{height:38, maxWidth:CW, margin:"0 auto"}}/>
 
-        {/* ── INFO + SOCIAL wrapped in HoverBorderGradient ── */}
+        {/* ── INFO + SOCIAL ── */}
         <div className="h-info-wrap" style={{borderLeft:B, borderRight:B}}>
           <HoverBorderGradient>
             <div style={{background:BG, border:B}}>

@@ -1211,6 +1211,27 @@ html.light #scroll-arrow {
 .theme-btn-vibe { /* marker class for the JS to find */ }
 
 /* ═══════════════════════════════════════════════════════════
+   LOW-END DEVICE PERFORMANCE
+   Targets devices with limited GPU / older SoCs.
+   Reduces layer promotion and animation complexity.
+═══════════════════════════════════════════════════════════ */
+
+/* Reduce backdrop blur cost on low-end */
+@media (max-width: 600px) and (max-device-pixel-ratio: 2) {
+  .nav-root {
+    backdrop-filter: blur(8px) !important;
+    -webkit-backdrop-filter: blur(8px) !important;
+  }
+}
+
+/* Disable expensive conic-gradient border animation on low-end mobile */
+@media (max-width: 600px) {
+  .hbg-glow {
+    animation-duration: 12s !important;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
    LANYARD CARD CONTAINER
 ═══════════════════════════════════════════════════════════ */
 .lanyard-hero-container {

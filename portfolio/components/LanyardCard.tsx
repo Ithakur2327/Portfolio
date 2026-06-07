@@ -4,8 +4,8 @@ import { useTheme } from "./ThemeProvider";
 
 export function LanyardCard() {
   const { theme } = useTheme();
-  const [mounted, setMounted] = useState(false);
-  const [flipped, setFlipped] = useState(false);
+  const [mounted, setMounted]   = useState(false);
+  const [flipped, setFlipped]   = useState(false);
   const angleRef  = useRef(0);
   const velRef    = useRef(0);
   const dragging  = useRef(false);
@@ -32,14 +32,19 @@ export function LanyardCard() {
     }
   }, []);
 
-  // ── Idle gentle sway (slow, smooth) ──
+  // ── Idle gentle left-right sway — throttled to ~30fps for perf ──
   useEffect(() => {
-    const sway = () => {
-      if (!dragging.current && Math.abs(angleRef.current) < 1.2 && Math.abs(velRef.current) < 0.3) {
-        idleT.current += 0.008; // slower = smoother
-        const a = Math.sin(idleT.current) * 3.5;
-        angleRef.current = a;
-        setAngleDeg(a);
+    let lastTime = 0;
+    const INTERVAL = 33; // ~30fps
+    const sway = (ts: number) => {
+      if (ts - lastTime >= INTERVAL) {
+        lastTime = ts;
+        if (!dragging.current && Math.abs(angleRef.current) < 1.5 && Math.abs(velRef.current) < 0.4) {
+          idleT.current += 0.007;
+          const a = Math.sin(idleT.current) * 4;
+          angleRef.current = a;
+          setAngleDeg(a);
+        }
       }
       idleId.current = requestAnimationFrame(sway);
     };
@@ -60,9 +65,9 @@ export function LanyardCard() {
     if (!dragging.current) return;
     const dx = e.clientX - lastX.current;
     if (Math.abs(dx) > 1.5) didDrag.current = true;
-    const newAngle = Math.max(-42, Math.min(42, angleRef.current + dx * 0.6));
-    lastVel.current  = newAngle - angleRef.current;
-    angleRef.current = newAngle;
+    const newAngle    = Math.max(-42, Math.min(42, angleRef.current + dx * 0.6));
+    lastVel.current   = newAngle - angleRef.current;
+    angleRef.current  = newAngle;
     setAngleDeg(newAngle);
     lastX.current = e.clientX;
   };
@@ -74,30 +79,33 @@ export function LanyardCard() {
     if (!didDrag.current) setFlipped(f => !f);
   };
 
-  const isDark   = mounted ? theme === "dark" : true;
-  // Card color follows theme
-  const cardBg   = isDark ? "#f8f8f8" : "#ffffff";
+  const isDark  = mounted ? theme === "dark" : true;
+  const cardBg  = isDark ? "#f5f5f5" : "#ffffff";
   const cardText = "#111111";
-  const shadow   = isDark
+  const shadow  = isDark
     ? "0 6px 28px rgba(0,0,0,0.65), 0 2px 6px rgba(0,0,0,0.4), 0 0 0 0.5px rgba(0,0,0,0.2)"
     : "0 4px 18px rgba(0,0,0,0.22), 0 1px 4px rgba(0,0,0,0.14), 0 0 0 0.5px rgba(0,0,0,0.10)";
 
-  // Strap: plain dark band, no dots
+  // Strap gradient
   const strapBg = isDark
     ? "linear-gradient(180deg,#1a1a28 0%,#2a2a40 50%,#1a1a28 100%)"
     : "linear-gradient(180deg,#2a2a3a 0%,#3a3a52 50%,#2a2a3a 100%)";
 
-  // Card dimensions — fit within 162px row height
-  // strap 40px + hook 10px + card 96px + hint 14px = 160px  ✓
-  const CARD_W = 82;
-  const CARD_H = 110;
+  // ── Dimensions: ~half the original ──
+  // Strap: 22px tall, 6px wide (was 42px / 10px)
+  // Clip:  7px tall, 9px wide (was 11px / 14px)
+  // Card:  48px wide × 64px tall (was 82px × 110px)
+  const STRAP_W = 6;
+  const STRAP_H = 22;
+  const CARD_W  = 52;
+  const CARD_H  = 68;
 
   return (
     <div style={{
       width: "100%", height: "100%",
       display: "flex", flexDirection: "column",
       alignItems: "center", justifyContent: "flex-start",
-      paddingTop: 0,
+      paddingTop: 4,
       userSelect: "none", WebkitUserSelect: "none",
       touchAction: "none",
     }}>
@@ -112,12 +120,10 @@ export function LanyardCard() {
           backface-visibility: hidden;
           -webkit-backface-visibility: hidden;
           position: absolute; inset: 0;
-          border-radius: 9px;
+          border-radius: 5px;
           display: flex; align-items: center; justify-content: center;
         }
         .lc-back { transform: rotateY(180deg); }
-
-        /* Pivot point at very top of strap */
         .lc-pivot {
           transform-origin: top center;
           will-change: transform;
@@ -127,7 +133,7 @@ export function LanyardCard() {
         .lc-pivot:active { cursor: grabbing; }
       `}</style>
 
-      {/* ── Pivot wrapper — rotates whole assembly from top ── */}
+      {/* ── Pivot wrapper ── */}
       <div
         className="lc-pivot"
         style={{ transform: `rotate(${angleDeg}deg)` }}
@@ -136,78 +142,137 @@ export function LanyardCard() {
         onPointerUp={onPointerUp}
         onPointerCancel={onPointerUp}
       >
-        {/* STRAP — plain band, no dots, connected directly to top of card area */}
+        {/* STRAP — flush top border of card hole */}
         <div style={{
-          width: 10,
-          height: 42,
+          width: STRAP_W,
+          height: STRAP_H,
           background: strapBg,
-          borderRadius: "3px 3px 0 0",
+          borderRadius: "2px 2px 0 0",
           boxShadow: "1px 0 2px rgba(0,0,0,0.35), inset -1px 0 1px rgba(255,255,255,0.05)",
           flexShrink: 0,
+          zIndex: 2,
         }} />
 
-        {/* METAL CLIP — small teardrop/D-ring, zero gap */}
+        {/* METAL CLIP — connects strap bottom to card top, no gap */}
         <div style={{
-          width: 14,
-          height: 11,
+          width: 9,
+          height: 7,
           flexShrink: 0,
           position: "relative",
           marginTop: 0,
+          zIndex: 2,
         }}>
           {/* D-ring arch */}
           <div style={{
             position: "absolute",
             top: 0, left: "50%",
             transform: "translateX(-50%)",
-            width: 10, height: 7,
-            border: "2px solid #999",
+            width: STRAP_W, height: 4,
+            border: "1.5px solid #999",
             borderBottom: "none",
-            borderRadius: "6px 6px 0 0",
+            borderRadius: "4px 4px 0 0",
             background: "transparent",
           }} />
-          {/* Clip body */}
+          {/* Clip body — flush to card top */}
           <div style={{
             position: "absolute",
             bottom: 0, left: "50%",
             transform: "translateX(-50%)",
-            width: 14, height: 6,
+            width: 9, height: 4,
             background: "linear-gradient(135deg,#bbb 0%,#777 100%)",
-            borderRadius: 3,
-            boxShadow: "0 1px 3px rgba(0,0,0,0.5)",
+            borderRadius: 2,
+            boxShadow: "0 1px 2px rgba(0,0,0,0.5)",
           }} />
         </div>
 
-        {/* CARD — flush with clip, no gap */}
-        <div style={{ width: CARD_W, height: CARD_H, perspective: 480, flexShrink: 0 }}>
+        {/* CARD — flush with clip, zero gap */}
+        <div style={{
+          width: CARD_W,
+          height: CARD_H,
+          perspective: 300,
+          flexShrink: 0,
+          // The strip hole at the top of the card
+          position: "relative",
+        }}>
+          {/* Lanyard hole notch at top center of card */}
+          <div style={{
+            position: "absolute",
+            top: 0,
+            left: "50%",
+            transform: "translateX(-50%)",
+            width: STRAP_W + 2,
+            height: 5,
+            background: isDark ? "#e0e0e0" : "#ddd",
+            borderRadius: "0 0 3px 3px",
+            zIndex: 3,
+          }} />
+
           <div
             className={`lc-inner${flipped ? " flipped" : ""}`}
             style={{ width: "100%", height: "100%", position: "relative" }}
           >
             {/* FRONT */}
-            <div className="lc-face" style={{ background: cardBg, boxShadow: shadow }}>
+            <div className="lc-face" style={{
+              background: cardBg,
+              boxShadow: shadow,
+              flexDirection: "column",
+              gap: 2,
+            }}>
+              {/* Top colored stripe */}
+              <div style={{
+                position: "absolute",
+                top: 0, left: 0, right: 0,
+                height: 16,
+                background: isDark
+                  ? "linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)"
+                  : "linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)",
+                borderRadius: "5px 5px 0 0",
+              }} />
               <span style={{
-                fontSize: 20, fontWeight: 800, color: cardText,
+                fontSize: 10, fontWeight: 800, color: cardText,
                 fontFamily: "-apple-system,'SF Pro Display','Helvetica Neue',sans-serif",
                 letterSpacing: "-0.04em",
+                marginTop: 18,
               }}>
                 hello!
               </span>
+              <span style={{
+                fontSize: 6, color: "#888",
+                fontFamily: "'Geist Mono',monospace",
+                letterSpacing: "0.05em",
+              }}>VISITOR</span>
             </div>
 
             {/* BACK */}
-            <div className="lc-face lc-back" style={{ background: cardBg, boxShadow: shadow }}>
-              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}>
-                <span style={{ fontSize: 26, lineHeight: 1.1, fontFamily: "'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif" }}>☕</span>
-                <span style={{ fontSize: 26, lineHeight: 1.1, fontFamily: "'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif" }}>😎</span>
-              </div>
+            <div className="lc-face lc-back" style={{ background: cardBg, boxShadow: shadow, flexDirection: "column", gap: 3 }}>
+              {/* Top stripe */}
+              <div style={{
+                position: "absolute",
+                top: 0, left: 0, right: 0,
+                height: 16,
+                background: isDark
+                  ? "linear-gradient(135deg, #f59e0b 0%, #ef4444 100%)"
+                  : "linear-gradient(135deg, #d97706 0%, #dc2626 100%)",
+                borderRadius: "5px 5px 0 0",
+              }} />
+              {/* Sunglasses emoji from user */}
+              <span style={{
+                fontSize: 22, lineHeight: 1.1, marginTop: 14,
+                fontFamily: "'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif",
+              }}>😎</span>
+              {/* Coffee cup — unique style */}
+              <span style={{
+                fontSize: 14, lineHeight: 1.1,
+                fontFamily: "'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif",
+              }}>☕</span>
             </div>
           </div>
         </div>
 
         {/* Tap hint */}
         <div style={{
-          fontSize: 8, color: "var(--text-muted)", fontFamily: "monospace",
-          letterSpacing: "0.05em", opacity: 0.45, marginTop: 3,
+          fontSize: 6, color: "var(--text-muted)", fontFamily: "monospace",
+          letterSpacing: "0.05em", opacity: 0.4, marginTop: 3,
           userSelect: "none",
         }}>
           tap to flip
