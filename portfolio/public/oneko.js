@@ -1,5 +1,5 @@
 // oneko.js: https://github.com/adryd325/oneko.js
-// Modified: Day-based cat colors (Saturday = Green) + optional rainbow mode + 60fps smooth
+// Modified: 4-hour color rotation + tab-switch speed fix + rainbow mode + 60fps smooth
 
 (function oneko() {
   const isReducedMotion =
@@ -13,7 +13,6 @@
   let nekoPosX = 32;
   let nekoPosY = 32;
 
-  // Smooth render position (interpolated)
   let renderX = 32;
   let renderY = 32;
 
@@ -27,16 +26,40 @@
 
   const nekoSpeed = 10;
 
-  // ── Day-based color filters ──────────────────────────────────────────────
-  const dayFilters = {
-    0: 'brightness(0.55) sepia(0.8) saturate(4)   hue-rotate(200deg) contrast(1.3)', // Sunday    → Blue
-    1: 'brightness(0.5)  sepia(0.8) saturate(4)   hue-rotate(270deg) contrast(1.3)', // Monday    → Purple
-    2: 'brightness(0.55) sepia(0.8) saturate(5)   hue-rotate(320deg) contrast(1.3)', // Tuesday   → Pink
-    3: 'brightness(0.5)  sepia(0.9) saturate(5)   hue-rotate(0deg)   contrast(1.35)', // Wednesday → Red
-    4: 'brightness(0.5)  sepia(0.9) saturate(5)   hue-rotate(30deg)  contrast(1.35)', // Thursday  → Orange
-    5: 'brightness(0.5)  sepia(0.9) saturate(5)   hue-rotate(50deg)  contrast(1.35)', // Friday    → Yellow
-    6: 'brightness(0.45) sepia(0.8) saturate(4)   hue-rotate(80deg)  contrast(1.35)', // Saturday  → Green
-  };
+  // ── 4-hour slot based color filters (24 hours / 4h = 6 slots, repeated) ────
+  // Each slot index 0–5 repeats every 4 hours throughout the day.
+  // White-theme friendly + multi-color variety including rainbow-style entries.
+  const slotFilters = [
+    // Slot 0 (00:00–03:59) — Midnight Blue
+    'brightness(0.55) sepia(0.8) saturate(4)   hue-rotate(200deg) contrast(1.3)',
+    // Slot 1 (04:00–07:59) — Sunrise Orange
+    'brightness(0.5)  sepia(0.9) saturate(5)   hue-rotate(30deg)  contrast(1.35)',
+    // Slot 2 (08:00–11:59) — Fresh Green
+    'brightness(0.45) sepia(0.8) saturate(4)   hue-rotate(80deg)  contrast(1.35)',
+    // Slot 3 (12:00–15:59) — Sky Cyan
+    'brightness(0.55) sepia(0.8) saturate(4.5) hue-rotate(170deg) contrast(1.3)',
+    // Slot 4 (16:00–19:59) — Lavender Purple
+    'brightness(0.5)  sepia(0.8) saturate(4)   hue-rotate(270deg) contrast(1.3)',
+    // Slot 5 (20:00–23:59) — Hot Pink
+    'brightness(0.55) sepia(0.8) saturate(5)   hue-rotate(320deg) contrast(1.3)',
+  ];
+
+  // Extra bonus colors cycling within each slot (changes every 4h but offset by minutes)
+  // Keeping 12 named colors so there's enough variety across a full day
+  const allFilters = [
+    'brightness(0.55) sepia(0.8) saturate(4)   hue-rotate(200deg) contrast(1.3)',  // Blue
+    'brightness(0.5)  sepia(0.8) saturate(4)   hue-rotate(270deg) contrast(1.3)',  // Purple
+    'brightness(0.55) sepia(0.8) saturate(5)   hue-rotate(320deg) contrast(1.3)',  // Pink
+    'brightness(0.5)  sepia(0.9) saturate(5)   hue-rotate(0deg)   contrast(1.35)', // Red
+    'brightness(0.5)  sepia(0.9) saturate(5)   hue-rotate(30deg)  contrast(1.35)', // Orange
+    'brightness(0.5)  sepia(0.9) saturate(5)   hue-rotate(50deg)  contrast(1.35)', // Yellow
+    'brightness(0.45) sepia(0.8) saturate(4)   hue-rotate(80deg)  contrast(1.35)', // Green
+    'brightness(0.55) sepia(0.8) saturate(4.5) hue-rotate(170deg) contrast(1.3)',  // Cyan
+    'brightness(0.5)  sepia(0.8) saturate(4.5) hue-rotate(155deg) contrast(1.3)',  // Teal
+    'brightness(0.55) sepia(0.8) saturate(4.5) hue-rotate(290deg) contrast(1.3)',  // Violet
+    'brightness(0.5)  sepia(0.9) saturate(6)   hue-rotate(15deg)  contrast(1.4)',  // Deep Orange
+    'brightness(0.5)  sepia(0.8) saturate(5)   hue-rotate(340deg) contrast(1.3)',  // Rose
+  ];
 
   const RAINBOW_MODE = false;
   const RAINBOW_CYCLE_MS = 4000;
@@ -46,11 +69,27 @@
     return `brightness(0.5) sepia(0.9) saturate(5) hue-rotate(${hue.toFixed(1)}deg) contrast(1.35)`;
   }
 
+  // Returns color index based on current 4-hour slot (0–5 repeating)
+  function get4HourSlot() {
+    const now = new Date();
+    const totalMinutes = now.getHours() * 60 + now.getMinutes();
+    return Math.floor(totalMinutes / 240) % allFilters.length;
+  }
+
   function getThemeFilter() {
     if (RAINBOW_MODE) return getRainbowFilter();
-    const day = new Date().getDay();
-    return dayFilters[day];
+    return allFilters[get4HourSlot()];
   }
+
+  // Update color every 4 hours; check every minute for accuracy
+  let currentColorSlot = get4HourSlot();
+  setInterval(function () {
+    const newSlot = get4HourSlot();
+    if (newSlot !== currentColorSlot) {
+      currentColorSlot = newSlot;
+      if (!RAINBOW_MODE) nekoEl.style.filter = getThemeFilter();
+    }
+  }, 60 * 1000);
 
   const spriteSets = {
     idle: [[-3, -3]],
@@ -83,10 +122,7 @@
     nekoEl.style.backgroundRepeat = 'no-repeat';
     nekoEl.style.backgroundSize = '256px 128px';
     nekoEl.style.backgroundPosition = '0 0';
-    nekoEl.style.left = `${nekoPosX - 16}px`;
-    nekoEl.style.top = `${nekoPosY - 16}px`;
     nekoEl.style.zIndex = 2147483647;
-    // Use transform instead of left/top for GPU compositing
     nekoEl.style.willChange = 'transform';
     nekoEl.style.left = '0px';
     nekoEl.style.top = '0px';
@@ -112,26 +148,37 @@
       mousePosY = event.clientY;
     });
 
+    // ── FIX: Tab switch speed bug ────────────────────────────────────────────
+    // When tab becomes hidden, mark timestamp as stale so the next frame
+    // after re-focus doesn't accumulate a huge delta and cause a speed burst.
+    document.addEventListener('visibilitychange', function () {
+      if (document.hidden) {
+        lastFrameTimestamp = null;
+        logicAccumulator = 0;
+      }
+    });
+    // ────────────────────────────────────────────────────────────────────────
+
     window.requestAnimationFrame(onAnimationFrame);
   }
 
-  let lastFrameTimestamp;
-  // Logic tick: runs at ~10fps (same as original behaviour/animation)
+  let lastFrameTimestamp = null;
   let logicAccumulator = 0;
-  const LOGIC_INTERVAL = 100; // ms, same as original
+  const LOGIC_INTERVAL = 100;
 
   function onAnimationFrame(timestamp) {
     if (!nekoEl.isConnected) return;
+
+    // ── FIX: If timestamp was reset (tab switch), re-init and skip this frame
     if (!lastFrameTimestamp) {
       lastFrameTimestamp = timestamp;
       window.requestAnimationFrame(onAnimationFrame);
       return;
     }
 
-    const delta = timestamp - lastFrameTimestamp;
+    const delta = Math.min(timestamp - lastFrameTimestamp, 200); // cap at 200ms to prevent jumps
     lastFrameTimestamp = timestamp;
 
-    // Logic tick accumulator — sprite/state updates at original 10fps
     logicAccumulator += delta;
     if (logicAccumulator >= LOGIC_INTERVAL) {
       logicAccumulator -= LOGIC_INTERVAL;
@@ -139,12 +186,10 @@
       frame();
     }
 
-    // Smooth position interpolation at full 60fps
-    const lerpFactor = 0.28; // tune for feel — higher = snappier
+    const lerpFactor = 0.28;
     renderX += (nekoPosX - renderX) * lerpFactor;
     renderY += (nekoPosY - renderY) * lerpFactor;
 
-    // GPU-composited transform — no layout thrash
     nekoEl.style.transform = `translate(${Math.round(renderX - 16)}px, ${Math.round(renderY - 16)}px)`;
 
     window.requestAnimationFrame(onAnimationFrame);
@@ -224,7 +269,6 @@
 
     nekoPosX = Math.min(Math.max(16, nekoPosX), window.innerWidth - 16);
     nekoPosY = Math.min(Math.max(16, nekoPosY), window.innerHeight - 16);
-    // No direct DOM write here — renderX/Y lerp handles it in rAF
   }
 
   init();
