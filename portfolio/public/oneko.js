@@ -1,5 +1,5 @@
 // oneko.js: https://github.com/adryd325/oneko.js
-// Modified: 4-hour color rotation + tab-switch speed fix + rainbow mode + 60fps smooth
+// Modified: Multicolor cats (calico/tabby/tuxedo) + 4-hour rotation + tab-switch speed fix + 60fps smooth
 
 (function oneko() {
   const isReducedMotion =
@@ -12,102 +12,70 @@
 
   let nekoPosX = 32;
   let nekoPosY = 32;
-
   let renderX = 32;
   let renderY = 32;
-
   let mousePosX = 0;
   let mousePosY = 0;
-
   let frameCount = 0;
   let idleTime = 0;
   let idleAnimation = null;
   let idleAnimationFrame = 0;
-
   const nekoSpeed = 10;
 
-  // ── 4-hour slot based color filters (24 hours / 4h = 6 slots, repeated) ────
-  // Each slot index 0–5 repeats every 4 hours throughout the day.
-  // White-theme friendly + multi-color variety including rainbow-style entries.
-  const slotFilters = [
-    // Slot 0 (00:00–03:59) — Midnight Blue
-    'brightness(0.55) sepia(0.8) saturate(4)   hue-rotate(200deg) contrast(1.3)',
-    // Slot 1 (04:00–07:59) — Sunrise Orange
-    'brightness(0.5)  sepia(0.9) saturate(5)   hue-rotate(30deg)  contrast(1.35)',
-    // Slot 2 (08:00–11:59) — Fresh Green
-    'brightness(0.45) sepia(0.8) saturate(4)   hue-rotate(80deg)  contrast(1.35)',
-    // Slot 3 (12:00–15:59) — Sky Cyan
-    'brightness(0.55) sepia(0.8) saturate(4.5) hue-rotate(170deg) contrast(1.3)',
-    // Slot 4 (16:00–19:59) — Lavender Purple
-    'brightness(0.5)  sepia(0.8) saturate(4)   hue-rotate(270deg) contrast(1.3)',
-    // Slot 5 (20:00–23:59) — Hot Pink
-    'brightness(0.55) sepia(0.8) saturate(5)   hue-rotate(320deg) contrast(1.3)',
+  // ── Cat skin variants ────────────────────────────────────────────────────
+  // Each skin = { file, label }
+  // 'file' is relative to the script's directory (same folder as oneko.js)
+  // Override per-skin by setting data-cat on the <script> tag (uses that for all)
+  const catSkins = [
+    { file: 'oneko_calico.gif',  label: 'Calico' },   // orange/cream/brown patches
+    { file: 'oneko_tabby.gif',   label: 'Tabby' },    // orange striped
+    { file: 'oneko_tuxedo.gif',  label: 'Tuxedo' },   // black & white
+    { file: 'oneko_calico.gif',  label: 'Calico2',
+      filter: 'hue-rotate(200deg) saturate(1.2)' },   // blue-tinted calico
+    { file: 'oneko_tabby.gif',   label: 'Tabby Pink',
+      filter: 'hue-rotate(310deg) saturate(1.4) brightness(1.1)' }, // pink tabby
+    { file: 'oneko_tuxedo.gif',  label: 'Tuxedo Gold',
+      filter: 'hue-rotate(30deg) saturate(2) brightness(1.05)' },   // gold tuxedo
   ];
 
-  // Extra bonus colors cycling within each slot (changes every 4h but offset by minutes)
-  // Keeping 12 named colors so there's enough variety across a full day
-  const allFilters = [
-    'brightness(0.55) sepia(0.8) saturate(4)   hue-rotate(200deg) contrast(1.3)',  // Blue
-    'brightness(0.5)  sepia(0.8) saturate(4)   hue-rotate(270deg) contrast(1.3)',  // Purple
-    'brightness(0.55) sepia(0.8) saturate(5)   hue-rotate(320deg) contrast(1.3)',  // Pink
-    'brightness(0.5)  sepia(0.9) saturate(5)   hue-rotate(0deg)   contrast(1.35)', // Red
-    'brightness(0.5)  sepia(0.9) saturate(5)   hue-rotate(30deg)  contrast(1.35)', // Orange
-    'brightness(0.5)  sepia(0.9) saturate(5)   hue-rotate(50deg)  contrast(1.35)', // Yellow
-    'brightness(0.45) sepia(0.8) saturate(4)   hue-rotate(80deg)  contrast(1.35)', // Green
-    'brightness(0.55) sepia(0.8) saturate(4.5) hue-rotate(170deg) contrast(1.3)',  // Cyan
-    'brightness(0.5)  sepia(0.8) saturate(4.5) hue-rotate(155deg) contrast(1.3)',  // Teal
-    'brightness(0.55) sepia(0.8) saturate(4.5) hue-rotate(290deg) contrast(1.3)',  // Violet
-    'brightness(0.5)  sepia(0.9) saturate(6)   hue-rotate(15deg)  contrast(1.4)',  // Deep Orange
-    'brightness(0.5)  sepia(0.8) saturate(5)   hue-rotate(340deg) contrast(1.3)',  // Rose
-  ];
-
-  const RAINBOW_MODE = false;
-  const RAINBOW_CYCLE_MS = 4000;
-
-  function getRainbowFilter() {
-    const hue = (Date.now() % RAINBOW_CYCLE_MS) / RAINBOW_CYCLE_MS * 360;
-    return `brightness(0.5) sepia(0.9) saturate(5) hue-rotate(${hue.toFixed(1)}deg) contrast(1.35)`;
-  }
-
-  // Returns color index based on current 4-hour slot (0–5 repeating)
+  // ── 4-hour slot color rotation ───────────────────────────────────────────
+  // 6 skins × 4 hours = full 24-hour cycle
   function get4HourSlot() {
     const now = new Date();
     const totalMinutes = now.getHours() * 60 + now.getMinutes();
-    return Math.floor(totalMinutes / 240) % allFilters.length;
+    return Math.floor(totalMinutes / 240) % catSkins.length;
   }
 
-  function getThemeFilter() {
-    if (RAINBOW_MODE) return getRainbowFilter();
-    return allFilters[get4HourSlot()];
+  function getCurrentSkin() {
+    return catSkins[get4HourSlot()];
   }
 
-  // Update color every 4 hours; check every minute for accuracy
-  let currentColorSlot = get4HourSlot();
-  setInterval(function () {
-    const newSlot = get4HourSlot();
-    if (newSlot !== currentColorSlot) {
-      currentColorSlot = newSlot;
-      if (!RAINBOW_MODE) nekoEl.style.filter = getThemeFilter();
-    }
-  }, 60 * 1000);
+  function applySkin(skin) {
+    const skinFile = skin.file;
+    // Resolve path relative to this script's location
+    const scriptSrc = (document.currentScript && document.currentScript.src) || '';
+    const base = scriptSrc ? scriptSrc.substring(0, scriptSrc.lastIndexOf('/') + 1) : './';
+    nekoEl.style.backgroundImage = `url(${base}${skinFile})`;
+    nekoEl.style.filter = skin.filter || 'none';
+  }
 
   const spriteSets = {
-    idle: [[-3, -3]],
-    alert: [[-7, -3]],
-    scratchSelf: [[-5, 0], [-6, 0], [-7, 0]],
+    idle:         [[-3, -3]],
+    alert:        [[-7, -3]],
+    scratchSelf:  [[-5, 0], [-6, 0], [-7, 0]],
     scratchWallN: [[0, 0], [0, -1]],
     scratchWallS: [[-7, -1], [-6, -2]],
     scratchWallE: [[-2, -2], [-2, -3]],
     scratchWallW: [[-4, 0], [-4, -1]],
-    tired: [[-3, -2]],
-    sleeping: [[-2, 0], [-2, -1]],
-    N: [[-1, -2], [-1, -3]],
+    tired:        [[-3, -2]],
+    sleeping:     [[-2, 0], [-2, -1]],
+    N:  [[-1, -2], [-1, -3]],
     NE: [[0, -2], [0, -3]],
-    E: [[-3, 0], [-3, -1]],
+    E:  [[-3, 0], [-3, -1]],
     SE: [[-5, -1], [-5, -2]],
-    S: [[-6, -3], [-7, -2]],
+    S:  [[-6, -3], [-7, -2]],
     SW: [[-5, -3], [-6, -1]],
-    W: [[-4, -2], [-4, -3]],
+    W:  [[-4, -2], [-4, -3]],
     NW: [[-1, 0], [-1, -1]],
   };
 
@@ -128,18 +96,14 @@
     nekoEl.style.top = '0px';
     nekoEl.style.transform = `translate(${nekoPosX - 16}px, ${nekoPosY - 16}px)`;
 
-    let nekoFile = './oneko.gif';
+    // Check for manual override via data-cat attribute
     const curScript = document.currentScript;
     if (curScript && curScript.dataset.cat) {
-      nekoFile = curScript.dataset.cat;
+      nekoEl.style.backgroundImage = `url(${curScript.dataset.cat})`;
+      nekoEl.style.filter = 'none';
+    } else {
+      applySkin(getCurrentSkin());
     }
-    nekoEl.style.backgroundImage = `url(${nekoFile})`;
-    nekoEl.style.filter = getThemeFilter();
-
-    const themeObserver = new MutationObserver(() => {
-      if (!RAINBOW_MODE) nekoEl.style.filter = getThemeFilter();
-    });
-    themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
 
     document.body.appendChild(nekoEl);
 
@@ -148,16 +112,26 @@
       mousePosY = event.clientY;
     });
 
-    // ── FIX: Tab switch speed bug ────────────────────────────────────────────
-    // When tab becomes hidden, mark timestamp as stale so the next frame
-    // after re-focus doesn't accumulate a huge delta and cause a speed burst.
+    // ── FIX: Tab switch speed bug ─────────────────────────────────────────
+    // When tab is hidden, accumulated delta becomes huge → speed burst on return.
+    // Reset timestamp so the first frame after re-focus is treated as fresh.
     document.addEventListener('visibilitychange', function () {
       if (document.hidden) {
         lastFrameTimestamp = null;
         logicAccumulator = 0;
       }
     });
-    // ────────────────────────────────────────────────────────────────────────
+    // ─────────────────────────────────────────────────────────────────────
+
+    // Auto-update skin every minute (switches at exact 4-hour boundary)
+    let currentSlot = get4HourSlot();
+    setInterval(function () {
+      const newSlot = get4HourSlot();
+      if (newSlot !== currentSlot && !(curScript && curScript.dataset.cat)) {
+        currentSlot = newSlot;
+        applySkin(getCurrentSkin());
+      }
+    }, 60 * 1000);
 
     window.requestAnimationFrame(onAnimationFrame);
   }
@@ -169,20 +143,20 @@
   function onAnimationFrame(timestamp) {
     if (!nekoEl.isConnected) return;
 
-    // ── FIX: If timestamp was reset (tab switch), re-init and skip this frame
+    // ── FIX: Skip first frame after tab switch (timestamp was reset)
     if (!lastFrameTimestamp) {
       lastFrameTimestamp = timestamp;
       window.requestAnimationFrame(onAnimationFrame);
       return;
     }
 
-    const delta = Math.min(timestamp - lastFrameTimestamp, 200); // cap at 200ms to prevent jumps
+    // Cap delta at 200ms to absorb any remaining stutter
+    const delta = Math.min(timestamp - lastFrameTimestamp, 200);
     lastFrameTimestamp = timestamp;
 
     logicAccumulator += delta;
     if (logicAccumulator >= LOGIC_INTERVAL) {
       logicAccumulator -= LOGIC_INTERVAL;
-      if (RAINBOW_MODE) nekoEl.style.filter = getRainbowFilter();
       frame();
     }
 
@@ -208,12 +182,12 @@
   function idle() {
     idleTime += 1;
     if (idleTime > 10 && Math.floor(Math.random() * 200) == 0 && idleAnimation == null) {
-      let avalibleIdleAnimations = ['sleeping', 'scratchSelf'];
-      if (nekoPosX < 32) avalibleIdleAnimations.push('scratchWallW');
-      if (nekoPosY < 32) avalibleIdleAnimations.push('scratchWallN');
-      if (nekoPosX > window.innerWidth - 32) avalibleIdleAnimations.push('scratchWallE');
-      if (nekoPosY > window.innerHeight - 32) avalibleIdleAnimations.push('scratchWallS');
-      idleAnimation = avalibleIdleAnimations[Math.floor(Math.random() * avalibleIdleAnimations.length)];
+      let available = ['sleeping', 'scratchSelf'];
+      if (nekoPosX < 32) available.push('scratchWallW');
+      if (nekoPosY < 32) available.push('scratchWallN');
+      if (nekoPosX > window.innerWidth - 32) available.push('scratchWallE');
+      if (nekoPosY > window.innerHeight - 32) available.push('scratchWallS');
+      idleAnimation = available[Math.floor(Math.random() * available.length)];
     }
     switch (idleAnimation) {
       case 'sleeping':
@@ -257,10 +231,12 @@
       return;
     }
 
+    idleTime = 0;
+
     let direction = '';
-    direction = diffY / distance > 0.5 ? 'N' : '';
+    direction  = diffY / distance > 0.5  ? 'N' : '';
     direction += diffY / distance < -0.5 ? 'S' : '';
-    direction += diffX / distance > 0.5 ? 'W' : '';
+    direction += diffX / distance > 0.5  ? 'W' : '';
     direction += diffX / distance < -0.5 ? 'E' : '';
     setSprite(direction, frameCount);
 
