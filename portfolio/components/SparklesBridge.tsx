@@ -15,7 +15,7 @@ export function SparklesBridge() {
     const HEIGHT = 48;
 
     const resize = () => {
-      const dpr = window.devicePixelRatio || 1;
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
       const w = window.innerWidth;
       canvas.width  = w * dpr;
       canvas.height = HEIGHT * dpr;
@@ -67,10 +67,12 @@ export function SparklesBridge() {
 
     // Read bg color from CSS variable at draw time — matches theme perfectly
     function getBgColor() {
-      return getComputedStyle(document.documentElement)
-        .getPropertyValue("--bg-base").trim() || (theme === "dark" ? "#040404" : "#f5f5f3");
-    }
+  return getComputedStyle(document.documentElement)
+    .getPropertyValue("--bg-base").trim() ||
+    (theme === "dark" ? "#040404" : "#f5f5f3");
+}
 
+    const bgColor = getBgColor();
     function draw(ts: number) {
       raf = requestAnimationFrame(draw);
       if (!isVisible) return;
