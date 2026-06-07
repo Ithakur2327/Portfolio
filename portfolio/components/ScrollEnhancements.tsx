@@ -20,18 +20,15 @@ export function ScrollEnhancements() {
         const y         = window.scrollY;
         const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
 
-        // Show after 120px
         setVisible(y > 120);
-
-        // Point UP when past 40% of page
         setPointingUp(maxScroll > 0 ? y / maxScroll > 0.40 : y > 300);
 
-        // Detect if footer is in view — hide blur overlay when footer visible
+        // Hide blur overlay when footer is about to enter viewport
         const footer = document.querySelector(".footer-root") as HTMLElement | null;
         if (footer) {
           const rect = footer.getBoundingClientRect();
-          // Footer is starting to enter viewport bottom
-          setNearFooter(rect.top < window.innerHeight + 10);
+          // Start fading out the blur 80px before footer hits viewport bottom
+          setNearFooter(rect.top < window.innerHeight + 80);
         }
 
         ticking.current = false;
@@ -56,7 +53,7 @@ export function ScrollEnhancements() {
 
   return (
     <>
-      {/* ── Bottom glass fade — hides when footer appears ── */}
+      {/* ── Bottom glass fade — height reduced, stronger blur, hides before footer ── */}
       <div
         aria-hidden="true"
         style={{
@@ -64,33 +61,27 @@ export function ScrollEnhancements() {
           bottom: 0,
           left: 0,
           right: 0,
-          height: 140,
+          height: 90,                      // reduced from 140 → 90
           pointerEvents: "none",
           zIndex: 80,
-          // Fade out overlay when footer is visible
           opacity: nearFooter ? 0 : 1,
-          transition: "opacity 0.35s ease",
-          // Layered: frosted glass look — blur + gradient stacked
+          transition: "opacity 0.25s ease",
           background: isDark
-            ? "linear-gradient(to bottom, transparent 0%, rgba(4,4,4,0.15) 30%, rgba(4,4,4,0.82) 70%, rgba(4,4,4,0.97) 100%)"
-            : "linear-gradient(to bottom, transparent 0%, rgba(245,245,243,0.15) 30%, rgba(245,245,243,0.88) 70%, rgba(245,245,243,0.98) 100%)",
-          backdropFilter: "blur(0px)",          // backdrop on parent doesn't work on gradient, so use pseudo via boxShadow hack
-          WebkitBackdropFilter: "blur(0px)",
+            ? "linear-gradient(to bottom, transparent 0%, rgba(4,4,4,0.25) 25%, rgba(4,4,4,0.88) 65%, rgba(4,4,4,0.98) 100%)"
+            : "linear-gradient(to bottom, transparent 0%, rgba(245,245,243,0.25) 25%, rgba(245,245,243,0.94) 65%, rgba(245,245,243,0.99) 100%)",
         }}
       >
-        {/* Inner glass layer for frosted effect */}
+        {/* Strong inner blur layer — appears only on bottom 60% */}
         <div style={{
           position: "absolute",
           inset: 0,
-          bottom: 0,
           background: isDark
-            ? "linear-gradient(to bottom, transparent 0%, rgba(4,4,4,0.0) 20%, rgba(4,4,4,0.55) 100%)"
-            : "linear-gradient(to bottom, transparent 0%, rgba(245,245,243,0.0) 20%, rgba(245,245,243,0.60) 100%)",
-          backdropFilter: "blur(10px) saturate(1.4)",
-          WebkitBackdropFilter: "blur(10px) saturate(1.4)",
-          // Mask so blur only appears on bottom portion
-          WebkitMaskImage: "linear-gradient(to bottom, transparent 0%, black 55%)",
-          maskImage: "linear-gradient(to bottom, transparent 0%, black 55%)",
+            ? "linear-gradient(to bottom, transparent 0%, rgba(4,4,4,0.0) 15%, rgba(4,4,4,0.65) 100%)"
+            : "linear-gradient(to bottom, transparent 0%, rgba(245,245,243,0.0) 15%, rgba(245,245,243,0.72) 100%)",
+          backdropFilter: "blur(18px) saturate(1.6)",          // stronger: 10 → 18
+          WebkitBackdropFilter: "blur(18px) saturate(1.6)",
+          WebkitMaskImage: "linear-gradient(to bottom, transparent 0%, black 45%)",
+          maskImage: "linear-gradient(to bottom, transparent 0%, black 45%)",
         }} />
       </div>
 

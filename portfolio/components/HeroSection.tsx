@@ -267,16 +267,6 @@ export function HeroSection() {
             border-bottom: none !important;
           }
           .s-tile:last-child { border-right: none !important; border-bottom: none !important; }
-          /* Lanyard — visible, 96px column */
-          .h-lanyard-col {
-            width: 96px !important;
-            min-width: 96px !important;
-            padding: 0 8px 8px !important;
-            border-left: 1px solid var(--border) !important;
-            display: flex !important;
-            align-items: flex-start !important;
-            justify-content: center !important;
-          }
           .h-info-wrap {
             margin-left: 0 !important;
             margin-right: 0 !important;
@@ -320,14 +310,6 @@ export function HeroSection() {
             margin-left: 12px !important;
             margin-right: 12px !important;
           }
-          /* Lanyard: small strip on right of avatar row */
-          .h-lanyard-col {
-            width: 68px !important;
-            min-width: 68px !important;
-            padding: 6px 6px 6px !important;
-            border-left: 1px solid var(--border) !important;
-            display: flex !important;
-          }
         }
 
         @media (max-width: 380px) {
@@ -337,22 +319,6 @@ export function HeroSection() {
             height: clamp(80px, 26vw, 100px) !important;
             min-height: clamp(80px, 26vw, 100px) !important;
           }
-          .h-lanyard-col {
-            width: 58px !important;
-            min-width: 58px !important;
-          }
-        }
-
-        /* Lanyard col — desktop default */
-        .h-lanyard-col {
-          width: 136px;
-          min-width: 136px;
-          display: flex;
-          align-items: flex-start;
-          justify-content: center;
-          padding: 0 12px 8px;
-          border-left: 1px solid var(--border);
-          flex-shrink: 0;
         }
       `}</style>
 
@@ -387,11 +353,6 @@ export function HeroSection() {
               <div style={{padding:"8px 20px 12px", height:36, display:"flex", alignItems:"center", overflow:"hidden"}}>
                 <FlipSentences/>
               </div>
-            </div>
-
-            {/* Lanyard card — right side, visible on all screens */}
-            <div className="h-lanyard-col">
-              
             </div>
           </div>
         </div>

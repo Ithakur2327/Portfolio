@@ -1,7 +1,6 @@
 "use client";
 import { useEffect, useRef, useState, CSSProperties } from "react";
 import { useTheme } from "./ThemeProvider";
-import { gsap } from "gsap";
 
 const NAV_LINKS = [
   { label: "About",          href: "#about",          color: "#6366f1" },
@@ -26,177 +25,228 @@ function CloseIcon() {
   return <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>;
 }
 
-/* ── BlobMenu — full-screen overlay with organic blobs (Image 2 style) ── */
-function BlobMenu({ open, onClose, isDark }: { open: boolean; onClose: () => void; isDark: boolean }) {
-  const overlayRef  = useRef<HTMLDivElement>(null);
-  const blobsRef    = useRef<HTMLAnchorElement[]>([]);
-  const backdropRef = useRef<HTMLDivElement>(null);
-  const [mounted, setMounted] = useState(false);
+/* ══════════════════════════════════════════════════════════
+   BLOB MENU — zero GSAP, pure CSS keyframes
+   Reliable on every device including low-end Android
+══════════════════════════════════════════════════════════ */
 
-  useEffect(() => { if (open) setMounted(true); }, [open]);
+const BLOB_SHAPES = [
+  "62% 38% 46% 54% / 60% 44% 56% 40%",
+  "46% 54% 62% 38% / 44% 60% 40% 56%",
+  "54% 46% 38% 62% / 56% 40% 60% 44%",
+  "38% 62% 54% 46% / 40% 56% 44% 60%",
+  "60% 40% 42% 58% / 48% 62% 38% 52%",
+  "42% 58% 60% 40% / 62% 38% 52% 48%",
+];
+
+function BlobMenu({ open, onClose, isDark }: { open: boolean; onClose: () => void; isDark: boolean }) {
+  // Keep DOM mounted during close animation
+  const [shouldRender, setShouldRender] = useState(false);
+  const [isClosing, setIsClosing] = useState(false);
+  const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
-    if (!mounted) return;
-    const blobs    = blobsRef.current.filter(Boolean);
-    const backdrop = backdropRef.current;
-    if (!blobs.length || !backdrop) return;
-
     if (open) {
-      // Show backdrop
-      gsap.killTweensOf([...blobs, backdrop]);
-      gsap.set(backdrop, { autoAlpha: 0 });
-      gsap.to(backdrop, { autoAlpha: 1, duration: 0.25, ease: "power2.out" });
-
-      // Each blob pops in with spring bounce
-      gsap.set(blobs, { scale: 0, transformOrigin: "50% 50%" });
-      blobs.forEach((blob, i) => {
-        gsap.to(blob, {
-          scale: 1,
-          duration: 0.55,
-          delay: i * 0.06,
-          ease: "back.out(1.8)",
-        });
-      });
+      if (closeTimer.current) clearTimeout(closeTimer.current);
+      setIsClosing(false);
+      setShouldRender(true);
+      // Lock body scroll
+      document.body.style.overflow = "hidden";
+      document.body.style.touchAction = "none";
     } else {
-      gsap.killTweensOf([...blobs, backdrop]);
-      gsap.to(blobs, { scale: 0, duration: 0.2, ease: "power3.in", stagger: 0.03 });
-      gsap.to(backdrop, {
-        autoAlpha: 0,
-        duration: 0.22,
-        delay: 0.1,
-        onComplete: () => setMounted(false),
-      });
+      if (shouldRender) {
+        setIsClosing(true);
+        closeTimer.current = setTimeout(() => {
+          setShouldRender(false);
+          setIsClosing(false);
+        }, 300);
+      }
+      document.body.style.overflow = "";
+      document.body.style.touchAction = "";
     }
-  }, [open, mounted]);
+    return () => {
+      if (closeTimer.current) clearTimeout(closeTimer.current);
+    };
+  }, [open]);
 
-  if (!mounted) return null;
+  // Keyboard close
+  useEffect(() => {
+    if (!open) return;
+    const esc = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    window.addEventListener("keydown", esc);
+    return () => window.removeEventListener("keydown", esc);
+  }, [open, onClose]);
 
-  const fg = isDark ? "#ffffff" : "#111111";
-  const blobBg = isDark ? "rgba(255,255,255,0.93)" : "#ffffff";
-  const blobText = "#111111"; // always dark text on white blobs like image
+  if (!shouldRender) return null;
+
+  const blobBg    = isDark ? "rgba(255,255,255,0.93)" : "#ffffff";
+  const blobText  = "#111111";
+  const animClass = isClosing ? "blob-exit" : "blob-enter";
 
   return (
-    <div
-      ref={overlayRef}
-      style={{
-        position: "fixed",
-        inset: 0,
-        zIndex: 9999,
-        pointerEvents: open ? "auto" : "none",
-      }}
-    >
-      {/* Backdrop */}
-      <div
-        ref={backdropRef}
-        style={{
-          position: "absolute",
-          inset: 0,
-          background: isDark
-            ? "rgba(0,0,0,0.92)"
-            : "rgba(0,0,0,0.88)",
-          backdropFilter: "blur(3px)",
-          WebkitBackdropFilter: "blur(3px)",
-        }}
-        onClick={onClose}
-      />
+    <>
+      <style suppressHydrationWarning>{`
+        /* ── Backdrop ── */
+        @keyframes backdropIn  { from { opacity: 0 } to { opacity: 1 } }
+        @keyframes backdropOut { from { opacity: 1 } to { opacity: 0 } }
 
-      {/* Blobs container — centered, same layout as Image 2 */}
+        .blob-backdrop-enter { animation: backdropIn  0.22s ease forwards; }
+        .blob-backdrop-exit  { animation: backdropOut 0.22s ease forwards; }
+
+        /* ── Blob pop-in / pop-out ── */
+        @keyframes blobIn  {
+          from { opacity: 0; transform: scale(0.3); }
+          60%  { transform: scale(1.08); }
+          to   { opacity: 1; transform: scale(1); }
+        }
+        @keyframes blobOut {
+          from { opacity: 1; transform: scale(1); }
+          to   { opacity: 0; transform: scale(0.3); }
+        }
+
+        .blob-enter .blob-item {
+          animation: blobIn 0.42s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+          opacity: 0;
+        }
+        .blob-exit .blob-item {
+          animation: blobOut 0.22s ease-in forwards;
+          opacity: 1;
+        }
+
+        /* Stagger delays for each blob */
+        .blob-enter .blob-item:nth-child(1) { animation-delay: 0.00s; }
+        .blob-enter .blob-item:nth-child(2) { animation-delay: 0.06s; }
+        .blob-enter .blob-item:nth-child(3) { animation-delay: 0.12s; }
+        .blob-enter .blob-item:nth-child(4) { animation-delay: 0.18s; }
+        .blob-enter .blob-item:nth-child(5) { animation-delay: 0.22s; }
+        .blob-enter .blob-item:nth-child(6) { animation-delay: 0.26s; }
+
+        .blob-exit .blob-item:nth-child(1) { animation-delay: 0.00s; }
+        .blob-exit .blob-item:nth-child(2) { animation-delay: 0.02s; }
+        .blob-exit .blob-item:nth-child(3) { animation-delay: 0.04s; }
+        .blob-exit .blob-item:nth-child(4) { animation-delay: 0.06s; }
+        .blob-exit .blob-item:nth-child(5) { animation-delay: 0.08s; }
+        .blob-exit .blob-item:nth-child(6) { animation-delay: 0.10s; }
+
+        /* Hover */
+        .blob-item:hover {
+          transform: scale(1.07) !important;
+          transition: background 0.18s ease, color 0.18s ease,
+                      box-shadow 0.18s ease, transform 0.18s ease !important;
+        }
+        .blob-item:active {
+          transform: scale(0.94) !important;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+          .blob-enter .blob-item,
+          .blob-exit  .blob-item { animation: none !important; opacity: 1 !important; }
+          .blob-backdrop-enter,
+          .blob-backdrop-exit    { animation: none !important; opacity: 1 !important; }
+        }
+      `}</style>
+
+      {/* Fixed overlay */}
       <div
         style={{
-          position: "absolute",
+          position: "fixed",
           inset: 0,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          pointerEvents: "none",
+          zIndex: 9999,
+          pointerEvents: "auto",
         }}
       >
-        {/*
-          Image 2 layout: 3 on top row, 2 on bottom row centered.
-          We have 6 links → 3 top row + 3 bottom row, or keep it 3+3.
-          We'll do 3 top + 3 bottom, matching Image 2's visual grouping.
-        */}
-        <div style={{
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          gap: "clamp(12px, 3vw, 28px)",
-          pointerEvents: "none",
-        }}>
-          {/* Row 1 — 3 blobs */}
-          <div style={{ display: "flex", gap: "clamp(10px, 2.5vw, 24px)", pointerEvents: "none" }}>
-            {NAV_LINKS.slice(0, 3).map((item, idx) => (
-              <BlobItem
-                key={item.href}
-                item={item}
-                idx={idx}
-                blobBg={blobBg}
-                blobText={blobText}
-                blobsRef={blobsRef}
-                onClose={onClose}
-              />
-            ))}
-          </div>
-          {/* Row 2 — 3 blobs */}
-          <div style={{ display: "flex", gap: "clamp(10px, 2.5vw, 24px)", pointerEvents: "none" }}>
-            {NAV_LINKS.slice(3, 6).map((item, idx) => (
-              <BlobItem
-                key={item.href}
-                item={item}
-                idx={idx + 3}
-                blobBg={blobBg}
-                blobText={blobText}
-                blobsRef={blobsRef}
-                onClose={onClose}
-              />
-            ))}
+        {/* Backdrop */}
+        <div
+          className={isClosing ? "blob-backdrop-exit" : "blob-backdrop-enter"}
+          onClick={onClose}
+          style={{
+            position: "absolute",
+            inset: 0,
+            background: isDark ? "rgba(0,0,0,0.92)" : "rgba(0,0,0,0.88)",
+            backdropFilter: "blur(3px)",
+            WebkitBackdropFilter: "blur(3px)",
+          }}
+        />
+
+        {/* Blobs grid — centered */}
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            pointerEvents: "none",
+          }}
+        >
+          <div
+            className={animClass}
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              gap: "clamp(12px, 3vw, 28px)",
+              pointerEvents: "none",
+            }}
+          >
+            {/* Row 1 — 3 blobs */}
+            <div style={{ display: "flex", gap: "clamp(10px, 2.5vw, 24px)", pointerEvents: "none" }}>
+              {NAV_LINKS.slice(0, 3).map((item, idx) => (
+                <BlobItem
+                  key={item.href}
+                  item={item}
+                  idx={idx}
+                  blobBg={blobBg}
+                  blobText={blobText}
+                  onClose={onClose}
+                />
+              ))}
+            </div>
+            {/* Row 2 — 3 blobs */}
+            <div style={{ display: "flex", gap: "clamp(10px, 2.5vw, 24px)", pointerEvents: "none" }}>
+              {NAV_LINKS.slice(3, 6).map((item, idx) => (
+                <BlobItem
+                  key={item.href}
+                  item={item}
+                  idx={idx + 3}
+                  blobBg={blobBg}
+                  blobText={blobText}
+                  onClose={onClose}
+                />
+              ))}
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }
 
 /* ── Single blob item ── */
 function BlobItem({
-  item, idx, blobBg, blobText, blobsRef, onClose
+  item, idx, blobBg, blobText, onClose,
 }: {
   item: typeof NAV_LINKS[0];
   idx: number;
   blobBg: string;
   blobText: string;
-  blobsRef: React.MutableRefObject<HTMLAnchorElement[]>;
   onClose: () => void;
 }) {
   const [hovered, setHovered] = useState(false);
-
-  /*
-    Unique organic blob shape per item using border-radius trick.
-    Each one is slightly different like in Image 2.
-  */
-  const blobShapes = [
-    "62% 38% 46% 54% / 60% 44% 56% 40%",
-    "46% 54% 62% 38% / 44% 60% 40% 56%",
-    "54% 46% 38% 62% / 56% 40% 60% 44%",
-    "38% 62% 54% 46% / 40% 56% 44% 60%",
-    "60% 40% 42% 58% / 48% 62% 38% 52%",
-    "42% 58% 60% 40% / 62% 38% 52% 48%",
-  ];
-
   const blobSize = "clamp(90px, 20vw, 155px)";
 
   return (
     <a
       href={item.href}
       aria-label={item.label}
-      ref={el => { if (el) blobsRef.current[idx] = el; }}
+      className="blob-item"
       style={{
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
         width: blobSize,
         height: blobSize,
-        borderRadius: blobShapes[idx] ?? "50%",
+        borderRadius: BLOB_SHAPES[idx] ?? "50%",
         background: hovered ? item.color : blobBg,
         color: hovered ? "#fff" : blobText,
         textDecoration: "none",
@@ -209,12 +259,18 @@ function BlobItem({
         boxShadow: hovered
           ? `0 8px 32px ${item.color}55`
           : "0 4px 20px rgba(0,0,0,0.18)",
-        transition: "background 0.22s ease, color 0.22s ease, box-shadow 0.22s ease, border-radius 0.4s ease",
+        transition: "background 0.18s ease, color 0.18s ease, box-shadow 0.18s ease",
         willChange: "transform",
         flexShrink: 0,
+        touchAction: "manipulation",
+        WebkitTapHighlightColor: "transparent",
+        userSelect: "none",
+        WebkitUserSelect: "none",
       } as CSSProperties}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
+      onTouchStart={() => setHovered(true)}
+      onTouchEnd={() => { setHovered(false); onClose(); }}
       onClick={onClose}
     >
       {item.label}
@@ -222,25 +278,17 @@ function BlobItem({
   );
 }
 
-/* ══════════════════════════════════════════
+/* ══════════════════════════════════════
    MAIN NAVBAR
-══════════════════════════════════════════ */
+══════════════════════════════════════ */
 export function Navbar() {
   const { theme, setTheme } = useTheme();
   const [scrolled,      setScrolled]      = useState(false);
   const [activeSection, setActiveSection] = useState("about");
   const [mounted,       setMounted]       = useState(false);
   const [mobileOpen,    setMobileOpen]    = useState(false);
-  const [isTablet,      setIsTablet]      = useState(false);
 
   useEffect(() => { setMounted(true); }, []);
-
-  useEffect(() => {
-    const checkTablet = () => setIsTablet(window.innerWidth <= 1024);
-    checkTablet();
-    window.addEventListener("resize", checkTablet, { passive: true });
-    return () => window.removeEventListener("resize", checkTablet);
-  }, []);
 
   useEffect(() => {
     const fn = () => setScrolled(window.scrollY > 40);
@@ -261,7 +309,6 @@ export function Navbar() {
   }, []);
 
   const isDark = mounted ? theme === "dark" : true;
-  const showMobileMenu = mounted && isTablet;
 
   return (
     <>
@@ -281,13 +328,33 @@ export function Navbar() {
           width: 1px; height: 18px;
           background: var(--nav-border); margin: 0 6px; flex-shrink: 0;
         }
-        @media (max-width: 1024px) {
-          .desktop-nav-links { display: none !important; }
-          .desktop-nav-partition { display: none !important; }
-          .mobile-menu-btn { display: flex !important; }
+
+        /* Desktop links hidden on ≤768px — hamburger always shown on mobile */
+        @media (max-width: 768px) {
+          .desktop-nav-links  { display: none !important; }
+          .desktop-partition  { display: none !important; }
+          .mobile-menu-btn    { display: flex !important; }
         }
-        @media (min-width: 1025px) {
+        /* Hamburger hidden on desktop */
+        @media (min-width: 769px) {
           .mobile-menu-btn { display: none !important; }
+        }
+
+        /* theme-btn base */
+        .theme-btn {
+          width: 34px; height: 34px; border-radius: 8px;
+          border: 1px solid var(--nav-border);
+          background: transparent;
+          color: var(--nav-link-color);
+          display: flex; align-items: center; justify-content: center;
+          cursor: pointer;
+          transition: color 0.15s, background 0.15s;
+          -webkit-tap-highlight-color: transparent;
+          touch-action: manipulation;
+        }
+        .theme-btn:hover {
+          color: var(--nav-link-hover);
+          background: var(--nav-link-active-bg);
         }
       `}</style>
 
@@ -326,7 +393,7 @@ export function Navbar() {
             </div>
           </a>
 
-          {/* Right */}
+          {/* Right side */}
           <div style={{ display: "flex", alignItems: "center", gap: 0 }}>
             {/* Desktop links */}
             <nav className="desktop-nav-links" style={{ display: "flex", gap: 0 }}>
@@ -336,9 +403,9 @@ export function Navbar() {
                 </a>
               ))}
             </nav>
-            <span className="nav-partition desktop-nav-partition" />
+            <span className="nav-partition desktop-partition" />
 
-            {/* Theme btn */}
+            {/* Theme toggle */}
             <button
               suppressHydrationWarning
               onClick={() => setTheme(isDark ? "light" : "dark")}
@@ -349,11 +416,11 @@ export function Navbar() {
               {mounted ? (isDark ? <SunIcon /> : <MoonIcon />) : <MoonIcon />}
             </button>
 
-            {/* Mobile/tablet hamburger */}
+            {/* Hamburger — always visible on mobile (≤768px) */}
             <button
               className="mobile-menu-btn theme-btn"
               style={{
-                display: "none",
+                display: "none",     // CSS overrides to flex on ≤768px
                 alignItems: "center",
                 justifyContent: "center",
                 marginLeft: 8,
@@ -369,11 +436,13 @@ export function Navbar() {
       </header>
 
       {/* Blob menu overlay */}
-      <BlobMenu
-        open={mobileOpen}
-        onClose={() => setMobileOpen(false)}
-        isDark={isDark}
-      />
+      {mounted && (
+        <BlobMenu
+          open={mobileOpen}
+          onClose={() => setMobileOpen(false)}
+          isDark={isDark}
+        />
+      )}
     </>
   );
 }

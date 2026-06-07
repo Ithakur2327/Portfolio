@@ -2,13 +2,6 @@
 import { useEffect, useRef } from "react";
 import { useTheme } from "./ThemeProvider";
 
-/**
- * PERFORMANCE IMPROVEMENTS:
- * 1. Throttled to 12fps (was effectively unlimited with manual timestamp check)
- * 2. Pause when tab hidden (was only paused via document.hidden check in loop body)
- * 3. IntersectionObserver — pause when scrolled out of view
- * 4. Reduced particle count from 50 → 30
- */
 export function SparklesBridge() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const { theme } = useTheme();
@@ -20,7 +13,6 @@ export function SparklesBridge() {
     if (!ctx) return;
 
     const HEIGHT = 48;
-    const isDark = theme === "dark";
 
     const resize = () => {
       const dpr = window.devicePixelRatio || 1;
@@ -53,7 +45,6 @@ export function SparklesBridge() {
       };
     }
 
-    // Reduced from 50 → 30 particles
     for (let i = 0; i < 30; i++) {
       const d = spawn();
       d.life = Math.random() * d.maxLife;
@@ -63,18 +54,22 @@ export function SparklesBridge() {
     let raf: number;
     let lastTs = 0;
     let isVisible = true;
-    const FRAME_MS = 1000 / 24; // 24fps — smoother sparkle movement without adding much CPU
+    const FRAME_MS = 1000 / 24;
 
-    // Pause when scrolled out of view
     const observer = new IntersectionObserver(
       (entries) => { isVisible = entries[0].isIntersecting; },
       { threshold: 0 }
     );
     observer.observe(canvas);
 
-    // Pause when tab hidden
     const onVisChange = () => { isVisible = !document.hidden; };
     document.addEventListener("visibilitychange", onVisChange, { passive: true });
+
+    // Read bg color from CSS variable at draw time — matches theme perfectly
+    function getBgColor() {
+      return getComputedStyle(document.documentElement)
+        .getPropertyValue("--bg-base").trim() || (theme === "dark" ? "#040404" : "#f5f5f3");
+    }
 
     function draw(ts: number) {
       raf = requestAnimationFrame(draw);
@@ -83,9 +78,10 @@ export function SparklesBridge() {
       lastTs = ts;
       if (!ctx || !canvas) return;
       const W = canvasW;
+      const isDark = theme === "dark";
 
       ctx.clearRect(0, 0, W, HEIGHT);
-      ctx.fillStyle = isDark ? "#09090b" : "#f5f5f3";
+      ctx.fillStyle = getBgColor();
       ctx.fillRect(0, 0, W, HEIGHT);
 
       ctx.beginPath();
@@ -125,13 +121,15 @@ export function SparklesBridge() {
   }, [theme]);
 
   return (
-    <canvas
-      ref={canvasRef}
-      style={{
-        display: "block",
-        width: "100%",
-        height: 48,
-      }}
-    />
+    <div style={{ background: "var(--bg-base)" }}>
+      <canvas
+        ref={canvasRef}
+        style={{
+          display: "block",
+          width: "100%",
+          height: 48,
+        }}
+      />
+    </div>
   );
 }
