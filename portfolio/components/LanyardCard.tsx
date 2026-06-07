@@ -1,236 +1,216 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
-
-/*
-  LanyardCard — animated ID card hanging on a lanyard.
-  Front: "hello" text + greeting emoji
-  Back:  coffee cup + cool emoji  
-  Swings left/right continuously, flip on hover/click.
-  Fully responsive, sized to fit inside the hero photo area.
-  Uses pure CSS + minimal JS — no Three.js needed, works on all devices.
-*/
+import { useEffect, useRef, useState, useCallback } from "react";
+import { useTheme } from "./ThemeProvider";
 
 export function LanyardCard() {
+  const { theme } = useTheme();
+  const [mounted, setMounted] = useState(false);
   const [flipped, setFlipped] = useState(false);
-  const [dragging, setDragging] = useState(false);
-  const [dragAngle, setDragAngle] = useState(0);
-  const cardRef = useRef<HTMLDivElement>(null);
-  const dragStartX = useRef(0);
-  const currentAngle = useRef(0);
+  const angleRef  = useRef(0);
+  const velRef    = useRef(0);
+  const dragging  = useRef(false);
+  const lastX     = useRef(0);
+  const lastVel   = useRef(0);
+  const didDrag   = useRef(false);
+  const idleT     = useRef(0);
+  const physicsId = useRef(0);
+  const idleId    = useRef(0);
+  const [angleDeg, setAngleDeg] = useState(0);
 
-  // Swing animation via CSS — no JS frame loop needed
-  const handlePointerDown = (e: React.PointerEvent) => {
-    setDragging(true);
-    dragStartX.current = e.clientX;
-    currentAngle.current = dragAngle;
+  useEffect(() => { setMounted(true); }, []);
+
+  // ── Physics spring-back ──
+  const runPhysics = useCallback(() => {
+    if (dragging.current) { physicsId.current = requestAnimationFrame(runPhysics); return; }
+    const stiffness = 0.14;
+    const damping   = 0.26;
+    velRef.current  += -angleRef.current * stiffness - velRef.current * damping;
+    angleRef.current += velRef.current;
+    setAngleDeg(angleRef.current);
+    if (Math.abs(angleRef.current) > 0.08 || Math.abs(velRef.current) > 0.08) {
+      physicsId.current = requestAnimationFrame(runPhysics);
+    }
+  }, []);
+
+  // ── Idle gentle sway (slow, smooth) ──
+  useEffect(() => {
+    const sway = () => {
+      if (!dragging.current && Math.abs(angleRef.current) < 1.2 && Math.abs(velRef.current) < 0.3) {
+        idleT.current += 0.008; // slower = smoother
+        const a = Math.sin(idleT.current) * 3.5;
+        angleRef.current = a;
+        setAngleDeg(a);
+      }
+      idleId.current = requestAnimationFrame(sway);
+    };
+    idleId.current = requestAnimationFrame(sway);
+    return () => { cancelAnimationFrame(idleId.current); cancelAnimationFrame(physicsId.current); };
+  }, []);
+
+  const onPointerDown = (e: React.PointerEvent) => {
+    dragging.current = true;
+    didDrag.current  = false;
+    lastX.current    = e.clientX;
+    lastVel.current  = 0;
+    cancelAnimationFrame(physicsId.current);
     (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
   };
-  const handlePointerMove = (e: React.PointerEvent) => {
-    if (!dragging) return;
-    const dx = e.clientX - dragStartX.current;
-    const angle = Math.max(-35, Math.min(35, currentAngle.current + dx * 0.4));
-    setDragAngle(angle);
-  };
-  const handlePointerUp = () => {
-    setDragging(false);
-    // Spring back
-    setDragAngle(0);
+
+  const onPointerMove = (e: React.PointerEvent) => {
+    if (!dragging.current) return;
+    const dx = e.clientX - lastX.current;
+    if (Math.abs(dx) > 1.5) didDrag.current = true;
+    const newAngle = Math.max(-42, Math.min(42, angleRef.current + dx * 0.6));
+    lastVel.current  = newAngle - angleRef.current;
+    angleRef.current = newAngle;
+    setAngleDeg(newAngle);
+    lastX.current = e.clientX;
   };
 
-  const handleClick = () => {
-    if (!dragging) setFlipped(f => !f);
+  const onPointerUp = () => {
+    dragging.current = false;
+    velRef.current   = lastVel.current * 0.65;
+    physicsId.current = requestAnimationFrame(runPhysics);
+    if (!didDrag.current) setFlipped(f => !f);
   };
+
+  const isDark   = mounted ? theme === "dark" : true;
+  // Card color follows theme
+  const cardBg   = isDark ? "#f8f8f8" : "#ffffff";
+  const cardText = "#111111";
+  const shadow   = isDark
+    ? "0 6px 28px rgba(0,0,0,0.65), 0 2px 6px rgba(0,0,0,0.4), 0 0 0 0.5px rgba(0,0,0,0.2)"
+    : "0 4px 18px rgba(0,0,0,0.22), 0 1px 4px rgba(0,0,0,0.14), 0 0 0 0.5px rgba(0,0,0,0.10)";
+
+  // Strap: plain dark band, no dots
+  const strapBg = isDark
+    ? "linear-gradient(180deg,#1a1a28 0%,#2a2a40 50%,#1a1a28 100%)"
+    : "linear-gradient(180deg,#2a2a3a 0%,#3a3a52 50%,#2a2a3a 100%)";
+
+  // Card dimensions — fit within 162px row height
+  // strap 40px + hook 10px + card 96px + hint 14px = 160px  ✓
+  const CARD_W = 82;
+  const CARD_H = 110;
 
   return (
     <div style={{
-      display: "flex",
-      flexDirection: "column",
-      alignItems: "center",
-      userSelect: "none",
-      WebkitUserSelect: "none",
+      width: "100%", height: "100%",
+      display: "flex", flexDirection: "column",
+      alignItems: "center", justifyContent: "flex-start",
+      paddingTop: 0,
+      userSelect: "none", WebkitUserSelect: "none",
+      touchAction: "none",
     }}>
       <style suppressHydrationWarning>{`
-        @keyframes lanyardSwing {
-          0%   { transform: rotate(-6deg); }
-          50%  { transform: rotate(6deg); }
-          100% { transform: rotate(-6deg); }
-        }
-        .lanyard-pivot {
-          transform-origin: top center;
-          animation: lanyardSwing 2.8s ease-in-out infinite;
-          will-change: transform;
-        }
-        .lanyard-pivot.dragging {
-          animation: none;
-        }
-        .lanyard-card-inner {
-          transition: transform 0.55s cubic-bezier(0.34, 1.56, 0.64, 1);
+        .lc-inner {
           transform-style: preserve-3d;
           will-change: transform;
+          transition: transform 0.55s cubic-bezier(0.34,1.2,0.64,1);
         }
-        .lanyard-card-inner.flipped {
-          transform: rotateY(180deg);
-        }
-        .card-face {
+        .lc-inner.flipped { transform: rotateY(180deg); }
+        .lc-face {
           backface-visibility: hidden;
           -webkit-backface-visibility: hidden;
-          position: absolute;
-          inset: 0;
-          border-radius: 10px;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          gap: 8px;
+          position: absolute; inset: 0;
+          border-radius: 9px;
+          display: flex; align-items: center; justify-content: center;
         }
-        .card-face-back {
-          transform: rotateY(180deg);
+        .lc-back { transform: rotateY(180deg); }
+
+        /* Pivot point at very top of strap */
+        .lc-pivot {
+          transform-origin: top center;
+          will-change: transform;
+          display: flex; flex-direction: column; align-items: center;
+          cursor: grab;
         }
-        .lanyard-string {
-          width: 2px;
-          background: linear-gradient(to bottom, #888, #aaa, #888);
-          border-radius: 1px;
-        }
+        .lc-pivot:active { cursor: grabbing; }
       `}</style>
 
-      {/* String */}
-      <div className="lanyard-string" style={{ height: 36 }} />
-
-      {/* Swinging card */}
+      {/* ── Pivot wrapper — rotates whole assembly from top ── */}
       <div
-        className={`lanyard-pivot${dragging ? " dragging" : ""}`}
-        style={{
-          transform: dragging ? `rotate(${dragAngle}deg)` : undefined,
-          cursor: dragging ? "grabbing" : "grab",
-        }}
-        onPointerDown={handlePointerDown}
-        onPointerMove={handlePointerMove}
-        onPointerUp={handlePointerUp}
-        onPointerCancel={handlePointerUp}
-        onClick={handleClick}
+        className="lc-pivot"
+        style={{ transform: `rotate(${angleDeg}deg)` }}
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={onPointerUp}
+        onPointerCancel={onPointerUp}
       >
-        {/* Clip / hook */}
+        {/* STRAP — plain band, no dots, connected directly to top of card area */}
         <div style={{
-          width: 16, height: 10,
-          background: "linear-gradient(135deg, #ccc, #888)",
+          width: 10,
+          height: 42,
+          background: strapBg,
           borderRadius: "3px 3px 0 0",
-          margin: "0 auto",
-          boxShadow: "0 1px 3px rgba(0,0,0,0.3)",
+          boxShadow: "1px 0 2px rgba(0,0,0,0.35), inset -1px 0 1px rgba(255,255,255,0.05)",
+          flexShrink: 0,
         }} />
 
-        {/* Card */}
-        <div
-          ref={cardRef}
-          style={{
-            width: 110,
-            height: 150,
-            perspective: 600,
-          }}
-        >
+        {/* METAL CLIP — small teardrop/D-ring, zero gap */}
+        <div style={{
+          width: 14,
+          height: 11,
+          flexShrink: 0,
+          position: "relative",
+          marginTop: 0,
+        }}>
+          {/* D-ring arch */}
+          <div style={{
+            position: "absolute",
+            top: 0, left: "50%",
+            transform: "translateX(-50%)",
+            width: 10, height: 7,
+            border: "2px solid #999",
+            borderBottom: "none",
+            borderRadius: "6px 6px 0 0",
+            background: "transparent",
+          }} />
+          {/* Clip body */}
+          <div style={{
+            position: "absolute",
+            bottom: 0, left: "50%",
+            transform: "translateX(-50%)",
+            width: 14, height: 6,
+            background: "linear-gradient(135deg,#bbb 0%,#777 100%)",
+            borderRadius: 3,
+            boxShadow: "0 1px 3px rgba(0,0,0,0.5)",
+          }} />
+        </div>
+
+        {/* CARD — flush with clip, no gap */}
+        <div style={{ width: CARD_W, height: CARD_H, perspective: 480, flexShrink: 0 }}>
           <div
-            className={`lanyard-card-inner${flipped ? " flipped" : ""}`}
-            style={{
-              width: "100%", height: "100%",
-              position: "relative",
-            }}
+            className={`lc-inner${flipped ? " flipped" : ""}`}
+            style={{ width: "100%", height: "100%", position: "relative" }}
           >
-            {/* Front face */}
-            <div
-              className="card-face"
-              style={{
-                background: "linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)",
-                border: "1px solid rgba(255,255,255,0.15)",
-                boxShadow: "0 8px 32px rgba(0,0,0,0.48), 0 0 0 1px rgba(255,255,255,0.06) inset",
-              }}
-            >
-              {/* Lanyard stripe at top */}
-              <div style={{
-                position: "absolute", top: 0, left: 0, right: 0, height: 28,
-                background: "linear-gradient(90deg, #6366f1, #8b5cf6, #6366f1)",
-                borderRadius: "10px 10px 0 0",
-                display: "flex", alignItems: "center", justifyContent: "center",
+            {/* FRONT */}
+            <div className="lc-face" style={{ background: cardBg, boxShadow: shadow }}>
+              <span style={{
+                fontSize: 20, fontWeight: 800, color: cardText,
+                fontFamily: "-apple-system,'SF Pro Display','Helvetica Neue',sans-serif",
+                letterSpacing: "-0.04em",
               }}>
-                <span style={{ fontSize: 8, fontWeight: 700, color: "rgba(255,255,255,0.85)", letterSpacing: "0.12em", textTransform: "uppercase", fontFamily: "monospace" }}>
-                  VISITOR
-                </span>
-              </div>
-
-              <div style={{ marginTop: 8, display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>
-                <div style={{ fontSize: 28 }}>👋</div>
-                <div style={{
-                  fontSize: 22, fontWeight: 800,
-                  color: "#fff",
-                  fontFamily: "'Geist', 'SF Pro Display', sans-serif",
-                  letterSpacing: "-0.04em",
-                }}>hello</div>
-                <div style={{
-                  fontSize: 9, color: "rgba(255,255,255,0.45)",
-                  fontFamily: "monospace", letterSpacing: "0.1em",
-                  textTransform: "uppercase",
-                }}>tap to flip</div>
-              </div>
-
-              {/* Bottom strip */}
-              <div style={{
-                position: "absolute", bottom: 0, left: 0, right: 0, height: 24,
-                background: "rgba(255,255,255,0.04)",
-                borderRadius: "0 0 10px 10px",
-                borderTop: "1px solid rgba(255,255,255,0.06)",
-                display: "flex", alignItems: "center", justifyContent: "center",
-              }}>
-                <div style={{
-                  width: 50, height: 4, borderRadius: 2,
-                  background: "linear-gradient(90deg, #6366f1, #8b5cf6)",
-                  opacity: 0.6,
-                }} />
-              </div>
+                hello!
+              </span>
             </div>
 
-            {/* Back face */}
-            <div
-              className="card-face card-face-back"
-              style={{
-                background: "linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%)",
-                border: "1px solid rgba(255,255,255,0.12)",
-                boxShadow: "0 8px 32px rgba(0,0,0,0.48), 0 0 0 1px rgba(255,255,255,0.04) inset",
-              }}
-            >
-              <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 28,
-                background: "linear-gradient(90deg, #10b981, #06d6a0, #10b981)",
-                borderRadius: "10px 10px 0 0",
-                display: "flex", alignItems: "center", justifyContent: "center",
-              }}>
-                <span style={{ fontSize: 8, fontWeight: 700, color: "rgba(255,255,255,0.9)", letterSpacing: "0.12em", textTransform: "uppercase", fontFamily: "monospace" }}>
-                  DEV MODE
-                </span>
-              </div>
-
-              <div style={{ marginTop: 10, display: "flex", flexDirection: "column", alignItems: "center", gap: 4 }}>
-                <div style={{ fontSize: 28 }}>☕</div>
-                <div style={{ fontSize: 22 }}>😎</div>
-                <div style={{
-                  fontSize: 9, color: "rgba(255,255,255,0.4)",
-                  fontFamily: "monospace", letterSpacing: "0.08em",
-                  textAlign: "center",
-                  padding: "0 8px",
-                }}>powered by<br/>coffee & code</div>
-              </div>
-
-              <div style={{
-                position: "absolute", bottom: 0, left: 0, right: 0, height: 24,
-                background: "rgba(255,255,255,0.03)",
-                borderRadius: "0 0 10px 10px",
-                borderTop: "1px solid rgba(255,255,255,0.05)",
-                display: "flex", alignItems: "center", justifyContent: "center",
-              }}>
-                <div style={{
-                  width: 50, height: 4, borderRadius: 2,
-                  background: "linear-gradient(90deg, #10b981, #06d6a0)",
-                  opacity: 0.6,
-                }} />
+            {/* BACK */}
+            <div className="lc-face lc-back" style={{ background: cardBg, boxShadow: shadow }}>
+              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}>
+                <span style={{ fontSize: 26, lineHeight: 1.1, fontFamily: "'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif" }}>☕</span>
+                <span style={{ fontSize: 26, lineHeight: 1.1, fontFamily: "'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif" }}>😎</span>
               </div>
             </div>
           </div>
+        </div>
+
+        {/* Tap hint */}
+        <div style={{
+          fontSize: 8, color: "var(--text-muted)", fontFamily: "monospace",
+          letterSpacing: "0.05em", opacity: 0.45, marginTop: 3,
+          userSelect: "none",
+        }}>
+          tap to flip
         </div>
       </div>
     </div>

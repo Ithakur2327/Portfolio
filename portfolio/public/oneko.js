@@ -162,7 +162,7 @@
     if (!nekoEl.isConnected) return;
     if (!lastFrameTimestamp) lastFrameTimestamp = timestamp;
 
-    if (timestamp - lastFrameTimestamp > 50) {
+    if (timestamp - lastFrameTimestamp > 100) {
       lastFrameTimestamp = timestamp;
       // Update rainbow filter every frame tick
       if (RAINBOW_MODE) nekoEl.style.filter = getRainbowFilter();
