@@ -157,7 +157,7 @@ function DonutChart({ easy, medium, hard, totalSolved, totalProblems, attempting
   );
 }
 
-// Shared cell-hover tooltip — transparent, shows above cell
+// Shared cell-hover tooltip — fixed positioning + pop-in animation
 function CellTooltip({ hovered, accentColor, label }: {
   hovered: HoveredCell | null;
   accentColor: string;
@@ -166,26 +166,27 @@ function CellTooltip({ hovered, accentColor, label }: {
   if (!hovered) return null;
   return (
     <div style={{
-      position: "absolute",
+      position: "fixed",
       left: hovered.x,
       top: hovered.y,
-      transform: "translate(-50%, calc(-100% - 8px))",
+      transform: "translate(-50%, calc(-100% - 10px))",
       pointerEvents: "none",
-      zIndex: 30,
-      padding: "4px 9px",
-      borderRadius: 7,
-      background: "rgba(10,10,12,0.72)",
-      border: `1px solid ${accentColor}55`,
-      backdropFilter: "blur(8px)",
-      WebkitBackdropFilter: "blur(8px)",
-      boxShadow: "0 4px 14px rgba(0,0,0,0.45)",
+      zIndex: 9999,
+      padding: "5px 10px",
+      borderRadius: 8,
+      background: "rgba(8,8,10,0.92)",
+      border: `1px solid ${accentColor}60`,
+      backdropFilter: "blur(10px)",
+      WebkitBackdropFilter: "blur(10px)",
+      boxShadow: `0 0 0 1px ${accentColor}18, 0 6px 18px rgba(0,0,0,0.55)`,
       textAlign: "center",
       whiteSpace: "nowrap",
+      animation: "tooltipPop 0.18s cubic-bezier(0.34, 1.56, 0.64, 1) forwards",
     }}>
-      <div style={{ fontSize: 13, fontWeight: 800, color: accentColor, fontFamily: MONO, letterSpacing: "-0.04em", lineHeight: 1.15 }}>
+      <div style={{ fontSize: 14, fontWeight: 800, color: accentColor, fontFamily: MONO, letterSpacing: "-0.04em", lineHeight: 1.2 }}>
         {hovered.count}
       </div>
-      <div style={{ fontSize: 9, color: "rgba(255,255,255,0.5)", fontFamily: MONO, marginTop: 2 }}>
+      <div style={{ fontSize: 9, color: "rgba(255,255,255,0.45)", fontFamily: MONO, marginTop: 2 }}>
         {label} · {hovered.date}
       </div>
     </div>
@@ -298,11 +299,8 @@ function LeetCodeStats({ username = "IThakur09" }: { username?: string }) {
   const handleCellEnter = useCallback((e: React.MouseEvent<HTMLDivElement>, date: string, count: number) => {
     const el = e.currentTarget as HTMLElement;
     el.style.transform = "scale(1.5)";
-    if (wrapRef.current) {
-      const wr = wrapRef.current.getBoundingClientRect();
-      const cr = el.getBoundingClientRect();
-      setHovered({ date, count, x: cr.left - wr.left + cr.width / 2, y: cr.top - wr.top });
-    }
+    const cr = el.getBoundingClientRect();
+    setHovered({ date, count, x: cr.left + cr.width / 2, y: cr.top });
   }, []);
   const handleCellLeave = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     (e.currentTarget as HTMLElement).style.transform = "";
@@ -561,11 +559,8 @@ function GitHubGraph({ username = "Ithakur2327" }: { username?: string }) {
   const handleCellEnter = useCallback((e: React.MouseEvent<HTMLDivElement>, date: string, count: number) => {
     const el = e.currentTarget as HTMLElement;
     el.style.transform = "scale(1.35)";
-    if (wrapRef.current) {
-      const wr = wrapRef.current.getBoundingClientRect();
-      const cr = el.getBoundingClientRect();
-      setHovered({ date, count, x: cr.left - wr.left + cr.width / 2, y: cr.top - wr.top });
-    }
+    const cr = el.getBoundingClientRect();
+    setHovered({ date, count, x: cr.left + cr.width / 2, y: cr.top });
   }, []);
   const handleCellLeave = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     (e.currentTarget as HTMLElement).style.transform = "";
@@ -662,6 +657,10 @@ export function AboutSection() {
     <>
       <style suppressHydrationWarning>{`
         @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes tooltipPop {
+          from { opacity: 0; transform: translate(-50%, calc(-100% - 4px)) scale(0.80); }
+          to   { opacity: 1; transform: translate(-50%, calc(-100% - 10px)) scale(1); }
+        }
         @keyframes lcPulse { 0%,100%{opacity:1} 50%{opacity:0.7} }
         .lc-logo-outer { animation: lcPulse 2.4s ease-in-out infinite; }
         .lc-logo-bar   { animation: lcPulse 2.4s ease-in-out infinite 0.6s; }

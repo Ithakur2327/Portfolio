@@ -12,11 +12,6 @@
   inherits: false;
   initial-value: 0;
 }
-/* Scroll-fade mask custom props (chanhdai pattern) */
-@property --top-mask-height    { syntax: "<length>"; inherits: true; initial-value: 0px; }
-@property --bottom-mask-height { syntax: "<length>"; inherits: true; initial-value: 64px; }
-@property --left-mask-width    { syntax: "<length>"; inherits: true; initial-value: 0px; }
-@property --right-mask-width   { syntax: "<length>"; inherits: true; initial-value: 64px; }
 
 /* ═══════════════════════════════════════════════════════════
    THEME TOKENS
@@ -151,16 +146,6 @@ img, svg, canvas {
   image-rendering: auto;
 }
 
-/* ═══════════════════════════════════════════════════════════
-   SCROLL SNAPPING
-═══════════════════════════════════════════════════════════ */
-@supports (scroll-behavior: smooth) {
-  html {
-    scroll-behavior: smooth;
-    overscroll-behavior: none;
-    -webkit-overflow-scrolling: touch;
-  }
-}
 
 /* ═══════════════════════════════════════════════════════════
    SCROLLBAR
@@ -403,6 +388,10 @@ h1, h2, h3, .section-title {
   0%, 100% { box-shadow: 0 0 0 0 rgba(255,255,255,0); }
   50%       { box-shadow: 0 0 16px 4px rgba(255,255,255,0.18); }
 }
+@keyframes tooltipPop {
+  from { opacity: 0; transform: translate(-50%, calc(-100% - 4px)) scale(0.80); }
+  to   { opacity: 1; transform: translate(-50%, calc(-100% - 10px)) scale(1); }
+}
 @keyframes trackShimmer {
   0%   { background-position: -300% center; }
   100% { background-position:  300% center; }
@@ -425,11 +414,6 @@ h1, h2, h3, .section-title {
 .theme-btn.wobble {
   animation: theme-change-wobble 0.42s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
 }
-
-@keyframes show-top-mask    { to { --top-mask-height: var(--mask-height); } }
-@keyframes hide-bottom-mask { to { --bottom-mask-height: 0px; } }
-@keyframes show-left-mask   { to { --left-mask-width: var(--mask-width); } }
-@keyframes hide-right-mask  { to { --right-mask-width: 0px; } }
 
 .pulse   { animation: pulse 2s ease infinite; }
 .fade-up { animation: fadeUp 0.5s var(--expo-out) forwards; }
@@ -459,20 +443,6 @@ h1, h2, h3, .section-title {
   will-change: auto;
 }
 
-.scroll-fade-effect-y {
-  --mask-height: 64px;
-  mask-image:
-    linear-gradient(to top, transparent, black 90%),
-    linear-gradient(to bottom, transparent 0%, black 100%),
-    linear-gradient(black, black);
-  mask-size: 100% var(--top-mask-height), 100% var(--bottom-mask-height), 100% 100%;
-  mask-repeat: no-repeat, no-repeat, no-repeat;
-  mask-composite: exclude;
-  animation-name: show-top-mask, hide-bottom-mask;
-  animation-timeline: scroll(self), scroll(self);
-  animation-range: 0 2rem, calc(100% - 2rem) 100%;
-  animation-fill-mode: both;
-}
 
 /* ═══════════════════════════════════════════════════════════
    AVATAR
@@ -652,26 +622,7 @@ h1, h2, h3, .section-title {
   text-align: center; line-height: 1.3;
 }
 
-.contrib-cell {
-  width: 10px; height: 10px; border-radius: 2px;
-  background: var(--bg-hover);
-  transition: transform 0.1s;
-  cursor: default;
-}
-.contrib-cell:hover { transform: scale(1.4); }
-.contrib-cell[data-level="1"] { background: color-mix(in oklab, var(--success) 25%, var(--bg-hover)); }
-.contrib-cell[data-level="2"] { background: color-mix(in oklab, var(--success) 50%, var(--bg-hover)); }
-.contrib-cell[data-level="3"] { background: color-mix(in oklab, var(--success) 75%, var(--bg-hover)); }
-.contrib-cell[data-level="4"] { background: var(--success); }
 
-/* Slide handle */
-.slide-handle {
-  will-change: transform;
-  transform: translate3d(0, 0, 0);
-  backface-visibility: hidden;
-  animation: glowPulse 2.4s ease-in-out infinite;
-}
-.slide-handle:active { animation: none; }
 
 /* ═══════════════════════════════════════════════════════════
    GOLD WORD
@@ -709,16 +660,8 @@ html.light .gold-word {
 }
 @keyframes themeWipe { to { mask-size: 200vmax; } }
 
-/* ═══════════════════════════════════════════════════════════
-   GPU COMPOSITING HINTS
-═══════════════════════════════════════════════════════════ */
-body, h1, h2, h3, p, span, a, button {
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-rendering: optimizeLegibility;
-}
 
-@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+
   body { -webkit-font-smoothing: subpixel-antialiased; }
   .nav-root, .edu-outer, .cert-section-box, .contact-outer, .footer-root {
     border-width: 0.5px !important;
@@ -730,7 +673,7 @@ body, h1, h2, h3, p, span, a, button {
   img[src*="devicons"], img[src*="wikimedia"], img[src*="chartjs"], img[src*="jwt"] {
     image-rendering: auto;
   }
-}
+
 
 canvas {
   transform: translateZ(0);
@@ -804,53 +747,25 @@ html.light .stat-badge {
   border-color: #d8d8d4;
 }
 
-[data-framer-appear],
-[data-framer-motion-appear-animation] {
-  will-change: transform, opacity;
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
-}
-
-[style*="backdropFilter"],
-[style*="backdrop-filter"] {
-  transform: translateZ(0);
-}
-
-.skills-strip-inner {
-  will-change: transform;
-  transform: translate3d(0, 0, 0);
-}
-
-.contrib-wrap, .marquee-track, .marquee-fade,
-.modal-scroll, [style*="overflowY: auto"] {
+.contrib-wrap, .marquee-track, .marquee-fade {
   -webkit-overflow-scrolling: touch;
   scroll-behavior: smooth;
 }
 
 /* ═══════════════════════════════════════════════════════════
-   PERFORMANCE ENHANCEMENTS
-   NOTE: contain: layout style REMOVED from section — it was
-   breaking full-bleed backgrounds (left:-100vw / 50%+50vw pattern).
-   Only backface-visibility promoted here — safe for GPU layers.
+   PERFORMANCE ENHANCEMENTS — only safe targeted GPU hints
 ═══════════════════════════════════════════════════════════ */
 
+/* GPU layers for nav only — no wildcard selectors */
 .nav-root,
 .theme-btn,
 .logo-area,
 .logo-i,
-.logo-avatar,
-[class*="reveal"],
-[class*="s-tile"],
-[class*="skill"],
-[class*="project"] {
+.logo-avatar {
   -webkit-backface-visibility: hidden;
   backface-visibility: hidden;
 }
 
-/* contain: BILKUL NAHI sections pe — full-bleed backgrounds toot jaate hain
-   (left:-100vw / margin-left:-50vw pattern contain se break hota hai) */
-
-/* GPU layers for nav */
 .nav-root { isolation: isolate; }
 
 /* ═══════════════════════════════════════════════════════════
@@ -879,21 +794,21 @@ html.light .stat-badge {
 
 /* ── Light theme — proper frosted glass ── */
 html.light .nav-root {
-  backdrop-filter: blur(24px) saturate(200%) brightness(1.05) !important;
-  -webkit-backdrop-filter: blur(24px) saturate(200%) brightness(1.05) !important;
-  background: rgba(248,248,246,0.55) !important;
-  border-bottom: 1px solid rgba(0,0,0,0.08) !important;
-  box-shadow:
-    0 1px 0 rgba(255,255,255,0.80) inset,
-    0 1px 6px rgba(0,0,0,0.06);
-}
-html.light .nav-root.scrolled {
-  backdrop-filter: blur(32px) saturate(220%) brightness(1.06) !important;
-  -webkit-backdrop-filter: blur(32px) saturate(220%) brightness(1.06) !important;
-  background: rgba(248,248,246,0.78) !important;
-  border-bottom: 1px solid rgba(0,0,0,0.10) !important;
+  backdrop-filter: blur(28px) saturate(220%) brightness(1.04) !important;
+  -webkit-backdrop-filter: blur(28px) saturate(220%) brightness(1.04) !important;
+  background: rgba(255,255,255,0.30) !important;
+  border-bottom: 1px solid rgba(0,0,0,0.07) !important;
   box-shadow:
     0 1px 0 rgba(255,255,255,0.90) inset,
+    0 1px 8px rgba(0,0,0,0.05);
+}
+html.light .nav-root.scrolled {
+  backdrop-filter: blur(36px) saturate(240%) brightness(1.05) !important;
+  -webkit-backdrop-filter: blur(36px) saturate(240%) brightness(1.05) !important;
+  background: rgba(255,255,255,0.48) !important;
+  border-bottom: 1px solid rgba(0,0,0,0.09) !important;
+  box-shadow:
+    0 1px 0 rgba(255,255,255,0.95) inset,
     0 4px 20px rgba(0,0,0,0.07);
 }
 
@@ -985,49 +900,28 @@ html.light #scroll-arrow {
 }
 
 /* ═══════════════════════════════════════════════════════════
-   HERO LAYOUT SWITCHING
+   HERO LAYOUT — TABLET
 ═══════════════════════════════════════════════════════════ */
-.h-tablet-outer  { display: none !important; }
-.h-desktop-profile,
-.h-desktop-info,
-.h-desktop-gap   { display: block; }
-.h-desktop-profile { display: block; }
-
 @media (min-width: 601px) and (max-width: 1024px) {
-  .h-tablet-outer {
-    display: block !important;
-    position: relative;
-    left: 50%;
-    margin-left: -50vw;
-    width: 100vw;
+  section#about {
+    padding-top: 0;
+    padding-bottom: 48px;
   }
-  .h-tablet-outer .h-tablet-card {
-    max-width: 660px;
-    margin: 0 auto;
-  }
-  .h-desktop-profile { display: none !important; }
-  .h-desktop-gap     { display: none !important; }
-  .h-desktop-info    { display: none !important; }
 
-  /* Bigger hero profile on tablet */
+  /* Larger avatar on tablet */
   .h-avatar {
-    width: 190px !important;
-    min-width: 190px !important;
-    height: 190px !important;
-    min-height: 190px !important;
+    width: 210px !important;
+    min-width: 210px !important;
+    height: 210px !important;
+    min-height: 210px !important;
   }
-  /* Bigger name on tablet */
-  h1 { font-size: clamp(24px, 4vw, 36px) !important; }
-  /* Info section enhanced */
-  .h-info-wrap { max-width: 660px !important; margin: 0 auto !important; }
-  .h-grid { gap: 13px 40px !important; }
-}
 
-@media (max-width: 600px) {
-  .h-desktop-profile { display: block !important; }
-  .h-desktop-gap     { display: block !important; }
-  .h-desktop-info    { display: block !important; }
-  .h-tablet-outer    { display: none !important; }
+  /* Larger name on tablet */
+  h1 { font-size: clamp(26px, 4.2vw, 40px) !important; }
+
+  /* Info section full width — matches profile row visual weight */
+  .h-info-wrap { max-width: 100% !important; margin: 0 !important; }
+  .h-grid { gap: 14px 48px !important; }
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -1082,18 +976,6 @@ html.light #scroll-arrow {
 
 
 
-/* ═══════════════════════════════════════════════════════════
-   STATS SECTION
-═══════════════════════════════════════════════════════════ */
-.stats-section-wrapper {
-  position: relative;
-  left: 50%;
-  margin-left: -50vw;
-  width: 100vw;
-  background: var(--bg-base);
-  border-top: 1px solid var(--line);
-  border-bottom: 1px solid var(--line);
-}
 
 /* ═══════════════════════════════════════════════════════════
    RESPONSIVE

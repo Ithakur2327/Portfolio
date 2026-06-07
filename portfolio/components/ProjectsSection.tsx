@@ -560,7 +560,7 @@ export function ProjectsSection() {
               className="proj-grid"
               animate={{ opacity: unlocked ? 1 : 0.55, scale: unlocked ? 1 : 0.997, filter: unlocked ? "blur(0px)" : "blur(5px)" }}
               transition={{ duration: 0.48, ease: [0.22, 1, 0.36, 1] }}
-              style={{ pointerEvents: unlocked ? "auto" : "none", willChange: "transform, opacity, filter" }}
+              style={{ pointerEvents: unlocked ? "auto" : "none", willChange: unlocked ? "auto" : "transform, opacity, filter" }}
             >
               {PROJECTS.map((proj, i) => (
                 <ProjectCard
