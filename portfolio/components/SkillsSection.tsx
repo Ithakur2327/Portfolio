@@ -159,7 +159,7 @@ function LampSkillBox({
   title, glowColor, items, isLast,
 }: { title: string; glowColor: string; items: string[]; isLast?: boolean }) {
   const ref = useRef<HTMLDivElement>(null);
-  const isInView = useInView(ref, { margin: "-60px 0px -60px 0px", once: false });
+  const isInView = useInView(ref, { margin: "-60px 0px -60px 0px", once: true });
 
   return (
     <div

@@ -1,6 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+
+  productionBrowserSourceMaps: false,
   images: {
     unoptimized: false,
     formats: ["image/avif", "image/webp"],
