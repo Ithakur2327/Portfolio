@@ -21,7 +21,7 @@
   let idleAnimation = null;
   let idleAnimationFrame = 0;
 
-  const nekoSpeed = 10;
+  const nekoSpeed = 12;
 
   // ── Day-based color filters ──────────────────────────────────────────────
   // getDay() returns: 0=Sun, 1=Mon, 2=Tue, 3=Wed, 4=Thu, 5=Fri, 6=Sat
@@ -162,7 +162,7 @@
     if (!nekoEl.isConnected) return;
     if (!lastFrameTimestamp) lastFrameTimestamp = timestamp;
 
-    if (timestamp - lastFrameTimestamp > 100) {
+    if (timestamp - lastFrameTimestamp > 50) {
       lastFrameTimestamp = timestamp;
       // Update rainbow filter every frame tick
       if (RAINBOW_MODE) nekoEl.style.filter = getRainbowFilter();

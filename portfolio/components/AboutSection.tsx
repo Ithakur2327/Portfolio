@@ -930,11 +930,28 @@ export function AboutSection() {
             </div>
             <div style={{ height: 1, background: "var(--border)", margin: "18px 0 28px" }} />
 
-            <div style={{ marginBottom: 32 }}>
+            <div style={{ marginBottom: 40 }}>
               <ScrollRevealText />
             </div>
+          </div>
+        </div>
+      </section>
 
-            <div className="about-panels">
+      {/* ── Stats Section — GitHub + LeetCode moved below About with section gap ── */}
+      <section className={revealClass}>
+        <div style={{
+          position: "relative", left: "50%", marginLeft: "-50vw", width: "100vw",
+          background: "var(--bg-base)", borderTop: "1px solid var(--line)", borderBottom: "1px solid var(--line)",
+        }}>
+          <div className="about-content">
+            <div style={{ paddingTop: 28 }}>
+              <span style={{ fontSize: 28, fontWeight: 700, letterSpacing: "-0.03em", lineHeight: 1, fontFamily: SF, color: "var(--text-primary)" }}>
+                Stats
+              </span>
+            </div>
+            <div style={{ height: 1, background: "var(--border)", margin: "18px 0 28px" }} />
+
+            <div className="about-panels" style={{ paddingBottom: 32 }}>
               <div className="stat-card-3d">
                 <GitHubGraph username="Ithakur2327" />
               </div>

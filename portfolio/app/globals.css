@@ -1028,3 +1028,210 @@ html.light .stat-badge {
   .mobile-nav-btn { display: flex !important; }
   .desktop-nav    { display: none !important; }
 }
+/* ═══════════════════════════════════════════════════════════
+   PERFORMANCE ENHANCEMENTS — lag-free & smooth on low-end
+═══════════════════════════════════════════════════════════ */
+
+/* Compositor-only promotion for animated elements */
+.nav-root,
+.theme-btn,
+.logo-area,
+.logo-i,
+.logo-avatar,
+[class*="reveal"],
+[class*="s-tile"],
+[class*="skill"],
+[class*="project"] {
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+}
+
+/* Reduce paint on scroll — contain where safe */
+section {
+  contain: layout style;
+}
+
+/* GPU layers for frequently animated elements */
+.nav-root { isolation: isolate; }
+
+/* ═══════════════════════════════════════════════════════════
+   NAV — PROPER MIRROR GLASS
+═══════════════════════════════════════════════════════════ */
+.nav-root {
+  backdrop-filter: blur(28px) saturate(200%) brightness(1.04) !important;
+  -webkit-backdrop-filter: blur(28px) saturate(200%) brightness(1.04) !important;
+  background: rgba(4,4,4,0.25) !important;
+  border-bottom: 1px solid rgba(255,255,255,0.08) !important;
+  box-shadow:
+    0 1px 0 rgba(255,255,255,0.06) inset,
+    0 0 0 0.5px rgba(255,255,255,0.04),
+    0 8px 32px rgba(0,0,0,0.18);
+}
+.nav-root.scrolled {
+  backdrop-filter: blur(36px) saturate(220%) brightness(1.06) !important;
+  -webkit-backdrop-filter: blur(36px) saturate(220%) brightness(1.06) !important;
+  background: rgba(4,4,4,0.38) !important;
+}
+html.light .nav-root {
+  backdrop-filter: blur(28px) saturate(200%) brightness(1.08) !important;
+  -webkit-backdrop-filter: blur(28px) saturate(200%) brightness(1.08) !important;
+  background: rgba(242,242,240,0.22) !important;
+  border-bottom: 1px solid rgba(0,0,0,0.07) !important;
+  box-shadow:
+    0 1px 0 rgba(255,255,255,0.7) inset,
+    0 0 0 0.5px rgba(0,0,0,0.04),
+    0 8px 32px rgba(0,0,0,0.06);
+}
+html.light .nav-root.scrolled {
+  backdrop-filter: blur(36px) saturate(220%) brightness(1.10) !important;
+  -webkit-backdrop-filter: blur(36px) saturate(220%) brightness(1.10) !important;
+  background: rgba(242,242,240,0.42) !important;
+}
+
+/* Mobile nav height increase */
+@media (max-width: 760px) {
+  .nav-root { height: 60px !important; }
+  .nav-inner { height: 60px !important; }
+  .logo-area { width: 44px; height: 44px; }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   SCROLL BOTTOM BLUR FADE
+═══════════════════════════════════════════════════════════ */
+#scroll-bottom-fade {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 120px;
+  pointer-events: none;
+  z-index: 90;
+  background: linear-gradient(to bottom,
+    transparent 0%,
+    rgba(4,4,4,0.0) 20%,
+    rgba(4,4,4,0.35) 65%,
+    rgba(4,4,4,0.72) 100%
+  );
+  mask-image: linear-gradient(to bottom, transparent, black 60%);
+  -webkit-mask-image: linear-gradient(to bottom, transparent, black 60%);
+}
+html.light #scroll-bottom-fade {
+  background: linear-gradient(to bottom,
+    transparent 0%,
+    rgba(245,245,243,0.0) 20%,
+    rgba(245,245,243,0.55) 65%,
+    rgba(245,245,243,0.88) 100%
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════
+   SCROLL DIRECTION ARROW
+═══════════════════════════════════════════════════════════ */
+#scroll-arrow {
+  position: fixed;
+  bottom: 22px;
+  right: 22px;
+  z-index: 95;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border: 1px solid rgba(255,255,255,0.14);
+  background: rgba(14,14,16,0.72);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 2px 12px rgba(0,0,0,0.28);
+  transition: opacity 0.25s ease, transform 0.22s cubic-bezier(0.34,1.56,0.64,1);
+  opacity: 0.7;
+  color: rgba(255,255,255,0.7);
+}
+#scroll-arrow:hover { opacity: 1; transform: scale(1.1); }
+#scroll-arrow:active { transform: scale(0.92); }
+#scroll-arrow svg { transition: transform 0.25s cubic-bezier(0.34,1.56,0.64,1); }
+#scroll-arrow.pointing-up svg { transform: rotate(180deg); }
+
+html.light #scroll-arrow {
+  background: rgba(240,240,238,0.80);
+  border-color: rgba(0,0,0,0.12);
+  color: rgba(0,0,0,0.65);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   HERO TABLET — full screen like mobile
+═══════════════════════════════════════════════════════════ */
+@media (min-width: 601px) and (max-width: 1024px) {
+  /* Hero / HeroSection adjustments */
+  #about > div:first-child {
+    min-height: 100svh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  .h-profile {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+  }
+  .h-avatar {
+    width: clamp(120px, 28vw, 200px) !important;
+    min-width: clamp(120px, 28vw, 200px) !important;
+    height: clamp(120px, 28vw, 200px) !important;
+    min-height: clamp(120px, 28vw, 200px) !important;
+    border-right: none !important;
+    border-bottom: 1px solid var(--border) !important;
+  }
+  .h-nameblock {
+    flex: 1 !important;
+    justify-content: flex-start !important;
+  }
+  .h-grid {
+    grid-template-columns: 1fr 1fr !important;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   MOBILE BUBBLE MENU OVERLAY
+   (for BubbleMenu from provided code — mobile/tablet only)
+═══════════════════════════════════════════════════════════ */
+.bubble-menu-overlay {
+  display: none;
+}
+@media (max-width: 760px) {
+  .bubble-menu-overlay { display: block; }
+}
+@media (min-width: 761px) and (max-width: 1024px) {
+  .bubble-menu-overlay { display: block; }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   VIBRATION HELPER (JS will call navigator.vibrate)
+═══════════════════════════════════════════════════════════ */
+.theme-btn-vibe { /* marker class for the JS to find */ }
+
+/* ═══════════════════════════════════════════════════════════
+   LANYARD CARD CONTAINER
+═══════════════════════════════════════════════════════════ */
+.lanyard-hero-container {
+  position: relative;
+  flex-shrink: 0;
+  /* sizing */
+  width: clamp(160px, 22vw, 260px);
+  height: clamp(220px, 30vw, 340px);
+  overflow: hidden;
+  border-radius: 12px;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   STATS SECTION (GitHub + LeetCode moved out of About)
+═══════════════════════════════════════════════════════════ */
+.stats-section-wrapper {
+  position: relative;
+  left: 50%;
+  margin-left: -50vw;
+  width: 100vw;
+  background: var(--bg-base);
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}

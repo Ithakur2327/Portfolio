@@ -32,6 +32,10 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const setTheme = (t: Theme) => {
     // Two-tone directional sound: going dark = lower, going light = higher
     playThemeToggleSound(t === "dark");
+    // Haptic vibration feedback
+    if (typeof navigator !== "undefined" && navigator.vibrate) {
+      navigator.vibrate(t === "dark" ? [30, 10, 15] : [15, 8, 30]);
+    }
 
     if (
       typeof document !== "undefined" &&

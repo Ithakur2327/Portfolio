@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { useTheme } from "./ThemeProvider";
+import { gsap } from "gsap";
 
 const NAV_LINKS = [
   { label: "About",          href: "#about",          color: "#6366f1" },
@@ -44,6 +45,148 @@ function CloseIcon({ size = 18 }: { size?: number }) {
   );
 }
 
+// ── Bubble menu item (individual box) ─────────────────────
+function BubbleItem({
+  item, index, bubblesRef, labelRefs
+}: {
+  item: typeof NAV_LINKS[0];
+  index: number;
+  bubblesRef: React.MutableRefObject<HTMLAnchorElement[]>;
+  labelRefs: React.MutableRefObject<HTMLSpanElement[]>;
+}) {
+  return (
+    <a
+      href={item.href}
+      aria-label={item.label}
+      style={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        borderRadius: 14,
+        background: "rgba(18,18,20,0.82)",
+        border: "1px solid rgba(255,255,255,0.10)",
+        backdropFilter: "blur(16px) saturate(180%)",
+        WebkitBackdropFilter: "blur(16px) saturate(180%)",
+        boxShadow: `0 4px 20px rgba(0,0,0,0.32), 0 0 0 1px rgba(255,255,255,0.04) inset`,
+        color: "#fafafa",
+        textDecoration: "none",
+        fontSize: "clamp(13px,3.5vw,15px)",
+        fontWeight: 600,
+        padding: "10px 18px",
+        whiteSpace: "nowrap",
+        cursor: "pointer",
+        transition: "background 0.18s ease, box-shadow 0.18s ease",
+        willChange: "transform",
+      }}
+      ref={(el) => { if (el) bubblesRef.current[index] = el; }}
+      onClick={() => {}}
+    >
+      <span
+        ref={(el) => { if (el) labelRefs.current[index] = el; }}
+        style={{ display: "flex", alignItems: "center", gap: 7 }}
+      >
+        <span style={{
+          width: 6, height: 6, borderRadius: "50%",
+          background: item.color, flexShrink: 0,
+          boxShadow: `0 0 6px ${item.color}aa`,
+        }} />
+        {item.label}
+      </span>
+    </a>
+  );
+}
+
+// ── Bubble overlay (mobile/tablet only) ────────────────────
+function BubbleOverlay({
+  open, onClose, isDark
+}: { open: boolean; onClose: () => void; isDark: boolean }) {
+  const overlayRef = useRef<HTMLDivElement>(null);
+  const bubblesRef = useRef<HTMLAnchorElement[]>([]);
+  const labelRefs = useRef<HTMLSpanElement[]>([]);
+  const [showOverlay, setShowOverlay] = useState(false);
+
+  useEffect(() => {
+    if (open) {
+      setShowOverlay(true);
+    }
+  }, [open]);
+
+  useEffect(() => {
+    if (!showOverlay) return;
+    const bubbles = bubblesRef.current.filter(Boolean);
+    const labels = labelRefs.current.filter(Boolean);
+    if (!bubbles.length) return;
+
+    if (open) {
+      gsap.killTweensOf([...bubbles, ...labels]);
+      gsap.set(bubbles, { scale: 0, transformOrigin: "50% 50%" });
+      gsap.set(labels, { y: 16, autoAlpha: 0 });
+      bubbles.forEach((bubble, i) => {
+        const delay = i * 0.07 + gsap.utils.random(-0.02, 0.02);
+        const tl = gsap.timeline({ delay });
+        tl.to(bubble, { scale: 1, duration: 0.4, ease: "back.out(1.5)" });
+        if (labels[i]) {
+          tl.to(labels[i], { y: 0, autoAlpha: 1, duration: 0.3, ease: "power3.out" }, "-=0.28");
+        }
+      });
+    } else {
+      gsap.killTweensOf([...bubbles, ...labels]);
+      gsap.to(labels, { y: 16, autoAlpha: 0, duration: 0.15, ease: "power3.in" });
+      gsap.to(bubbles, {
+        scale: 0, duration: 0.18, ease: "power3.in",
+        onComplete: () => setShowOverlay(false),
+      });
+    }
+  }, [open, showOverlay]);
+
+  if (!showOverlay) return null;
+
+  return (
+    <div
+      ref={overlayRef}
+      style={{
+        position: "fixed",
+        inset: 0,
+        zIndex: 999,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        pointerEvents: open ? "auto" : "none",
+      }}
+      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+    >
+      {/* Backdrop */}
+      <div style={{
+        position: "absolute", inset: 0,
+        background: isDark ? "rgba(0,0,0,0.55)" : "rgba(0,0,0,0.28)",
+        backdropFilter: "blur(4px)",
+        WebkitBackdropFilter: "blur(4px)",
+      }} onClick={onClose} />
+      {/* Grid of bubbles */}
+      <div style={{
+        position: "relative",
+        zIndex: 1,
+        display: "grid",
+        gridTemplateColumns: "1fr 1fr",
+        gap: 12,
+        padding: 24,
+        maxWidth: 380,
+        width: "100%",
+      }}>
+        {NAV_LINKS.map((item, idx) => (
+          <BubbleItem
+            key={item.href}
+            item={item}
+            index={idx}
+            bubblesRef={bubblesRef}
+            labelRefs={labelRefs}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export function Navbar() {
   const { theme, setTheme } = useTheme();
   const [scrolled,      setScrolled]      = useState(false);
@@ -72,33 +215,17 @@ export function Navbar() {
     return () => obs.disconnect();
   }, []);
 
-  // Close on outside click
-  useEffect(() => {
-    if (!mobileOpen) return;
-    const fn = (e: MouseEvent) => {
-      if (menuRef.current && menuRef.current.contains(e.target as Node)) return;
-      setMobileOpen(false);
-    };
-    const t = setTimeout(() => document.addEventListener("mousedown", fn), 80);
-    return () => { clearTimeout(t); document.removeEventListener("mousedown", fn); };
-  }, [mobileOpen]);
-
   const isDark = mounted ? theme === "dark" : true;
-  const avatarSrc = isDark ? "/avatar-dark.jpg" : "/avatar-light.jpg";
 
   // Always glass — stronger on scroll
   const navBgStyle = {
     background: isDark
-      ? scrolled ? "rgba(9,9,11,0.82)" : "rgba(9,9,11,0.60)"
-      : scrolled ? "rgba(245,245,243,0.82)" : "rgba(245,245,243,0.60)",
-    borderBottomColor: isDark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.07)",
-    backdropFilter: "blur(20px) saturate(160%)",
-    WebkitBackdropFilter: "blur(20px) saturate(160%)",
+      ? scrolled ? "rgba(4,4,4,0.42)" : "rgba(4,4,4,0.22)"
+      : scrolled ? "rgba(242,242,240,0.44)" : "rgba(242,242,240,0.20)",
+    borderBottomColor: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.07)",
+    backdropFilter: scrolled ? "blur(36px) saturate(220%) brightness(1.06)" : "blur(28px) saturate(200%) brightness(1.04)",
+    WebkitBackdropFilter: scrolled ? "blur(36px) saturate(220%) brightness(1.06)" : "blur(28px) saturate(200%) brightness(1.04)",
   };
-
-  const menuFg = isDark ? "#fafafa" : "#111111";
-  const menuBg = isDark ? "rgba(14,14,16,0.96)" : "rgba(248,248,246,0.96)";
-  const menuBorder = isDark ? "rgba(255,255,255,0.10)" : "rgba(0,0,0,0.10)";
 
   return (
     <>
@@ -117,32 +244,6 @@ export function Navbar() {
         .nav-partition { width:1px; height:18px; background:var(--nav-border); margin:0 6px; flex-shrink:0; }
         .mobile-nav-btn { display: none !important; }
 
-        /* Compact mobile dropdown */
-        .mobile-menu-dropdown {
-          position: fixed;
-          top: 54px;
-          right: 16px;
-          width: 190px;
-          border-radius: 14px;
-          overflow: hidden;
-          z-index: 9000;
-          animation: menuDropIn 0.18s cubic-bezier(0.22,1,0.36,1) both;
-          transform-origin: top right;
-        }
-        @keyframes menuDropIn {
-          from { opacity: 0; transform: scale(0.88) translateY(-8px); }
-          to   { opacity: 1; transform: scale(1) translateY(0); }
-        }
-        .mobile-menu-link {
-          display: flex; align-items: center;
-          padding: 10px 16px;
-          font-size: 13.5px; font-weight: 500;
-          text-decoration: none;
-          transition: background 0.12s, color 0.12s;
-          gap: 10px;
-        }
-        .mobile-menu-link:hover { background: rgba(128,128,128,0.12); }
-
         @media (min-width: 761px) {
           .mobile-nav-btn { display: none !important; }
           .desktop-nav    { display: flex !important; }
@@ -153,13 +254,21 @@ export function Navbar() {
           .desktop-nav    { display: none !important; }
           .nav-partition  { display: none !important; }
         }
+        @media (min-width: 761px) and (max-width: 1024px) {
+          .mobile-nav-btn { display: flex !important; }
+          .desktop-nav    { display: none !important; }
+          .nav-partition  { display: none !important; }
+        }
       `}</style>
 
       <header
-        className="nav-root"
+        className={`nav-root${scrolled ? " scrolled" : ""}`}
         style={{
           ...navBgStyle,
-          transition: "background 0.35s ease, border-color 0.35s ease",
+          transition: "background 0.35s ease, border-color 0.35s ease, backdrop-filter 0.35s ease",
+          boxShadow: isDark
+            ? "0 1px 0 rgba(255,255,255,0.06) inset, 0 8px 32px rgba(0,0,0,0.18)"
+            : "0 1px 0 rgba(255,255,255,0.7) inset, 0 8px 32px rgba(0,0,0,0.06)",
         }}
       >
         <div className="nav-inner">
@@ -169,8 +278,8 @@ export function Navbar() {
               <div className={`logo-i${scrolled ? " hide" : ""}`}>&lt;I&gt;</div>
               <div className={`logo-avatar${scrolled ? " show" : ""}`}>
                 <img
-                  key={avatarSrc}
-                  src={avatarSrc}
+                  key={isDark ? "/avatar-dark.jpg" : "/avatar-light.jpg"}
+                  src={isDark ? "/avatar-dark.jpg" : "/avatar-light.jpg"}
                   alt="IT"
                   onError={(e) => {
                     const el = e.currentTarget as HTMLImageElement;
@@ -203,8 +312,9 @@ export function Navbar() {
             >
               {mounted ? (isDark ? <SunIcon /> : <MoonIcon />) : <MoonIcon />}
             </button>
-            {/* Mobile hamburger */}
+            {/* Mobile/tablet bubble menu toggle */}
             <button
+              ref={menuRef as any}
               className="mobile-nav-btn theme-btn"
               style={{ display: "none", alignItems: "center", justifyContent: "center", marginLeft: 8 }}
               onClick={() => setMobileOpen(v => !v)}
@@ -216,54 +326,12 @@ export function Navbar() {
         </div>
       </header>
 
-      {/* Compact mobile dropdown */}
-      {mobileOpen && (
-        <div
-          ref={menuRef}
-          className="mobile-menu-dropdown"
-          style={{
-            background: menuBg,
-            border: `1px solid ${menuBorder}`,
-            backdropFilter: "blur(20px) saturate(160%)",
-            WebkitBackdropFilter: "blur(20px) saturate(160%)",
-            boxShadow: "0 8px 32px rgba(0,0,0,0.28), 0 2px 8px rgba(0,0,0,0.16)",
-          }}
-        >
-          {/* Theme toggle inside menu */}
-          <div style={{
-            display: "flex", alignItems: "center", justifyContent: "space-between",
-            padding: "10px 16px 8px",
-            borderBottom: `1px solid ${menuBorder}`,
-            marginBottom: 4,
-          }}>
-            <span style={{ fontSize: 11, fontWeight: 600, color: menuFg, opacity: 0.4, letterSpacing: "0.08em", textTransform: "uppercase" }}>
-              Navigation
-            </span>
-          </div>
-
-          {NAV_LINKS.map((item, idx) => (
-            <a
-              key={item.href}
-              href={item.href}
-              className="mobile-menu-link"
-              style={{
-                color: menuFg,
-                borderBottom: idx < NAV_LINKS.length - 1 ? `1px solid ${menuBorder}` : "none",
-              }}
-              onClick={() => setMobileOpen(false)}
-            >
-              <span
-                style={{
-                  width: 7, height: 7, borderRadius: "50%",
-                  background: item.color, flexShrink: 0,
-                  boxShadow: `0 0 6px ${item.color}88`,
-                }}
-              />
-              {item.label}
-            </a>
-          ))}
-        </div>
-      )}
+      {/* Bubble menu overlay — mobile/tablet only */}
+      <BubbleOverlay
+        open={mobileOpen}
+        onClose={() => setMobileOpen(false)}
+        isDark={isDark}
+      />
     </>
   );
 }

@@ -2,6 +2,7 @@
 import { useEffect, useState, useRef } from "react";
 import { Avatar } from "./Avatar";
 import { useTheme } from "./ThemeProvider";
+import { LanyardCard } from "./LanyardCard";
 
 /* ─── Flip sentences ─────────────────────────────────── */
 const SENTENCES = [
@@ -239,6 +240,32 @@ export function HeroSection() {
         .s-tile:hover { background: var(--bg-secondary); }
         .s-tile:last-child { border-right: none !important; }
 
+        /* ── Tablet: full viewport hero like mobile ── */
+        @media (min-width: 601px) and (max-width: 1024px) {
+          .h-profile {
+            flex-direction: column !important;
+            align-items: flex-start !important;
+          }
+          .h-avatar {
+            width: clamp(140px, 25vw, 190px) !important;
+            min-width: clamp(140px, 25vw, 190px) !important;
+            height: clamp(140px, 25vw, 190px) !important;
+            min-height: clamp(140px, 25vw, 190px) !important;
+            border-right: none !important;
+            border-bottom: 1px solid var(--border) !important;
+          }
+          .h-nameblock {
+            flex: 1 !important;
+            padding: 12px 20px !important;
+          }
+          .h-grid {
+            grid-template-columns: 1fr 1fr !important;
+          }
+          .h-lanyard-col {
+            display: none !important;
+          }
+        }
+
         @media (max-width: 600px) {
           /* Side-by-side layout preserved on mobile */
           .h-profile { flex-direction: row !important; }
@@ -286,6 +313,25 @@ export function HeroSection() {
             min-height: clamp(88px, 26vw, 110px) !important;
           }
         }
+
+        /* Lanyard col — responsive */
+        .h-lanyard-col {
+          width: 142px;
+          min-width: 142px;
+        }
+        @media (max-width: 760px) {
+          .h-lanyard-col {
+            width: 110px !important;
+            min-width: 110px !important;
+            padding: 8px 10px 8px !important;
+            border-left: 1px solid var(--border) !important;
+          }
+        }
+        @media (max-width: 380px) {
+          .h-lanyard-col {
+            display: none !important;
+          }
+        }
       `}</style>
 
       <section id="about"
@@ -319,6 +365,19 @@ export function HeroSection() {
               <div style={{padding:"8px 20px 12px", height:36, display:"flex", alignItems:"center", overflow:"hidden"}}>
                 <FlipSentences/>
               </div>
+            </div>
+
+            {/* Lanyard card — right side, aligned with Contact nav link */}
+            <div style={{
+              display: "flex",
+              alignItems: "flex-end",
+              justifyContent: "center",
+              padding: "12px 16px 10px",
+              borderLeft: "1px solid var(--border)",
+              flexShrink: 0,
+              minWidth: 0,
+            }} className="h-lanyard-col">
+              <LanyardCard />
             </div>
           </div>
         </div>
