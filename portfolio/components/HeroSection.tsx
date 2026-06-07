@@ -2,7 +2,7 @@
 import { useEffect, useState, useRef } from "react";
 import { Avatar } from "./Avatar";
 import { useTheme } from "./ThemeProvider";
-import { LanyardCard } from "./LanyardCard";
+
 
 /* ─── Flip sentences ─────────────────────────────────── */
 const SENTENCES = [
@@ -236,9 +236,8 @@ export function HeroSection() {
         .s-tile:last-child { border-right: none !important; }
 
         /* ══════════════════════════════════════
-           TABLET / iPAD — use mobile-style UI
-           Covers: iPad mini, iPad, iPad Pro,
-           any tablet 601px–1024px wide.
+           TABLET / iPAD — mobile-style layout
+           iPad mini, iPad, iPad Pro, 601–1024px
         ══════════════════════════════════════ */
         @media (min-width: 601px) and (max-width: 1024px) {
           .h-profile {
@@ -246,10 +245,10 @@ export function HeroSection() {
             align-items: stretch !important;
           }
           .h-avatar {
-            width: clamp(110px, 22vw, 160px) !important;
-            min-width: clamp(110px, 22vw, 160px) !important;
-            height: clamp(110px, 22vw, 160px) !important;
-            min-height: clamp(110px, 22vw, 160px) !important;
+            width: clamp(120px, 20vw, 180px) !important;
+            min-width: clamp(120px, 20vw, 180px) !important;
+            height: clamp(120px, 20vw, 180px) !important;
+            min-height: clamp(120px, 20vw, 180px) !important;
             border-right: 1px solid var(--border) !important;
             border-bottom: none !important;
           }
@@ -258,29 +257,29 @@ export function HeroSection() {
             padding: 0 !important;
           }
           .h-grid {
-            grid-template-columns: 1fr !important;
-            gap: 11px 0 !important;
+            grid-template-columns: 1fr 1fr !important;
+            gap: 11px 24px !important;
           }
           .h-spacer { display: none !important; }
-          .h-social {
-            flex-direction: column !important;
-          }
+          .h-social { flex-direction: row !important; }
           .s-tile {
-            border-right: none !important;
-            border-bottom: 1px solid var(--border) !important;
+            border-right: 1px solid var(--border) !important;
+            border-bottom: none !important;
           }
-          .s-tile:last-child { border-bottom: none !important; }
-          /* Lanyard visible on tablet, compact */
+          .s-tile:last-child { border-right: none !important; border-bottom: none !important; }
+          /* Lanyard — visible, 96px column */
           .h-lanyard-col {
-            width: 80px !important;
-            min-width: 80px !important;
-            padding: 8px 8px 8px !important;
+            width: 96px !important;
+            min-width: 96px !important;
+            padding: 0 8px 8px !important;
             border-left: 1px solid var(--border) !important;
             display: flex !important;
+            align-items: flex-start !important;
+            justify-content: center !important;
           }
           .h-info-wrap {
-            margin-left: 12px !important;
-            margin-right: 12px !important;
+            margin-left: 0 !important;
+            margin-right: 0 !important;
           }
         }
 
@@ -346,15 +345,14 @@ export function HeroSection() {
 
         /* Lanyard col — desktop default */
         .h-lanyard-col {
-          width: 120px;
-          min-width: 120px;
+          width: 136px;
+          min-width: 136px;
           display: flex;
-          align-items: flex-end;
+          align-items: flex-start;
           justify-content: center;
-          padding: 10px 12px 8px;
+          padding: 0 12px 8px;
           border-left: 1px solid var(--border);
           flex-shrink: 0;
-          min-width: 0;
         }
       `}</style>
 
@@ -393,7 +391,7 @@ export function HeroSection() {
 
             {/* Lanyard card — right side, visible on all screens */}
             <div className="h-lanyard-col">
-              <LanyardCard />
+              
             </div>
           </div>
         </div>
