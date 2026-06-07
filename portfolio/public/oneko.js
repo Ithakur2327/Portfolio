@@ -21,7 +21,7 @@
   let idleAnimation = null;
   let idleAnimationFrame = 0;
 
-  const nekoSpeed = 12;
+  const nekoSpeed = 10;
 
   // ── Day-based color filters ──────────────────────────────────────────────
   // getDay() returns: 0=Sun, 1=Mon, 2=Tue, 3=Wed, 4=Thu, 5=Fri, 6=Sat
