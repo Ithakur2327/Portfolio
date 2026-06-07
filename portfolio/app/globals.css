@@ -1055,73 +1055,112 @@ section {
 .nav-root { isolation: isolate; }
 
 /* ═══════════════════════════════════════════════════════════
-   NAV — PROPER MIRROR GLASS
+   NAV — PROPER MIRROR GLASS (both themes)
+   Bottom edge blends into page bg so border disappears on scroll
 ═══════════════════════════════════════════════════════════ */
+
+/* ── Dark theme ── */
 .nav-root {
-  backdrop-filter: blur(28px) saturate(200%) brightness(1.04) !important;
-  -webkit-backdrop-filter: blur(28px) saturate(200%) brightness(1.04) !important;
-  background: rgba(4,4,4,0.25) !important;
-  border-bottom: 1px solid rgba(255,255,255,0.08) !important;
+  backdrop-filter: blur(20px) saturate(180%) brightness(1.04) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(180%) brightness(1.04) !important;
+  background: rgba(4,4,4,0.18) !important;
+  /* Bottom shadow matches dark bg → seamless blend when not scrolled */
+  border-bottom: 1px solid rgba(255,255,255,0.06) !important;
   box-shadow:
-    0 1px 0 rgba(255,255,255,0.06) inset,
-    0 0 0 0.5px rgba(255,255,255,0.04),
-    0 8px 32px rgba(0,0,0,0.18);
+    0 1px 0 rgba(255,255,255,0.04) inset,
+    0 1px 0 rgba(4,4,4,0.8);   /* bottom blend shadow */
 }
 .nav-root.scrolled {
-  backdrop-filter: blur(36px) saturate(220%) brightness(1.06) !important;
-  -webkit-backdrop-filter: blur(36px) saturate(220%) brightness(1.06) !important;
-  background: rgba(4,4,4,0.38) !important;
-}
-html.light .nav-root {
-  backdrop-filter: blur(28px) saturate(200%) brightness(1.08) !important;
-  -webkit-backdrop-filter: blur(28px) saturate(200%) brightness(1.08) !important;
-  background: rgba(242,242,240,0.22) !important;
-  border-bottom: 1px solid rgba(0,0,0,0.07) !important;
+  backdrop-filter: blur(28px) saturate(200%) brightness(1.06) !important;
+  -webkit-backdrop-filter: blur(28px) saturate(200%) brightness(1.06) !important;
+  background: rgba(4,4,4,0.52) !important;
+  border-bottom: 1px solid rgba(255,255,255,0.10) !important;
   box-shadow:
-    0 1px 0 rgba(255,255,255,0.7) inset,
-    0 0 0 0.5px rgba(0,0,0,0.04),
-    0 8px 32px rgba(0,0,0,0.06);
-}
-html.light .nav-root.scrolled {
-  backdrop-filter: blur(36px) saturate(220%) brightness(1.10) !important;
-  -webkit-backdrop-filter: blur(36px) saturate(220%) brightness(1.10) !important;
-  background: rgba(242,242,240,0.42) !important;
+    0 1px 0 rgba(255,255,255,0.06) inset,
+    0 4px 24px rgba(0,0,0,0.32);
 }
 
-/* Mobile nav height increase */
+/* ── Light theme ── */
+html.light .nav-root {
+  backdrop-filter: blur(20px) saturate(180%) brightness(1.01) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(180%) brightness(1.01) !important;
+  /* Same hue as bg-base #f5f5f3 — very transparent so glass effect shows */
+  background: rgba(245,245,243,0.20) !important;
+  border-bottom: 1px solid rgba(0,0,0,0.05) !important;
+  box-shadow:
+    0 1px 0 rgba(255,255,255,0.60) inset,
+    0 1px 0 rgba(245,245,243,0.9);  /* bottom blend shadow = page bg colour */
+}
+html.light .nav-root.scrolled {
+  backdrop-filter: blur(28px) saturate(200%) brightness(1.02) !important;
+  -webkit-backdrop-filter: blur(28px) saturate(200%) brightness(1.02) !important;
+  background: rgba(245,245,243,0.68) !important;
+  border-bottom: 1px solid rgba(0,0,0,0.08) !important;
+  box-shadow:
+    0 1px 0 rgba(255,255,255,0.80) inset,
+    0 4px 20px rgba(0,0,0,0.06);
+}
+
+/* Mobile nav height — 56px (slightly tighter than desktop 52px) */
 @media (max-width: 760px) {
-  .nav-root { height: 60px !important; }
-  .nav-inner { height: 60px !important; }
-  .logo-area { width: 44px; height: 44px; }
+  .nav-root { height: 56px !important; }
+  .nav-inner { height: 56px !important; }
+  .logo-area { width: 42px; height: 42px; }
 }
 
 /* ═══════════════════════════════════════════════════════════
    SCROLL BOTTOM BLUR FADE
 ═══════════════════════════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════════════
+   SCROLL BOTTOM BLUR FADE
+   Pure glass — softer blur, smaller height
+   Desktop 56px → Tablet 42px → Mobile 32px
+═══════════════════════════════════════════════════════════ */
 #scroll-bottom-fade {
   position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 120px;
+  bottom: 0; left: 0; right: 0;
+  height: 56px;
   pointer-events: none;
   z-index: 90;
-  background: linear-gradient(to bottom,
-    transparent 0%,
-    rgba(4,4,4,0.0) 20%,
-    rgba(4,4,4,0.35) 65%,
-    rgba(4,4,4,0.72) 100%
-  );
-  mask-image: linear-gradient(to bottom, transparent, black 60%);
-  -webkit-mask-image: linear-gradient(to bottom, transparent, black 60%);
+  background: transparent;
 }
-html.light #scroll-bottom-fade {
-  background: linear-gradient(to bottom,
-    transparent 0%,
-    rgba(245,245,243,0.0) 20%,
-    rgba(245,245,243,0.55) 65%,
-    rgba(245,245,243,0.88) 100%
-  );
+
+/* Blur layer — masked so only bottom strip blurs */
+#scroll-bottom-fade::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  /* Softer blur — 7px instead of 12px */
+  backdrop-filter: blur(7px) saturate(1.2);
+  -webkit-backdrop-filter: blur(7px) saturate(1.2);
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 65%);
+  mask-image: linear-gradient(to bottom, transparent 0%, black 65%);
+}
+
+/* Tablet */
+@media (min-width: 601px) and (max-width: 1024px) {
+  #scroll-bottom-fade { height: 42px; }
+  #scroll-bottom-fade::after {
+    backdrop-filter: blur(6px) saturate(1.15);
+    -webkit-backdrop-filter: blur(6px) saturate(1.15);
+  }
+}
+
+/* Mobile */
+@media (max-width: 600px) {
+  #scroll-bottom-fade { height: 32px; }
+  #scroll-bottom-fade::after {
+    backdrop-filter: blur(5px) saturate(1.1);
+    -webkit-backdrop-filter: blur(5px) saturate(1.1);
+  }
+}
+
+/* Low-end mobile — skip blur */
+@media (max-width: 480px) and (max-device-pixel-ratio: 2) {
+  #scroll-bottom-fade::after {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -1160,34 +1199,47 @@ html.light #scroll-arrow {
 }
 
 /* ═══════════════════════════════════════════════════════════
-   HERO TABLET — full screen like mobile
+   HERO TABLET — mobile-style layout, 70svh height
 ═══════════════════════════════════════════════════════════ */
 @media (min-width: 601px) and (max-width: 1024px) {
-  /* Hero / HeroSection adjustments */
-  #about > div:first-child {
-    min-height: 100svh;
+  .h-tablet-screen {
+    min-height: 70svh;
     display: flex;
     flex-direction: column;
     justify-content: center;
   }
   .h-profile {
-    flex-direction: column !important;
-    align-items: flex-start !important;
+    flex-direction: row !important;
+    align-items: stretch !important;
   }
   .h-avatar {
-    width: clamp(120px, 28vw, 200px) !important;
-    min-width: clamp(120px, 28vw, 200px) !important;
-    height: clamp(120px, 28vw, 200px) !important;
-    min-height: clamp(120px, 28vw, 200px) !important;
-    border-right: none !important;
-    border-bottom: 1px solid var(--border) !important;
+    width: clamp(130px, 20vw, 180px) !important;
+    min-width: clamp(130px, 20vw, 180px) !important;
+    height: clamp(130px, 20vw, 180px) !important;
+    min-height: clamp(130px, 20vw, 180px) !important;
+    border-right: 1px solid var(--border) !important;
+    border-bottom: none !important;
+    overflow: hidden !important;
   }
   .h-nameblock {
     flex: 1 !important;
-    justify-content: flex-start !important;
+    justify-content: flex-end !important;
+    min-width: 0 !important;
   }
   .h-grid {
-    grid-template-columns: 1fr 1fr !important;
+    grid-template-columns: 1fr !important;
+    gap: 12px 0 !important;
+  }
+  .h-spacer { display: none !important; }
+  .h-social { flex-direction: column !important; }
+  .s-tile {
+    border-right: none !important;
+    border-bottom: 1px solid var(--border) !important;
+  }
+  .s-tile:last-child { border-bottom: none !important; }
+  .h-info-wrap {
+    margin-left: 16px !important;
+    margin-right: 16px !important;
   }
 }
 
@@ -1224,11 +1276,35 @@ html.light #scroll-arrow {
   }
 }
 
-/* Disable expensive conic-gradient border animation on low-end mobile */
+/* Low-end: disable expensive conic animation completely */
 @media (max-width: 600px) {
   .hbg-glow {
-    animation-duration: 12s !important;
+    animation-duration: 16s !important;
   }
+}
+
+/* Very low-end (old phones): remove conic animation entirely */
+@media (max-width: 480px) and (max-device-pixel-ratio: 1) {
+  .hbg-glow { animation: none !important; }
+}
+
+/* Reduce will-change usage on small screens — saves GPU memory */
+@media (max-width: 600px) {
+  .nav-root,
+  .s-tile,
+  .proj-card,
+  .cert-item {
+    will-change: auto !important;
+  }
+  /* Disable 3D transforms on mobile — cheaper 2D path */
+  .stat-card-3d { transform: none !important; }
+  .stat-card-3d:hover { transform: translateY(-2px) !important; }
+}
+
+/* Content-visibility for off-screen sections — big perf win */
+section:not(#about) {
+  content-visibility: auto;
+  contain-intrinsic-size: 0 400px;
 }
 
 /* ═══════════════════════════════════════════════════════════

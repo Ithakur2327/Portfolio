@@ -362,15 +362,25 @@ export function Navbar() {
         className={`nav-root${scrolled ? " scrolled" : ""}`}
         style={{
           background: isDark
-            ? scrolled ? "rgba(4,4,4,0.42)" : "rgba(4,4,4,0.22)"
-            : scrolled ? "rgba(242,242,240,0.46)" : "rgba(242,242,240,0.22)",
-          borderBottomColor: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.07)",
-          backdropFilter: scrolled ? "blur(36px) saturate(220%) brightness(1.06)" : "blur(28px) saturate(200%) brightness(1.04)",
-          WebkitBackdropFilter: scrolled ? "blur(36px) saturate(220%) brightness(1.06)" : "blur(28px) saturate(200%) brightness(1.04)",
+            ? scrolled ? "rgba(4,4,4,0.52)" : "rgba(4,4,4,0.18)"
+            : scrolled ? "rgba(245,245,243,0.68)" : "rgba(245,245,243,0.20)",
+          borderBottomColor: isDark
+            ? scrolled ? "rgba(255,255,255,0.10)" : "rgba(255,255,255,0.06)"
+            : scrolled ? "rgba(0,0,0,0.08)" : "rgba(0,0,0,0.05)",
+          backdropFilter: scrolled
+            ? "blur(28px) saturate(200%) brightness(1.04)"
+            : "blur(20px) saturate(180%) brightness(1.02)",
+          WebkitBackdropFilter: scrolled
+            ? "blur(28px) saturate(200%) brightness(1.04)"
+            : "blur(20px) saturate(180%) brightness(1.02)",
           boxShadow: isDark
-            ? "0 1px 0 rgba(255,255,255,0.06) inset, 0 8px 32px rgba(0,0,0,0.18)"
-            : "0 1px 0 rgba(255,255,255,0.7) inset, 0 8px 32px rgba(0,0,0,0.06)",
-          transition: "background 0.35s ease, border-color 0.35s ease, backdrop-filter 0.35s ease",
+            ? scrolled
+              ? "0 1px 0 rgba(255,255,255,0.06) inset, 0 4px 24px rgba(0,0,0,0.32)"
+              : "0 1px 0 rgba(255,255,255,0.04) inset, 0 1px 0 rgba(4,4,4,0.8)"
+            : scrolled
+              ? "0 1px 0 rgba(255,255,255,0.80) inset, 0 4px 20px rgba(0,0,0,0.06)"
+              : "0 1px 0 rgba(255,255,255,0.60) inset, 0 1px 0 rgba(245,245,243,0.9)",
+          transition: "background 0.35s ease, border-color 0.35s ease, backdrop-filter 0.35s ease, box-shadow 0.35s ease",
         }}
       >
         <div className="nav-inner">

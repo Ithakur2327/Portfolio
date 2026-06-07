@@ -1,9 +1,7 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import { useTheme } from "./ThemeProvider";
 
 export function ScrollEnhancements() {
-  const { theme } = useTheme();
   const [mounted,    setMounted]    = useState(false);
   const [visible,    setVisible]    = useState(false);
   const [pointingUp, setPointingUp] = useState(false);
@@ -23,12 +21,11 @@ export function ScrollEnhancements() {
         setVisible(y > 120);
         setPointingUp(maxScroll > 0 ? y / maxScroll > 0.40 : y > 300);
 
-        // Hide blur overlay when footer is about to enter viewport
+        // Hide as soon as footer starts entering viewport
         const footer = document.querySelector(".footer-root") as HTMLElement | null;
         if (footer) {
           const rect = footer.getBoundingClientRect();
-          // Start fading out the blur 80px before footer hits viewport bottom
-          setNearFooter(rect.top < window.innerHeight + 80);
+          setNearFooter(rect.top < window.innerHeight + 40);
         }
 
         ticking.current = false;
@@ -49,94 +46,127 @@ export function ScrollEnhancements() {
 
   if (!mounted) return null;
 
-  const isDark = theme === "dark";
-
   return (
     <>
-      {/* ── Bottom glass fade — height reduced, stronger blur, hides before footer ── */}
+      <style suppressHydrationWarning>{`
+        /* ── Pure glass fade — NO color, just blur+transparency ── */
+        .scroll-glass-fade {
+          position: fixed;
+          bottom: 0; left: 0; right: 0;
+          pointer-events: none;
+          z-index: 80;
+          transition: opacity 0.22s ease;
+
+          /* Desktop: 56px */
+          height: 56px;
+          background: transparent;
+        }
+
+        /* Blur layer — masked so only bottom strip is blurred */
+        .scroll-glass-fade::after {
+          content: '';
+          position: absolute;
+          inset: 0;
+          /* Softer blur */
+          backdrop-filter: blur(7px) saturate(1.2);
+          -webkit-backdrop-filter: blur(7px) saturate(1.2);
+          -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 65%);
+          mask-image: linear-gradient(to bottom, transparent 0%, black 65%);
+        }
+
+        /* Tablet */
+        @media (min-width: 601px) and (max-width: 1024px) {
+          .scroll-glass-fade { height: 42px; }
+          .scroll-glass-fade::after {
+            backdrop-filter: blur(6px) saturate(1.15);
+            -webkit-backdrop-filter: blur(6px) saturate(1.15);
+          }
+        }
+
+        /* Mobile */
+        @media (max-width: 600px) {
+          .scroll-glass-fade { height: 32px; }
+          .scroll-glass-fade::after {
+            backdrop-filter: blur(5px) saturate(1.1);
+            -webkit-backdrop-filter: blur(5px) saturate(1.1);
+          }
+        }
+
+        /* Low-end mobile — disable expensive backdrop-filter */
+        @media (max-width: 480px) and (max-device-pixel-ratio: 2) {
+          .scroll-glass-fade::after {
+            backdrop-filter: none !important;
+            -webkit-backdrop-filter: none !important;
+          }
+        }
+
+        /* Scroll arrow */
+        .scroll-arrow-btn {
+          position: fixed;
+          bottom: 22px;
+          right: 22px;
+          z-index: 9999;
+          width: 38px;
+          height: 38px;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          padding: 0;
+          -webkit-tap-highlight-color: transparent;
+          touch-action: manipulation;
+        }
+
+        @media (max-width: 600px) {
+          .scroll-arrow-btn {
+            bottom: 16px;
+            right: 14px;
+            width: 34px;
+            height: 34px;
+          }
+        }
+      `}</style>
+
+      {/* Pure glass fade — no color tint */}
       <div
         aria-hidden="true"
-        style={{
-          position: "fixed",
-          bottom: 0,
-          left: 0,
-          right: 0,
-          height: 90,                      // reduced from 140 → 90
-          pointerEvents: "none",
-          zIndex: 80,
-          opacity: nearFooter ? 0 : 1,
-          transition: "opacity 0.25s ease",
-          background: isDark
-            ? "linear-gradient(to bottom, transparent 0%, rgba(4,4,4,0.25) 25%, rgba(4,4,4,0.88) 65%, rgba(4,4,4,0.98) 100%)"
-            : "linear-gradient(to bottom, transparent 0%, rgba(245,245,243,0.25) 25%, rgba(245,245,243,0.94) 65%, rgba(245,245,243,0.99) 100%)",
-        }}
-      >
-        {/* Strong inner blur layer — appears only on bottom 60% */}
-        <div style={{
-          position: "absolute",
-          inset: 0,
-          background: isDark
-            ? "linear-gradient(to bottom, transparent 0%, rgba(4,4,4,0.0) 15%, rgba(4,4,4,0.65) 100%)"
-            : "linear-gradient(to bottom, transparent 0%, rgba(245,245,243,0.0) 15%, rgba(245,245,243,0.72) 100%)",
-          backdropFilter: "blur(18px) saturate(1.6)",          // stronger: 10 → 18
-          WebkitBackdropFilter: "blur(18px) saturate(1.6)",
-          WebkitMaskImage: "linear-gradient(to bottom, transparent 0%, black 45%)",
-          maskImage: "linear-gradient(to bottom, transparent 0%, black 45%)",
-        }} />
-      </div>
+        className="scroll-glass-fade"
+        style={{ opacity: nearFooter ? 0 : 1 }}
+      />
 
-      {/* ── Scroll arrow ── */}
-      <button
-        onClick={handleClick}
-        aria-label={pointingUp ? "Scroll to top" : "Scroll down"}
-        style={{
-          position: "fixed",
-          bottom: 22,
-          right: 22,
-          zIndex: 9999,
-          width: 40,
-          height: 40,
-          borderRadius: "50%",
-          border: isDark
-            ? "1px solid rgba(255,255,255,0.18)"
-            : "1px solid rgba(0,0,0,0.16)",
-          background: isDark
-            ? "rgba(10,10,14,0.72)"
-            : "rgba(245,245,243,0.72)",
-          backdropFilter: "blur(20px) saturate(1.8)",
-          WebkitBackdropFilter: "blur(20px) saturate(1.8)",
-          boxShadow: isDark
-            ? "0 2px 24px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.06)"
-            : "0 2px 16px rgba(0,0,0,0.14), inset 0 1px 0 rgba(255,255,255,0.6)",
-          color: isDark ? "rgba(255,255,255,0.82)" : "rgba(0,0,0,0.72)",
-          cursor: "pointer",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          padding: 0,
-          opacity: visible ? 1 : 0,
-          transform: visible ? "scale(1) translateY(0)" : "scale(0.6) translateY(10px)",
-          transition: "opacity 0.28s ease, transform 0.3s cubic-bezier(0.34,1.56,0.64,1)",
-          pointerEvents: visible ? "auto" : "none",
-        }}
-      >
-        <svg
-          width="16"
-          height="16"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
+      {/* Scroll arrow — hides when near footer */}
+      {!nearFooter && (
+        <button
+          onClick={handleClick}
+          aria-label={pointingUp ? "Scroll to top" : "Scroll down"}
+          className="scroll-arrow-btn"
           style={{
-            transform: pointingUp ? "rotate(180deg)" : "rotate(0deg)",
-            transition: "transform 0.35s cubic-bezier(0.34,1.56,0.64,1)",
+            border: "1px solid rgba(128,128,128,0.22)",
+            background: "rgba(128,128,128,0.12)",
+            backdropFilter: "blur(16px) saturate(1.6)",
+            WebkitBackdropFilter: "blur(16px) saturate(1.6)",
+            boxShadow: "0 2px 16px rgba(0,0,0,0.12)",
+            color: "var(--text-secondary)",
+            opacity: visible ? 1 : 0,
+            transform: visible ? "scale(1) translateY(0)" : "scale(0.6) translateY(10px)",
+            transition: "opacity 0.28s ease, transform 0.3s cubic-bezier(0.34,1.56,0.64,1)",
+            pointerEvents: visible ? "auto" : "none",
           }}
         >
-          <polyline points="6 9 12 15 18 9" />
-        </svg>
-      </button>
+          <svg
+            width="15" height="15" viewBox="0 0 24 24"
+            fill="none" stroke="currentColor" strokeWidth="2.5"
+            strokeLinecap="round" strokeLinejoin="round"
+            style={{
+              transform: pointingUp ? "rotate(180deg)" : "rotate(0deg)",
+              transition: "transform 0.35s cubic-bezier(0.34,1.56,0.64,1)",
+            }}
+          >
+            <polyline points="6 9 12 15 18 9" />
+          </svg>
+        </button>
+      )}
     </>
   );
 }

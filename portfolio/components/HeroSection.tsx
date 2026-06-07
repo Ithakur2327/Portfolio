@@ -236,40 +236,57 @@ export function HeroSection() {
         .s-tile:last-child { border-right: none !important; }
 
         /* ══════════════════════════════════════
-           TABLET / iPAD — mobile-style layout
+           TABLET / iPAD — same compact style as mobile
            iPad mini, iPad, iPad Pro, 601–1024px
         ══════════════════════════════════════ */
         @media (min-width: 601px) and (max-width: 1024px) {
+          /* Hero section takes ~70% screen — like mobile full-screen feel */
+          .h-tablet-screen {
+            min-height: 70svh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+          }
+
+          /* Profile: row layout — avatar left, name right (same as mobile) */
           .h-profile {
             flex-direction: row !important;
             align-items: stretch !important;
           }
           .h-avatar {
-            width: clamp(120px, 20vw, 180px) !important;
-            min-width: clamp(120px, 20vw, 180px) !important;
-            height: clamp(120px, 20vw, 180px) !important;
-            min-height: clamp(120px, 20vw, 180px) !important;
+            width: clamp(130px, 20vw, 180px) !important;
+            min-width: clamp(130px, 20vw, 180px) !important;
+            height: clamp(130px, 20vw, 180px) !important;
+            min-height: clamp(130px, 20vw, 180px) !important;
             border-right: 1px solid var(--border) !important;
             border-bottom: none !important;
+            overflow: hidden !important;
           }
           .h-nameblock {
             flex: 1 !important;
             padding: 0 !important;
+            min-width: 0 !important;
           }
+          /* Name larger on tablet */
+          .h-nameblock h1 {
+            font-size: clamp(22px, 4vw, 36px) !important;
+          }
+          /* Info grid: 1 col on tablet (like mobile) */
           .h-grid {
-            grid-template-columns: 1fr 1fr !important;
-            gap: 11px 24px !important;
+            grid-template-columns: 1fr !important;
+            gap: 12px 0 !important;
           }
           .h-spacer { display: none !important; }
-          .h-social { flex-direction: row !important; }
+          /* Social: column on tablet (like mobile) */
+          .h-social { flex-direction: column !important; }
           .s-tile {
-            border-right: 1px solid var(--border) !important;
-            border-bottom: none !important;
+            border-right: none !important;
+            border-bottom: 1px solid var(--border) !important;
           }
           .s-tile:last-child { border-right: none !important; border-bottom: none !important; }
           .h-info-wrap {
-            margin-left: 0 !important;
-            margin-right: 0 !important;
+            margin-left: 16px !important;
+            margin-right: 16px !important;
           }
         }
 
@@ -327,7 +344,7 @@ export function HeroSection() {
       >
 
         {/* ── PROFILE ROW ── */}
-        <div style={{
+        <div className="h-tablet-screen" style={{
           position:"relative", left:"50%", marginLeft:"-50vw", width:"100vw",
           background:BG, borderTop:B, borderBottom:B,
         }}>
