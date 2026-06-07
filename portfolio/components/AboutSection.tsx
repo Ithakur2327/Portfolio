@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useRef, useState, useEffect, useCallback } from "react";
+import { createPortal } from "react-dom";
 import {
   motion,
   useScroll,
@@ -157,39 +158,46 @@ function DonutChart({ easy, medium, hard, totalSolved, totalProblems, attempting
   );
 }
 
-// Shared cell-hover tooltip — fixed positioning + pop-in animation
-function CellTooltip({ hovered, accentColor, label }: {
+// ── Portal tooltip — renders directly into document.body, escapes ALL stacking contexts ──
+function PortalTooltip({ hovered, accentColor, label }: {
   hovered: HoveredCell | null;
   accentColor: string;
   label: string;
 }) {
-  if (!hovered) return null;
-  return (
-    <div style={{
-      position: "fixed",
-      left: hovered.x,
-      top: hovered.y,
-      transform: "translate(-50%, calc(-100% - 10px))",
-      pointerEvents: "none",
-      zIndex: 9999,
-      padding: "5px 10px",
-      borderRadius: 8,
-      background: "rgba(8,8,10,0.92)",
-      border: `1px solid ${accentColor}60`,
-      backdropFilter: "blur(10px)",
-      WebkitBackdropFilter: "blur(10px)",
-      boxShadow: `0 0 0 1px ${accentColor}18, 0 6px 18px rgba(0,0,0,0.55)`,
-      textAlign: "center",
-      whiteSpace: "nowrap",
-      animation: "tooltipPop 0.18s cubic-bezier(0.34, 1.56, 0.64, 1) forwards",
-    }}>
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { setMounted(true); }, []);
+  if (!mounted || !hovered) return null;
+
+  return createPortal(
+    <div
+      style={{
+        position: "fixed",
+        left: hovered.x,
+        top: hovered.y,
+        transform: "translate(-50%, calc(-100% - 10px))",
+        pointerEvents: "none",
+        // Highest possible z-index — above stat-card-3d (z-index unset), nav (z:100), scroll-arrow (z:95)
+        zIndex: 2147483647,
+        padding: "5px 10px",
+        borderRadius: 8,
+        background: "rgba(8,8,10,0.95)",
+        border: `1px solid ${accentColor}60`,
+        backdropFilter: "blur(10px)",
+        WebkitBackdropFilter: "blur(10px)",
+        boxShadow: `0 0 0 1px ${accentColor}18, 0 6px 18px rgba(0,0,0,0.65)`,
+        textAlign: "center",
+        whiteSpace: "nowrap",
+        animation: "tooltipPop 0.18s cubic-bezier(0.34, 1.56, 0.64, 1) forwards",
+      }}
+    >
       <div style={{ fontSize: 14, fontWeight: 800, color: accentColor, fontFamily: MONO, letterSpacing: "-0.04em", lineHeight: 1.2 }}>
         {hovered.count}
       </div>
-      <div style={{ fontSize: 9, color: "rgba(255,255,255,0.45)", fontFamily: MONO, marginTop: 2 }}>
+      <div style={{ fontSize: 9, color: "rgba(255,255,255,0.5)", fontFamily: MONO, marginTop: 2 }}>
         {label} · {hovered.date}
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
 
@@ -206,7 +214,6 @@ function LeetCodeStats({ username = "IThakur09" }: { username?: string }) {
   const [loading, setLoading] = useState(true);
   const [calData, setCalData] = useState<LCCalDay[]>([]);
   const [hovered, setHovered] = useState<HoveredCell | null>(null);
-  const wrapRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     (async () => {
@@ -254,7 +261,6 @@ function LeetCodeStats({ username = "IThakur09" }: { username?: string }) {
 
   const d = data ?? { easySolved: 197, totalEasy: 947, mediumSolved: 223, totalMedium: 2063, hardSolved: 32, totalHard: 939, totalSolved: 452, ranking: GLOBAL_RANK };
 
-  // Build 2026 grid (Jan → today, starting from the Sunday before Jan 1)
   const CELL = 10, GAP = 3, STEP = CELL + GAP;
 
   const countMap = new Map<string, number>();
@@ -283,7 +289,6 @@ function LeetCodeStats({ username = "IThakur09" }: { username?: string }) {
     cur.setDate(cur.getDate() + 7);
   }
 
-  // Month labels — show all months including June (no min-width cutoff)
   const lcMonthLabels: { label: string; col: number }[] = [];
   lcWeeks.forEach((wk, wi) => {
     const lbl = MON_SHORT[wk[0].date.getMonth()];
@@ -302,15 +307,67 @@ function LeetCodeStats({ username = "IThakur09" }: { username?: string }) {
     const cr = el.getBoundingClientRect();
     setHovered({ date, count, x: cr.left + cr.width / 2, y: cr.top });
   }, []);
+
   const handleCellLeave = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     (e.currentTarget as HTMLElement).style.transform = "";
     setHovered(null);
   }, []);
 
-  const gridWidth = lcWeeks.length * STEP - GAP;
+  const gridContent = (
+    <div style={{ display: "inline-flex", flexDirection: "column", paddingBottom: 4, minWidth: "max-content" }}>
+      {/* Month labels */}
+      <div style={{ display: "flex", marginBottom: 3, paddingLeft: 24 }}>
+        {lcMonthLabels.map((m, i) => {
+          const nextCol = lcMonthLabels[i + 1]?.col ?? lcWeeks.length;
+          const w = (nextCol - m.col) * STEP;
+          return (
+            <div key={i} style={{ width: w, flexShrink: 0, fontSize: 8, color: "var(--text-muted)", fontFamily: MONO, overflow: "visible", whiteSpace: "nowrap" }}>
+              {m.label}
+            </div>
+          );
+        })}
+      </div>
+      <div style={{ display: "flex", gap: 0 }}>
+        {/* Day labels */}
+        <div style={{ display: "flex", flexDirection: "column", gap: GAP, marginRight: 4 }}>
+          {DAY_LABELS_LC.map((lbl, i) => (
+            <div key={i} style={{ height: CELL, fontSize: 8, color: "var(--text-muted)", fontFamily: MONO, lineHeight: `${CELL}px`, width: 20 }}>{lbl}</div>
+          ))}
+        </div>
+        {/* Cells */}
+        <div style={{ display: "flex", gap: GAP }}>
+          {lcWeeks.map((wk, wi) => (
+            <div key={wi} style={{ display: "flex", flexDirection: "column", gap: GAP }}>
+              {wk.map((day, di) => {
+                const k = day.date.toISOString().split("T")[0];
+                return (
+                  <div
+                    key={di}
+                    className={`lc-cell lc-cell-${lcLvl(day.count)}`}
+                    style={{ width: CELL, height: CELL, borderRadius: 2, cursor: "default", transition: "transform 0.1s" }}
+                    onMouseEnter={e => handleCellEnter(e, k, day.count)}
+                    onMouseLeave={handleCellLeave}
+                  />
+                );
+              })}
+            </div>
+          ))}
+        </div>
+      </div>
+      {/* Legend */}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 3, marginTop: 5 }}>
+        <span style={{ fontSize: 8, color: "var(--text-muted)", fontFamily: MONO, marginRight: 3 }}>Less</span>
+        {[0,1,2,3,4].map(l => <div key={l} className={`lc-cell lc-cell-${l}`} style={{ width: 9, height: 9, borderRadius: 2 }} />)}
+        <span style={{ fontSize: 8, color: "var(--text-muted)", fontFamily: MONO, marginLeft: 3 }}>More</span>
+      </div>
+    </div>
+  );
 
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
+      {/* Portal tooltip — renders into body, no stacking context issues */}
+      <PortalTooltip hovered={hovered} accentColor="#FFA116" label="submissions" />
+
       {/* Header */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10, flexWrap: "wrap", gap: 8 }}>
         <a href={`https://leetcode.com/${username}`} target="_blank" rel="noreferrer" style={{ display: "flex", alignItems: "center", gap: 8, textDecoration: "none" }}>
@@ -335,7 +392,11 @@ function LeetCodeStats({ username = "IThakur09" }: { username?: string }) {
             <>
               <DonutChart easy={d.easySolved} medium={d.mediumSolved} hard={d.hardSolved} totalSolved={d.totalSolved} totalProblems={LC_TOTAL} attempting={5} />
               <div style={{ display: "flex", flexDirection: "column", gap: 3, width: "100%", padding: "0 2px" }}>
-                {[{ label: "Easy", solved: d.easySolved, total: d.totalEasy, color: diffColors.Easy }, { label: "Med.", solved: d.mediumSolved, total: d.totalMedium, color: diffColors.Medium }, { label: "Hard", solved: d.hardSolved, total: d.totalHard, color: diffColors.Hard }].map(row => (
+                {[
+                  { label: "Easy", solved: d.easySolved, total: d.totalEasy, color: diffColors.Easy },
+                  { label: "Med.", solved: d.mediumSolved, total: d.totalMedium, color: diffColors.Medium },
+                  { label: "Hard", solved: d.hardSolved, total: d.totalHard, color: diffColors.Hard },
+                ].map(row => (
                   <div key={row.label} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "2px 6px", borderRadius: 5, background: "var(--bg-secondary)", border: "1px solid var(--border)" }}>
                     <span style={{ fontSize: 9, fontWeight: 700, color: row.color, fontFamily: MONO }}>{row.label}</span>
                     <span style={{ fontSize: 9, fontWeight: 700, color: "var(--text-primary)", fontFamily: MONO }}>{row.solved}<span style={{ color: "var(--text-muted)", fontWeight: 400 }}>/{row.total}</span></span>
@@ -346,61 +407,14 @@ function LeetCodeStats({ username = "IThakur09" }: { username?: string }) {
           )}
         </div>
         <div style={{ width: 1, background: "var(--border)", flexShrink: 0, margin: "0 8px" }} />
-        {/* Right: grid — fills remaining width */}
+        {/* Right: grid */}
         <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column" }}>
           <div style={{ fontSize: 9, color: "var(--text-muted)", fontFamily: MONO, marginBottom: 4 }}>2026 activity</div>
-          {/* Graph container with overflow so tooltip can escape */}
-          <div ref={wrapRef} style={{ position: "relative", flex: 1 }}>
-            <CellTooltip hovered={hovered} accentColor="#FFA116" label="submissions" />
-            <div style={{ width: "100%", overflowX: "auto", overflowY: "visible", WebkitOverflowScrolling: "touch", scrollbarWidth: "thin", scrollbarColor: "rgba(255,161,22,0.3) transparent" }}
-              onMouseLeave={() => setHovered(null)}>
-              {/* Scale the grid to fill box width when possible */}
-              <div style={{ display: "inline-flex", flexDirection: "column", paddingBottom: 4, minWidth: "max-content" }}>
-                {/* Month labels */}
-                <div style={{ display: "flex", marginBottom: 3, paddingLeft: 24 }}>
-                  {lcMonthLabels.map((m, i) => {
-                    const nextCol = lcMonthLabels[i + 1]?.col ?? lcWeeks.length;
-                    const w = (nextCol - m.col) * STEP;
-                    return (
-                      <div key={i} style={{ width: w, flexShrink: 0, fontSize: 8, color: "var(--text-muted)", fontFamily: MONO, overflow: "visible", whiteSpace: "nowrap" }}>
-                        {m.label}
-                      </div>
-                    );
-                  })}
-                </div>
-                <div style={{ display: "flex", gap: 0 }}>
-                  {/* Day labels */}
-                  <div style={{ display: "flex", flexDirection: "column", gap: GAP, marginRight: 4 }}>
-                    {DAY_LABELS_LC.map((lbl, i) => (
-                      <div key={i} style={{ height: CELL, fontSize: 8, color: "var(--text-muted)", fontFamily: MONO, lineHeight: `${CELL}px`, width: 20 }}>{lbl}</div>
-                    ))}
-                  </div>
-                  {/* Cells */}
-                  <div style={{ display: "flex", gap: GAP }}>
-                    {lcWeeks.map((wk, wi) => (
-                      <div key={wi} style={{ display: "flex", flexDirection: "column", gap: GAP }}>
-                        {wk.map((day, di) => {
-                          const k = day.date.toISOString().split("T")[0];
-                          return (
-                            <div key={di} className={`lc-cell lc-cell-${lcLvl(day.count)}`}
-                              style={{ width: CELL, height: CELL, borderRadius: 2, cursor: "default", transition: "transform 0.1s" }}
-                              onMouseEnter={e => handleCellEnter(e, k, day.count)}
-                              onMouseLeave={handleCellLeave}
-                            />
-                          );
-                        })}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-                {/* Legend */}
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 3, marginTop: 5 }}>
-                  <span style={{ fontSize: 8, color: "var(--text-muted)", fontFamily: MONO, marginRight: 3 }}>Less</span>
-                  {[0,1,2,3,4].map(l => <div key={l} className={`lc-cell lc-cell-${l}`} style={{ width: 9, height: 9, borderRadius: 2 }} />)}
-                  <span style={{ fontSize: 8, color: "var(--text-muted)", fontFamily: MONO, marginLeft: 3 }}>More</span>
-                </div>
-              </div>
-            </div>
+          <div
+            style={{ width: "100%", overflowX: "auto", overflowY: "visible", WebkitOverflowScrolling: "touch", scrollbarWidth: "thin", scrollbarColor: "rgba(255,161,22,0.3) transparent" }}
+            onMouseLeave={() => setHovered(null)}
+          >
+            {gridContent}
           </div>
         </div>
       </div>
@@ -412,7 +426,11 @@ function LeetCodeStats({ username = "IThakur09" }: { username?: string }) {
             <>
               <DonutChart easy={d.easySolved} medium={d.mediumSolved} hard={d.hardSolved} totalSolved={d.totalSolved} totalProblems={LC_TOTAL} attempting={5} />
               <div style={{ display: "flex", flexDirection: "column", gap: 4, flex: 1 }}>
-                {[{ label: "Easy", solved: d.easySolved, total: d.totalEasy, color: diffColors.Easy }, { label: "Med.", solved: d.mediumSolved, total: d.totalMedium, color: diffColors.Medium }, { label: "Hard", solved: d.hardSolved, total: d.totalHard, color: diffColors.Hard }].map(row => (
+                {[
+                  { label: "Easy", solved: d.easySolved, total: d.totalEasy, color: diffColors.Easy },
+                  { label: "Med.", solved: d.mediumSolved, total: d.totalMedium, color: diffColors.Medium },
+                  { label: "Hard", solved: d.hardSolved, total: d.totalHard, color: diffColors.Hard },
+                ].map(row => (
                   <div key={row.label} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "3px 7px", borderRadius: 6, background: "var(--bg-secondary)", border: "1px solid var(--border)" }}>
                     <span style={{ fontSize: 10, fontWeight: 700, color: row.color, fontFamily: MONO }}>{row.label}</span>
                     <span style={{ fontSize: 10, fontWeight: 700, color: "var(--text-primary)", fontFamily: MONO }}>{row.solved}<span style={{ color: "var(--text-muted)", fontWeight: 400 }}>/{row.total}</span></span>
@@ -423,44 +441,13 @@ function LeetCodeStats({ username = "IThakur09" }: { username?: string }) {
           )}
         </div>
         <div style={{ height: 1, background: "var(--border)" }} />
-        <div ref={wrapRef} style={{ position: "relative" }}>
+        <div>
           <div style={{ fontSize: 9, color: "var(--text-muted)", fontFamily: MONO, marginBottom: 4 }}>2026 activity</div>
-          <CellTooltip hovered={hovered} accentColor="#FFA116" label="submissions" />
-          <div style={{ overflowX: "auto", WebkitOverflowScrolling: "touch", scrollbarWidth: "thin" }} onMouseLeave={() => setHovered(null)}>
-            <div style={{ display: "inline-flex", flexDirection: "column", paddingBottom: 4, minWidth: "max-content" }}>
-              <div style={{ display: "flex", marginBottom: 3, paddingLeft: 24 }}>
-                {lcMonthLabels.map((m, i) => {
-                  const nextCol = lcMonthLabels[i + 1]?.col ?? lcWeeks.length;
-                  return <div key={i} style={{ width: (nextCol - m.col) * STEP, flexShrink: 0, fontSize: 8, color: "var(--text-muted)", fontFamily: MONO, overflow: "visible", whiteSpace: "nowrap" }}>{m.label}</div>;
-                })}
-              </div>
-              <div style={{ display: "flex", gap: 0 }}>
-                <div style={{ display: "flex", flexDirection: "column", gap: GAP, marginRight: 4 }}>
-                  {DAY_LABELS_LC.map((lbl, i) => <div key={i} style={{ height: CELL, fontSize: 8, color: "var(--text-muted)", fontFamily: MONO, lineHeight: `${CELL}px`, width: 20 }}>{lbl}</div>)}
-                </div>
-                <div style={{ display: "flex", gap: GAP }}>
-                  {lcWeeks.map((wk, wi) => (
-                    <div key={wi} style={{ display: "flex", flexDirection: "column", gap: GAP }}>
-                      {wk.map((day, di) => {
-                        const k = day.date.toISOString().split("T")[0];
-                        return (
-                          <div key={di} className={`lc-cell lc-cell-${lcLvl(day.count)}`}
-                            style={{ width: CELL, height: CELL, borderRadius: 2, cursor: "default", transition: "transform 0.1s" }}
-                            onMouseEnter={e => handleCellEnter(e, k, day.count)}
-                            onMouseLeave={handleCellLeave}
-                          />
-                        );
-                      })}
-                    </div>
-                  ))}
-                </div>
-              </div>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 3, marginTop: 5 }}>
-                <span style={{ fontSize: 8, color: "var(--text-muted)", fontFamily: MONO, marginRight: 3 }}>Less</span>
-                {[0,1,2,3,4].map(l => <div key={l} className={`lc-cell lc-cell-${l}`} style={{ width: 9, height: 9, borderRadius: 2 }} />)}
-                <span style={{ fontSize: 8, color: "var(--text-muted)", fontFamily: MONO, marginLeft: 3 }}>More</span>
-              </div>
-            </div>
+          <div
+            style={{ overflowX: "auto", WebkitOverflowScrolling: "touch", scrollbarWidth: "thin" }}
+            onMouseLeave={() => setHovered(null)}
+          >
+            {gridContent}
           </div>
         </div>
       </div>
@@ -482,7 +469,6 @@ function GitHubGraph({ username = "Ithakur2327" }: { username?: string }) {
   const [loading, setLoading] = useState(true);
   const [isLive, setIsLive] = useState(false);
   const [hovered, setHovered] = useState<HoveredCell | null>(null);
-  const wrapRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     (async () => {
@@ -544,7 +530,6 @@ function GitHubGraph({ username = "Ithakur2327" }: { username?: string }) {
   const CELL = 10, GAP = 3, STEP = CELL + GAP;
   const contribColor = isDark ? "#ffffff" : "#000000";
 
-  // Month labels — show all months, no min-width visibility cutoff
   const monthLabels: { label: string; col: number }[] = [];
   weeks.forEach((w, wi) => {
     if (!w.days[0]) return;
@@ -562,6 +547,7 @@ function GitHubGraph({ username = "Ithakur2327" }: { username?: string }) {
     const cr = el.getBoundingClientRect();
     setHovered({ date, count, x: cr.left + cr.width / 2, y: cr.top });
   }, []);
+
   const handleCellLeave = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     (e.currentTarget as HTMLElement).style.transform = "";
     setHovered(null);
@@ -569,6 +555,9 @@ function GitHubGraph({ username = "Ithakur2327" }: { username?: string }) {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
+      {/* Portal tooltip — renders into body */}
+      <PortalTooltip hovered={hovered} accentColor="#4ade80" label="contributions" />
+
       {/* Header */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10, flexWrap: "wrap", gap: 8 }}>
         <a href={`https://github.com/${username}`} target="_blank" rel="noreferrer" style={{ display: "flex", alignItems: "center", gap: 8, textDecoration: "none" }}>
@@ -590,13 +579,14 @@ function GitHubGraph({ username = "Ithakur2327" }: { username?: string }) {
       <div style={{ height: 1, background: "var(--border)", marginBottom: 10 }} />
 
       {loading ? <Spin color="#FFA116" /> : (
-        <div ref={wrapRef} style={{ position: "relative", flex: 1, display: "flex", flexDirection: "column" }}>
-          <CellTooltip hovered={hovered} accentColor="#4ade80" label="contributions" />
+        <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
           <div style={{ fontSize: 9, color: "var(--text-muted)", fontFamily: MONO, marginBottom: 4 }}>
             {isLive ? "2026 contributions" : "2026 activity (preview)"}
           </div>
-          <div style={{ flex: 1, width: "100%", overflowX: "auto", overflowY: "visible", WebkitOverflowScrolling: "touch", scrollbarWidth: "thin", scrollbarColor: "rgba(255,161,22,0.3) transparent" }}
-            onMouseLeave={() => setHovered(null)}>
+          <div
+            style={{ flex: 1, width: "100%", overflowX: "auto", overflowY: "visible", WebkitOverflowScrolling: "touch", scrollbarWidth: "thin", scrollbarColor: "rgba(255,161,22,0.3) transparent" }}
+            onMouseLeave={() => setHovered(null)}
+          >
             <div style={{ display: "inline-flex", flexDirection: "column", paddingBottom: 4, minWidth: "max-content" }}>
               {/* Month labels */}
               <div style={{ display: "flex", marginBottom: 4, paddingLeft: 26 }}>
@@ -620,7 +610,9 @@ function GitHubGraph({ username = "Ithakur2327" }: { username?: string }) {
                   {weeks.map((w, wi) => (
                     <div key={wi} style={{ display: "flex", flexDirection: "column", gap: GAP }}>
                       {w.days.map((day, di) => (
-                        <div key={di} className={`gh-cell gh-cell-${lvl(day.contributionCount)}`}
+                        <div
+                          key={di}
+                          className={`gh-cell gh-cell-${lvl(day.contributionCount)}`}
                           style={{ width: CELL, height: CELL, borderRadius: 2, cursor: "default", transition: "transform 0.1s" }}
                           onMouseEnter={e => handleCellEnter(e, day.date, day.contributionCount)}
                           onMouseLeave={handleCellLeave}
@@ -709,7 +701,7 @@ export function AboutSection() {
         html.light .lc-cell-3 { background: #984b10; }
         html.light .lc-cell-4 { background: #1f2328; }
 
-        /* 3D cards — deep black in dark mode */
+        /* 3D cards */
         .stat-card-3d {
           padding: 14px;
           background: #080809;
@@ -724,6 +716,7 @@ export function AboutSection() {
             0 20px 40px rgba(0,0,0,0.35);
           display: flex;
           flex-direction: column;
+          /* CRITICAL: do NOT set overflow:hidden — it clips portal tooltips on some browsers */
           overflow: visible;
         }
         .stat-card-3d:hover {
@@ -750,7 +743,6 @@ export function AboutSection() {
           grid-template-columns: 1fr 1fr;
         }
 
-        /* Tablet: single column, full width */
         @media (min-width: 601px) and (max-width: 1024px) {
           .about-panels { grid-template-columns: 1fr !important; }
           .stat-card-3d { width: 100% !important; min-width: 0 !important; min-height: 220px; }
