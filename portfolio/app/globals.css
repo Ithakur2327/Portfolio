@@ -844,8 +844,8 @@ html.light .nav-root.scrolled {
 
 /* Tablet nav height (768px–1180px) */
 @media (min-width: 768px) and (max-width: 1180px) {
-  .nav-root { height: 52px !important; }
-  .nav-inner { height: 52px !important; padding: 0 32px !important; }
+  .nav-root { height: 68px !important; }
+  .nav-inner { height: 68px !important; padding: 0 32px !important; }
   .logo-area { width: 46px; height: 46px; }
   .logo-i { font-size: 14px !important; }
   .nav-link { font-size: 13.5px !important; padding: 5px 12px !important; }
