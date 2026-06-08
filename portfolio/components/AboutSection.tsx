@@ -109,7 +109,7 @@ function LeetCodeLogo({ size = 30, isDark = true }: { size?: number; isDark?: bo
   const barCol = isDark ? "#b0b0b8"                   : "#888890";
   return (
     <div style={{ width: size, height: size, borderRadius: Math.round(size * 0.26), background: bg, border, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, overflow: "hidden" }}>
-      <svg width={size * 0.68} height={size * 0.68} viewBox="0 0 95 115" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <svg width={size * 0.68} height={size * 0.68} viewBox="0 0 95 115" fill="none" xmlns="https://imgs.search.brave.com/OUmEswTIc_EBXE66rV-6fzeA2i-E9d5Ggn754RW9-XQ/rs:fit:500:0:1:0/g:ce/aHR0cHM6Ly9jZG4u/aWNvbnNjb3V0LmNv/bS9pY29uL2ZyZWUv/cG5nLTI1Ni9mcmVl/LWxlZXRjb2RlLWxv/Z28taWNvbi1zdmct/ZG93bmxvYWQtcG5n/LTI5NDQ5NjAucG5n/P2Y9d2VicCZ3PTI1/Ng">
         {/* Official LeetCode horizontal bar */}
         <rect x="34" y="50" width="56" height="9" rx="4.5" fill={barCol} />
         {/* Official LeetCode "L" shape path */}
