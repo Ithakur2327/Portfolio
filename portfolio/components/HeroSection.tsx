@@ -142,9 +142,11 @@ function SpotifyPlayer() {
     fetch(`https://www.youtube.com/oembed?url=${encodeURIComponent(currentUrl)}&format=json`)
       .then(r => r.json())
       .then(d => {
-        const rawTitle: string = d.title ?? "";
+        const rawTitle:  string = d.title      ?? "";
+        const rawAuthor: string = (d.author_name ?? "")
+          .replace(/\s*-\s*Topic$/i, "").trim();
 
-        // Strip everything after | • · and common noise
+        // Strip noise from title
         let cleaned = rawTitle
           .replace(/\s*[|•·]\s*.*/g, "")
           .replace(/\(.*?\)/g, "").replace(/\[.*?\]/g, "")
@@ -152,7 +154,7 @@ function SpotifyPlayer() {
           .replace(/\b(19|20)\d{2}\b/g, "")
           .replace(/\s{2,}/g, " ").trim();
 
-        // If title has "Artist - Song" or "Song - Artist" dash format, split on it
+        // 1️⃣ Dash in title → most reliable split
         const dashParts = cleaned.split(/\s*-\s+/);
         if (dashParts.length >= 2) {
           setArtistName(dashParts[0].trim());
@@ -160,14 +162,20 @@ function SpotifyPlayer() {
           return;
         }
 
-        // No dash: heuristic — last 2 capitalized words = artist, rest = song
-        // Works for most Indian music: "At Peace Karan Aujla" → "Karan Aujla — At Peace"
+        // 2️⃣ author_name looks like a real artist (not a label/channel)?
+        const isLabel = /records|music|entertainment|productions|studios|worldwide|official|media|films|vevo|channel|tv\b/i
+          .test(rawAuthor);
+        if (rawAuthor && !isLabel) {
+          setArtistName(rawAuthor);
+          setSongTitle(cleaned || rawTitle);
+          return;
+        }
+
+        // 3️⃣ Fallback: last 2 words of title = artist, rest = song
         const words = cleaned.split(/\s+/).filter(Boolean);
         if (words.length >= 3) {
-          const artist = words.slice(-2).join(" ");
-          const song   = words.slice(0, -2).join(" ");
-          setArtistName(artist);
-          setSongTitle(song);
+          setArtistName(words.slice(-2).join(" "));
+          setSongTitle(words.slice(0, -2).join(" "));
         } else {
           setArtistName("");
           setSongTitle(cleaned || rawTitle);

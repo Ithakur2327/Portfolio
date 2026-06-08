@@ -14,7 +14,7 @@ export default function Home() {
     <>
       <Navbar />
       <ScrollEnhancements />
-      <main style={{ paddingTop: 40 }}>
+      <main style={{ paddingTop: 55 }}>
         <SparklesBridge />
         <div className="page-wrapper">
           <HeroSection />
