@@ -101,13 +101,19 @@ function Spin({ color }: { color: string }) {
   );
 }
 
-function LeetCodeLogo({ size = 30 }: { size?: number }) {
+function LeetCodeLogo({ size = 30, isDark = true }: { size?: number; isDark?: boolean }) {
+  // Official LeetCode logo: orange "L" mark + grey horizontal bar
+  // bg adapts: dark theme = #1a1a1a, light theme = #fff8f0
+  const bg     = isDark ? "#1a1a1a"                   : "#fff8f0";
+  const border = isDark ? "1px solid rgba(255,161,22,0.28)" : "1px solid rgba(255,161,22,0.40)";
+  const barCol = isDark ? "#b0b0b8"                   : "#888890";
   return (
-    <div style={{ width: size, height: size, borderRadius: Math.round(size * 0.26), background: "#2d2208", border: "1px solid rgba(255,161,22,0.25)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, overflow: "hidden" }}>
-      <svg width={size * 0.65} height={size * 0.65} viewBox="0 0 24 24" fill="none">
-        <rect x="8.5" y="11.2" width="8.5" height="2" rx="1" fill="#9ca3af" className="lc-logo-bar" />
-        <path d="M13.483 0a1.374 1.374 0 0 0-.961.438L7.116 6.226l-3.854 4.126a5.266 5.266 0 0 0-1.209 2.104 5.35 5.35 0 0 0-.125.513 5.527 5.527 0 0 0 .062 2.362 5.83 5.83 0 0 0 .349 1.017 5.938 5.938 0 0 0 1.271 1.818l4.277 4.193.039.038c2.248 2.165 5.852 2.133 8.063-.074l2.396-2.392c.54-.54.54-1.414.003-1.955a1.378 1.378 0 0 0-1.951-.003l-2.396 2.392a3.021 3.021 0 0 1-4.205.038l-.02-.019-4.276-4.193c-.652-.64-.972-1.469-.948-2.263a2.68 2.68 0 0 1 .066-.523 2.545 2.545 0 0 1 .619-1.164L9.13 8.114c1.058-1.134 3.204-1.27 4.43-.278l3.501 2.831c.593.48 1.461.387 1.94-.207a1.384 1.384 0 0 0-.207-1.943l-3.5-2.831c-.8-.647-1.766-1.045-2.774-1.202l2.015-2.158A1.384 1.384 0 0 0 13.483 0z" fill="#FFA116" className="lc-logo-outer" />
-        <path d="M13.483 0a1.374 1.374 0 0 0-.961.438L7.116 6.226l-3.854 4.126a5.266 5.266 0 0 0-1.209 2.104 5.35 5.35 0 0 0-.125.513 5.527 5.527 0 0 0 .062 2.362 5.83 5.83 0 0 0 .349 1.017 5.938 5.938 0 0 0 1.271 1.818l4.277 4.193.039.038c2.248 2.165 5.852 2.133 8.063-.074l2.396-2.392c.54-.54.54-1.414.003-1.955a1.378 1.378 0 0 0-1.951-.003l-2.396 2.392a3.021 3.021 0 0 1-4.205.038l-.02-.019-4.276-4.193c-.652-.64-.972-1.469-.948-2.263a2.68 2.68 0 0 1 .066-.523 2.545 2.545 0 0 1 .619-1.164L9.13 8.114c1.058-1.134 3.204-1.27 4.43-.278" fill="#3d2e08" opacity="0.85" />
+    <div style={{ width: size, height: size, borderRadius: Math.round(size * 0.26), background: bg, border, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, overflow: "hidden" }}>
+      <svg width={size * 0.68} height={size * 0.68} viewBox="0 0 95 115" fill="none" xmlns="http://www.w3.org/2000/svg">
+        {/* Official LeetCode horizontal bar */}
+        <rect x="34" y="50" width="56" height="9" rx="4.5" fill={barCol} />
+        {/* Official LeetCode "L" shape path */}
+        <path d="M68.003 0a7.3 7.3 0 0 0-5.109 2.33L37.696 28.71 17.26 50.632a27.96 27.96 0 0 0-6.42 11.17 28.44 28.44 0 0 0-.665 2.724 29.34 29.34 0 0 0 .33 12.537 30.95 30.95 0 0 0 1.854 5.4 31.53 31.53 0 0 0 6.749 9.655l22.7 22.253.205.202c11.94 11.495 31.07 11.33 42.797-.394l12.72-12.717c2.867-2.868 2.867-7.51.014-10.381a7.32 7.32 0 0 0-10.36-.014l-12.72 12.717a16.03 16.03 0 0 1-22.33.2l-.106-.1-22.7-22.261c-3.46-3.4-5.16-7.805-5.03-12.02a14.23 14.23 0 0 1 .35-2.776 13.5 13.5 0 0 1 3.285-6.18l19.06-20.405c5.617-6.022 17.007-6.745 23.514-1.476l18.585 15.038c3.15 2.549 7.76 2.057 10.299-1.1a7.35 7.35 0 0 0-1.1-10.315L80.48 27.872C76.23 24.44 71.11 22.43 65.82 21.73l10.7-11.46A7.35 7.35 0 0 0 68.003 0z" fill="#FFA116"/>
       </svg>
     </div>
   );
