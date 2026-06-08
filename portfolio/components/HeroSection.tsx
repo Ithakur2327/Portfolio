@@ -398,57 +398,56 @@ function SpotifyPlayer() {
 function HoverBorderGradient({ children }: { children: React.ReactNode }) {
   const { theme } = useTheme();
   const isDark = theme === "dark";
-  const glowRef = useRef<HTMLDivElement>(null);
-  const rafRef = useRef<number>(0);
-  const angleRef = useRef(0);
 
-  useEffect(() => {
-    const spin = () => {
-      angleRef.current = (angleRef.current + 0.5) % 360;
-      if (glowRef.current) {
-        glowRef.current.style.background = `conic-gradient(
-          from ${angleRef.current}deg at 50% 50%,
-          transparent 0deg,
-          transparent 55deg,
-          ${isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.06)"} 85deg,
-          ${isDark ? "rgba(255,255,255,0.55)" : "rgba(0,0,0,0.38)"} 110deg,
-          ${isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.06)"} 140deg,
-          transparent 170deg,
-          transparent 360deg
-        )`;
-      }
-      rafRef.current = requestAnimationFrame(spin);
-    };
-    rafRef.current = requestAnimationFrame(spin);
-    return () => cancelAnimationFrame(rafRef.current);
-  }, [isDark]);
+  const bright = isDark ? "rgba(255,255,255,0.40)" : "rgba(0,0,0,0.32)";
+  const dim    = isDark ? "rgba(255,255,255,0.10)" : "rgba(0,0,0,0.07)";
 
   return (
     <div style={{ position: "relative" }}>
-      {/* Glow border layer */}
-      <div
-        ref={glowRef}
-        aria-hidden
-        style={{
-          position: "absolute",
-          inset: -1.5,
-          zIndex: 0,
-          pointerEvents: "none",
-          borderRadius: 1,
-          filter: "blur(2px)",
-        }}
-      />
-      {/* Static hairline border */}
-      <div
-        aria-hidden
-        style={{
-          position: "absolute",
-          inset: -0.5,
-          zIndex: 0,
-          pointerEvents: "none",
-          border: isDark ? "1px solid rgba(255,255,255,0.10)" : "1px solid rgba(0,0,0,0.08)",
-        }}
-      />
+      <style suppressHydrationWarning>{`
+        @keyframes hbg-spin {
+          from { transform: translate(-50%,-50%) rotate(0deg); }
+          to   { transform: translate(-50%,-50%) rotate(360deg); }
+        }
+        .hbg-outer {
+          position: absolute;
+          inset: -1px;
+          overflow: hidden;
+          z-index: 0;
+          pointer-events: none;
+        }
+        .hbg-rotor {
+          position: absolute;
+          top: 50%; left: 50%;
+          width: 250%; height: 250%;
+          animation: hbg-spin 10s linear infinite;
+          background: conic-gradient(
+            from 0deg,
+            transparent    0deg,
+            transparent    55deg,
+            ${dim}         85deg,
+            ${bright}      110deg,
+            ${dim}         140deg,
+            transparent    170deg,
+            transparent    360deg
+          );
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .hbg-rotor { animation: none; }
+        }
+      `}</style>
+
+      {/* Clipping wrapper + spinning gradient */}
+      <div className="hbg-outer">
+        <div className="hbg-rotor" />
+      </div>
+
+      {/* Static hairline border on top */}
+      <div aria-hidden style={{
+        position: "absolute", inset: 0, zIndex: 0, pointerEvents: "none",
+        border: isDark ? "1px solid rgba(255,255,255,0.10)" : "1px solid rgba(0,0,0,0.08)",
+      }} />
+
       <div style={{ position: "relative", zIndex: 1 }}>
         {children}
       </div>
