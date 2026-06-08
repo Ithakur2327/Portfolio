@@ -1,63 +1,64 @@
+// oneko.js: https://github.com/adryd325/oneko.js
+// Modified: Multicolor cats (calico/tabby/tuxedo) + 4-hour rotation + tab-switch speed fix + 60fps smooth
 
 (function oneko() {
   const isReducedMotion =
-    window.matchMedia('(prefers-reduced-motion: reduce)').matches === true;
-  if (isReducedMotion) return;
+    window.matchMedia(`(prefers-reduced-motion: reduce)`) === true ||
+    window.matchMedia(`(prefers-reduced-motion: reduce)`).matches === true;
 
-  // Low-end detection: skip on very constrained devices
-  const isLowEnd = (
-    (navigator.hardwareConcurrency !== undefined && navigator.hardwareConcurrency <= 2) ||
-    (navigator.deviceMemory !== undefined && navigator.deviceMemory <= 1)
-  );
-  if (isLowEnd) return;
+  if (isReducedMotion) return;
 
   const nekoEl = document.createElement('div');
 
-  let nekoPosX = 32, nekoPosY = 32;
-  let renderX  = 32, renderY  = 32;
-  let mousePosX = 0, mousePosY = 0;
-  let frameCount = 0, idleTime = 0;
-  let idleAnimation = null, idleAnimationFrame = 0;
+  let nekoPosX = 32;
+  let nekoPosY = 32;
+  let renderX = 32;
+  let renderY = 32;
+  let mousePosX = 0;
+  let mousePosY = 0;
+  let frameCount = 0;
+  let idleTime = 0;
+  let idleAnimation = null;
+  let idleAnimationFrame = 0;
   const nekoSpeed = 10;
 
-  // ── 12 multicolor cat skins ───────────────────────────────────────────────
+  // ── Cat skin variants ────────────────────────────────────────────────────
+  // Each skin = { file, label }
+  // 'file' is relative to the script's directory (same folder as oneko.js)
+  // Override per-skin by setting data-cat on the <script> tag (uses that for all)
   const catSkins = [
-    { file: 'oneko_cat1_calico.png',    label: 'Calico'    },
-    { file: 'oneko_cat2_tabby.png',     label: 'Tabby'     },
-    { file: 'oneko_cat3_tuxedo.png',    label: 'Tuxedo'    },
-    { file: 'oneko_cat4_blue.png',      label: 'Blue'      },
-    { file: 'oneko_cat5_pink.png',      label: 'Pink'      },
-    { file: 'oneko_cat6_gold.png',      label: 'Gold'      },
-    { file: 'oneko_cat7_purple.png',    label: 'Purple'    },
-    { file: 'oneko_cat8_mint.png',      label: 'Mint'      },
-    { file: 'oneko_cat9_red.png',       label: 'Red'       },
-    { file: 'oneko_cat10_cyan.png',     label: 'Cyan'      },
-    { file: 'oneko_cat11_lavender.png', label: 'Lavender'  },
-    { file: 'oneko_cat12_sunset.png',   label: 'Sunset'    },
+    { file: 'oneko_calico.gif',  label: 'Calico' },   // orange/cream/brown patches
+    { file: 'oneko_tabby.gif',   label: 'Tabby' },    // orange striped
+    { file: 'oneko_tuxedo.gif',  label: 'Tuxedo' },   // black & white
+    { file: 'oneko_calico.gif',  label: 'Calico2',
+      filter: 'hue-rotate(200deg) saturate(1.2)' },   // blue-tinted calico
+    { file: 'oneko_tabby.gif',   label: 'Tabby Pink',
+      filter: 'hue-rotate(310deg) saturate(1.4) brightness(1.1)' }, // pink tabby
+    { file: 'oneko_tuxedo.gif',  label: 'Tuxedo Gold',
+      filter: 'hue-rotate(30deg) saturate(2) brightness(1.05)' },   // gold tuxedo
   ];
 
-  // ── 1-hour slot rotation (12 cats × 1 hour = 12-hour cycle) ──────────────
-  function getHourSlot() {
-    return new Date().getHours() % catSkins.length;
+  // ── 4-hour slot color rotation ───────────────────────────────────────────
+  // 6 skins × 4 hours = full 24-hour cycle
+  function get4HourSlot() {
+    const now = new Date();
+    const totalMinutes = now.getHours() * 60 + now.getMinutes();
+    return Math.floor(totalMinutes / 240) % catSkins.length;
   }
 
   function getCurrentSkin() {
-    return catSkins[getHourSlot()];
-  }
-
-  // Resolve path relative to this script
-  function skinUrl(file) {
-    const src = (document.currentScript && document.currentScript.src) || '';
-    const base = src ? src.substring(0, src.lastIndexOf('/') + 1) : './';
-    return base + file;
+    return catSkins[get4HourSlot()];
   }
 
   function applySkin(skin) {
-    nekoEl.style.backgroundImage = 'url(' + skinUrl(skin.file) + ')';
-    nekoEl.style.filter = 'none';
+    const skinFile = skin.file;
+    // Resolve path relative to this script's location
+    const scriptSrc = (document.currentScript && document.currentScript.src) || '';
+    const base = scriptSrc ? scriptSrc.substring(0, scriptSrc.lastIndexOf('/') + 1) : './';
+    nekoEl.style.backgroundImage = `url(${base}${skinFile})`;
+    nekoEl.style.filter = skin.filter || 'none';
   }
 
-  // ── Sprite map ────────────────────────────────────────────────────────────
   const spriteSets = {
     idle:         [[-3, -3]],
     alert:        [[-7, -3]],
@@ -69,61 +70,63 @@
     tired:        [[-3, -2]],
     sleeping:     [[-2, 0], [-2, -1]],
     N:  [[-1, -2], [-1, -3]],
-    NE: [[0, -2],  [0, -3]],
-    E:  [[-3, 0],  [-3, -1]],
+    NE: [[0, -2], [0, -3]],
+    E:  [[-3, 0], [-3, -1]],
     SE: [[-5, -1], [-5, -2]],
     S:  [[-6, -3], [-7, -2]],
     SW: [[-5, -3], [-6, -1]],
     W:  [[-4, -2], [-4, -3]],
-    NW: [[-1, 0],  [-1, -1]],
+    NW: [[-1, 0], [-1, -1]],
   };
 
-  // ── Init ──────────────────────────────────────────────────────────────────
   function init() {
     nekoEl.id = 'oneko';
     nekoEl.ariaHidden = true;
-    Object.assign(nekoEl.style, {
-      width:  '32px',
-      height: '32px',
-      position: 'fixed',
-      pointerEvents: 'none',
-      imageRendering: 'pixelated',
-      backgroundRepeat: 'no-repeat',
-      backgroundSize: '256px 128px',
-      backgroundPosition: '0 0',
-      zIndex: '2147483647',
-      willChange: 'transform',
-      left: '0px',
-      top:  '0px',
-      transform: 'translate(' + (nekoPosX - 16) + 'px,' + (nekoPosY - 16) + 'px)',
-    });
+    nekoEl.style.width = '32px';
+    nekoEl.style.height = '32px';
+    nekoEl.style.position = 'fixed';
+    nekoEl.style.pointerEvents = 'none';
+    nekoEl.style.imageRendering = 'pixelated';
+    nekoEl.style.backgroundRepeat = 'no-repeat';
+    nekoEl.style.backgroundSize = '256px 128px';
+    nekoEl.style.backgroundPosition = '0 0';
+    nekoEl.style.zIndex = 2147483647;
+    nekoEl.style.willChange = 'transform';
+    nekoEl.style.left = '0px';
+    nekoEl.style.top = '0px';
+    nekoEl.style.transform = `translate(${nekoPosX - 16}px, ${nekoPosY - 16}px)`;
 
+    // Check for manual override via data-cat attribute
     const curScript = document.currentScript;
     if (curScript && curScript.dataset.cat) {
-      nekoEl.style.backgroundImage = 'url(' + curScript.dataset.cat + ')';
+      nekoEl.style.backgroundImage = `url(${curScript.dataset.cat})`;
+      nekoEl.style.filter = 'none';
     } else {
       applySkin(getCurrentSkin());
     }
 
     document.body.appendChild(nekoEl);
 
-    document.addEventListener('mousemove', function(e) {
-      mousePosX = e.clientX;
-      mousePosY = e.clientY;
+    document.addEventListener('mousemove', function (event) {
+      mousePosX = event.clientX;
+      mousePosY = event.clientY;
     });
 
-    // Tab-switch: reset timestamp to avoid speed burst
-    document.addEventListener('visibilitychange', function() {
+    // ── FIX: Tab switch speed bug ─────────────────────────────────────────
+    // When tab is hidden, accumulated delta becomes huge → speed burst on return.
+    // Reset timestamp so the first frame after re-focus is treated as fresh.
+    document.addEventListener('visibilitychange', function () {
       if (document.hidden) {
         lastFrameTimestamp = null;
         logicAccumulator = 0;
       }
     });
+    // ─────────────────────────────────────────────────────────────────────
 
-    // Hourly skin check (exact boundary switch)
-    let currentSlot = getHourSlot();
-    setInterval(function() {
-      const newSlot = getHourSlot();
+    // Auto-update skin every minute (switches at exact 4-hour boundary)
+    let currentSlot = get4HourSlot();
+    setInterval(function () {
+      const newSlot = get4HourSlot();
       if (newSlot !== currentSlot && !(curScript && curScript.dataset.cat)) {
         currentSlot = newSlot;
         applySkin(getCurrentSkin());
@@ -133,20 +136,21 @@
     window.requestAnimationFrame(onAnimationFrame);
   }
 
-  // ── RAF loop — capped delta, lerp render ──────────────────────────────────
   let lastFrameTimestamp = null;
   let logicAccumulator = 0;
-  const LOGIC_INTERVAL = 100; // 10 logic fps (cat movement speed unchanged)
+  const LOGIC_INTERVAL = 100;
 
   function onAnimationFrame(timestamp) {
     if (!nekoEl.isConnected) return;
 
+    // ── FIX: Skip first frame after tab switch (timestamp was reset)
     if (!lastFrameTimestamp) {
       lastFrameTimestamp = timestamp;
       window.requestAnimationFrame(onAnimationFrame);
       return;
     }
 
+    // Cap delta at 200ms to absorb any remaining stutter
     const delta = Math.min(timestamp - lastFrameTimestamp, 200);
     lastFrameTimestamp = timestamp;
 
@@ -156,20 +160,18 @@
       frame();
     }
 
-    // Silky-smooth position lerp (looks 200fps even on 60Hz)
     const lerpFactor = 0.28;
     renderX += (nekoPosX - renderX) * lerpFactor;
     renderY += (nekoPosY - renderY) * lerpFactor;
 
-    nekoEl.style.transform =
-      'translate(' + Math.round(renderX - 16) + 'px,' + Math.round(renderY - 16) + 'px)';
+    nekoEl.style.transform = `translate(${Math.round(renderX - 16)}px, ${Math.round(renderY - 16)}px)`;
 
     window.requestAnimationFrame(onAnimationFrame);
   }
 
-  function setSprite(name, f) {
-    const sprite = spriteSets[name][f % spriteSets[name].length];
-    nekoEl.style.backgroundPosition = (sprite[0] * 32) + 'px ' + (sprite[1] * 32) + 'px';
+  function setSprite(name, frame) {
+    const sprite = spriteSets[name][frame % spriteSets[name].length];
+    nekoEl.style.backgroundPosition = `${sprite[0] * 32}px ${sprite[1] * 32}px`;
   }
 
   function resetIdleAnimation() {
@@ -179,11 +181,11 @@
 
   function idle() {
     idleTime += 1;
-    if (idleTime > 10 && Math.floor(Math.random() * 200) === 0 && idleAnimation == null) {
-      const available = ['sleeping', 'scratchSelf'];
+    if (idleTime > 10 && Math.floor(Math.random() * 200) == 0 && idleAnimation == null) {
+      let available = ['sleeping', 'scratchSelf'];
       if (nekoPosX < 32) available.push('scratchWallW');
       if (nekoPosY < 32) available.push('scratchWallN');
-      if (nekoPosX > window.innerWidth - 32)  available.push('scratchWallE');
+      if (nekoPosX > window.innerWidth - 32) available.push('scratchWallE');
       if (nekoPosY > window.innerHeight - 32) available.push('scratchWallS');
       idleAnimation = available[Math.floor(Math.random() * available.length)];
     }
@@ -193,8 +195,10 @@
         setSprite('sleeping', Math.floor(idleAnimationFrame / 4));
         if (idleAnimationFrame > 192) resetIdleAnimation();
         break;
-      case 'scratchWallN': case 'scratchWallS':
-      case 'scratchWallE': case 'scratchWallW':
+      case 'scratchWallN':
+      case 'scratchWallS':
+      case 'scratchWallE':
+      case 'scratchWallW':
       case 'scratchSelf':
         setSprite(idleAnimation, idleAnimationFrame);
         if (idleAnimationFrame > 9) resetIdleAnimation();
@@ -210,7 +214,7 @@
     frameCount += 1;
     const diffX = nekoPosX - mousePosX;
     const diffY = nekoPosY - mousePosY;
-    const distance = Math.sqrt(diffX * diffX + diffY * diffY);
+    const distance = Math.sqrt(diffX ** 2 + diffY ** 2);
 
     if (distance < nekoSpeed || distance < 48) {
       idle();
@@ -238,7 +242,8 @@
 
     nekoPosX -= (diffX / distance) * nekoSpeed;
     nekoPosY -= (diffY / distance) * nekoSpeed;
-    nekoPosX = Math.min(Math.max(16, nekoPosX), window.innerWidth  - 16);
+
+    nekoPosX = Math.min(Math.max(16, nekoPosX), window.innerWidth - 16);
     nekoPosY = Math.min(Math.max(16, nekoPosY), window.innerHeight - 16);
   }
 
