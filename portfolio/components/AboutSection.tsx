@@ -261,7 +261,8 @@ function LeetCodeStats({ username = "IThakur09" }: { username?: string }) {
 
   const d = data ?? { easySolved: 197, totalEasy: 947, mediumSolved: 223, totalMedium: 2063, hardSolved: 32, totalHard: 939, totalSolved: 452, ranking: GLOBAL_RANK };
 
-  const CELL = 10, GAP = 3, STEP = CELL + GAP;
+  const isTablet = typeof window !== "undefined" && window.innerWidth >= 601 && window.innerWidth <= 1024;
+  const CELL = isTablet ? 14 : 10, GAP = isTablet ? 4 : 3, STEP = CELL + GAP;
 
   const countMap = new Map<string, number>();
   calData.forEach(day => {
@@ -527,7 +528,8 @@ function GitHubGraph({ username = "Ithakur2327" }: { username?: string }) {
   }, [username]);
 
   const lvl = (n: number) => n === 0 ? 0 : n < 3 ? 1 : n < 6 ? 2 : n < 10 ? 3 : 4;
-  const CELL = 10, GAP = 3, STEP = CELL + GAP;
+  const isTablet = typeof window !== "undefined" && window.innerWidth >= 601 && window.innerWidth <= 1024;
+  const CELL = isTablet ? 14 : 10, GAP = isTablet ? 4 : 3, STEP = CELL + GAP;
   const contribColor = isDark ? "#ffffff" : "#000000";
 
   const monthLabels: { label: string; col: number }[] = [];
@@ -746,6 +748,9 @@ export function AboutSection() {
         @media (min-width: 601px) and (max-width: 1024px) {
           .about-panels { grid-template-columns: 1fr !important; }
           .stat-card-3d { width: 100% !important; min-width: 0 !important; min-height: 220px; }
+          /* Graph cells scale up so graph fills card width */
+          .gh-cell { width: 14px !important; height: 14px !important; border-radius: 3px !important; }
+          .lc-cell { width: 14px !important; height: 14px !important; border-radius: 3px !important; }
         }
         @media (max-width: 639px) {
           .about-panels { grid-template-columns: 1fr; }
