@@ -72,33 +72,189 @@ function Row({icon, href, newTab, children}:{icon:React.ReactNode; href?:string;
   return <div style={{...s}}>{icon}<span>{children}</span></div>;
 }
 
-/* ─── Social tile ────────────────────────────────────── */
-function SocialTile({href,label,icon,iconBg,iconBorder,iconColor}:{href:string;label:string;icon:React.ReactNode;iconBg:string;iconBorder:string;iconColor:string}) {
+/* ─── Social icon tile (new: icon-only, hover shows label) ── */
+function SocialIconTile({href,label,icon,iconBg,iconBorder,iconColor}:{href:string;label:string;icon:React.ReactNode;iconBg:string;iconBorder:string;iconColor:string}) {
+  const [hovered, setHovered] = useState(false);
   return (
-    <a href={href} target="_blank" rel="noreferrer" className="s-tile"
+    <a
+      href={href} target="_blank" rel="noreferrer"
+      className="s-icon-tile"
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
       style={{
-        flex:1, display:"flex", alignItems:"center", gap:10,
-        padding:"14px 16px",
-        background:"var(--bg-base)", color:"var(--text-primary)",
+        display:"flex", alignItems:"center", justifyContent:"center",
+        gap: hovered ? 8 : 0,
+        padding: hovered ? "14px 18px" : "14px 16px",
+        background: hovered ? "var(--bg-secondary)" : "var(--bg-base)",
+        color:"var(--text-primary)",
         textDecoration:"none", position:"relative",
-        transition:"background 0.12s", minWidth:0,
+        transition:"background 0.18s, padding 0.2s cubic-bezier(0.16,1,0.3,1), gap 0.2s cubic-bezier(0.16,1,0.3,1)",
+        overflow:"hidden", minWidth: hovered ? 0 : "auto",
+        cursor:"pointer",
       }}
-
     >
-      <div style={{width:32,height:32,borderRadius:8,background:iconBg,border:iconBorder,display:"flex",alignItems:"center",justifyContent:"center",color:iconColor,flexShrink:0}}>{icon}</div>
-      <span style={{fontWeight:600,fontSize:13.5,fontFamily:"'Geist',sans-serif"}}>{label}</span>
-      <span style={{position:"absolute",top:11,right:11,color:"var(--text-muted)"}}>
-        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
-      </span>
+      <div style={{
+        width:32,height:32,borderRadius:8,
+        background:iconBg,border:iconBorder,
+        display:"flex",alignItems:"center",justifyContent:"center",
+        color:iconColor,flexShrink:0,
+        transform: hovered ? "scale(1.12)" : "scale(1)",
+        transition:"transform 0.18s cubic-bezier(0.16,1,0.3,1)",
+      }}>{icon}</div>
+      <span style={{
+        fontWeight:600,fontSize:13.5,fontFamily:"'Geist',sans-serif",
+        maxWidth: hovered ? 80 : 0,
+        opacity: hovered ? 1 : 0,
+        overflow:"hidden",
+        whiteSpace:"nowrap",
+        transition:"max-width 0.22s cubic-bezier(0.16,1,0.3,1), opacity 0.18s",
+      }}>{label}</span>
     </a>
   );
 }
 
-/* ─── HoverBorderGradient ─────────────────────────────
-   Pure CSS @keyframes rotation — zero JS overhead.
-   Replaces the old rAF loop (was running every frame ~16ms).
-   CSS animation runs entirely on the compositor thread.
-*/
+/* ─── Spotify Player ─────────────────────────────────── */
+function SpotifyPlayer() {
+  // Change YOUTUBE_LINK to any YouTube video URL
+  const YOUTUBE_LINK = "https://www.youtube.com/watch?v=dQw4w9WgXcQ";
+  const SONG_NAME = "Never Gonna Give You Up"; // Change this to your song name
+  const ARTIST_NAME = "Rick Astley"; // Change this to the artist name
+
+  const [playing, setPlaying] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [hovered, setHovered] = useState(false);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  useEffect(() => {
+    if (playing) {
+      intervalRef.current = setInterval(() => {
+        setProgress(p => {
+          if (p >= 100) { setPlaying(false); return 0; }
+          return p + 0.3;
+        });
+      }, 100);
+    } else {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+    }
+    return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
+  }, [playing]);
+
+  const handlePlay = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!playing) {
+      window.open(YOUTUBE_LINK, "_blank", "noreferrer");
+    }
+    setPlaying(p => !p);
+  };
+
+  return (
+    <a
+      href={YOUTUBE_LINK} target="_blank" rel="noreferrer"
+      className="spotify-tile"
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        flex:1, display:"flex", alignItems:"center", gap:10,
+        padding:"10px 14px",
+        background: hovered ? "var(--bg-secondary)" : "var(--bg-base)",
+        color:"var(--text-primary)",
+        textDecoration:"none", position:"relative",
+        transition:"background 0.18s",
+        minWidth:0, overflow:"hidden",
+      }}
+    >
+      {/* Spotify glass logo */}
+      <div style={{
+        width:34,height:34,borderRadius:10,
+        background:"linear-gradient(135deg,rgba(30,215,96,0.25) 0%,rgba(30,215,96,0.08) 100%)",
+        border:"1px solid rgba(30,215,96,0.35)",
+        backdropFilter:"blur(8px)",
+        display:"flex",alignItems:"center",justifyContent:"center",
+        flexShrink:0,
+        boxShadow:"0 2px 8px rgba(30,215,96,0.15)",
+      }}>
+        {/* Spotify icon */}
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="#1ED760">
+          <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/>
+        </svg>
+      </div>
+
+      {/* Song info */}
+      <div style={{flex:1,minWidth:0,overflow:"hidden"}}>
+        <div style={{
+          fontSize:11,color:"#1ED760",fontFamily:"'Geist Mono',monospace",
+          fontWeight:600,letterSpacing:"0.04em",marginBottom:1,
+          display:"flex",alignItems:"center",gap:4,
+        }}>
+          <span style={{
+            width:5,height:5,borderRadius:"50%",
+            background:playing?"#1ED760":"var(--text-muted)",
+            display:"inline-block",
+            animation: playing ? "pulse-dot 1.2s ease-in-out infinite" : "none",
+          }}/>
+          {playing ? "NOW PLAYING" : "LISTEN ON YT"}
+        </div>
+        <div style={{
+          fontSize:12.5,fontWeight:600,fontFamily:"'Geist',sans-serif",
+          color:"var(--text-primary)",whiteSpace:"nowrap",overflow:"hidden",
+          textOverflow:"ellipsis",lineHeight:1.2,
+        }}>{SONG_NAME}</div>
+        <div style={{
+          fontSize:11,color:"var(--text-muted)",fontFamily:"'Geist Mono',monospace",
+          whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",
+        }}>{ARTIST_NAME}</div>
+        {/* Progress bar */}
+        <div style={{
+          marginTop:4,height:2,borderRadius:1,
+          background:"var(--border)",overflow:"hidden",
+          opacity: playing ? 1 : 0.4,
+          transition:"opacity 0.2s",
+        }}>
+          <div style={{
+            height:"100%",
+            background:"linear-gradient(90deg,#1ED760,#17a84a)",
+            width:`${progress}%`,
+            borderRadius:1,
+            transition:"width 0.1s linear",
+          }}/>
+        </div>
+      </div>
+
+      {/* Play/pause button */}
+      <button
+        onClick={handlePlay}
+        style={{
+          width:30,height:30,borderRadius:"50%",
+          background: playing
+            ? "rgba(30,215,96,0.15)"
+            : "rgba(30,215,96,0.1)",
+          border:"1px solid rgba(30,215,96,0.3)",
+          display:"flex",alignItems:"center",justifyContent:"center",
+          color:"#1ED760",flexShrink:0,cursor:"pointer",
+          transition:"all 0.15s cubic-bezier(0.16,1,0.3,1)",
+          transform: hovered ? "scale(1.1)" : "scale(1)",
+        }}
+        aria-label={playing ? "Pause" : "Play"}
+      >
+        {playing ? (
+          // Pause icon
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+            <rect x="6" y="4" width="4" height="16" rx="1"/>
+            <rect x="14" y="4" width="4" height="16" rx="1"/>
+          </svg>
+        ) : (
+          // Play icon
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+            <polygon points="5,3 19,12 5,21"/>
+          </svg>
+        )}
+      </button>
+    </a>
+  );
+}
+
+/* ─── HoverBorderGradient ─────────────────────────────── */
 function HoverBorderGradient({ children }: { children: React.ReactNode }) {
   const { theme } = useTheme();
   const isDark = theme === "dark";
@@ -130,7 +286,6 @@ function HoverBorderGradient({ children }: { children: React.ReactNode }) {
           .hbg-glow { animation: none; }
         }
       `}</style>
-      {/* CSS-animated glow layer — compositor thread only */}
       <div
         className="hbg-glow"
         aria-hidden
@@ -142,7 +297,6 @@ function HoverBorderGradient({ children }: { children: React.ReactNode }) {
           pointerEvents: "none",
         }}
       />
-      {/* Static sharp border */}
       <div
         aria-hidden
         style={{
@@ -189,6 +343,11 @@ export function HeroSection() {
         .fs-in  { animation: fsIn  0.28s cubic-bezier(0.16,1,0.3,1) forwards }
         .fs-out { animation: fsOut 0.22s ease-in forwards }
 
+        @keyframes pulse-dot {
+          0%,100% { opacity:1; transform:scale(1); }
+          50% { opacity:0.5; transform:scale(1.4); }
+        }
+
         /* ── Profile row ── */
         .h-profile {
           display: flex;
@@ -196,7 +355,7 @@ export function HeroSection() {
           align-items: stretch;
         }
 
-        /* Avatar box — always square, image fills all 4 edges */
+        /* Avatar box */
         .h-avatar {
           width: 162px;
           min-width: 162px;
@@ -231,13 +390,62 @@ export function HeroSection() {
 
         /* ── Social row ── */
         .h-social { display: flex; flex-direction: row; }
-        .s-tile {
+
+        /* Social icon tiles */
+        .s-icon-tile {
           border-right: 1px solid var(--border);
-          transition: background 0.18s var(--spring-fast), transform 0.18s var(--spring-fast);
-          will-change: transform, opacity;
         }
-        .s-tile:hover { background: var(--bg-secondary); }
-        .s-tile:last-child { border-right: none !important; }
+        .s-icon-tile:last-child { border-right: none !important; }
+
+        /* Spotify tile */
+        .spotify-tile {
+          border-left: 1px solid var(--border);
+        }
+
+        /* Social left group */
+        .s-social-group {
+          display: flex;
+          flex-direction: row;
+          flex: 0 0 auto;
+        }
+
+        /* Social partition */
+        .s-partition {
+          width: 1px;
+          background: var(--border);
+          flex-shrink: 0;
+          align-self: stretch;
+        }
+
+        /* Spotify wrapper */
+        .s-spotify-wrap {
+          flex: 1;
+          min-width: 0;
+          display: flex;
+        }
+
+        /* ── iPad / Tablet specific (768px–1100px) ── */
+        @media (min-width: 768px) and (max-width: 1100px) {
+          .h-avatar {
+            width: 200px !important;
+            min-width: 200px !important;
+            height: 200px !important;
+            min-height: 200px !important;
+          }
+          .h-nameblock h1 {
+            font-size: clamp(26px, 4vw, 38px) !important;
+          }
+          .h-info-wrap {
+            margin-left: 28px !important;
+            margin-right: 28px !important;
+          }
+          .h-info-pad {
+            padding: 20px 24px 18px !important;
+          }
+          .h-grid {
+            gap: 14px 56px !important;
+          }
+        }
 
         @media (max-width: 600px) {
           /* Side-by-side layout preserved on mobile */
@@ -265,11 +473,20 @@ export function HeroSection() {
           }
           .h-spacer { display: none !important; }
           .h-social { flex-direction: column !important; }
-          .s-tile {
-            border-right: none !important;
+          .s-social-group {
             border-bottom: 1px solid var(--border) !important;
           }
-          .s-tile:last-child { border-bottom: none !important; }
+          .s-partition { display: none !important; }
+          .s-icon-tile {
+            flex: 1 !important;
+            border-right: 1px solid var(--border) !important;
+            justify-content: center !important;
+          }
+          .s-icon-tile:last-child { border-right: none !important; }
+          .spotify-tile {
+            border-left: none !important;
+            border-top: none !important;
+          }
           .h-info-wrap {
             border-left: none !important;
             border-right: none !important;
@@ -292,7 +509,7 @@ export function HeroSection() {
         className={vis === "ssr" ? "" : "reveal visible"}
       >
 
-        {/* ── PROFILE ROW — full viewport width bg, centered content ── */}
+        {/* ── PROFILE ROW ── */}
         <div style={{
           position:"relative", left:"50%", marginLeft:"-50vw", width:"100vw",
           background:BG, borderTop:B, borderBottom:B,
@@ -325,12 +542,12 @@ export function HeroSection() {
 
         <div style={{height:38, maxWidth:CW, margin:"0 auto"}}/>
 
-        {/* ── INFO + SOCIAL wrapped in HoverBorderGradient ── */}
+        {/* ── INFO + SOCIAL ── */}
         <div className="h-info-wrap" style={{borderLeft:B, borderRight:B}}>
           <HoverBorderGradient>
             <div style={{background:BG, border:B}}>
 
-              <div style={{padding:"16px 18px 14px"}}>
+              <div className="h-info-pad" style={{padding:"16px 18px 14px"}}>
                 <div className="h-grid">
 
                   {/* LEFT */}
@@ -370,20 +587,33 @@ export function HeroSection() {
                 </div>
               </div>
 
-              {/* Social */}
+              {/* ── NEW Social row: [GitHub | LinkedIn | X] | [Spotify Player] ── */}
               <div className="h-social" style={{borderTop:B}}>
-                <SocialTile href="https://github.com/Ithakur2327" label="GitHub"
-                  iconBg="var(--bg-secondary)" iconBorder="1px solid var(--border)" iconColor="var(--text-primary)"
-                  icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>}
-                />
-                <SocialTile href="https://www.linkedin.com/in/indresh-thakur" label="LinkedIn"
-                  iconBg="#0A66C2" iconBorder="none" iconColor="#fff"
-                  icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>}
-                />
-                <SocialTile href="" label="X"
-                  iconBg="var(--bg-secondary)" iconBorder="1px solid var(--border)" iconColor="var(--text-primary)"
-                  icon={<svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.255 5.623zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>}
-                />
+
+                {/* Left: 3 social icon tiles in one group */}
+                <div className="s-social-group">
+                  <SocialIconTile href="https://github.com/Ithakur2327" label="GitHub"
+                    iconBg="var(--bg-secondary)" iconBorder="1px solid var(--border)" iconColor="var(--text-primary)"
+                    icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>}
+                  />
+                  <SocialIconTile href="https://www.linkedin.com/in/indresh-thakur" label="LinkedIn"
+                    iconBg="#0A66C2" iconBorder="none" iconColor="#fff"
+                    icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>}
+                  />
+                  <SocialIconTile href="" label="X / Twitter"
+                    iconBg="var(--bg-secondary)" iconBorder="1px solid var(--border)" iconColor="var(--text-primary)"
+                    icon={<svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.255 5.623zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>}
+                  />
+                </div>
+
+                {/* Partition */}
+                <div className="s-partition"/>
+
+                {/* Right: Spotify player */}
+                <div className="s-spotify-wrap">
+                  <SpotifyPlayer/>
+                </div>
+
               </div>
             </div>
           </HoverBorderGradient>

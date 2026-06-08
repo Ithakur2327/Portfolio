@@ -12,9 +12,17 @@ export function SparklesBridge() {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    const HEIGHT = 48;
+    // Check if iPad/tablet range
+    const vw = window.innerWidth;
+    const HEIGHT = (vw >= 768 && vw <= 1100) ? 72 : 48;
+
+    const getHeight = () => {
+      const vw = window.innerWidth;
+      return (vw >= 768 && vw <= 1100) ? 72 : 48;
+    };
 
     const resize = () => {
+      const HEIGHT = getHeight();
       const dpr = Math.min(window.devicePixelRatio || 1, 2);
       const w = window.innerWidth;
       canvas.width  = w * dpr;
@@ -80,11 +88,12 @@ export function SparklesBridge() {
       lastTs = ts;
       if (!ctx || !canvas) return;
       const W = canvasW;
+      const H = getHeight();
       const isDark = theme === "dark";
 
-      ctx.clearRect(0, 0, W, HEIGHT);
+      ctx.clearRect(0, 0, W, H);
       ctx.fillStyle = getBgColor();
-      ctx.fillRect(0, 0, W, HEIGHT);
+      ctx.fillRect(0, 0, W, H);
 
       ctx.beginPath();
       for (let i = 0; i < dots.length; i++) {
@@ -93,10 +102,10 @@ export function SparklesBridge() {
         d.x += d.vx;
         d.y += d.vy;
 
-        if (d.x < -4)         d.x = W + 4;
-        if (d.x > W + 4)      d.x = -4;
-        if (d.y < -4)         d.y = HEIGHT + 4;
-        if (d.y > HEIGHT + 4) d.y = -4;
+        if (d.x < -4)       d.x = W + 4;
+        if (d.x > W + 4)    d.x = -4;
+        if (d.y < -4)       d.y = H + 4;
+        if (d.y > H + 4)    d.y = -4;
         if (d.life >= d.maxLife) { dots[i] = spawn(); continue; }
 
         const half = d.maxLife / 2;
@@ -131,7 +140,13 @@ export function SparklesBridge() {
           width: "100%",
           height: 48,
         }}
+        className="sparkles-bridge-canvas"
       />
+      <style suppressHydrationWarning>{`
+        @media (min-width: 768px) and (max-width: 1100px) {
+          .sparkles-bridge-canvas { height: 72px !important; }
+        }
+      `}</style>
     </div>
   );
 }
