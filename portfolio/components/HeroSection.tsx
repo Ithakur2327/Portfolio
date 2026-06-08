@@ -144,20 +144,28 @@ function SpotifyPlayer() {
       .then(r => r.json())
       .then(d => {
         const rawTitle: string = d.title ?? "";
-        const rawAuthor: string = (d.author_name ?? "").replace(/\s*-\s*Topic$/i, "").trim();
-        const cleaned = rawTitle
+
+        // Step 1: strip everything after | • · — these are always label/noise separators
+        let cleaned = rawTitle
+          .replace(/\s*[|•·]\s*.*/g, "")
+          // Step 2: strip brackets
           .replace(/\(.*?\)/g, "")
           .replace(/\[.*?\]/g, "")
-          .replace(/\s*ft\..*$/i, "")
-          .replace(/\s*feat\..*$/i, "")
-          .replace(/\s*official.*$/i, "")
+          // Step 3: strip trailing noise phrases
+          .replace(/\s*(ft\.|feat\.|official|video|audio|lyric|lyrics|full|hd|4k|new|latest|song|songs|punjabi|hindi|music)\b.*/gi, "")
+          // Step 4: strip standalone 4-digit year
+          .replace(/\b(19|20)\d{2}\b/g, "")
+          .replace(/\s{2,}/g, " ")
           .trim();
+
+        // Step 5: split on " - " to get artist / song
         const dashParts = cleaned.split(/\s*-\s+/);
         if (dashParts.length >= 2) {
           setArtistName(dashParts[0].trim());
           setSongTitle(dashParts.slice(1).join(" - ").trim());
         } else {
-          setArtistName(rawAuthor);
+          // No dash — show cleaned title as one string (no label name)
+          setArtistName("");
           setSongTitle(cleaned || rawTitle);
         }
       })
@@ -226,7 +234,7 @@ function SpotifyPlayer() {
     }
   }, [trackIdx]);
 
-  /* display string for marquee */
+  /* display string */
   const displayText = artistName
     ? `${artistName}  —  ${songTitle}`
     : songTitle;
@@ -259,7 +267,7 @@ function SpotifyPlayer() {
         />
       )}
 
-      {/* Spotify glass logo — as it is */}
+      {/* Spotify glass logo */}
       <div style={{
         width:34, height:34, borderRadius:10, flexShrink:0,
         background:"linear-gradient(135deg,rgba(30,215,96,0.22) 0%,rgba(30,215,96,0.06) 100%)",
@@ -273,35 +281,29 @@ function SpotifyPlayer() {
         </svg>
       </div>
 
-      {/* Text block — marquee artist/song + recently played */}
-      <div style={{flex:1, minWidth:0, overflow:"hidden"}}>
+      {/* Text block + play/pause inline */}
+      <div style={{flex:1, minWidth:0, overflow:"hidden", display:"flex", alignItems:"center", gap:10}}>
 
-        {/* eq bars (when playing) + marquee text — same line */}
-        <div style={{
-          display:"flex", alignItems:"center", gap:5,
-          overflow:"hidden",
-        }}>
-          {/* EQ bars — as it is */}
-          {playing && (
+        {/* Text column */}
+        <div style={{flex:1, minWidth:0}}>
+          {/* EQ bars + artist — song */}
+          <div style={{display:"flex", alignItems:"center", gap:5, overflow:"hidden"}}>
+            {playing && (
+              <span style={{
+                display:"inline-flex", alignItems:"flex-end", gap:1.5,
+                height:10, flexShrink:0,
+              }}>
+                {[0, 0.2, 0.1].map((delay, i) => (
+                  <span key={i} style={{
+                    display:"inline-block", width:2.5, borderRadius:1,
+                    background:"#1ED760",
+                    animation:`eq-bar 0.8s ease-in-out ${delay}s infinite alternate`,
+                    height:"100%",
+                  }}/>
+                ))}
+              </span>
+            )}
             <span style={{
-              display:"inline-flex", alignItems:"flex-end", gap:1.5,
-              height:10, flexShrink:0,
-            }}>
-              {[0, 0.2, 0.1].map((delay, i) => (
-                <span key={i} style={{
-                  display:"inline-block", width:2.5, borderRadius:1,
-                  background:"#1ED760",
-                  animation:`eq-bar 0.8s ease-in-out ${delay}s infinite alternate`,
-                  height:"100%",
-                }}/>
-              ))}
-            </span>
-          )}
-
-          {/* Static text */}
-          <div style={{overflow:"hidden", flex:1, minWidth:0}}>
-            <span style={{
-              display:"block",
               fontFamily:"'Geist',sans-serif",
               fontSize:12.5,
               fontWeight:600,
@@ -309,24 +311,48 @@ function SpotifyPlayer() {
               whiteSpace:"nowrap",
               overflow:"hidden",
               textOverflow:"ellipsis",
+              display:"block",
             }}>
               {displayText}
             </span>
           </div>
+
+          {/* Recently Played */}
+          <div style={{
+            fontSize:10,
+            color:"var(--text-primary)",
+            opacity:0.28,
+            fontFamily:"'Geist Mono',monospace",
+            letterSpacing:"0.04em",
+            marginTop:3,
+            fontWeight:500,
+          }}>
+            Recently Played
+          </div>
         </div>
 
-        {/* Recently Played — low opacity */}
-        <div style={{
-          fontSize:10,
-          color:"var(--text-primary)",
-          opacity:0.28,
-          fontFamily:"'Geist Mono',monospace",
-          letterSpacing:"0.04em",
-          marginTop:3,
-          fontWeight:500,
-        }}>
-          Recently Played
-        </div>
+        {/* Play / Pause — right next to text */}
+        <button onClick={handlePlay} style={{
+          width:30, height:30, borderRadius:"50%",
+          background: playing ? "rgba(30,215,96,0.18)" : "rgba(30,215,96,0.08)",
+          border:"1px solid rgba(30,215,96,0.35)",
+          display:"flex", alignItems:"center", justifyContent:"center",
+          color:"#1ED760", flexShrink:0, cursor:"pointer",
+          transition:"all 0.15s cubic-bezier(0.16,1,0.3,1)",
+          transform: hovered ? "scale(1.08)" : "scale(1)",
+        }} aria-label={playing ? "Pause" : "Play"}>
+          {playing ? (
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor">
+              <rect x="6" y="4" width="4" height="16" rx="1"/>
+              <rect x="14" y="4" width="4" height="16" rx="1"/>
+            </svg>
+          ) : (
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor">
+              <polygon points="5,3 19,12 5,21"/>
+            </svg>
+          )}
+        </button>
+
       </div>
 
       {/* Skip — only when playlist > 1 */}
@@ -345,27 +371,6 @@ function SpotifyPlayer() {
         </button>
       )}
 
-      {/* Play / Pause */}
-      <button onClick={handlePlay} style={{
-        width:30, height:30, borderRadius:"50%",
-        background: playing ? "rgba(30,215,96,0.18)" : "rgba(30,215,96,0.08)",
-        border:"1px solid rgba(30,215,96,0.35)",
-        display:"flex", alignItems:"center", justifyContent:"center",
-        color:"#1ED760", flexShrink:0, cursor:"pointer",
-        transition:"all 0.15s cubic-bezier(0.16,1,0.3,1)",
-        transform: hovered ? "scale(1.08)" : "scale(1)",
-      }} aria-label={playing ? "Pause" : "Play"}>
-        {playing ? (
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor">
-            <rect x="6" y="4" width="4" height="16" rx="1"/>
-            <rect x="14" y="4" width="4" height="16" rx="1"/>
-          </svg>
-        ) : (
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor">
-            <polygon points="5,3 19,12 5,21"/>
-          </svg>
-        )}
-      </button>
     </div>
   );
 }
