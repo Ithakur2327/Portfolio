@@ -117,7 +117,7 @@ function SocialIconTile({href,label,icon,iconBg,iconBorder,iconColor}:{href:stri
 function SpotifyPlayer() {
   // ── ADD YOUR YOUTUBE LINKS HERE ──────────────────────
   const PLAYLIST = [
-    "https://www.youtube.com/watch?v=jVVwYXV22zg&list=RDaFWDOFg7X2A&index=6",
+    "https://www.youtube.com/watch?v=EgfsXTOn_pI&list=RDEgfsXTOn_pI&start_radio=1",
     // "https://www.youtube.com/watch?v=ANOTHER_ID",
   ];
   // ─────────────────────────────────────────────────────
@@ -138,38 +138,42 @@ function SpotifyPlayer() {
 
   useEffect(() => {
     if (!currentUrl) return;
-    setSongTitle("Loading...");
-    setArtistName("");
+    setSongTitle("Loading..."); setArtistName("");
     fetch(`https://www.youtube.com/oembed?url=${encodeURIComponent(currentUrl)}&format=json`)
       .then(r => r.json())
       .then(d => {
         const rawTitle: string = d.title ?? "";
 
-        // Step 1: strip everything after | • · — these are always label/noise separators
+        // Strip everything after | • · and common noise
         let cleaned = rawTitle
           .replace(/\s*[|•·]\s*.*/g, "")
-          // Step 2: strip brackets
-          .replace(/\(.*?\)/g, "")
-          .replace(/\[.*?\]/g, "")
-          // Step 3: strip trailing noise phrases
+          .replace(/\(.*?\)/g, "").replace(/\[.*?\]/g, "")
           .replace(/\s*(ft\.|feat\.|official|video|audio|lyric|lyrics|full|hd|4k|new|latest|song|songs|punjabi|hindi|music)\b.*/gi, "")
-          // Step 4: strip standalone 4-digit year
           .replace(/\b(19|20)\d{2}\b/g, "")
-          .replace(/\s{2,}/g, " ")
-          .trim();
+          .replace(/\s{2,}/g, " ").trim();
 
-        // Step 5: split on " - " to get artist / song
+        // If title has "Artist - Song" or "Song - Artist" dash format, split on it
         const dashParts = cleaned.split(/\s*-\s+/);
         if (dashParts.length >= 2) {
           setArtistName(dashParts[0].trim());
           setSongTitle(dashParts.slice(1).join(" - ").trim());
+          return;
+        }
+
+        // No dash: heuristic — last 2 capitalized words = artist, rest = song
+        // Works for most Indian music: "At Peace Karan Aujla" → "Karan Aujla — At Peace"
+        const words = cleaned.split(/\s+/).filter(Boolean);
+        if (words.length >= 3) {
+          const artist = words.slice(-2).join(" ");
+          const song   = words.slice(0, -2).join(" ");
+          setArtistName(artist);
+          setSongTitle(song);
         } else {
-          // No dash — show cleaned title as one string (no label name)
           setArtistName("");
           setSongTitle(cleaned || rawTitle);
         }
       })
-      .catch(() => { setSongTitle("Unknown"); });
+      .catch(() => setSongTitle("Unknown"));
   }, [currentUrl]);
 
   const ytMsg = (cmd: object) => {
@@ -282,12 +286,12 @@ function SpotifyPlayer() {
       </div>
 
       {/* Text block + play/pause inline */}
-      <div style={{flex:1, minWidth:0, overflow:"hidden", display:"flex", alignItems:"center", gap:10}}>
+      <div style={{display:"flex", alignItems:"center", gap:8, minWidth:0, overflow:"hidden"}}>
 
-        {/* Text column */}
-        <div style={{flex:1, minWidth:0}}>
+        {/* Text column — no flex:1 so button sits right after text */}
+        <div style={{minWidth:0, overflow:"hidden"}}>
           {/* EQ bars + artist — song */}
-          <div style={{display:"flex", alignItems:"center", gap:5, overflow:"hidden"}}>
+          <div style={{display:"flex", alignItems:"center", gap:5}}>
             {playing && (
               <span style={{
                 display:"inline-flex", alignItems:"flex-end", gap:1.5,
@@ -331,13 +335,13 @@ function SpotifyPlayer() {
           </div>
         </div>
 
-        {/* Play / Pause — right next to text */}
+        {/* Play / Pause — immediately after text */}
         <button onClick={handlePlay} style={{
-          width:30, height:30, borderRadius:"50%",
+          width:30, height:30, borderRadius:"50%", flexShrink:0,
           background: playing ? "rgba(30,215,96,0.18)" : "rgba(30,215,96,0.08)",
           border:"1px solid rgba(30,215,96,0.35)",
           display:"flex", alignItems:"center", justifyContent:"center",
-          color:"#1ED760", flexShrink:0, cursor:"pointer",
+          color:"#1ED760", cursor:"pointer",
           transition:"all 0.15s cubic-bezier(0.16,1,0.3,1)",
           transform: hovered ? "scale(1.08)" : "scale(1)",
         }} aria-label={playing ? "Pause" : "Play"}>
