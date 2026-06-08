@@ -290,7 +290,7 @@ function SpotifyPlayer() {
 
         {/* Text column — no flex:1 so button sits right after text */}
         <div style={{minWidth:0, overflow:"hidden"}}>
-          {/* EQ bars + artist — song */}
+          {/* Top: EQ bars + song name only */}
           <div style={{display:"flex", alignItems:"center", gap:5}}>
             {playing && (
               <span style={{
@@ -309,41 +309,48 @@ function SpotifyPlayer() {
             )}
             <span style={{
               fontFamily:"'Geist',sans-serif",
-              fontSize:12.5,
-              fontWeight:600,
+              fontSize:12.5, fontWeight:600,
               color:"var(--text-primary)",
-              whiteSpace:"nowrap",
-              overflow:"hidden",
-              textOverflow:"ellipsis",
+              whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis",
               display:"block",
             }}>
-              {displayText}
+              {songTitle}
             </span>
           </div>
 
-          {/* Recently Played */}
+          {/* Bottom: Singer name left · Recently Played right */}
           <div style={{
-            fontSize:10,
-            color:"var(--text-primary)",
-            opacity:0.28,
-            fontFamily:"'Geist Mono',monospace",
-            letterSpacing:"0.04em",
+            display:"flex", alignItems:"center", gap:6,
             marginTop:3,
-            fontWeight:500,
           }}>
-            Recently Played
+            {artistName && (
+              <span style={{
+                fontSize:10, fontFamily:"'Geist Mono',monospace",
+                color:"var(--text-primary)", opacity:0.5,
+                fontWeight:500, whiteSpace:"nowrap",
+              }}>
+                {artistName}
+              </span>
+            )}
+            <span style={{
+              fontSize:10, fontFamily:"'Geist Mono',monospace",
+              color:"var(--text-primary)", opacity:0.28,
+              fontWeight:500, whiteSpace:"nowrap",
+            }}>
+              Recently Played
+            </span>
           </div>
         </div>
 
         {/* Play / Pause — immediately after text */}
         <button onClick={handlePlay} style={{
-          width:30, height:30, borderRadius:"50%", flexShrink:0,
-          background: playing ? "rgba(30,215,96,0.18)" : "rgba(30,215,96,0.08)",
-          border:"1px solid rgba(30,215,96,0.35)",
+          width:24, height:24, flexShrink:0,
+          background:"none", border:"none", padding:0,
           display:"flex", alignItems:"center", justifyContent:"center",
           color:"#1ED760", cursor:"pointer",
-          transition:"all 0.15s cubic-bezier(0.16,1,0.3,1)",
-          transform: hovered ? "scale(1.08)" : "scale(1)",
+          transition:"transform 0.15s cubic-bezier(0.16,1,0.3,1), opacity 0.15s",
+          transform: hovered ? "scale(1.15)" : "scale(1)",
+          opacity: hovered ? 1 : 0.85,
         }} aria-label={playing ? "Pause" : "Play"}>
           {playing ? (
             <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor">
