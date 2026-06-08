@@ -113,144 +113,247 @@ function SocialIconTile({href,label,icon,iconBg,iconBorder,iconColor}:{href:stri
   );
 }
 
-/* ─── Spotify Player ─────────────────────────────────── */
+/* ─── YouTube ID extractor ───────────────────────────── */
+function getYTId(url: string): string {
+  const m = url.match(/(?:v=|youtu\.be\/|embed\/)([a-zA-Z0-9_-]{11})/);
+  return m ? m[1] : "";
+}
+
+/* ─── Spotify-style Player (YouTube embed, no progress bar) ── */
 function SpotifyPlayer() {
-  // Change YOUTUBE_LINK to any YouTube video URL
-  const YOUTUBE_LINK = "https://www.youtube.com/watch?v=dQw4w9WgXcQ";
-  const SONG_NAME = "Never Gonna Give You Up"; // Change this to your song name
-  const ARTIST_NAME = "Rick Astley"; // Change this to the artist name
+  // ── ADD YOUR YOUTUBE LINKS HERE ──────────────────────
+  // One link = auto-repeat. Multiple links = auto-playlist.
+  const PLAYLIST = [
+    "https://www.youtube.com/watch?v=jVVwYXV22zg&list=RDaFWDOFg7X2A&index=6",
+    // "https://www.youtube.com/watch?v=ANOTHER_ID",
+  ];
+  // ─────────────────────────────────────────────────────
 
+  const [trackIdx, setTrackIdx] = useState(0);
   const [playing, setPlaying] = useState(false);
-  const [progress, setProgress] = useState(0);
   const [hovered, setHovered] = useState(false);
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const [songTitle, setSongTitle] = useState("Loading...");
+  const [artistName, setArtistName] = useState("");
+  const iframeRef = useRef<HTMLIFrameElement>(null);
 
+  const currentUrl = PLAYLIST[trackIdx] ?? "";
+  const currentId = (() => {
+    const m = currentUrl.match(/(?:v=|youtu\.be\/|embed\/)([a-zA-Z0-9_-]{11})/);
+    return m ? m[1] : "";
+  })();
+  const isMulti = PLAYLIST.length > 1;
+
+  // Auto-fetch title & artist from YouTube oEmbed — no API key needed
   useEffect(() => {
-    if (playing) {
-      intervalRef.current = setInterval(() => {
-        setProgress(p => {
-          if (p >= 100) { setPlaying(false); return 0; }
-          return p + 0.3;
-        });
-      }, 100);
-    } else {
-      if (intervalRef.current) clearInterval(intervalRef.current);
-    }
-    return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
-  }, [playing]);
+    if (!currentUrl) return;
+    setSongTitle("Loading...");
+    setArtistName("");
+    fetch(`https://www.youtube.com/oembed?url=${encodeURIComponent(currentUrl)}&format=json`)
+      .then(r => r.json())
+      .then(d => {
+        const rawTitle: string = d.title ?? "";
+        const rawAuthor: string = (d.author_name ?? "").replace(/\s*-\s*Topic$/i, "").trim();
+
+        // Clean title: remove noise tags like (Official Video), [4K], (Lyrics), ft. tags etc.
+        const cleaned = rawTitle
+          .replace(/\(.*?\)/g, "")   // remove anything in ()
+          .replace(/\[.*?\]/g, "")   // remove anything in []
+          .replace(/\s*ft\..*$/i, "") // remove ft. and after
+          .replace(/\s*feat\..*$/i, "")
+          .replace(/\s*official.*$/i, "")
+          .trim();
+
+        // If title has " - " assume format "Artist - Song", split it
+        const dashParts = cleaned.split(/\s*-\s+/);
+        if (dashParts.length >= 2) {
+          setArtistName(dashParts[0].trim());
+          setSongTitle(dashParts.slice(1).join(" - ").trim());
+        } else {
+          // No dash: use oEmbed author as artist, cleaned title as song
+          setArtistName(rawAuthor);
+          setSongTitle(cleaned || rawTitle);
+        }
+      })
+      .catch(() => { setSongTitle("Unknown"); });
+  }, [currentUrl]);
+
+  const ytMsg = (cmd: object) => {
+    iframeRef.current?.contentWindow?.postMessage(JSON.stringify(cmd), "*");
+  };
 
   const handlePlay = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    if (!playing) {
-      window.open(YOUTUBE_LINK, "_blank", "noreferrer");
+    if (playing) {
+      ytMsg({ event: "command", func: "pauseVideo" });
+      setPlaying(false);
+    } else {
+      ytMsg({ event: "command", func: "playVideo" });
+      setPlaying(true);
     }
-    setPlaying(p => !p);
   };
 
+  const handleSkip = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setTrackIdx(i => (i + 1) % PLAYLIST.length);
+    setPlaying(true);
+  };
+
+  // End of track → repeat or advance
+  useEffect(() => {
+    const onMsg = (e: MessageEvent) => {
+      try {
+        const data = typeof e.data === "string" ? JSON.parse(e.data) : e.data;
+        if (data?.info?.playerState === 0) {
+          if (isMulti) {
+            setTrackIdx(i => (i + 1) % PLAYLIST.length);
+            setPlaying(true);
+          } else {
+            setTimeout(() => {
+              ytMsg({ event: "command", func: "seekTo", args: [0, true] });
+              ytMsg({ event: "command", func: "playVideo" });
+            }, 300);
+          }
+        }
+      } catch {}
+    };
+    window.addEventListener("message", onMsg);
+    return () => window.removeEventListener("message", onMsg);
+  }, [trackIdx, isMulti, PLAYLIST.length]);
+
+  // Auto-play when track changes
+  useEffect(() => {
+    if (playing) {
+      const t = setTimeout(() => ytMsg({ event: "command", func: "playVideo" }), 800);
+      return () => clearTimeout(t);
+    }
+  }, [trackIdx]);
+
   return (
-    <a
-      href={YOUTUBE_LINK} target="_blank" rel="noreferrer"
+    <div
       className="spotify-tile"
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
         flex:1, display:"flex", alignItems:"center", gap:10,
-        padding:"10px 14px",
+        padding:"0 14px",
         background: hovered ? "var(--bg-secondary)" : "var(--bg-base)",
-        color:"var(--text-primary)",
-        textDecoration:"none", position:"relative",
+        position:"relative",
         transition:"background 0.18s",
         minWidth:0, overflow:"hidden",
+        cursor:"default",
+        height:"100%",
       }}
     >
+      {/* Hidden YouTube iframe */}
+      {currentId && (
+        <iframe
+          ref={iframeRef}
+          key={currentId}
+          src={`https://www.youtube.com/embed/${currentId}?enablejsapi=1&autoplay=0&controls=0`}
+          allow="autoplay"
+          style={{ display:"none", width:0, height:0, border:"none", position:"absolute" }}
+          title="yt-audio"
+        />
+      )}
+
       {/* Spotify glass logo */}
       <div style={{
-        width:34,height:34,borderRadius:10,
-        background:"linear-gradient(135deg,rgba(30,215,96,0.25) 0%,rgba(30,215,96,0.08) 100%)",
-        border:"1px solid rgba(30,215,96,0.35)",
+        width:34, height:34, borderRadius:10, flexShrink:0,
+        background:"linear-gradient(135deg,rgba(30,215,96,0.22) 0%,rgba(30,215,96,0.06) 100%)",
+        border:"1px solid rgba(30,215,96,0.32)",
         backdropFilter:"blur(8px)",
-        display:"flex",alignItems:"center",justifyContent:"center",
-        flexShrink:0,
-        boxShadow:"0 2px 8px rgba(30,215,96,0.15)",
+        display:"flex", alignItems:"center", justifyContent:"center",
+        boxShadow:"0 2px 10px rgba(30,215,96,0.12)",
       }}>
-        {/* Spotify icon */}
         <svg width="18" height="18" viewBox="0 0 24 24" fill="#1ED760">
           <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/>
         </svg>
       </div>
 
-      {/* Song info */}
-      <div style={{flex:1,minWidth:0,overflow:"hidden"}}>
+      {/* Song details — artist · song · recently played */}
+      <div style={{flex:1, minWidth:0, overflow:"hidden"}}>
+        {/* Artist name — top */}
         <div style={{
-          fontSize:11,color:"#1ED760",fontFamily:"'Geist Mono',monospace",
-          fontWeight:600,letterSpacing:"0.04em",marginBottom:1,
-          display:"flex",alignItems:"center",gap:4,
+          fontSize:11, color:"var(--text-muted)", fontFamily:"'Geist Mono',monospace",
+          whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis",
+          lineHeight:1.2,
         }}>
-          <span style={{
-            width:5,height:5,borderRadius:"50%",
-            background:playing?"#1ED760":"var(--text-muted)",
-            display:"inline-block",
-            animation: playing ? "pulse-dot 1.2s ease-in-out infinite" : "none",
-          }}/>
-          {playing ? "NOW PLAYING" : "LISTEN ON YT"}
+          {artistName}
         </div>
+        {/* Song name — middle, bold, with eq bars when playing */}
         <div style={{
-          fontSize:12.5,fontWeight:600,fontFamily:"'Geist',sans-serif",
-          color:"var(--text-primary)",whiteSpace:"nowrap",overflow:"hidden",
-          textOverflow:"ellipsis",lineHeight:1.2,
-        }}>{SONG_NAME}</div>
-        <div style={{
-          fontSize:11,color:"var(--text-muted)",fontFamily:"'Geist Mono',monospace",
-          whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",
-        }}>{ARTIST_NAME}</div>
-        {/* Progress bar */}
-        <div style={{
-          marginTop:4,height:2,borderRadius:1,
-          background:"var(--border)",overflow:"hidden",
-          opacity: playing ? 1 : 0.4,
-          transition:"opacity 0.2s",
+          fontSize:12.5, fontWeight:600, fontFamily:"'Geist',sans-serif",
+          color:"var(--text-primary)", whiteSpace:"nowrap",
+          overflow:"hidden", textOverflow:"ellipsis", lineHeight:1.3,
+          display:"flex", alignItems:"center", gap:5, marginTop:1,
         }}>
-          <div style={{
-            height:"100%",
-            background:"linear-gradient(90deg,#1ED760,#17a84a)",
-            width:`${progress}%`,
-            borderRadius:1,
-            transition:"width 0.1s linear",
-          }}/>
+          {playing && (
+            <span style={{
+              display:"inline-flex", alignItems:"flex-end", gap:1.5,
+              height:10, flexShrink:0,
+            }}>
+              {[0, 0.2, 0.1].map((delay, i) => (
+                <span key={i} style={{
+                  display:"inline-block", width:2.5, borderRadius:1,
+                  background:"#1ED760",
+                  animation:`eq-bar 0.8s ease-in-out ${delay}s infinite alternate`,
+                  height:"100%",
+                }}/>
+              ))}
+            </span>
+          )}
+          {songTitle}
+        </div>
+        {/* Recently Played label — bottom */}
+        <div style={{
+          fontSize:10, color:"#1ED760", fontFamily:"'Geist Mono',monospace",
+          letterSpacing:"0.04em", marginTop:2, fontWeight:500,
+          opacity: 0.75,
+        }}>
+          Recently Played
         </div>
       </div>
 
-      {/* Play/pause button */}
-      <button
-        onClick={handlePlay}
-        style={{
-          width:30,height:30,borderRadius:"50%",
-          background: playing
-            ? "rgba(30,215,96,0.15)"
-            : "rgba(30,215,96,0.1)",
-          border:"1px solid rgba(30,215,96,0.3)",
-          display:"flex",alignItems:"center",justifyContent:"center",
-          color:"#1ED760",flexShrink:0,cursor:"pointer",
-          transition:"all 0.15s cubic-bezier(0.16,1,0.3,1)",
-          transform: hovered ? "scale(1.1)" : "scale(1)",
-        }}
-        aria-label={playing ? "Pause" : "Play"}
-      >
+      {/* Skip — only shown when playlist has >1 track */}
+      {isMulti && (
+        <button onClick={handleSkip} style={{
+          width:26, height:26, borderRadius:"50%",
+          background:"transparent", border:"1px solid var(--border)",
+          display:"flex", alignItems:"center", justifyContent:"center",
+          color:"var(--text-muted)", flexShrink:0, cursor:"pointer",
+          transition:"border-color 0.15s, color 0.15s",
+        }} aria-label="Next track">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor">
+            <polygon points="5,3 15,12 5,21"/>
+            <rect x="17" y="3" width="3" height="18" rx="1"/>
+          </svg>
+        </button>
+      )}
+
+      {/* Play / Pause */}
+      <button onClick={handlePlay} style={{
+        width:30, height:30, borderRadius:"50%",
+        background: playing ? "rgba(30,215,96,0.18)" : "rgba(30,215,96,0.08)",
+        border:"1px solid rgba(30,215,96,0.35)",
+        display:"flex", alignItems:"center", justifyContent:"center",
+        color:"#1ED760", flexShrink:0, cursor:"pointer",
+        transition:"all 0.15s cubic-bezier(0.16,1,0.3,1)",
+        transform: hovered ? "scale(1.08)" : "scale(1)",
+      }} aria-label={playing ? "Pause" : "Play"}>
         {playing ? (
-          // Pause icon
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor">
             <rect x="6" y="4" width="4" height="16" rx="1"/>
             <rect x="14" y="4" width="4" height="16" rx="1"/>
           </svg>
         ) : (
-          // Play icon
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor">
             <polygon points="5,3 19,12 5,21"/>
           </svg>
         )}
       </button>
-    </a>
+    </div>
   );
 }
 
@@ -343,6 +446,10 @@ export function HeroSection() {
         .fs-in  { animation: fsIn  0.28s cubic-bezier(0.16,1,0.3,1) forwards }
         .fs-out { animation: fsOut 0.22s ease-in forwards }
 
+        @keyframes eq-bar {
+          from { transform: scaleY(0.2); }
+          to   { transform: scaleY(1);   }
+        }
         @keyframes pulse-dot {
           0%,100% { opacity:1; transform:scale(1); }
           50% { opacity:0.5; transform:scale(1.4); }
@@ -424,26 +531,46 @@ export function HeroSection() {
           display: flex;
         }
 
-        /* ── iPad / Tablet specific (768px–1100px) ── */
-        @media (min-width: 768px) and (max-width: 1100px) {
+        /* ── iPad / Tablet (768px–1180px) ── */
+        @media (min-width: 768px) and (max-width: 1180px) {
           .h-avatar {
-            width: 200px !important;
-            min-width: 200px !important;
-            height: 200px !important;
-            min-height: 200px !important;
+            width: 210px !important;
+            min-width: 210px !important;
+            height: 210px !important;
+            min-height: 210px !important;
+          }
+          .h-nameblock {
+            padding: 0 4px !important;
           }
           .h-nameblock h1 {
-            font-size: clamp(26px, 4vw, 38px) !important;
+            font-size: clamp(28px, 4.5vw, 42px) !important;
           }
           .h-info-wrap {
-            margin-left: 28px !important;
-            margin-right: 28px !important;
+            margin-left: 32px !important;
+            margin-right: 32px !important;
           }
           .h-info-pad {
-            padding: 20px 24px 18px !important;
+            padding: 22px 28px 20px !important;
           }
           .h-grid {
-            gap: 14px 56px !important;
+            gap: 16px 60px !important;
+          }
+          /* Bigger icon boxes */
+          .h-info-pad .h-grid > div > div > div:first-child,
+          .h-info-pad .h-grid > div > a > div:first-child {
+            width: 32px !important; height: 32px !important;
+          }
+          /* Row font size */
+          .h-info-pad .h-grid > div > div,
+          .h-info-pad .h-grid > div > a {
+            font-size: 14px !important;
+          }
+          /* Spotify tile taller */
+          .spotify-tile {
+            padding: 0 18px !important;
+          }
+          .s-icon-tile {
+            padding: 16px 20px !important;
           }
         }
 

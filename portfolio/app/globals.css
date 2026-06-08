@@ -819,6 +819,16 @@ html.light .nav-root.scrolled {
   .logo-area { width: 42px; height: 42px; }
 }
 
+/* Tablet nav height (768px–1180px) */
+@media (min-width: 768px) and (max-width: 1180px) {
+  .nav-root { height: 62px !important; }
+  .nav-inner { height: 62px !important; padding: 0 28px !important; }
+  .logo-area { width: 48px; height: 48px; }
+  .logo-i { font-size: 14px !important; }
+  .nav-link { font-size: 14px !important; padding: 6px 13px !important; }
+  .theme-btn { width: 38px !important; height: 38px !important; }
+}
+
 /* ═══════════════════════════════════════════════════════════
    SCROLL BOTTOM BLUR FADE
 ═══════════════════════════════════════════════════════════ */
