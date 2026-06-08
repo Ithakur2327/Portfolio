@@ -398,54 +398,55 @@ function SpotifyPlayer() {
 function HoverBorderGradient({ children }: { children: React.ReactNode }) {
   const { theme } = useTheme();
   const isDark = theme === "dark";
+  const glowRef = useRef<HTMLDivElement>(null);
+  const rafRef = useRef<number>(0);
+  const angleRef = useRef(0);
+
+  useEffect(() => {
+    const spin = () => {
+      angleRef.current = (angleRef.current + 0.5) % 360;
+      if (glowRef.current) {
+        glowRef.current.style.background = `conic-gradient(
+          from ${angleRef.current}deg at 50% 50%,
+          transparent 0deg,
+          transparent 55deg,
+          ${isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.06)"} 85deg,
+          ${isDark ? "rgba(255,255,255,0.55)" : "rgba(0,0,0,0.38)"} 110deg,
+          ${isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.06)"} 140deg,
+          transparent 170deg,
+          transparent 360deg
+        )`;
+      }
+      rafRef.current = requestAnimationFrame(spin);
+    };
+    rafRef.current = requestAnimationFrame(spin);
+    return () => cancelAnimationFrame(rafRef.current);
+  }, [isDark]);
 
   return (
     <div style={{ position: "relative" }}>
-      <style suppressHydrationWarning>{`
-        @keyframes border-spin { to { --border-angle: 360deg; } }
-        @property --border-angle {
-          syntax: "<angle>";
-          inherits: false;
-          initial-value: 0deg;
-        }
-        .hbg-glow {
-          animation: border-spin 6s linear infinite;
-          background: conic-gradient(
-            from var(--border-angle),
-            transparent 0deg,
-            transparent 60deg,
-            ${isDark ? "rgba(255,255,255,0.10)" : "rgba(0,0,0,0.07)"} 90deg,
-            ${isDark ? "rgba(255,255,255,0.40)" : "rgba(0,0,0,0.32)"} 120deg,
-            ${isDark ? "rgba(255,255,255,0.10)" : "rgba(0,0,0,0.07)"} 150deg,
-            transparent 180deg,
-            transparent 360deg
-          );
-          filter: blur(3px);
-        }
-        @media (prefers-reduced-motion: reduce) {
-          .hbg-glow { animation: none; }
-        }
-      `}</style>
+      {/* Glow border layer */}
       <div
-        className="hbg-glow"
+        ref={glowRef}
         aria-hidden
         style={{
           position: "absolute",
           inset: -1.5,
           zIndex: 0,
-          borderRadius: 1,
           pointerEvents: "none",
+          borderRadius: 1,
+          filter: "blur(2px)",
         }}
       />
+      {/* Static hairline border */}
       <div
         aria-hidden
         style={{
           position: "absolute",
           inset: -0.5,
           zIndex: 0,
-          borderRadius: 0,
           pointerEvents: "none",
-          border: isDark ? "1px solid rgba(255,255,255,0.12)" : "1px solid rgba(0,0,0,0.10)",
+          border: isDark ? "1px solid rgba(255,255,255,0.10)" : "1px solid rgba(0,0,0,0.08)",
         }}
       />
       <div style={{ position: "relative", zIndex: 1 }}>
@@ -723,7 +724,8 @@ export function HeroSection() {
             border-left: none !important;
             border-top: none !important;
             justify-content: flex-start !important;
-            padding: 0 16px !important;
+            padding-left: calc(33.333vw / 2 - 22px) !important;
+            padding-right: 12px !important;
           }
           .h-info-wrap {
             border-left: none !important;
