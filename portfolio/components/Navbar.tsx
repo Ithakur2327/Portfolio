@@ -314,8 +314,8 @@ export function Navbar() {
     <>
       <style suppressHydrationWarning>{`
         .nav-link {
-          padding: 5px 10px; border-radius: 5px;
-          font-size: 13px; font-weight: 500;
+          padding: 4px 9px; border-radius: 5px;
+          font-size: 12.5px; font-weight: 500;
           color: var(--nav-link-color);
           background: transparent !important;
           text-decoration: none;
@@ -325,7 +325,7 @@ export function Navbar() {
         .nav-link:hover  { color: var(--nav-link-hover); }
         .nav-link.active { color: var(--nav-link-hover); }
         .nav-partition {
-          width: 1px; height: 18px;
+          width: 1px; height: 14px;
           background: var(--nav-border); margin: 0 6px; flex-shrink: 0;
         }
 
@@ -342,8 +342,8 @@ export function Navbar() {
 
         /* theme-btn base */
         .theme-btn {
-          width: 34px; height: 34px; border-radius: 8px;
-          border: 1px solid var(--nav-border);
+          width: 30px; height: 30px; border-radius: 7px;
+          border: 0.5px solid var(--nav-border);
           background: transparent;
           color: var(--nav-link-color);
           display: flex; align-items: center; justify-content: center;
@@ -362,24 +362,33 @@ export function Navbar() {
         className={`nav-root${scrolled ? " scrolled" : ""}`}
         style={{
           background: isDark
-            ? scrolled ? "rgba(4,4,4,0.52)" : "rgba(4,4,4,0.18)"
-            : scrolled ? "rgba(245,245,243,0.68)" : "rgba(245,245,243,0.20)",
+            ? scrolled
+              ? "rgba(4,4,4,0.46)"
+              : "rgba(4,4,4,0.18)"
+            : scrolled
+              ? "rgba(252,252,250,0.42)"
+              : "rgba(252,252,250,0.22)",
           borderBottomColor: isDark
-            ? scrolled ? "rgba(255,255,255,0.10)" : "rgba(255,255,255,0.06)"
-            : scrolled ? "rgba(0,0,0,0.08)" : "rgba(0,0,0,0.05)",
+            ? scrolled
+              ? "rgba(255,255,255,0.14)"
+              : "rgba(255,255,255,0.07)"
+            : scrolled
+              ? "rgba(255,255,255,0.90)"
+              : "rgba(255,255,255,0.75)",
+          borderBottomWidth: "0.5px",
           backdropFilter: scrolled
-            ? "blur(28px) saturate(200%) brightness(1.04)"
-            : "blur(20px) saturate(180%) brightness(1.02)",
+            ? "blur(52px) saturate(300%) brightness(1.10)"
+            : "blur(40px) saturate(260%) brightness(1.08)",
           WebkitBackdropFilter: scrolled
-            ? "blur(28px) saturate(200%) brightness(1.04)"
-            : "blur(20px) saturate(180%) brightness(1.02)",
+            ? "blur(52px) saturate(300%) brightness(1.10)"
+            : "blur(40px) saturate(260%) brightness(1.08)",
           boxShadow: isDark
             ? scrolled
-              ? "0 1px 0 rgba(255,255,255,0.06) inset, 0 4px 24px rgba(0,0,0,0.32)"
-              : "0 1px 0 rgba(255,255,255,0.04) inset, 0 1px 0 rgba(4,4,4,0.8)"
+              ? "0 0.5px 0 rgba(255,255,255,0.12) inset, 0 0 0 0.5px rgba(255,255,255,0.04) inset, 0 8px 32px rgba(0,0,0,0.38)"
+              : "0 0.5px 0 rgba(255,255,255,0.08) inset, 0 1px 12px rgba(0,0,0,0.20)"
             : scrolled
-              ? "0 1px 0 rgba(255,255,255,0.80) inset, 0 4px 20px rgba(0,0,0,0.06)"
-              : "0 1px 0 rgba(255,255,255,0.60) inset, 0 1px 0 rgba(245,245,243,0.9)",
+              ? "0 0.5px 0 rgba(255,255,255,1.0) inset, 0 0 0 0.5px rgba(255,255,255,0.70) inset, 0 6px 28px rgba(0,0,0,0.07)"
+              : "0 0.5px 0 rgba(255,255,255,0.95) inset, 0 0 0 0.5px rgba(255,255,255,0.50) inset, 0 2px 12px rgba(0,0,0,0.05)",
           transition: "background 0.35s ease, border-color 0.35s ease, backdrop-filter 0.35s ease, box-shadow 0.35s ease",
         }}
       >

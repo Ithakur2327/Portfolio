@@ -570,41 +570,114 @@ export function HeroSection() {
 
         /* ── iPad / Tablet (768px–1180px) ── */
         @media (min-width: 768px) and (max-width: 1180px) {
+          /* Avatar — much bigger on tablets */
           .h-avatar {
-            width: 210px !important;
-            min-width: 210px !important;
-            height: 210px !important;
-            min-height: 210px !important;
+            width: clamp(220px, 32vw, 300px) !important;
+            min-width: clamp(220px, 32vw, 300px) !important;
+            height: clamp(220px, 32vw, 300px) !important;
+            min-height: clamp(220px, 32vw, 300px) !important;
+          }
+          /* Name bigger */
+          .h-nameblock h1 {
+            font-size: clamp(32px, 5.5vw, 52px) !important;
+            letter-spacing: -0.05em !important;
           }
           .h-nameblock {
-            padding: 0 4px !important;
+            padding: 0 8px !important;
           }
-          .h-nameblock h1 {
-            font-size: clamp(28px, 4.5vw, 42px) !important;
+          /* Flip sentence bigger */
+          .h-nameblock .fs-in,
+          .h-nameblock .fs-out {
+            font-size: 16px !important;
           }
+          /* Info wrap full width with tablet padding */
           .h-info-wrap {
-            margin-left: 32px !important;
-            margin-right: 32px !important;
+            margin-left: 24px !important;
+            margin-right: 24px !important;
           }
+          /* Info pad more spacious */
           .h-info-pad {
-            padding: 22px 28px 20px !important;
+            padding: 28px 36px 24px !important;
           }
+          /* Grid gap bigger */
           .h-grid {
-            gap: 16px 60px !important;
+            gap: 20px 80px !important;
           }
+          /* Icon boxes bigger */
           .h-info-pad .h-grid > div > div > div:first-child,
           .h-info-pad .h-grid > div > a > div:first-child {
-            width: 32px !important; height: 32px !important;
+            width: 36px !important; height: 36px !important;
+            border-radius: 9px !important;
+          }
+          /* Row text bigger */
+          .h-info-pad .h-grid > div > div,
+          .h-info-pad .h-grid > div > a {
+            font-size: 15px !important;
+            gap: 16px !important;
+          }
+          /* Spotify + social bigger */
+          .spotify-tile {
+            padding: 0 24px !important;
+          }
+          .s-icon-tile {
+            padding: 18px 24px !important;
+          }
+          /* Social icon tiles bigger icons */
+          .s-icon-tile > div {
+            width: 38px !important; height: 38px !important;
+          }
+          /* Profile row profile section taller */
+          .h-profile {
+            min-height: clamp(220px, 32vw, 300px) !important;
+          }
+        }
+
+        /* ── iPad Pro / large tablet (1024px–1180px) ── */
+        @media (min-width: 1024px) and (max-width: 1180px) {
+          .h-avatar {
+            width: clamp(260px, 28vw, 300px) !important;
+            min-width: clamp(260px, 28vw, 300px) !important;
+            height: clamp(260px, 28vw, 300px) !important;
+            min-height: clamp(260px, 28vw, 300px) !important;
+          }
+          .h-nameblock h1 {
+            font-size: clamp(38px, 5vw, 52px) !important;
+          }
+          .h-info-pad {
+            padding: 32px 44px 28px !important;
+          }
+        }
+
+        /* ── Samsung Fold unfolded (600px–768px) ── */
+        @media (min-width: 600px) and (max-width: 767px) {
+          .h-avatar {
+            width: clamp(160px, 26vw, 200px) !important;
+            min-width: clamp(160px, 26vw, 200px) !important;
+            height: clamp(160px, 26vw, 200px) !important;
+            min-height: clamp(160px, 26vw, 200px) !important;
+          }
+          .h-nameblock h1 {
+            font-size: clamp(24px, 4vw, 32px) !important;
+          }
+          .h-info-wrap {
+            margin-left: 20px !important;
+            margin-right: 20px !important;
+          }
+          .h-info-pad {
+            padding: 20px 24px 18px !important;
+          }
+          .h-grid {
+            gap: 14px 40px !important;
           }
           .h-info-pad .h-grid > div > div,
           .h-info-pad .h-grid > div > a {
-            font-size: 14px !important;
+            font-size: 13.5px !important;
           }
           .spotify-tile {
-            padding: 0 18px !important;
+            padding: 0 16px !important;
           }
           .s-icon-tile {
-            padding: 16px 20px !important;
+            padding: 14px 18px !important;
           }
         }
 

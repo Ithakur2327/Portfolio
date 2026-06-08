@@ -218,25 +218,44 @@ a, button, [role="button"] {
   position: fixed; top: 0; left: 0; right: 0; z-index: 100;
   height: 52px;
   background: var(--nav-bg);
-  backdrop-filter: blur(8px) saturate(110%);
-  -webkit-backdrop-filter: blur(8px) saturate(110%);
-  border-bottom: 1px solid var(--nav-border);
+  backdrop-filter: blur(40px) saturate(260%) brightness(1.08);
+  -webkit-backdrop-filter: blur(40px) saturate(260%) brightness(1.08);
+  border-bottom: 0.5px solid var(--nav-border);
+  box-shadow:
+    0 0.5px 0 rgba(255,255,255,0.08) inset,
+    0 1px 12px rgba(0,0,0,0.18);
   transition:
     background 0.35s ease,
     border-color 0.35s ease,
-    backdrop-filter 0.35s ease;
+    backdrop-filter 0.35s ease,
+    box-shadow 0.35s ease;
   will-change: transform;
   transform: translateZ(0);
 }
 
 .nav-root.scrolled {
   background: var(--nav-bg-scrolled);
-  backdrop-filter: blur(14px) saturate(130%);
-  -webkit-backdrop-filter: blur(14px) saturate(130%);
-  border-bottom-color: rgba(255,255,255,0.09);
+  backdrop-filter: blur(52px) saturate(300%) brightness(1.10);
+  -webkit-backdrop-filter: blur(52px) saturate(300%) brightness(1.10);
+  border-bottom: 0.5px solid rgba(255,255,255,0.14);
+  box-shadow:
+    0 0.5px 0 rgba(255,255,255,0.12) inset,
+    0 0 0 0.5px rgba(255,255,255,0.04) inset,
+    0 8px 32px rgba(0,0,0,0.36),
+    0 1px 0 rgba(0,0,0,0.6);
+}
+html.light .nav-root {
+  border-bottom: 0.5px solid rgba(255,255,255,0.72);
+  box-shadow:
+    0 0.5px 0 rgba(255,255,255,0.95) inset,
+    0 1px 10px rgba(0,0,0,0.06);
 }
 html.light .nav-root.scrolled {
-  border-bottom-color: rgba(0,0,0,0.09);
+  border-bottom: 0.5px solid rgba(255,255,255,0.90);
+  box-shadow:
+    0 0.5px 0 rgba(255,255,255,1.0) inset,
+    0 0 0 0.5px rgba(255,255,255,0.65) inset,
+    0 6px 24px rgba(0,0,0,0.07);
 }
 
 .nav-inner {
@@ -774,59 +793,63 @@ html.light .stat-badge {
 
 /* ── Dark theme ── */
 .nav-root {
-  backdrop-filter: blur(20px) saturate(180%) brightness(1.04) !important;
-  -webkit-backdrop-filter: blur(20px) saturate(180%) brightness(1.04) !important;
+  backdrop-filter: blur(40px) saturate(260%) brightness(1.08) !important;
+  -webkit-backdrop-filter: blur(40px) saturate(260%) brightness(1.08) !important;
   background: rgba(4,4,4,0.18) !important;
-  border-bottom: 1px solid rgba(255,255,255,0.06) !important;
+  border-bottom: 0.5px solid rgba(255,255,255,0.07) !important;
   box-shadow:
-    0 1px 0 rgba(255,255,255,0.04) inset,
-    0 1px 0 rgba(4,4,4,0.8);
+    0 0.5px 0 rgba(255,255,255,0.08) inset,
+    0 1px 12px rgba(0,0,0,0.20);
 }
 .nav-root.scrolled {
-  backdrop-filter: blur(28px) saturate(200%) brightness(1.06) !important;
-  -webkit-backdrop-filter: blur(28px) saturate(200%) brightness(1.06) !important;
-  background: rgba(4,4,4,0.52) !important;
-  border-bottom: 1px solid rgba(255,255,255,0.10) !important;
+  backdrop-filter: blur(52px) saturate(300%) brightness(1.10) !important;
+  -webkit-backdrop-filter: blur(52px) saturate(300%) brightness(1.10) !important;
+  background: rgba(4,4,4,0.46) !important;
+  border-bottom: 0.5px solid rgba(255,255,255,0.14) !important;
   box-shadow:
-    0 1px 0 rgba(255,255,255,0.06) inset,
-    0 4px 24px rgba(0,0,0,0.32);
+    0 0.5px 0 rgba(255,255,255,0.12) inset,
+    0 0 0 0.5px rgba(255,255,255,0.04) inset,
+    0 8px 32px rgba(0,0,0,0.40);
 }
 
-/* ── Light theme — proper frosted glass ── */
+/* ── Light theme — mirror glass ── */
 html.light .nav-root {
-  backdrop-filter: blur(28px) saturate(220%) brightness(1.04) !important;
-  -webkit-backdrop-filter: blur(28px) saturate(220%) brightness(1.04) !important;
-  background: rgba(255,255,255,0.30) !important;
-  border-bottom: 1px solid rgba(0,0,0,0.07) !important;
+  backdrop-filter: blur(48px) saturate(280%) brightness(1.08) !important;
+  -webkit-backdrop-filter: blur(48px) saturate(280%) brightness(1.08) !important;
+  background: rgba(252,252,250,0.22) !important;
+  border-bottom: 0.5px solid rgba(255,255,255,0.75) !important;
   box-shadow:
-    0 1px 0 rgba(255,255,255,0.90) inset,
-    0 1px 8px rgba(0,0,0,0.05);
+    0 0.5px 0 rgba(255,255,255,0.95) inset,
+    0 0 0 0.5px rgba(255,255,255,0.50) inset,
+    0 2px 12px rgba(0,0,0,0.05);
 }
 html.light .nav-root.scrolled {
-  backdrop-filter: blur(36px) saturate(240%) brightness(1.05) !important;
-  -webkit-backdrop-filter: blur(36px) saturate(240%) brightness(1.05) !important;
-  background: rgba(255,255,255,0.48) !important;
-  border-bottom: 1px solid rgba(0,0,0,0.09) !important;
+  backdrop-filter: blur(60px) saturate(320%) brightness(1.10) !important;
+  -webkit-backdrop-filter: blur(60px) saturate(320%) brightness(1.10) !important;
+  background: rgba(252,252,250,0.42) !important;
+  border-bottom: 0.5px solid rgba(255,255,255,0.90) !important;
   box-shadow:
-    0 1px 0 rgba(255,255,255,0.95) inset,
-    0 4px 20px rgba(0,0,0,0.07);
+    0 0.5px 0 rgba(255,255,255,1.0) inset,
+    0 0 0 0.5px rgba(255,255,255,0.70) inset,
+    0 6px 28px rgba(0,0,0,0.07),
+    0 1px 4px rgba(0,0,0,0.03);
 }
 
 /* Mobile nav height */
 @media (max-width: 760px) {
   .nav-root { height: 56px !important; }
   .nav-inner { height: 56px !important; }
-  .logo-area { width: 42px; height: 42px; }
+  .logo-area { width: 38px; height: 38px; }
 }
 
 /* Tablet nav height (768px–1180px) */
 @media (min-width: 768px) and (max-width: 1180px) {
-  .nav-root { height: 62px !important; }
-  .nav-inner { height: 62px !important; padding: 0 28px !important; }
-  .logo-area { width: 48px; height: 48px; }
+  .nav-root { height: 52px !important; }
+  .nav-inner { height: 52px !important; padding: 0 32px !important; }
+  .logo-area { width: 46px; height: 46px; }
   .logo-i { font-size: 14px !important; }
-  .nav-link { font-size: 14px !important; padding: 6px 13px !important; }
-  .theme-btn { width: 38px !important; height: 38px !important; }
+  .nav-link { font-size: 13.5px !important; padding: 5px 12px !important; }
+  .theme-btn { width: 34px !important; height: 34px !important; border-radius: 8px !important; }
 }
 
 /* ═══════════════════════════════════════════════════════════

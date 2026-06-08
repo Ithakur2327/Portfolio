@@ -14,11 +14,14 @@ export function SparklesBridge() {
 
     // Check if iPad/tablet range
     const vw = window.innerWidth;
-    const HEIGHT = (vw >= 768 && vw <= 1100) ? 72 : 48;
+    const HEIGHT = (vw >= 600 && vw <= 1180) ? 100 : 48;
 
     const getHeight = () => {
       const vw = window.innerWidth;
-      return (vw >= 768 && vw <= 1100) ? 72 : 48;
+      if (vw >= 1024 && vw <= 1180) return 120; // iPad Pro
+      if (vw >= 768  && vw <= 1023) return 100; // iPad / standard tablet
+      if (vw >= 600  && vw <= 767)  return 80;  // Fold unfolded
+      return 48;
     };
 
     const resize = () => {
@@ -53,7 +56,8 @@ export function SparklesBridge() {
       };
     }
 
-    for (let i = 0; i < 30; i++) {
+    const particleCount = getHeight() > 72 ? 55 : 30;
+    for (let i = 0; i < particleCount; i++) {
       const d = spawn();
       d.life = Math.random() * d.maxLife;
       dots.push(d);
@@ -143,8 +147,14 @@ export function SparklesBridge() {
         className="sparkles-bridge-canvas"
       />
       <style suppressHydrationWarning>{`
-        @media (min-width: 768px) and (max-width: 1100px) {
-          .sparkles-bridge-canvas { height: 72px !important; }
+        @media (min-width: 600px) and (max-width: 767px) {
+          .sparkles-bridge-canvas { height: 80px !important; }
+        }
+        @media (min-width: 768px) and (max-width: 1023px) {
+          .sparkles-bridge-canvas { height: 100px !important; }
+        }
+        @media (min-width: 1024px) and (max-width: 1180px) {
+          .sparkles-bridge-canvas { height: 120px !important; }
         }
       `}</style>
     </div>
