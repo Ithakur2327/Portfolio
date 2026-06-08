@@ -117,7 +117,7 @@ function SocialIconTile({href,label,icon,iconBg,iconBorder,iconColor}:{href:stri
 function SpotifyPlayer() {
   // ── ADD YOUR YOUTUBE LINKS HERE ──────────────────────
   const PLAYLIST = [
-    "https://www.youtube.com/watch?v=tlkb3cLfaOQ&list=RDKNxv88wUgnM&index=2",
+    "https://www.youtube.com/watch?v=aNGS-iocwEs&list=RDaNGS-iocwEs&start_radio=1",
     // "https://www.youtube.com/watch?v=ANOTHER_ID",
   ];
   // ─────────────────────────────────────────────────────
