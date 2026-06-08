@@ -705,7 +705,8 @@ export function HeroSection() {
           .h-spacer { display: none !important; }
           .h-social { flex-direction: column !important; }
           .s-social-group {
-            border-bottom: 1px solid var(--border) !important;
+            border-bottom: none !important;
+            flex-direction: row !important;
           }
           .s-partition { display: none !important; }
           .s-icon-tile {
@@ -714,9 +715,15 @@ export function HeroSection() {
             justify-content: center !important;
           }
           .s-icon-tile:last-child { border-right: none !important; }
+          .s-spotify-wrap {
+            border-top: 1px solid var(--border) !important;
+            display: flex !important;
+          }
           .spotify-tile {
             border-left: none !important;
             border-top: none !important;
+            justify-content: flex-start !important;
+            padding: 0 16px !important;
           }
           .h-info-wrap {
             border-left: none !important;
