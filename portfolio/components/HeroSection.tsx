@@ -72,7 +72,7 @@ function Row({icon, href, newTab, children}:{icon:React.ReactNode; href?:string;
   return <div style={{...s}}>{icon}<span>{children}</span></div>;
 }
 
-/* ─── Social icon tile (new: icon-only, hover shows label) ── */
+/* ─── Social icon tile ───────────────────────────────── */
 function SocialIconTile({href,label,icon,iconBg,iconBorder,iconColor}:{href:string;label:string;icon:React.ReactNode;iconBg:string;iconBorder:string;iconColor:string}) {
   const [hovered, setHovered] = useState(false);
   return (
@@ -113,16 +113,9 @@ function SocialIconTile({href,label,icon,iconBg,iconBorder,iconColor}:{href:stri
   );
 }
 
-/* ─── YouTube ID extractor ───────────────────────────── */
-function getYTId(url: string): string {
-  const m = url.match(/(?:v=|youtu\.be\/|embed\/)([a-zA-Z0-9_-]{11})/);
-  return m ? m[1] : "";
-}
-
-/* ─── Spotify-style Player (YouTube embed, no progress bar) ── */
+/* ─── Spotify-style Player ───────────────────────────── */
 function SpotifyPlayer() {
   // ── ADD YOUR YOUTUBE LINKS HERE ──────────────────────
-  // One link = auto-repeat. Multiple links = auto-playlist.
   const PLAYLIST = [
     "https://www.youtube.com/watch?v=jVVwYXV22zg&list=RDaFWDOFg7X2A&index=6",
     // "https://www.youtube.com/watch?v=ANOTHER_ID",
@@ -143,7 +136,6 @@ function SpotifyPlayer() {
   })();
   const isMulti = PLAYLIST.length > 1;
 
-  // Auto-fetch title & artist from YouTube oEmbed — no API key needed
   useEffect(() => {
     if (!currentUrl) return;
     setSongTitle("Loading...");
@@ -153,23 +145,18 @@ function SpotifyPlayer() {
       .then(d => {
         const rawTitle: string = d.title ?? "";
         const rawAuthor: string = (d.author_name ?? "").replace(/\s*-\s*Topic$/i, "").trim();
-
-        // Clean title: remove noise tags like (Official Video), [4K], (Lyrics), ft. tags etc.
         const cleaned = rawTitle
-          .replace(/\(.*?\)/g, "")   // remove anything in ()
-          .replace(/\[.*?\]/g, "")   // remove anything in []
-          .replace(/\s*ft\..*$/i, "") // remove ft. and after
+          .replace(/\(.*?\)/g, "")
+          .replace(/\[.*?\]/g, "")
+          .replace(/\s*ft\..*$/i, "")
           .replace(/\s*feat\..*$/i, "")
           .replace(/\s*official.*$/i, "")
           .trim();
-
-        // If title has " - " assume format "Artist - Song", split it
         const dashParts = cleaned.split(/\s*-\s+/);
         if (dashParts.length >= 2) {
           setArtistName(dashParts[0].trim());
           setSongTitle(dashParts.slice(1).join(" - ").trim());
         } else {
-          // No dash: use oEmbed author as artist, cleaned title as song
           setArtistName(rawAuthor);
           setSongTitle(cleaned || rawTitle);
         }
@@ -200,7 +187,17 @@ function SpotifyPlayer() {
     setPlaying(true);
   };
 
-  // End of track → repeat or advance
+  // Resume playback when tab becomes visible again
+  useEffect(() => {
+    const onVisibility = () => {
+      if (document.visibilityState === "visible" && playing) {
+        setTimeout(() => ytMsg({ event: "command", func: "playVideo" }), 300);
+      }
+    };
+    document.addEventListener("visibilitychange", onVisibility);
+    return () => document.removeEventListener("visibilitychange", onVisibility);
+  }, [playing]);
+
   useEffect(() => {
     const onMsg = (e: MessageEvent) => {
       try {
@@ -222,13 +219,17 @@ function SpotifyPlayer() {
     return () => window.removeEventListener("message", onMsg);
   }, [trackIdx, isMulti, PLAYLIST.length]);
 
-  // Auto-play when track changes
   useEffect(() => {
     if (playing) {
       const t = setTimeout(() => ytMsg({ event: "command", func: "playVideo" }), 800);
       return () => clearTimeout(t);
     }
   }, [trackIdx]);
+
+  /* display string for marquee */
+  const displayText = artistName
+    ? `${artistName}  —  ${songTitle}`
+    : songTitle;
 
   return (
     <div
@@ -258,7 +259,7 @@ function SpotifyPlayer() {
         />
       )}
 
-      {/* Spotify glass logo */}
+      {/* Spotify glass logo — as it is */}
       <div style={{
         width:34, height:34, borderRadius:10, flexShrink:0,
         background:"linear-gradient(135deg,rgba(30,215,96,0.22) 0%,rgba(30,215,96,0.06) 100%)",
@@ -272,23 +273,15 @@ function SpotifyPlayer() {
         </svg>
       </div>
 
-      {/* Song details — artist · song · recently played */}
+      {/* Text block — marquee artist/song + recently played */}
       <div style={{flex:1, minWidth:0, overflow:"hidden"}}>
-        {/* Artist name — top */}
+
+        {/* eq bars (when playing) + marquee text — same line */}
         <div style={{
-          fontSize:11, color:"var(--text-muted)", fontFamily:"'Geist Mono',monospace",
-          whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis",
-          lineHeight:1.2,
+          display:"flex", alignItems:"center", gap:5,
+          overflow:"hidden",
         }}>
-          {artistName}
-        </div>
-        {/* Song name — middle, bold, with eq bars when playing */}
-        <div style={{
-          fontSize:12.5, fontWeight:600, fontFamily:"'Geist',sans-serif",
-          color:"var(--text-primary)", whiteSpace:"nowrap",
-          overflow:"hidden", textOverflow:"ellipsis", lineHeight:1.3,
-          display:"flex", alignItems:"center", gap:5, marginTop:1,
-        }}>
+          {/* EQ bars — as it is */}
           {playing && (
             <span style={{
               display:"inline-flex", alignItems:"flex-end", gap:1.5,
@@ -304,19 +297,39 @@ function SpotifyPlayer() {
               ))}
             </span>
           )}
-          {songTitle}
+
+          {/* Static text */}
+          <div style={{overflow:"hidden", flex:1, minWidth:0}}>
+            <span style={{
+              display:"block",
+              fontFamily:"'Geist',sans-serif",
+              fontSize:12.5,
+              fontWeight:600,
+              color:"var(--text-primary)",
+              whiteSpace:"nowrap",
+              overflow:"hidden",
+              textOverflow:"ellipsis",
+            }}>
+              {displayText}
+            </span>
+          </div>
         </div>
-        {/* Recently Played label — bottom */}
+
+        {/* Recently Played — low opacity */}
         <div style={{
-          fontSize:10, color:"#1ED760", fontFamily:"'Geist Mono',monospace",
-          letterSpacing:"0.04em", marginTop:2, fontWeight:500,
-          opacity: 0.75,
+          fontSize:10,
+          color:"var(--text-primary)",
+          opacity:0.28,
+          fontFamily:"'Geist Mono',monospace",
+          letterSpacing:"0.04em",
+          marginTop:3,
+          fontWeight:500,
         }}>
           Recently Played
         </div>
       </div>
 
-      {/* Skip — only shown when playlist has >1 track */}
+      {/* Skip — only when playlist > 1 */}
       {isMulti && (
         <button onClick={handleSkip} style={{
           width:26, height:26, borderRadius:"50%",
@@ -555,17 +568,14 @@ export function HeroSection() {
           .h-grid {
             gap: 16px 60px !important;
           }
-          /* Bigger icon boxes */
           .h-info-pad .h-grid > div > div > div:first-child,
           .h-info-pad .h-grid > div > a > div:first-child {
             width: 32px !important; height: 32px !important;
           }
-          /* Row font size */
           .h-info-pad .h-grid > div > div,
           .h-info-pad .h-grid > div > a {
             font-size: 14px !important;
           }
-          /* Spotify tile taller */
           .spotify-tile {
             padding: 0 18px !important;
           }
@@ -575,10 +585,7 @@ export function HeroSection() {
         }
 
         @media (max-width: 600px) {
-          /* Side-by-side layout preserved on mobile */
           .h-profile { flex-direction: row !important; }
-
-          /* Responsive square avatar */
           .h-avatar {
             width: clamp(100px, 28vw, 148px) !important;
             min-width: clamp(100px, 28vw, 148px) !important;
@@ -714,10 +721,10 @@ export function HeroSection() {
                 </div>
               </div>
 
-              {/* ── NEW Social row: [GitHub | LinkedIn | X] | [Spotify Player] ── */}
+              {/* ── Social row ── */}
               <div className="h-social" style={{borderTop:B}}>
 
-                {/* Left: 3 social icon tiles in one group */}
+                {/* Left: 3 social icon tiles */}
                 <div className="s-social-group">
                   <SocialIconTile href="https://github.com/Ithakur2327" label="GitHub"
                     iconBg="var(--bg-secondary)" iconBorder="1px solid var(--border)" iconColor="var(--text-primary)"
