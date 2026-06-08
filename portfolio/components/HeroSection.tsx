@@ -117,7 +117,10 @@ function SocialIconTile({href,label,icon,iconBg,iconBorder,iconColor}:{href:stri
 function SpotifyPlayer() {
   // ── ADD YOUR YOUTUBE LINKS HERE ──────────────────────
   const PLAYLIST = [
-    "https://www.youtube.com/watch?v=aNGS-iocwEs&list=RDaNGS-iocwEs&start_radio=1",
+    "https://www.youtube.com/watch?v=jVVwYXV22zg&list=RDjVVwYXV22zg&start_radio=1",
+    "https://www.youtube.com/watch?v=cl0a3i2wFcc&list=RDcl0a3i2wFcc&start_radio=1",
+    
+    "https://www.youtube.com/watch?v=tlkb3cLfaOQ&list=RDtlkb3cLfaOQ&start_radio=1",
     // "https://www.youtube.com/watch?v=ANOTHER_ID",
   ];
   // ─────────────────────────────────────────────────────
