@@ -11,24 +11,9 @@ importers:
       '@radix-ui/react-tooltip':
         specifier: ^1.1.6
         version: 1.2.8(@types/react-dom@19.2.3(@types/react@19.2.15))(@types/react@19.2.15)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
-      '@tsparticles/engine':
-        specifier: ^4.0.5
-        version: 4.0.5
-      '@tsparticles/react':
-        specifier: ^4.0.5
-        version: 4.0.5(@tsparticles/engine@4.0.5)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
-      '@tsparticles/slim':
-        specifier: ^4.0.5
-        version: 4.0.5
       clsx:
         specifier: ^2.1.1
         version: 2.1.1
-      framer-motion:
-        specifier: ^11.15.0
-        version: 11.18.2(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
-      gsap:
-        specifier: ^3.15.0
-        version: 3.15.0
       lucide-react:
         specifier: ^0.468.0
         version: 0.468.0(react@19.2.6)
@@ -539,220 +524,6 @@ packages:
   '@swc/helpers@0.5.15':
     resolution: {integrity: sha512-JQ5TuMi45Owi4/BIMAJBoSQoOJu12oOk/gADqlcUL9JEdHB8vyjUSsxqeNXnmXHjYKMi2WcYtezGEEhqUI/E2g==}
 
-  '@tsparticles/basic@4.0.5':
-    resolution: {integrity: sha512-JWAsRUh8v8RYxLilAAlcwIvUlO2Jfl0DW2t+aAm0OAp4WjmebWSYeG+/CV6Ov+ynV/38vEDAYQIRpyG8Vpmyrg==}
-
-  '@tsparticles/canvas-utils@4.0.5':
-    resolution: {integrity: sha512-U/KtQBuv1reSTnpyBswp4SfhDjOSG9lvcR8Z+1FTV+5/Vfjz2hEy3p61dN934xffrY24uFJE1f60m1npwZ4Ayg==}
-    peerDependencies:
-      '@tsparticles/engine': 4.0.5
-
-  '@tsparticles/engine@4.0.5':
-    resolution: {integrity: sha512-ovFQNzz18Ef0ww7wPqykHWU06K1EhTkMPZhoIZQQaRbFmKKoE+5LyTGGTZGzGjQ4GjHLZq7l9kGl1oInpzoK4Q==}
-    deprecated: Please update to version 4.1.1
-
-  '@tsparticles/interaction-external-attract@4.0.5':
-    resolution: {integrity: sha512-k/2/TGRhCEJHUTWjcarWzG2c4OdHKihkjrEaKaLNuLOtJr30IPAzD4WSs8TDUEFAh1lEKmpC3stbRcjMmHMnMQ==}
-    peerDependencies:
-      '@tsparticles/engine': 4.0.5
-      '@tsparticles/plugin-interactivity': 4.0.5
-
-  '@tsparticles/interaction-external-bounce@4.0.5':
-    resolution: {integrity: sha512-p6KWrxFmhWXvae3HA3SpE5q8X7eVvPKpxbqjk+pK648zb20u8iCpD+7ahadkey10TxggC7ffAa20ATLGftchdw==}
-    peerDependencies:
-      '@tsparticles/engine': 4.0.5
-      '@tsparticles/plugin-interactivity': 4.0.5
-
-  '@tsparticles/interaction-external-bubble@4.0.5':
-    resolution: {integrity: sha512-rFBCF0oOD2bFDM/VmN1M/8LC114UXOvJSyAHmxB1z3N9u/S1MfQBz3nh98D6hTsYAyc9pKdaInDWqBQxabEmUw==}
-    peerDependencies:
-      '@tsparticles/engine': 4.0.5
-      '@tsparticles/plugin-interactivity': 4.0.5
-
-  '@tsparticles/interaction-external-connect@4.0.5':
-    resolution: {integrity: sha512-e9xmZGLI8C7yf+G9Bpbh30QxwXDJkbV16d012jrjVklRnT2iQvs6y2p1KGI3xTNWkyKAKnyIiXYRRSSvBgc4+Q==}
-    peerDependencies:
-      '@tsparticles/engine': 4.0.5
-      '@tsparticles/plugin-interactivity': 4.0.5
-
-  '@tsparticles/interaction-external-destroy@4.0.5':
-    resolution: {integrity: sha512-AX9o1nytQVQdCvhSzF2fzJwVyG0dtSmWIgC1HBklCoARmyydyWOJ2rt0/4sPCu0RjEYeUDI6LSTzzCy6LSJaTw==}
-    peerDependencies:
-      '@tsparticles/engine': 4.0.5
-      '@tsparticles/plugin-interactivity': 4.0.5
-
-  '@tsparticles/interaction-external-grab@4.0.5':
-    resolution: {integrity: sha512-xa+zfluNw+nhoNxBbqeM62QYvfb0NV+gt91R/1bYHJb8CmflBiYhLX5kO3dsGu/zzpjnccqnEN5UDnvPKO8niQ==}
-    peerDependencies:
-      '@tsparticles/engine': 4.0.5
-      '@tsparticles/plugin-interactivity': 4.0.5
-
-  '@tsparticles/interaction-external-parallax@4.0.5':
-    resolution: {integrity: sha512-arNHolnrksrbeLjDZbVDStwgNZAudkRoC3BnR+a2bzVEyGQnix/3MVT+N1PnrSnd0KuXN+yec+N3MlU91aJ2FQ==}
-    peerDependencies:
-      '@tsparticles/engine': 4.0.5
-      '@tsparticles/plugin-interactivity': 4.0.5
-
-  '@tsparticles/interaction-external-pause@4.0.5':
-    resolution: {integrity: sha512-ehMtDvISL40Sr8cQ6vqv67LjwV9xj92OI7RkigTViJiwC4+GNv+3mdEb9Nn/dBphuQ2LmjZAc9b7FfPmBoKIdQ==}
-    peerDependencies:
-      '@tsparticles/engine': 4.0.5
-      '@tsparticles/plugin-interactivity': 4.0.5
-
-  '@tsparticles/interaction-external-push@4.0.5':
-    resolution: {integrity: sha512-XmDUE7HoAIJf9MFC+7WBuEvTk9RfXyLSLFWxRmyEapy4AMDUyWR8DhZU+yslj440W1J0rq28vPOjsOYUwvY9tQ==}
-    peerDependencies:
-      '@tsparticles/engine': 4.0.5
-      '@tsparticles/plugin-interactivity': 4.0.5
-
-  '@tsparticles/interaction-external-remove@4.0.5':
-    resolution: {integrity: sha512-Vd3KWTPwmguAJR1xmwrYwv7ItFL7xqxDzTS0YfDwtm7glXQG/Uo8lszxcASQTw6DNvSG6opGisGlO+dGSX0uJw==}
-    peerDependencies:
-      '@tsparticles/engine': 4.0.5
-      '@tsparticles/plugin-interactivity': 4.0.5
-
-  '@tsparticles/interaction-external-repulse@4.0.5':
-    resolution: {integrity: sha512-Fpd8PBJDRcBohuJbwpr99annMWVVuct5EPiTRsyigshrERpFr4xDHPodhgVJ6A9IFs0NGMH5Kfa1WReSsM8tCA==}
-    peerDependencies:
-      '@tsparticles/engine': 4.0.5
-      '@tsparticles/plugin-interactivity': 4.0.5
-
-  '@tsparticles/interaction-external-slow@4.0.5':
-    resolution: {integrity: sha512-u1RFBXmsOWVPnmdgOsgI3Usg8By0u+xARS1faU+DeQx0UCZeVTbRKR9/f+afcP36EVGb9y5Ij4+zjq5M84dmbA==}
-    peerDependencies:
-      '@tsparticles/engine': 4.0.5
-      '@tsparticles/plugin-interactivity': 4.0.5
-
-  '@tsparticles/interaction-particles-attract@4.0.5':
-    resolution: {integrity: sha512-1FWdRXB32s1LUrV7u0D+mu88WxRq8ijmUfqTlEHMPX/nNPKoSRbic4pN1fTxdbH9hD21S+rjECBmaLmEzpqnVg==}
-    peerDependencies:
-      '@tsparticles/engine': 4.0.5
-      '@tsparticles/plugin-interactivity': 4.0.5
-
-  '@tsparticles/interaction-particles-collisions@4.0.5':
-    resolution: {integrity: sha512-kF5f/7xnjj3tPFUFxuPe2TX8Ee0ZNJskvU0gXjNb6UER9WuvK596gkJWxeWib8VMyKgAywyV0Mp/hXQh0YsJRw==}
-    peerDependencies:
-      '@tsparticles/engine': 4.0.5
-      '@tsparticles/plugin-interactivity': 4.0.5
-
-  '@tsparticles/interaction-particles-links@4.0.5':
-    resolution: {integrity: sha512-06+CKi4DwbmBwoIuHc/PTpnI7V7loqFgmddY16xPXzDs5i9W/Uhhovg5d5yplFOTxmiNLF9QY0Yz6aMHZ3f7cQ==}
-    peerDependencies:
-      '@tsparticles/engine': 4.0.5
-      '@tsparticles/plugin-interactivity': 4.0.5
-
-  '@tsparticles/plugin-blend@4.0.5':
-    resolution: {integrity: sha512-7w21hS28GnD4ac5uooRskmMprFUCJs6wHveC4CY5XiiE7ldcHTUMNT9b2fwXMFawBZDSezfjhCms7zhIQDbjgg==}
-    peerDependencies:
-      '@tsparticles/engine': 4.0.5
-
-  '@tsparticles/plugin-easing-quad@4.0.5':
-    resolution: {integrity: sha512-CsRCndjCeRAUAz+l7zrYEWdw8JK7gbNBxnq5sRcaflESDLNtyeZQtkYoVsMouUgbr4/UdShLMi1IqQiR117vpw==}
-    peerDependencies:
-      '@tsparticles/engine': 4.0.5
-
-  '@tsparticles/plugin-hex-color@4.0.5':
-    resolution: {integrity: sha512-GWmkiiSlb4oow1OxJQF32R2ulOhMwToQvexJC7oqd/2yxZuScD7fukpM5kv9S9XhKVE+zjOJHeWIhRFrBl7mCQ==}
-    peerDependencies:
-      '@tsparticles/engine': 4.0.5
-
-  '@tsparticles/plugin-hsl-color@4.0.5':
-    resolution: {integrity: sha512-gdey7PUKPijnG9hIfrD3z8N4xjyOyRWXsvaGXhoMgpaD47Vcc/wsIXmx/0Znsct0cEEXByXoMQyM8MRO1yTg0w==}
-    peerDependencies:
-      '@tsparticles/engine': 4.0.5
-
-  '@tsparticles/plugin-interactivity@4.0.5':
-    resolution: {integrity: sha512-tRTvH5/MUy/3MNG344rBNuTFxLVCo9MaiYU3d0cxg9Xuh1jVOsIcNj3KbQrOdYvFowzVml8+cAeMGfLtsQoyDw==}
-    peerDependencies:
-      '@tsparticles/engine': 4.0.5
-
-  '@tsparticles/plugin-move@4.0.5':
-    resolution: {integrity: sha512-IJVS/f7QHEfGz4LSlidAmLPPGc2Jj1vp6ydxvMOIyjzPrxS8PIYqsXB0jWjy2fr5KT6+VCNDX+7fY8v0EK9OOg==}
-    peerDependencies:
-      '@tsparticles/engine': 4.0.5
-
-  '@tsparticles/plugin-rgb-color@4.0.5':
-    resolution: {integrity: sha512-+JDxQWW1WupxnDwvN+C0vWQmOvBFkvtvK2MJ6qNjOI9/7Nj8s0xzwm5KGqVUWkaF16K3+AihNjEQRb/M8E5skg==}
-    peerDependencies:
-      '@tsparticles/engine': 4.0.5
-
-  '@tsparticles/react@4.0.5':
-    resolution: {integrity: sha512-3XJmucy/gOgPzQ+i5ZAt3LD8840xdxLPfbNMuRk8D/fHhxI07SHx/8GhODcqnHHHme1zEf0/zUdFee73PuH+NA==}
-    deprecated: Please update to version 4.1.1
-    peerDependencies:
-      '@tsparticles/engine': workspace:^
-      react: '>=16.8.0'
-      react-dom: '>=16.8.0'
-
-  '@tsparticles/shape-circle@4.0.5':
-    resolution: {integrity: sha512-y2CcWNCnC2m2/DaE5CsWbJSCjKsLbOySdT9qgyezmT/boYHupJuNNNOeXP56Tlq+je1wZpayCIAKOpl+VhBtiw==}
-    peerDependencies:
-      '@tsparticles/engine': 4.0.5
-
-  '@tsparticles/shape-emoji@4.0.5':
-    resolution: {integrity: sha512-OyEtJ+tspbIQz21S2aUReH1yllIsZ8eAQ+OthcXllviS43hUSjlNdhsYhlJquIX4pU4UixpMaNngM2CaUDb4RQ==}
-    peerDependencies:
-      '@tsparticles/engine': 4.0.5
-
-  '@tsparticles/shape-image@4.0.5':
-    resolution: {integrity: sha512-2tmJly5jLDJo8MtWOYbBTy07h7cZQ3vMLbux4frANBVgUJxipKl4DK0o2uXx0Qq7g+yMOObIPb17GR8FC2KQdg==}
-    peerDependencies:
-      '@tsparticles/engine': 4.0.5
-
-  '@tsparticles/shape-line@4.0.5':
-    resolution: {integrity: sha512-5pcbqrkH1l9spGV7nYpfEiA94NlZYGYUEBP8x/Hk4SIyvV1085ewonDj+fPcoOad27JXaq076xZlqJZMxo/9WA==}
-    peerDependencies:
-      '@tsparticles/engine': 4.0.5
-
-  '@tsparticles/shape-polygon@4.0.5':
-    resolution: {integrity: sha512-RZwLXtSsnX/KC8Jxjlvp/eSBPs7pU9uN06peWGsteqFUteuMMaCvTPzNpOX0yevDsDKWj8YOklaD89GjrEZ1GQ==}
-    peerDependencies:
-      '@tsparticles/engine': 4.0.5
-
-  '@tsparticles/shape-square@4.0.5':
-    resolution: {integrity: sha512-TMwvEp81/RhJfwRQM/Z7/D56ZZX8RbKd+8OT2DFtk1RJ0OMp+JQT3untwU0rV5pbQsazrlFWj5pnUk5Dy1kTlQ==}
-    peerDependencies:
-      '@tsparticles/engine': 4.0.5
-
-  '@tsparticles/shape-star@4.0.5':
-    resolution: {integrity: sha512-Gg9kg3iTDywyN0PSTliQFa6CFdS4vtTRnSw7Yi1ofAL8KDQHzakpLHoRnKeJJudFHtLOQgJkX7/jVG1yZ82nbw==}
-    peerDependencies:
-      '@tsparticles/engine': 4.0.5
-
-  '@tsparticles/slim@4.0.5':
-    resolution: {integrity: sha512-W90wnex7dZsYszd+J98IoKUX5U+7Q53r9USsPl8edpY1vNJvJh0VijY5Hbi1KTIbG1w/9DCn7HAvMLRyv99gYQ==}
-    deprecated: Please update to version 4.1.1
-
-  '@tsparticles/updater-life@4.0.5':
-    resolution: {integrity: sha512-ncBXJ6HljAK6ddMkjh0NQu2IrkC6IGBtPn6cH+/74kn1S2Aa4m8pOlQzUbvSbvT9NRoLDaWp+/M1vn+Wx8ISvQ==}
-    peerDependencies:
-      '@tsparticles/engine': 4.0.5
-
-  '@tsparticles/updater-opacity@4.0.5':
-    resolution: {integrity: sha512-VNuJyLleqRgRfefmTbTg8bnCEyg1I24zJ46y9TMXwzklrz7A/7go94bt/0SO1nUGpRkOhJ06/2LkRrN1dH4gSQ==}
-    peerDependencies:
-      '@tsparticles/engine': 4.0.5
-
-  '@tsparticles/updater-out-modes@4.0.5':
-    resolution: {integrity: sha512-1SeMXkvEfJB5v6AeMVB2qFXzvzOMLMAhKfgQ4IJpnOttjKEAOn/ATq9t7HGPlaR2yL/uC2X1awyNmKs2U6nuJg==}
-    peerDependencies:
-      '@tsparticles/engine': 4.0.5
-
-  '@tsparticles/updater-paint@4.0.5':
-    resolution: {integrity: sha512-wb2jdSOwkCaosZqvXicwYn/QADXbQlrGy6EqImX9Mdplssq8wlVGEe8DjfFFhVtbq7w4mY7mXis1rhPRYYzZGg==}
-    peerDependencies:
-      '@tsparticles/engine': 4.0.5
-
-  '@tsparticles/updater-rotate@4.0.5':
-    resolution: {integrity: sha512-9uMiwrumR0UQeqKYAx8dzLMdvaqH3aqzP8zK0d5Goib0fVaQaiILdNIHqMGiH/PjJ4JuGTtV5KqeFEwdSCFQ9Q==}
-    peerDependencies:
-      '@tsparticles/engine': 4.0.5
-
-  '@tsparticles/updater-size@4.0.5':
-    resolution: {integrity: sha512-MNCJph1o0uwdOXrFQ2myXd3gtn8MnqKb2XMCEZfYRcnGvxzoTPo8H2IH3wqebagj5u8Ah0pk0yWmvBW0239kfQ==}
-    peerDependencies:
-      '@tsparticles/engine': 4.0.5
-
   '@types/node@20.19.41':
     resolution: {integrity: sha512-ECymXOukMnOoVkC2bb1Vc/w/836DXncOg5m8Xj1RH7xSHZJWNYY6Zh7EH477vcnD5egKNNfy2RpNOmuChhFPgQ==}
 
@@ -873,20 +644,6 @@ packages:
   fraction.js@5.3.4:
     resolution: {integrity: sha512-1X1NTtiJphryn/uLQz3whtY6jK3fTqoE3ohKs0tT+Ujr1W59oopxmoEh7Lu5p6vBaPbgoM0bzveAW4Qi5RyWDQ==}
 
-  framer-motion@11.18.2:
-    resolution: {integrity: sha512-5F5Och7wrvtLVElIpclDT0CBzMVg3dL22B64aZwHtsIY8RB4mXICLrkajK4G9R+ieSAGcgrLeae2SeUTg2pr6w==}
-    peerDependencies:
-      '@emotion/is-prop-valid': '*'
-      react: ^18.0.0 || ^19.0.0
-      react-dom: ^18.0.0 || ^19.0.0
-    peerDependenciesMeta:
-      '@emotion/is-prop-valid':
-        optional: true
-      react:
-        optional: true
-      react-dom:
-        optional: true
-
   framer-motion@12.40.0:
     resolution: {integrity: sha512-uaBd3qC1v3KQqBEjwTUd183K6PbS+j0yR9w9VmEOLWA/tnUcSn8Xa3uck7t4dgpDoUss8xQTcj8W2L07lrnLFg==}
     peerDependencies:
@@ -916,9 +673,6 @@ packages:
   glob-parent@6.0.2:
     resolution: {integrity: sha512-XxwI8EOhVQgWp6iDL+3b0r86f4d6AX6zSU55HfB4ydCEuXLXc5FcYeOu+nnGftS4TEju/11rt4KJPTMgbfmv4A==}
     engines: {node: '>=10.13.0'}
-
-  gsap@3.15.0:
-    resolution: {integrity: sha512-dMW4CWBTUK1AEEDeZc1g4xpPGIrSf9fJF960qbTZmN/QwZIWY5wgliS6JWl9/25fpTGJrMRtSjGtOmPnfjZB+A==}
 
   hasown@2.0.3:
     resolution: {integrity: sha512-ej4AhfhfL2Q2zpMmLo7U1Uv9+PyhIZpgQLGT1F9miIGmiCJIoCgSmczFdrc97mWT4kVY72KA+WnnhJ5pghSvSg==}
@@ -968,14 +722,8 @@ packages:
     resolution: {integrity: sha512-PXwfBhYu0hBCPw8Dn0E+WDYb7af3dSLVWKi3HGv84IdF4TyFoC0ysxFd0Goxw7nSv4T/PzEJQxsYsEiFCKo2BA==}
     engines: {node: '>=8.6'}
 
-  motion-dom@11.18.1:
-    resolution: {integrity: sha512-g76KvA001z+atjfxczdRtw/RXOM3OMSdd1f4DL77qCTF/+avrRJiawSG4yDibEQ215sr9kpinSlX2pCTJ9zbhw==}
-
   motion-dom@12.40.0:
     resolution: {integrity: sha512-HxU3ZaBwNPVQUBQf1xxgq+7JrPNZvjLVxgbpEZL7RrWJnsxOf0/OM+yrHG9ogLQ31Do/r57Oz2gQWPK+6q62mg==}
-
-  motion-utils@11.18.1:
-    resolution: {integrity: sha512-49Kt+HKjtbJKLtgO/LKj9Ld+6vw9BjH5d9sc40R/kVyH8GLAXgT42M2NnuPcJNuA3s9ZfZBUcwIgpmZWGEE+hA==}
 
   motion-utils@12.39.0:
     resolution: {integrity: sha512-8nadJAJjTtqRkmRF36FoJTrywK9nnFmnPwnSMyxaOCU7GDjN9RTMJIxx9De8ErM+vpPhMccr/6fo5WciyQLnMQ==}
@@ -1582,222 +1330,6 @@ snapshots:
     dependencies:
       tslib: 2.8.1
 
-  '@tsparticles/basic@4.0.5':
-    dependencies:
-      '@tsparticles/engine': 4.0.5
-      '@tsparticles/plugin-blend': 4.0.5(@tsparticles/engine@4.0.5)
-      '@tsparticles/plugin-hex-color': 4.0.5(@tsparticles/engine@4.0.5)
-      '@tsparticles/plugin-hsl-color': 4.0.5(@tsparticles/engine@4.0.5)
-      '@tsparticles/plugin-move': 4.0.5(@tsparticles/engine@4.0.5)
-      '@tsparticles/plugin-rgb-color': 4.0.5(@tsparticles/engine@4.0.5)
-      '@tsparticles/shape-circle': 4.0.5(@tsparticles/engine@4.0.5)
-      '@tsparticles/updater-opacity': 4.0.5(@tsparticles/engine@4.0.5)
-      '@tsparticles/updater-out-modes': 4.0.5(@tsparticles/engine@4.0.5)
-      '@tsparticles/updater-paint': 4.0.5(@tsparticles/engine@4.0.5)
-      '@tsparticles/updater-size': 4.0.5(@tsparticles/engine@4.0.5)
-
-  '@tsparticles/canvas-utils@4.0.5(@tsparticles/engine@4.0.5)':
-    dependencies:
-      '@tsparticles/engine': 4.0.5
-
-  '@tsparticles/engine@4.0.5': {}
-
-  '@tsparticles/interaction-external-attract@4.0.5(@tsparticles/engine@4.0.5)(@tsparticles/plugin-interactivity@4.0.5(@tsparticles/engine@4.0.5))':
-    dependencies:
-      '@tsparticles/engine': 4.0.5
-      '@tsparticles/plugin-interactivity': 4.0.5(@tsparticles/engine@4.0.5)
-
-  '@tsparticles/interaction-external-bounce@4.0.5(@tsparticles/engine@4.0.5)(@tsparticles/plugin-interactivity@4.0.5(@tsparticles/engine@4.0.5))':
-    dependencies:
-      '@tsparticles/engine': 4.0.5
-      '@tsparticles/plugin-interactivity': 4.0.5(@tsparticles/engine@4.0.5)
-
-  '@tsparticles/interaction-external-bubble@4.0.5(@tsparticles/engine@4.0.5)(@tsparticles/plugin-interactivity@4.0.5(@tsparticles/engine@4.0.5))':
-    dependencies:
-      '@tsparticles/engine': 4.0.5
-      '@tsparticles/plugin-interactivity': 4.0.5(@tsparticles/engine@4.0.5)
-
-  '@tsparticles/interaction-external-connect@4.0.5(@tsparticles/engine@4.0.5)(@tsparticles/plugin-interactivity@4.0.5(@tsparticles/engine@4.0.5))':
-    dependencies:
-      '@tsparticles/canvas-utils': 4.0.5(@tsparticles/engine@4.0.5)
-      '@tsparticles/engine': 4.0.5
-      '@tsparticles/plugin-interactivity': 4.0.5(@tsparticles/engine@4.0.5)
-
-  '@tsparticles/interaction-external-destroy@4.0.5(@tsparticles/engine@4.0.5)(@tsparticles/plugin-interactivity@4.0.5(@tsparticles/engine@4.0.5))':
-    dependencies:
-      '@tsparticles/engine': 4.0.5
-      '@tsparticles/plugin-interactivity': 4.0.5(@tsparticles/engine@4.0.5)
-
-  '@tsparticles/interaction-external-grab@4.0.5(@tsparticles/engine@4.0.5)(@tsparticles/plugin-interactivity@4.0.5(@tsparticles/engine@4.0.5))':
-    dependencies:
-      '@tsparticles/canvas-utils': 4.0.5(@tsparticles/engine@4.0.5)
-      '@tsparticles/engine': 4.0.5
-      '@tsparticles/plugin-interactivity': 4.0.5(@tsparticles/engine@4.0.5)
-
-  '@tsparticles/interaction-external-parallax@4.0.5(@tsparticles/engine@4.0.5)(@tsparticles/plugin-interactivity@4.0.5(@tsparticles/engine@4.0.5))':
-    dependencies:
-      '@tsparticles/engine': 4.0.5
-      '@tsparticles/plugin-interactivity': 4.0.5(@tsparticles/engine@4.0.5)
-
-  '@tsparticles/interaction-external-pause@4.0.5(@tsparticles/engine@4.0.5)(@tsparticles/plugin-interactivity@4.0.5(@tsparticles/engine@4.0.5))':
-    dependencies:
-      '@tsparticles/engine': 4.0.5
-      '@tsparticles/plugin-interactivity': 4.0.5(@tsparticles/engine@4.0.5)
-
-  '@tsparticles/interaction-external-push@4.0.5(@tsparticles/engine@4.0.5)(@tsparticles/plugin-interactivity@4.0.5(@tsparticles/engine@4.0.5))':
-    dependencies:
-      '@tsparticles/engine': 4.0.5
-      '@tsparticles/plugin-interactivity': 4.0.5(@tsparticles/engine@4.0.5)
-
-  '@tsparticles/interaction-external-remove@4.0.5(@tsparticles/engine@4.0.5)(@tsparticles/plugin-interactivity@4.0.5(@tsparticles/engine@4.0.5))':
-    dependencies:
-      '@tsparticles/engine': 4.0.5
-      '@tsparticles/plugin-interactivity': 4.0.5(@tsparticles/engine@4.0.5)
-
-  '@tsparticles/interaction-external-repulse@4.0.5(@tsparticles/engine@4.0.5)(@tsparticles/plugin-interactivity@4.0.5(@tsparticles/engine@4.0.5))':
-    dependencies:
-      '@tsparticles/engine': 4.0.5
-      '@tsparticles/plugin-interactivity': 4.0.5(@tsparticles/engine@4.0.5)
-
-  '@tsparticles/interaction-external-slow@4.0.5(@tsparticles/engine@4.0.5)(@tsparticles/plugin-interactivity@4.0.5(@tsparticles/engine@4.0.5))':
-    dependencies:
-      '@tsparticles/engine': 4.0.5
-      '@tsparticles/plugin-interactivity': 4.0.5(@tsparticles/engine@4.0.5)
-
-  '@tsparticles/interaction-particles-attract@4.0.5(@tsparticles/engine@4.0.5)(@tsparticles/plugin-interactivity@4.0.5(@tsparticles/engine@4.0.5))':
-    dependencies:
-      '@tsparticles/engine': 4.0.5
-      '@tsparticles/plugin-interactivity': 4.0.5(@tsparticles/engine@4.0.5)
-
-  '@tsparticles/interaction-particles-collisions@4.0.5(@tsparticles/engine@4.0.5)(@tsparticles/plugin-interactivity@4.0.5(@tsparticles/engine@4.0.5))':
-    dependencies:
-      '@tsparticles/engine': 4.0.5
-      '@tsparticles/plugin-interactivity': 4.0.5(@tsparticles/engine@4.0.5)
-
-  '@tsparticles/interaction-particles-links@4.0.5(@tsparticles/engine@4.0.5)(@tsparticles/plugin-interactivity@4.0.5(@tsparticles/engine@4.0.5))':
-    dependencies:
-      '@tsparticles/canvas-utils': 4.0.5(@tsparticles/engine@4.0.5)
-      '@tsparticles/engine': 4.0.5
-      '@tsparticles/plugin-interactivity': 4.0.5(@tsparticles/engine@4.0.5)
-
-  '@tsparticles/plugin-blend@4.0.5(@tsparticles/engine@4.0.5)':
-    dependencies:
-      '@tsparticles/engine': 4.0.5
-
-  '@tsparticles/plugin-easing-quad@4.0.5(@tsparticles/engine@4.0.5)':
-    dependencies:
-      '@tsparticles/engine': 4.0.5
-
-  '@tsparticles/plugin-hex-color@4.0.5(@tsparticles/engine@4.0.5)':
-    dependencies:
-      '@tsparticles/engine': 4.0.5
-
-  '@tsparticles/plugin-hsl-color@4.0.5(@tsparticles/engine@4.0.5)':
-    dependencies:
-      '@tsparticles/engine': 4.0.5
-
-  '@tsparticles/plugin-interactivity@4.0.5(@tsparticles/engine@4.0.5)':
-    dependencies:
-      '@tsparticles/engine': 4.0.5
-
-  '@tsparticles/plugin-move@4.0.5(@tsparticles/engine@4.0.5)':
-    dependencies:
-      '@tsparticles/engine': 4.0.5
-
-  '@tsparticles/plugin-rgb-color@4.0.5(@tsparticles/engine@4.0.5)':
-    dependencies:
-      '@tsparticles/engine': 4.0.5
-
-  '@tsparticles/react@4.0.5(@tsparticles/engine@4.0.5)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)':
-    dependencies:
-      '@tsparticles/engine': 4.0.5
-      react: 19.2.6
-      react-dom: 19.2.6(react@19.2.6)
-
-  '@tsparticles/shape-circle@4.0.5(@tsparticles/engine@4.0.5)':
-    dependencies:
-      '@tsparticles/engine': 4.0.5
-
-  '@tsparticles/shape-emoji@4.0.5(@tsparticles/engine@4.0.5)':
-    dependencies:
-      '@tsparticles/canvas-utils': 4.0.5(@tsparticles/engine@4.0.5)
-      '@tsparticles/engine': 4.0.5
-
-  '@tsparticles/shape-image@4.0.5(@tsparticles/engine@4.0.5)':
-    dependencies:
-      '@tsparticles/engine': 4.0.5
-
-  '@tsparticles/shape-line@4.0.5(@tsparticles/engine@4.0.5)':
-    dependencies:
-      '@tsparticles/engine': 4.0.5
-
-  '@tsparticles/shape-polygon@4.0.5(@tsparticles/engine@4.0.5)':
-    dependencies:
-      '@tsparticles/engine': 4.0.5
-
-  '@tsparticles/shape-square@4.0.5(@tsparticles/engine@4.0.5)':
-    dependencies:
-      '@tsparticles/engine': 4.0.5
-
-  '@tsparticles/shape-star@4.0.5(@tsparticles/engine@4.0.5)':
-    dependencies:
-      '@tsparticles/engine': 4.0.5
-
-  '@tsparticles/slim@4.0.5':
-    dependencies:
-      '@tsparticles/basic': 4.0.5
-      '@tsparticles/engine': 4.0.5
-      '@tsparticles/interaction-external-attract': 4.0.5(@tsparticles/engine@4.0.5)(@tsparticles/plugin-interactivity@4.0.5(@tsparticles/engine@4.0.5))
-      '@tsparticles/interaction-external-bounce': 4.0.5(@tsparticles/engine@4.0.5)(@tsparticles/plugin-interactivity@4.0.5(@tsparticles/engine@4.0.5))
-      '@tsparticles/interaction-external-bubble': 4.0.5(@tsparticles/engine@4.0.5)(@tsparticles/plugin-interactivity@4.0.5(@tsparticles/engine@4.0.5))
-      '@tsparticles/interaction-external-connect': 4.0.5(@tsparticles/engine@4.0.5)(@tsparticles/plugin-interactivity@4.0.5(@tsparticles/engine@4.0.5))
-      '@tsparticles/interaction-external-destroy': 4.0.5(@tsparticles/engine@4.0.5)(@tsparticles/plugin-interactivity@4.0.5(@tsparticles/engine@4.0.5))
-      '@tsparticles/interaction-external-grab': 4.0.5(@tsparticles/engine@4.0.5)(@tsparticles/plugin-interactivity@4.0.5(@tsparticles/engine@4.0.5))
-      '@tsparticles/interaction-external-parallax': 4.0.5(@tsparticles/engine@4.0.5)(@tsparticles/plugin-interactivity@4.0.5(@tsparticles/engine@4.0.5))
-      '@tsparticles/interaction-external-pause': 4.0.5(@tsparticles/engine@4.0.5)(@tsparticles/plugin-interactivity@4.0.5(@tsparticles/engine@4.0.5))
-      '@tsparticles/interaction-external-push': 4.0.5(@tsparticles/engine@4.0.5)(@tsparticles/plugin-interactivity@4.0.5(@tsparticles/engine@4.0.5))
-      '@tsparticles/interaction-external-remove': 4.0.5(@tsparticles/engine@4.0.5)(@tsparticles/plugin-interactivity@4.0.5(@tsparticles/engine@4.0.5))
-      '@tsparticles/interaction-external-repulse': 4.0.5(@tsparticles/engine@4.0.5)(@tsparticles/plugin-interactivity@4.0.5(@tsparticles/engine@4.0.5))
-      '@tsparticles/interaction-external-slow': 4.0.5(@tsparticles/engine@4.0.5)(@tsparticles/plugin-interactivity@4.0.5(@tsparticles/engine@4.0.5))
-      '@tsparticles/interaction-particles-attract': 4.0.5(@tsparticles/engine@4.0.5)(@tsparticles/plugin-interactivity@4.0.5(@tsparticles/engine@4.0.5))
-      '@tsparticles/interaction-particles-collisions': 4.0.5(@tsparticles/engine@4.0.5)(@tsparticles/plugin-interactivity@4.0.5(@tsparticles/engine@4.0.5))
-      '@tsparticles/interaction-particles-links': 4.0.5(@tsparticles/engine@4.0.5)(@tsparticles/plugin-interactivity@4.0.5(@tsparticles/engine@4.0.5))
-      '@tsparticles/plugin-easing-quad': 4.0.5(@tsparticles/engine@4.0.5)
-      '@tsparticles/plugin-interactivity': 4.0.5(@tsparticles/engine@4.0.5)
-      '@tsparticles/shape-emoji': 4.0.5(@tsparticles/engine@4.0.5)
-      '@tsparticles/shape-image': 4.0.5(@tsparticles/engine@4.0.5)
-      '@tsparticles/shape-line': 4.0.5(@tsparticles/engine@4.0.5)
-      '@tsparticles/shape-polygon': 4.0.5(@tsparticles/engine@4.0.5)
-      '@tsparticles/shape-square': 4.0.5(@tsparticles/engine@4.0.5)
-      '@tsparticles/shape-star': 4.0.5(@tsparticles/engine@4.0.5)
-      '@tsparticles/updater-life': 4.0.5(@tsparticles/engine@4.0.5)
-      '@tsparticles/updater-paint': 4.0.5(@tsparticles/engine@4.0.5)
-      '@tsparticles/updater-rotate': 4.0.5(@tsparticles/engine@4.0.5)
-
-  '@tsparticles/updater-life@4.0.5(@tsparticles/engine@4.0.5)':
-    dependencies:
-      '@tsparticles/engine': 4.0.5
-
-  '@tsparticles/updater-opacity@4.0.5(@tsparticles/engine@4.0.5)':
-    dependencies:
-      '@tsparticles/engine': 4.0.5
-
-  '@tsparticles/updater-out-modes@4.0.5(@tsparticles/engine@4.0.5)':
-    dependencies:
-      '@tsparticles/engine': 4.0.5
-
-  '@tsparticles/updater-paint@4.0.5(@tsparticles/engine@4.0.5)':
-    dependencies:
-      '@tsparticles/engine': 4.0.5
-
-  '@tsparticles/updater-rotate@4.0.5(@tsparticles/engine@4.0.5)':
-    dependencies:
-      '@tsparticles/engine': 4.0.5
-
-  '@tsparticles/updater-size@4.0.5(@tsparticles/engine@4.0.5)':
-    dependencies:
-      '@tsparticles/engine': 4.0.5
-
   '@types/node@20.19.41':
     dependencies:
       undici-types: 6.21.0
@@ -1905,15 +1437,6 @@ snapshots:
 
   fraction.js@5.3.4: {}
 
-  framer-motion@11.18.2(react-dom@19.2.6(react@19.2.6))(react@19.2.6):
-    dependencies:
-      motion-dom: 11.18.1
-      motion-utils: 11.18.1
-      tslib: 2.8.1
-    optionalDependencies:
-      react: 19.2.6
-      react-dom: 19.2.6(react@19.2.6)
-
   framer-motion@12.40.0(react-dom@19.2.6(react@19.2.6))(react@19.2.6):
     dependencies:
       motion-dom: 12.40.0
@@ -1935,8 +1458,6 @@ snapshots:
   glob-parent@6.0.2:
     dependencies:
       is-glob: 4.0.3
-
-  gsap@3.15.0: {}
 
   hasown@2.0.3:
     dependencies:
@@ -1975,15 +1496,9 @@ snapshots:
       braces: 3.0.3
       picomatch: 2.3.2
 
-  motion-dom@11.18.1:
-    dependencies:
-      motion-utils: 11.18.1
-
   motion-dom@12.40.0:
     dependencies:
       motion-utils: 12.39.0
-
-  motion-utils@11.18.1: {}
 
   motion-utils@12.39.0: {}
 
