@@ -8,7 +8,7 @@ import {
   useSpring,
   useTransform,
   MotionValue,
-} from "framer-motion";
+} from "motion/react";
 
 import { useReveal } from "./useReveal";
 import { useTheme } from "./ThemeProvider";

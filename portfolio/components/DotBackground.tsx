@@ -23,6 +23,10 @@ function DotCanvas({ dotColor, activeDotColor }: { dotColor: string; activeDotCo
   useEffect(() => {
     const canvas = ref.current;
     if (!canvas) return;
+
+    // Respect user's motion preference — skip heavy canvas animation if reduced motion requested
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
     const ctx = canvas.getContext("2d", { willReadFrequently: false, colorSpace: "srgb" });
     if (!ctx) return;
 

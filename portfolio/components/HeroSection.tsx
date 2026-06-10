@@ -139,8 +139,20 @@ function SpotifyPlayer() {
   })();
   const isMulti = PLAYLIST.length > 1;
 
+  // Cache fetched song metadata per URL to avoid repeated network calls
+  const titleCacheRef = useRef<Map<string, { title: string; artist: string }>>(new Map());
+
   useEffect(() => {
     if (!currentUrl) return;
+
+    // Check cache first
+    const cached = titleCacheRef.current.get(currentUrl);
+    if (cached) {
+      setSongTitle(cached.title);
+      setArtistName(cached.artist);
+      return;
+    }
+
     setSongTitle("Loading..."); setArtistName("");
     fetch(`https://www.youtube.com/oembed?url=${encodeURIComponent(currentUrl)}&format=json`)
       .then(r => r.json())
@@ -157,34 +169,44 @@ function SpotifyPlayer() {
           .replace(/\b(19|20)\d{2}\b/g, "")
           .replace(/\s{2,}/g, " ").trim();
 
+        let finalTitle = "";
+        let finalArtist = "";
+
         // 1️⃣ Dash in title → most reliable split
         const dashParts = cleaned.split(/\s*-\s+/);
         if (dashParts.length >= 2) {
-          setArtistName(dashParts[0].trim());
-          setSongTitle(dashParts.slice(1).join(" - ").trim());
-          return;
-        }
-
-        // 2️⃣ author_name looks like a real artist (not a label/channel)?
-        const isLabel = /records|music|entertainment|productions|studios|worldwide|official|media|films|vevo|channel|tv\b/i
-          .test(rawAuthor);
-        if (rawAuthor && !isLabel) {
-          setArtistName(rawAuthor);
-          setSongTitle(cleaned || rawTitle);
-          return;
-        }
-
-        // 3️⃣ Fallback: last 2 words of title = artist, rest = song
-        const words = cleaned.split(/\s+/).filter(Boolean);
-        if (words.length >= 3) {
-          setArtistName(words.slice(-2).join(" "));
-          setSongTitle(words.slice(0, -2).join(" "));
+          finalArtist = dashParts[0].trim();
+          finalTitle = dashParts.slice(1).join(" - ").trim();
         } else {
-          setArtistName("");
-          setSongTitle(cleaned || rawTitle);
+          // 2️⃣ author_name looks like a real artist (not a label/channel)?
+          const isLabel = /records|music|entertainment|productions|studios|worldwide|official|media|films|vevo|channel|tv\b/i
+            .test(rawAuthor);
+          if (rawAuthor && !isLabel) {
+            finalArtist = rawAuthor;
+            finalTitle = cleaned || rawTitle;
+          } else {
+            // 3️⃣ Fallback: last 2 words of title = artist, rest = song
+            const words = cleaned.split(/\s+/).filter(Boolean);
+            if (words.length >= 3) {
+              finalArtist = words.slice(-2).join(" ");
+              finalTitle = words.slice(0, -2).join(" ");
+            } else {
+              finalArtist = "";
+              finalTitle = cleaned || rawTitle;
+            }
+          }
         }
+
+        // Store in cache
+        titleCacheRef.current.set(currentUrl, { title: finalTitle, artist: finalArtist });
+        setArtistName(finalArtist);
+        setSongTitle(finalTitle);
       })
-      .catch(() => setSongTitle("Unknown"));
+      .catch(() => {
+        const fallback = { title: "Unknown", artist: "" };
+        titleCacheRef.current.set(currentUrl, fallback);
+        setSongTitle(fallback.title);
+      });
   }, [currentUrl]);
 
   const ytMsg = (cmd: object) => {

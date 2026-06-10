@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import type { Viewport } from "next";
 import { ThemeProvider } from "@/components/ThemeProvider";
+import { MotionProvider } from "@/components/MotionProvider";
 import { DotBackground } from "@/components/DotBackground";
 import OnekoCatLoader from "@/components/OnekoCatLoader";
 import "./globals.css";
@@ -48,8 +49,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        {/* DNS prefetch for external logo CDNs used in Skills/Projects */}
         <link rel="dns-prefetch" href="https://cdn.jsdelivr.net" />
         <link rel="dns-prefetch" href="https://registry.npmmirror.com" />
         <link rel="dns-prefetch" href="https://upload.wikimedia.org" />
@@ -57,13 +57,15 @@ export default function RootLayout({
 
       <body>
         <ThemeProvider>
-          <DotBackground />
-          <div style={{ position: "relative", zIndex: 1 }}>
-            {children}
-          </div>
+          <MotionProvider>
+            <DotBackground />
+            <div style={{ position: "relative", zIndex: 1 }}>
+              {children}
+            </div>
 
-          {/* 🐱 Pixel cat — client-only, loaded after hydration */}
-          <OnekoCatLoader />
+            {/* 🐱 Pixel cat — client-only, loaded after hydration */}
+            <OnekoCatLoader />
+          </MotionProvider>
         </ThemeProvider>
       </body>
     </html>
