@@ -1,8 +1,7 @@
 "use client";
-import { useRef, useCallback, useState, useEffect, useId } from "react";
+import { useRef, useCallback, useState, useEffect, useId, startTransition } from "react";
 import { createPortal } from "react-dom";
 import { useReveal } from "./useReveal";
-import { useLowPerf } from "./PerfMode";
 import {
   animate,
   motion,
@@ -410,7 +409,7 @@ function ProjectModal({
                     const tech = TECH_MAP[tag];
                     return (
                       <span key={tag} className="pm-tag" style={{ color: "var(--tag-text)", background: "var(--tag-bg)", border: "1px solid var(--tag-border)" }}>
-                        {tech && <img src={tech.logo} alt={tag} width={11} height={11} style={{ objectFit: "contain", flexShrink: 0, filter: tag === "Express.js" ? "brightness(0) invert(0.6)" : "none" }} />}
+                        {tech && <img src={tech.logo} alt={tag} width={11} height={11} decoding="async" style={{ objectFit: "contain", flexShrink: 0, filter: tag === "Express.js" ? "brightness(0) invert(0.6)" : "none" }} />}
                         {tag}
                       </span>
                     );
@@ -509,7 +508,6 @@ export function ProjectsSection() {
   const [active, setActive] = useState<typeof PROJECTS[0] | null>(null);
   const sectionNodeRef = useRef<HTMLDivElement>(null);
   const uid = useId();
-  const lowPerf = useLowPerf();
 
   const setRefs = useCallback((node: HTMLDivElement | null) => {
     (revealRef as React.MutableRefObject<HTMLDivElement | null>).current = node;
@@ -562,14 +560,7 @@ export function ProjectsSection() {
 
             <motion.div
               className="proj-grid"
-              animate={{
-                opacity: unlocked ? 1 : 0.55,
-                scale: unlocked ? 1 : 0.997,
-                // Same locked/unlocked blur reveal on every device — on
-                // detected low-end devices the radius is just lighter
-                // (cheaper for the GPU to composite) rather than removed.
-                filter: unlocked ? "blur(0px)" : lowPerf ? "blur(2.5px)" : "blur(5px)",
-              }}
+              animate={{ opacity: unlocked ? 1 : 0.55, scale: unlocked ? 1 : 0.997, filter: unlocked ? "blur(0px)" : "blur(5px)" }}
               transition={{ duration: 0.48, ease: [0.22, 1, 0.36, 1] }}
               style={{ pointerEvents: unlocked ? "auto" : "none", willChange: unlocked ? "auto" : "transform, opacity, filter" }}
             >
@@ -579,7 +570,7 @@ export function ProjectsSection() {
                   proj={proj}
                   index={i}
                   visible={visible}
-                  onOpen={() => setActive(proj)}
+                  onOpen={() => startTransition(() => setActive(proj))}
                 />
               ))}
             </motion.div>
