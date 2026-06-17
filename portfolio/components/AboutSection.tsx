@@ -54,7 +54,7 @@ function GoldWord({ text, idx, total, progress, isName }: {
   const s = Math.max(0, (idx - 0.2) / total);
   const e = Math.min(1, (idx + 0.4) / total);
   const raw = useTransform(progress, [s, e], [0, 1]);
-  const p = useSpring(raw, { stiffness: 400, damping: 28, mass: 0.2 });
+  const p = useSpring(raw, { stiffness: 200, damping: 30, mass: 0.5 });
   const opacity = useTransform(p, [0, 0.15, 1], [0.25, 0.65, 1]);
   if (isName) return (
     <motion.span style={{ opacity, display: "inline", verticalAlign: "baseline" }}>
@@ -71,7 +71,7 @@ function GoldWord({ text, idx, total, progress, isName }: {
 function ScrollRevealText() {
   const ref = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start 0.85", "center 0.6"] });
-  const smooth = useSpring(scrollYProgress, { stiffness: 120, damping: 20, restDelta: 0.001 });
+  const smooth = useSpring(scrollYProgress, { stiffness: 80, damping: 25, restDelta: 0.001 });
   const paras = parse(ABOUT_TEXT);
   const total = paras.flat().filter((t) => t.hl).length;
   return (

@@ -251,6 +251,10 @@ export function Avatar() {
         // previously running forever even when nobody could see it,
         // stealing frame budget from every other section.
         if (!isVisible || document.hidden) { G.raf = 0; return; }
+        // Throttle to ~2fps when idle (not hovered, not blinking) — saves massive CPU/GPU
+        const isIdle = !G.state.hover && G.blinkDir === 0 && G.blink === 0;
+        const minInterval = isIdle ? 500 : 0; // 2fps idle, 60fps active
+        if (ts - last < minInterval) { G.raf = requestAnimationFrame(loop); return; }
         G.raf = requestAnimationFrame(loop);
         const dt = Math.min((ts - last) / 1000, 0.033);
         last = ts;

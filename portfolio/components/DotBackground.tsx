@@ -30,7 +30,8 @@ function DotCanvas({ dotColor, activeDotColor }: { dotColor: string; activeDotCo
     const ctx = canvas.getContext("2d", { willReadFrequently: false, colorSpace: "srgb" });
     if (!ctx) return;
 
-    const SPACING = 4.5;
+    const isMobile = window.innerWidth < 768;
+    const SPACING = isMobile ? 8 : 5.5;
     const RADIUS  = 130;
     const RADIUS2 = RADIUS * RADIUS;
     const DOT_R   = 1; // dot radius in CSS px
