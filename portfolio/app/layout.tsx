@@ -22,6 +22,10 @@ export const metadata: Metadata = {
   title: "Indresh Thakur — Full-Stack & AI Developer",
   description:
     "Computer science student (AI specialization) at NIET, passionate about full-stack development and generative AI systems.",
+
+    verification: {
+    google: "4-ItIUeyXuTQwPxwrBiCjBLvxbp5g3smWy5p8dyTOTA",
+  },
   keywords: [
     "Indresh Thakur",
     "Full-Stack Developer",
