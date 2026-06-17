@@ -2,6 +2,7 @@
 import { useRef, useCallback, useState, useEffect, useId } from "react";
 import { createPortal } from "react-dom";
 import { useReveal } from "./useReveal";
+import { useLowPerf } from "./PerfMode";
 import {
   animate,
   motion,
@@ -477,6 +478,8 @@ function ProjectCard({ proj, index, visible, onOpen }: {
           ref={imgRef}
           src={proj.img}
           alt={proj.name}
+          loading="lazy"
+          decoding="async"
           style={{ width: "100%", height: 110, objectFit: "cover", objectPosition: "center top", display: "block", transform: "translateZ(0) scale(1)", transition: "transform 0.5s cubic-bezier(0.22,1,0.36,1)", willChange: "auto" }}
           onMouseEnter={handleImgEnter}
           onMouseLeave={handleImgLeave}
@@ -506,6 +509,7 @@ export function ProjectsSection() {
   const [active, setActive] = useState<typeof PROJECTS[0] | null>(null);
   const sectionNodeRef = useRef<HTMLDivElement>(null);
   const uid = useId();
+  const lowPerf = useLowPerf();
 
   const setRefs = useCallback((node: HTMLDivElement | null) => {
     (revealRef as React.MutableRefObject<HTMLDivElement | null>).current = node;
@@ -558,9 +562,13 @@ export function ProjectsSection() {
 
             <motion.div
               className="proj-grid"
-              animate={{ opacity: unlocked ? 1 : 0.55, scale: unlocked ? 1 : 0.997, filter: unlocked ? "blur(0px)" : "blur(5px)" }}
+              animate={
+                lowPerf
+                  ? { opacity: unlocked ? 1 : 0.55, scale: unlocked ? 1 : 0.997 }
+                  : { opacity: unlocked ? 1 : 0.55, scale: unlocked ? 1 : 0.997, filter: unlocked ? "blur(0px)" : "blur(5px)" }
+              }
               transition={{ duration: 0.48, ease: [0.22, 1, 0.36, 1] }}
-              style={{ pointerEvents: unlocked ? "auto" : "none", willChange: unlocked ? "auto" : "transform, opacity, filter" }}
+              style={{ pointerEvents: unlocked ? "auto" : "none", willChange: unlocked ? "auto" : "transform, opacity" }}
             >
               {PROJECTS.map((proj, i) => (
                 <ProjectCard

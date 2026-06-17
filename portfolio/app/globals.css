@@ -1261,7 +1261,54 @@ html.light #scroll-arrow {
   }
 }
 
-/* Ultra-low-end: kill all backdrop-filter completely */
+/* ═══════════════════════════════════════════════════════════
+   ADAPTIVE PERFORMANCE MODE — keyed off real device capability
+   (CPU cores / RAM / data-saver / measured frame rate), not
+   screen size. See components/PerfMode.tsx.
+
+   Every rule below is scoped to html[data-perf="low"], so it
+   has zero effect on any device that isn't actually struggling
+   — full visual design is untouched everywhere else.
+═══════════════════════════════════════════════════════════ */
+html[data-perf="low"] .nav-root,
+html[data-perf="low"] .nav-root.scrolled,
+html.light[data-perf="low"] .nav-root,
+html.light[data-perf="low"] .nav-root.scrolled {
+  /* Same glass look, far cheaper blur radius */
+  backdrop-filter: blur(10px) saturate(140%) !important;
+  -webkit-backdrop-filter: blur(10px) saturate(140%) !important;
+  transition: background 0.2s ease, border-color 0.2s ease !important;
+}
+
+html[data-perf="low"] #scroll-bottom-fade::after,
+html[data-perf="low"] .scroll-glass-fade::after {
+  backdrop-filter: blur(3px) !important;
+  -webkit-backdrop-filter: blur(3px) !important;
+}
+
+html[data-perf="low"] #scroll-arrow {
+  backdrop-filter: blur(6px) !important;
+  -webkit-backdrop-filter: blur(6px) !important;
+}
+
+/* Skills-section lamp glow: the wide/inner radial-gradient glows use
+   blur(18px)/blur(10px) per group (×4 groups). Cheaper on low-perf. */
+html[data-perf="low"] .skills-lamp-glow-wide  { filter: blur(8px) !important; }
+html[data-perf="low"] .skills-lamp-glow-inner { filter: blur(5px) !important; }
+
+/* Stop the infinite marquee/skills ticker entirely instead of just
+   slowing it — continuous transform animation is real, ongoing
+   compositor work every single frame for as long as the page is open. */
+html[data-perf="low"] .skills-strip,
+html[data-perf="low"] .marquee-inner {
+  animation: none !important;
+}
+
+/* Project grid lock overlay: animate opacity only, skip the blur(5px)
+   filter animation across the whole 6-card grid. */
+html[data-perf="low"] .proj-grid {
+  filter: none !important;
+}
 @media (max-width: 480px) and (max-device-pixel-ratio: 1) {
   .nav-root,
   .mobile-menu,
