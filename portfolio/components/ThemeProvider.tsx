@@ -1,7 +1,6 @@
 "use client";
 import { createContext, useContext, useEffect, useState } from "react";
 import { playThemeToggleSound } from "../lib/soundcn/sounds";
-import { useLowPerf } from "./PerfMode";
 
 export type Theme = "dark" | "light";
 
@@ -21,7 +20,6 @@ function applyTheme(t: Theme) {
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setThemeState] = useState<Theme>("dark");
-  const lowPerf = useLowPerf();
 
   useEffect(() => {
     // Read persisted preference immediately on mount
@@ -39,14 +37,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       navigator.vibrate(t === "dark" ? [30, 10, 15] : [15, 8, 30]);
     }
 
-    // On struggling devices, skip the full-page View Transition snapshot —
-    // it's the single most expensive part of a theme switch (the browser
-    // screenshots the entire page through every blur/box-shadow layer
-    // before it can wipe between them) and is what was showing up as a
-    // sluggish, delayed-feeling toggle. The theme still switches instantly,
-    // just without that snapshot+wipe animation.
     if (
-      !lowPerf &&
       typeof document !== "undefined" &&
       typeof (document as unknown as { startViewTransition?: (cb: () => void) => void }).startViewTransition === "function"
     ) {

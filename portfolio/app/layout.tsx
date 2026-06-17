@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import type { Viewport } from "next";
-import { PerfModeProvider } from "@/components/PerfMode";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { MotionProvider } from "@/components/MotionProvider";
 import { DotBackground } from "@/components/DotBackground";
@@ -59,19 +58,17 @@ export default function RootLayout({
       </head>
 
       <body>
-        <PerfModeProvider>
-          <ThemeProvider>
-            <MotionProvider>
-              <DotBackground />
-              <div style={{ position: "relative", zIndex: 1 }}>
-                {children}
-              </div>
+        <ThemeProvider>
+          <MotionProvider>
+            <DotBackground />
+            <div style={{ position: "relative", zIndex: 1 }}>
+              {children}
+            </div>
 
-              {/* 🐱 Pixel cat — client-only, loaded after hydration */}
-              <OnekoCatLoader />
-            </MotionProvider>
-          </ThemeProvider>
-        </PerfModeProvider>
+            {/* 🐱 Pixel cat — client-only, loaded after hydration */}
+            <OnekoCatLoader />
+          </MotionProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

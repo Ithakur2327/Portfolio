@@ -562,13 +562,16 @@ export function ProjectsSection() {
 
             <motion.div
               className="proj-grid"
-              animate={
-                lowPerf
-                  ? { opacity: unlocked ? 1 : 0.55, scale: unlocked ? 1 : 0.997 }
-                  : { opacity: unlocked ? 1 : 0.55, scale: unlocked ? 1 : 0.997, filter: unlocked ? "blur(0px)" : "blur(5px)" }
-              }
+              animate={{
+                opacity: unlocked ? 1 : 0.55,
+                scale: unlocked ? 1 : 0.997,
+                // Same locked/unlocked blur reveal on every device — on
+                // detected low-end devices the radius is just lighter
+                // (cheaper for the GPU to composite) rather than removed.
+                filter: unlocked ? "blur(0px)" : lowPerf ? "blur(2.5px)" : "blur(5px)",
+              }}
               transition={{ duration: 0.48, ease: [0.22, 1, 0.36, 1] }}
-              style={{ pointerEvents: unlocked ? "auto" : "none", willChange: unlocked ? "auto" : "transform, opacity" }}
+              style={{ pointerEvents: unlocked ? "auto" : "none", willChange: unlocked ? "auto" : "transform, opacity, filter" }}
             >
               {PROJECTS.map((proj, i) => (
                 <ProjectCard

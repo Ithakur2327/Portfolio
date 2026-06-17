@@ -3,7 +3,6 @@
 import React, { useRef, memo } from "react";
 import { useInView } from "motion/react";
 import { useReveal } from "./useReveal";
-import { useLowPerf } from "./PerfMode";
 
 const MONO = "'Geist Mono', 'SF Mono', monospace";
 const SF   = "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', sans-serif";
@@ -130,7 +129,6 @@ function LampBeam({ glowColor, visible }: { glowColor: string; visible: boolean 
       />
       {/* Wide glow */}
       <div
-        className="skills-lamp-glow-wide"
         style={{
           position: "absolute", left: "50%", top: 0,
           transform: "translate3d(-50%,0,0)",
@@ -143,7 +141,6 @@ function LampBeam({ glowColor, visible }: { glowColor: string; visible: boolean 
       />
       {/* Inner glow */}
       <div
-        className="skills-lamp-glow-inner"
         style={{
           position: "absolute", left: "50%", top: 0,
           transform: "translateX(-50%)", width: "120%", height: "100%",
@@ -162,8 +159,7 @@ function LampSkillBox({
   title, glowColor, items, isLast,
 }: { title: string; glowColor: string; items: string[]; isLast?: boolean }) {
   const ref = useRef<HTMLDivElement>(null);
-  const lowPerf = useLowPerf();
-  const isInView = useInView(ref, { margin: "-60px 0px -60px 0px", once: lowPerf });
+  const isInView = useInView(ref, { margin: "-60px 0px -60px 0px", once: false });
 
   return (
     <div
