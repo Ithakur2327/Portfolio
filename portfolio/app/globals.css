@@ -1261,7 +1261,7 @@ html.light #scroll-arrow {
   }
 }
 
-/* Ultra-low-end: kill all backdrop-filter completely */
+
 @media (max-width: 480px) and (max-device-pixel-ratio: 1) {
   .nav-root,
   .mobile-menu,
