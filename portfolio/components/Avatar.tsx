@@ -224,9 +224,33 @@ export function Avatar() {
     imgL.onerror = () => { G.texL = makeFallback(false); boot(); };
     imgL.src = "/avatar-light.jpg";
 
+    let isVisible = true;
+    let loopFn: ((ts: number) => void) | null = null;
+
+    const resumeIfNeeded = () => {
+      if (isVisible && !document.hidden && G.raf === 0 && loopFn) {
+        G.raf = requestAnimationFrame(loopFn);
+      }
+    };
+
+    const io = new IntersectionObserver(
+      ([entry]) => { isVisible = entry.isIntersecting; resumeIfNeeded(); },
+      { threshold: 0 }
+    );
+    io.observe(canvas);
+
+    const onVisibilityChange = () => resumeIfNeeded();
+    document.addEventListener("visibilitychange", onVisibilityChange);
+
     const startLoop = () => {
       let last = 0;
       const loop = (ts: number) => {
+        // Don't keep scheduling frames while off-screen or the tab is
+        // backgrounded — the shader work (per-pixel noise warp) is the
+        // single most expensive thing running on the page, and it was
+        // previously running forever even when nobody could see it,
+        // stealing frame budget from every other section.
+        if (!isVisible || document.hidden) { G.raf = 0; return; }
         G.raf = requestAnimationFrame(loop);
         const dt = Math.min((ts - last) / 1000, 0.033);
         last = ts;
@@ -263,6 +287,7 @@ export function Avatar() {
         gl.uniform1f(G.uBlink, G.blink);
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
       };
+      loopFn = loop;
       G.raf = requestAnimationFrame(loop);
     };
 
@@ -280,6 +305,8 @@ export function Avatar() {
     return () => {
       cancelAnimationFrame(G.raf);
       if (G.tid) clearTimeout(G.tid);
+      io.disconnect();
+      document.removeEventListener("visibilitychange", onVisibilityChange);
       canvas.removeEventListener("mouseenter", onEnter);
       canvas.removeEventListener("mouseleave", onLeave);
       if (G.texD) gl.deleteTexture(G.texD);

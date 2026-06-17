@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import type { Viewport } from "next";
+import { PerfModeProvider } from "@/components/PerfMode";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { MotionProvider } from "@/components/MotionProvider";
 import { DotBackground } from "@/components/DotBackground";
@@ -53,20 +54,24 @@ export default function RootLayout({
         <link rel="dns-prefetch" href="https://cdn.jsdelivr.net" />
         <link rel="dns-prefetch" href="https://registry.npmmirror.com" />
         <link rel="dns-prefetch" href="https://upload.wikimedia.org" />
+        {/* Preconnect for the actual project card photos — bigger payload than the logo icons */}
+        <link rel="preconnect" href="https://images.unsplash.com" crossOrigin="anonymous" />
       </head>
 
       <body>
-        <ThemeProvider>
-          <MotionProvider>
-            <DotBackground />
-            <div style={{ position: "relative", zIndex: 1 }}>
-              {children}
-            </div>
+        <PerfModeProvider>
+          <ThemeProvider>
+            <MotionProvider>
+              <DotBackground />
+              <div style={{ position: "relative", zIndex: 1 }}>
+                {children}
+              </div>
 
-            {/* 🐱 Pixel cat — client-only, loaded after hydration */}
-            <OnekoCatLoader />
-          </MotionProvider>
-        </ThemeProvider>
+              {/* 🐱 Pixel cat — client-only, loaded after hydration */}
+              <OnekoCatLoader />
+            </MotionProvider>
+          </ThemeProvider>
+        </PerfModeProvider>
       </body>
     </html>
   );
