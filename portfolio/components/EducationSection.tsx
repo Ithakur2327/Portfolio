@@ -2,6 +2,8 @@
 import { useRef } from "react";
 import { motion, useInView } from "motion/react";
 import { useReveal } from "./useReveal";
+import { usePdfModal } from "./PdfViewerModal";
+import { slugify } from "@/lib/utils";
 
 const SF = "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', sans-serif";
 const MONO = "'Geist Mono', monospace";
@@ -33,36 +35,34 @@ const LANGUAGES = [
   { name: "MAITHILI" },
 ];
 
+// Each cert's PDF is auto-matched from its title:
+// "MERN Stack Development" -> /public/certificates/mern-stack-development.pdf
+// Just drop your PDFs into public/certificates/ using the slugified title as the filename.
 const CERTIFICATIONS = [
   {
     title: "MERN Stack Development",
     issuer: "Coursera",
     date: "2024",
-    link: "https://drive.google.com/",
   },
   {
     title: "Principles of Generative AI",
     issuer: "Coursera",
     date: "2024",
-    link: "https://drive.google.com/",
   },
   {
     title: "Web Development Bootcamp",
     issuer: "Udemy",
     date: "2023",
-    link: "https://drive.google.com/",
   },
   {
     title: "Data Structures & Algorithms",
     issuer: "GeeksforGeeks",
     date: "2023",
-    link: "https://drive.google.com/",
   },
   {
     title: "Cloud Computing Fundamentals",
     issuer: "Google Cloud",
     date: "2024",
-    link: "https://drive.google.com/",
   },
 ];
 
@@ -146,6 +146,7 @@ function EduCard({ school, degree, short, period, index, sectionVisible }: {
 export function EducationSection() {
   const { ref, revealClass, visible } = useReveal();
   const { ref: ref2, revealClass: revealClass2, visible: vis2 } = useReveal();
+  const { openPdf } = usePdfModal();
 
   return (
     <>
@@ -493,25 +494,34 @@ export function EducationSection() {
             <div className="edu-sec-divider" />
 
             {/* Cert items */}
-            {CERTIFICATIONS.map((cert, i) => (
-              <motion.a
-                key={i}
-                href={cert.link}
-                target="_blank"
-                rel="noreferrer"
-                className="cert-item"
-                initial={false}
-                animate={vis2 ? { opacity: 1, y: 0, rotateX: 0 } : { opacity: 0, y: 14, rotateX: 6 }}
-                transition={{ duration: 0.46, ease: [0.22, 1, 0.36, 1], delay: vis2 ? i * 0.08 : 0 }}
-              >
-                <div className="cert-icon-box"><CertIcon /></div>
-                <div style={{ flex: 1 }}>
-                  <p className="cert-title-txt">{cert.title}</p>
-                  <p className="cert-meta-txt">@ {cert.issuer} · {cert.date}</p>
-                </div>
-                <span className="cert-arrow-icon"><ArrowIcon /></span>
-              </motion.a>
-            ))}
+            {CERTIFICATIONS.map((cert, i) => {
+              const pdfSrc = `/certificates/${slugify(cert.title)}.pdf`;
+              return (
+                <motion.div
+                  key={i}
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => openPdf(pdfSrc, cert.title)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      openPdf(pdfSrc, cert.title);
+                    }
+                  }}
+                  className="cert-item"
+                  initial={false}
+                  animate={vis2 ? { opacity: 1, y: 0, rotateX: 0 } : { opacity: 0, y: 14, rotateX: 6 }}
+                  transition={{ duration: 0.46, ease: [0.22, 1, 0.36, 1], delay: vis2 ? i * 0.08 : 0 }}
+                >
+                  <div className="cert-icon-box"><CertIcon /></div>
+                  <div style={{ flex: 1 }}>
+                    <p className="cert-title-txt">{cert.title}</p>
+                    <p className="cert-meta-txt">@ {cert.issuer} · {cert.date}</p>
+                  </div>
+                  <span className="cert-arrow-icon"><ArrowIcon /></span>
+                </motion.div>
+              );
+            })}
           </div>
         </div>
       </section>

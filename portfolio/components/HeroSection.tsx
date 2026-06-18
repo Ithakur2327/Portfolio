@@ -2,6 +2,7 @@
 import { useEffect, useState, useRef } from "react";
 import { Avatar } from "./Avatar";
 import { useTheme } from "./ThemeProvider";
+import { usePdfModal } from "./PdfViewerModal";
 
 /* ─── Flip sentences ─────────────────────────────────── */
 const SENTENCES = [
@@ -57,12 +58,18 @@ function IBox({color, children}:{color?:string; children:React.ReactNode}) {
 }
 
 /* ─── Row ────────────────────────────────────────────── */
-function Row({icon, href, newTab, children}:{icon:React.ReactNode; href?:string; newTab?:boolean; children:React.ReactNode}) {
+function Row({icon, href, newTab, onClick, children}:{icon:React.ReactNode; href?:string; newTab?:boolean; onClick?:()=>void; children:React.ReactNode}) {
   const s:React.CSSProperties = {
     display:"flex", alignItems:"center", gap:13,
     fontFamily:"'Geist Mono',monospace", fontSize:13,
     color:"var(--text-primary)", textDecoration:"none",
   };
+  if (onClick) return (
+    <button type="button" onClick={onClick}
+      className="hero-link-hover"
+      style={{...s, cursor:"pointer", transition:"opacity 0.15s", background:"none", border:"none", padding:0, font:"inherit", textAlign:"left", width:"100%"}}
+    >{icon}<span style={{borderBottom:"1px solid rgba(128,128,128,0.2)"}}>{children}</span></button>
+  );
   if (href) return (
     <a href={href} target={newTab?"_blank":undefined} rel="noreferrer"
       className="hero-link-hover"
@@ -487,6 +494,7 @@ const CW = 1060;
 
 export function HeroSection() {
   const [vis, setVis] = useState<"ssr" | "visible">("ssr");
+  const { openPdf } = usePdfModal();
   const nameRef = useRef<HTMLHeadingElement>(null);
   const [lineW, setLineW] = useState(180);
 
@@ -828,7 +836,7 @@ export function HeroSection() {
                       icon={<IBox color="#60a5fa"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></IBox>}>
                       ithakur2327@gmail.com
                     </Row>
-                    <Row href="/resume.pdf" newTab
+                    <Row onClick={() => openPdf("/resume.pdf", "Resume")}
                       icon={<IBox color="#94a3b8"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="15" y2="17"/></svg></IBox>}>
                       Resume
                     </Row>

@@ -6,13 +6,10 @@ import { useReveal } from "./useReveal";
 const SF = "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', sans-serif";
 const MONO = "'Geist Mono', monospace";
 
-// ─── Web3Forms Access Key ─────────────────────────────────
-// To enable real email delivery:
-// 1. Visit https://web3forms.com
-// 2. Enter your email (ithakur2327@gmail.com) → get free access key
-// 3. Replace the string below with your key
-// 4. Redeploy — forms will land in your inbox
-const WEB3FORMS_KEY = process.env.NEXT_PUBLIC_WEB3FORMS_KEY || "YOUR_WEB3FORMS_KEY";
+// Form ka data yahan bharke, email app (Gmail/Outlook/jo bhi default ho)
+// khulega — Subject + Body already bhara hua milega. User sirf "Send"
+// dabayega apne email app me — final bhejna usi se hota hai.
+const TO_EMAIL = "ithakur2327@gmail.com";
 
 function MailIcon() {
   return (
@@ -27,58 +24,20 @@ export function ContactSection() {
   const { ref, revealClass, visible } = useReveal();
   const [form, setForm] = useState({ name: "", email: "", message: "" });
   const [sent, setSent] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
-    setError("");
 
-    try {
-      // Web3Forms — free, no backend needed
-      // Submissions go to your email inbox
-      const res = await fetch("https://api.web3forms.com/submit", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Accept: "application/json" },
-        body: JSON.stringify({
-          access_key: WEB3FORMS_KEY,
-          name: form.name,
-          email: form.email,
-          message: form.message,
-          subject: `Portfolio Contact from ${form.name}`,
-          from_name: "Portfolio Contact Form",
-        }),
-      });
+    const subject = `Portfolio Contact from ${form.name}`;
+    const body = `Name: ${form.name}\nEmail: ${form.email}\n\n${form.message}`;
+    const mailtoUrl = `mailto:${TO_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
 
-      const data = await res.json();
+    // Email app khulega, fields pehle se bhare honge — final send wahin se.
+    window.location.href = mailtoUrl;
 
-      if (data.success) {
-        setSent(true);
-        setForm({ name: "", email: "", message: "" });
-        setTimeout(() => setSent(false), 6000);
-      } else {
-        // Fallback: open mailto if Web3Forms key not configured
-        if (WEB3FORMS_KEY === "YOUR_WEB3FORMS_KEY") {
-          const mailtoUrl = `mailto:ithakur2327@gmail.com?subject=${encodeURIComponent(`Portfolio Contact from ${form.name}`)}&body=${encodeURIComponent(`Name: ${form.name}\nEmail: ${form.email}\n\n${form.message}`)}`;
-          window.location.href = mailtoUrl;
-          setSent(true);
-          setForm({ name: "", email: "", message: "" });
-          setTimeout(() => setSent(false), 6000);
-        } else {
-          setError("Failed to send. Please try again or email directly.");
-        }
-      }
-    } catch {
-      // Network error fallback — open mailto
-      const mailtoUrl = `mailto:ithakur2327@gmail.com?subject=${encodeURIComponent(`Portfolio Contact from ${form.name}`)}&body=${encodeURIComponent(`Name: ${form.name}\nEmail: ${form.email}\n\n${form.message}`)}`;
-      window.location.href = mailtoUrl;
-      setSent(true);
-      setForm({ name: "", email: "", message: "" });
-      setTimeout(() => setSent(false), 6000);
-    } finally {
-      setLoading(false);
-    }
+    setSent(true);
+    setForm({ name: "", email: "", message: "" });
+    setTimeout(() => setSent(false), 6000);
   };
 
   return (
@@ -273,23 +232,14 @@ export function ContactSection() {
               </div>
 
               <div className="contact-form-footer">
-                {error && <span className="contact-error">{error}</span>}
                 <button
                   type="submit"
                   className={`btn-primary${sent ? " sent" : ""}`}
                   suppressHydrationWarning
-                  disabled={loading}
-                  style={{ opacity: loading ? 0.7 : 1, marginLeft: "auto" }}
+                  style={{ marginLeft: "auto" }}
                 >
-                  {loading ? (
-                    <>
-                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ animation: "contact-spin 0.8s linear infinite" }}>
-                        <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
-                      </svg>
-                      Sending...
-                    </>
-                  ) : sent ? (
-                    <>✓ Message Sent!</>
+                  {sent ? (
+                    <>✓ Opening Email App...</>
                   ) : (
                     <>
                       Send Message

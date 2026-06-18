@@ -3,6 +3,7 @@ import type { Viewport } from "next";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { MotionProvider } from "@/components/MotionProvider";
 import { DotBackground } from "@/components/DotBackground";
+import { PdfModalProvider } from "@/components/PdfViewerModal";
 import OnekoCatLoader from "@/components/OnekoCatLoader";
 import "./globals.css";
 
@@ -22,10 +23,6 @@ export const metadata: Metadata = {
   title: "Indresh Thakur — Full-Stack & AI Developer",
   description:
     "Computer science student (AI specialization) at NIET, passionate about full-stack development and generative AI systems.",
-
-    verification: {
-    google: "4-ItIUeyXuTQwPxwrBiCjBLvxbp5g3smWy5p8dyTOTA",
-  },
   keywords: [
     "Indresh Thakur",
     "Full-Stack Developer",
@@ -64,13 +61,15 @@ export default function RootLayout({
       <body>
         <ThemeProvider>
           <MotionProvider>
-            <DotBackground />
-            <div style={{ position: "relative", zIndex: 1 }}>
-              {children}
-            </div>
+            <PdfModalProvider>
+              <DotBackground />
+              <div style={{ position: "relative", zIndex: 1 }}>
+                {children}
+              </div>
 
-            {/* 🐱 Pixel cat — client-only, loaded after hydration */}
-            <OnekoCatLoader />
+              {/* 🐱 Pixel cat — client-only, loaded after hydration */}
+              <OnekoCatLoader />
+            </PdfModalProvider>
           </MotionProvider>
         </ThemeProvider>
       </body>
