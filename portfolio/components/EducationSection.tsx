@@ -160,6 +160,7 @@ export function EducationSection() {
           background: var(--bg-base);
           border-top: 1px solid var(--line);
           border-bottom: 1px solid var(--line);
+          box-shadow: inset 60px 0 50px -50px rgba(0,0,0,0.55), inset -60px 0 50px -50px rgba(0,0,0,0.55);
         }
         .edu-inner {
           max-width: 1060px;
