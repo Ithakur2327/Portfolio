@@ -327,9 +327,10 @@ export function SkillsSection() {
           position: "relative",
           left: "50%", marginLeft: "-50vw",
           width: "100vw",
-          background: "linear-gradient(to right, var(--bg-base-edge) 0%, var(--bg-base) 16%, var(--bg-base) 84%, var(--bg-base-edge) 100%)",
+          background: "var(--bg-base)",
           borderTop: "1px solid var(--line)",
           borderBottom: "1px solid var(--line)",
+          boxShadow: "inset 60px 0 50px -50px rgba(0,0,0,0.55), inset -60px 0 50px -50px rgba(0,0,0,0.55)",
         }}>
           <div style={{ maxWidth: 1060, margin: "0 auto", padding: "0 20px 40px" }}>
             <div style={{ paddingTop: 28, marginBottom: 4 }}>
