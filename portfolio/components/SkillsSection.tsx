@@ -330,6 +330,8 @@ export function SkillsSection() {
           background: "var(--bg-base)",
           borderTop: "1px solid var(--line)",
           borderBottom: "1px solid var(--line)",
+          maskImage: "linear-gradient(to right, rgba(0,0,0,0.45) 0%, black 15%, black 85%, rgba(0,0,0,0.45) 100%)",
+          WebkitMaskImage: "linear-gradient(to right, rgba(0,0,0,0.45) 0%, black 15%, black 85%, rgba(0,0,0,0.45) 100%)",
         }}>
           <div style={{ maxWidth: 1060, margin: "0 auto", padding: "0 20px 40px" }}>
             <div style={{ paddingTop: 28, marginBottom: 4 }}>
