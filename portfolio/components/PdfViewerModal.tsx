@@ -1,10 +1,19 @@
 "use client";
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
 
-type PdfModalState = { src: string; title: string } | null;
+type PdfModalState = { src: string; title: string; downloadSrc: string } | null;
 
 type PdfModalContextValue = {
-  openPdf: (src: string, title: string) => void;
+  /**
+   * Opens the in-app viewer.
+   * @param src         What to display in the preview (PDF or image).
+   * @param title       Header title.
+   * @param downloadSrc Optional — what the Download button links to, if
+   *                     different from `src` (e.g. preview a resume image
+   *                     but let people download the real resume.pdf).
+   *                     Defaults to `src`.
+   */
+  openPdf: (src: string, title: string, downloadSrc?: string) => void;
 };
 
 const PdfModalContext = createContext<PdfModalContextValue | null>(null);
@@ -36,8 +45,8 @@ function CloseIcon() {
 export function PdfModalProvider({ children }: { children: React.ReactNode }) {
   const [modal, setModal] = useState<PdfModalState>(null);
 
-  const openPdf = useCallback((src: string, title: string) => {
-    setModal({ src, title });
+  const openPdf = useCallback((src: string, title: string, downloadSrc?: string) => {
+    setModal({ src, title, downloadSrc: downloadSrc ?? src });
   }, []);
 
   const close = useCallback(() => setModal(null), []);
@@ -123,7 +132,7 @@ export function PdfModalProvider({ children }: { children: React.ReactNode }) {
 
               <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
                 <a
-                  href={modal.src}
+                  href={modal.downloadSrc}
                   download
                   style={{
                     fontFamily: "'Geist Mono',monospace",
@@ -159,13 +168,21 @@ export function PdfModalProvider({ children }: { children: React.ReactNode }) {
               </div>
             </div>
 
-            {/* PDF body */}
-            <div style={{ flex: 1, background: "#525659" }}>
-              <iframe
-                src={`${modal.src}#view=FitH`}
-                title={modal.title}
-                style={{ width: "100%", height: "100%", border: "none" }}
-              />
+            {/* Body — image (e.g. resume.png) or PDF, same chrome either way */}
+            <div style={{ flex: 1, background: "#525659", overflow: "auto" }}>
+              {/\.(png|jpe?g|webp|gif|avif)$/i.test(modal.src) ? (
+                <img
+                  src={modal.src}
+                  alt={modal.title}
+                  style={{ display: "block", width: "100%", height: "auto" }}
+                />
+              ) : (
+                <iframe
+                  src={`${modal.src}#view=FitH`}
+                  title={modal.title}
+                  style={{ width: "100%", height: "100%", border: "none" }}
+                />
+              )}
             </div>
           </div>
         </div>
