@@ -169,7 +169,7 @@ function SpotifyPlayer() {
           .replace(/\s*-\s*Topic$/i, "").trim();
 
         // Strip noise from title
-        let cleaned = rawTitle
+        const cleaned = rawTitle
           .replace(/\s*[|•·]\s*.*/g, "")
           .replace(/\(.*?\)/g, "").replace(/\[.*?\]/g, "")
           .replace(/\s*(ft\.|feat\.|official|video|audio|lyric|lyrics|full|hd|4k|new|latest|song|songs|punjabi|hindi|music)\b.*/gi, "")
@@ -276,12 +276,10 @@ function SpotifyPlayer() {
       const t = setTimeout(() => ytMsg({ event: "command", func: "playVideo" }), 800);
       return () => clearTimeout(t);
     }
+    // Intentionally only reacts to track changes — reads the current
+    // `playing` flag without re-running every time playback is paused/resumed.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [trackIdx]);
-
-  /* display string */
-  const displayText = artistName
-    ? `${artistName}  —  ${songTitle}`
-    : songTitle;
 
   return (
     <div

@@ -287,7 +287,7 @@ function MovingStrip({ items }: { items: string[] }) {
 
 /* ── Main ── */
 export function SkillsSection() {
-  const { ref, revealClass, visible } = useReveal();
+  const { ref, revealClass } = useReveal();
 
   return (
     <>
@@ -330,7 +330,6 @@ export function SkillsSection() {
           background: "var(--bg-base)",
           borderTop: "1px solid var(--line)",
           borderBottom: "1px solid var(--line)",
-          boxShadow: "inset 60px 0 50px -50px rgba(0,0,0,0.55), inset -60px 0 50px -50px rgba(0,0,0,0.55)",
         }}>
           <div style={{ maxWidth: 1060, margin: "0 auto", padding: "0 20px 40px" }}>
             <div style={{ paddingTop: 28, marginBottom: 4 }}>

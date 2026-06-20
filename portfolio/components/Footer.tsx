@@ -1,6 +1,5 @@
 "use client";
 import { useTheme } from "./ThemeProvider";
-import { useEffect, useRef } from "react";
 import {
   motion,
   useMotionValue,

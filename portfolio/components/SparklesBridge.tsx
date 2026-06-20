@@ -24,10 +24,13 @@ export function SparklesBridge() {
       return 48;
     };
 
+    let canvasW = window.innerWidth;
+
     const resize = () => {
       const HEIGHT = getHeight();
       const dpr = Math.min(window.devicePixelRatio || 1, 2);
       const w = window.innerWidth;
+      canvasW = w;
       canvas.width  = w * dpr;
       canvas.height = HEIGHT * dpr;
       canvas.style.width  = `${w}px`;
@@ -40,8 +43,6 @@ export function SparklesBridge() {
 
     type Dot = { x: number; y: number; vx: number; vy: number; r: number; life: number; maxLife: number; maxOp: number; };
     const dots: Dot[] = [];
-    let canvasW = window.innerWidth;
-    window.addEventListener("resize", () => { canvasW = window.innerWidth; }, { passive: true });
 
     function spawn(): Dot {
       const maxLife = 100 + Math.random() * 140;
@@ -96,7 +97,7 @@ export function SparklesBridge() {
       const isDark = theme === "dark";
 
       ctx.clearRect(0, 0, W, H);
-      ctx.fillStyle = getBgColor();
+      ctx.fillStyle = bgColor;
       ctx.fillRect(0, 0, W, H);
 
       ctx.beginPath();

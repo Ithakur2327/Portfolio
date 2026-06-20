@@ -67,6 +67,9 @@ function BlobMenu({ open, onClose, isDark }: { open: boolean; onClose: () => voi
     return () => {
       if (closeTimer.current) clearTimeout(closeTimer.current);
     };
+    // Intentionally only reacts to `open` changes — reads the current
+    // `shouldRender` value without re-running every time it updates itself.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
   // Keyboard close

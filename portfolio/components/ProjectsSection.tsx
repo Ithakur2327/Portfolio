@@ -1,5 +1,5 @@
 "use client";
-import { useRef, useCallback, useState, useEffect, useId, startTransition } from "react";
+import { useRef, useCallback, useState, useEffect, startTransition } from "react";
 import { createPortal } from "react-dom";
 import { useReveal } from "./useReveal";
 import {
@@ -507,7 +507,6 @@ export function ProjectsSection() {
   const [unlocked, setUnlocked] = useState(false);
   const [active, setActive] = useState<typeof PROJECTS[0] | null>(null);
   const sectionNodeRef = useRef<HTMLDivElement>(null);
-  const uid = useId();
 
   const setRefs = useCallback((node: HTMLDivElement | null) => {
     (revealRef as React.MutableRefObject<HTMLDivElement | null>).current = node;
