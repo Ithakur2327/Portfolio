@@ -2,8 +2,6 @@
 import { useRef } from "react";
 import { motion, useInView } from "motion/react";
 import { useReveal } from "./useReveal";
-import { usePdfModal } from "./PdfViewerModal";
-import { slugify } from "@/lib/utils";
 
 const SF = "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', sans-serif";
 const MONO = "'Geist Mono', monospace";
@@ -30,39 +28,43 @@ const EDUCATION = [
 ];
 
 const LANGUAGES = [
-  { name: "HINDI" },
-  { name: "ENGLISH" },
-  { name: "MAITHILI" },
+  { name: "Hindi" },
+  { name: "English" },
+  { name: "Maithili" },
 ];
 
-// Each cert's PDF is auto-matched from its title:
-// "MERN Stack Development" -> /public/certificates/mern-stack-development.pdf
-// Just drop your PDFs into public/certificates/ using the slugified title as the filename.
+// Each cert opens its Google Drive share link directly in a new tab.
+// Paste your own "Anyone with the link can view" Drive URL into `link` below.
 const CERTIFICATIONS = [
   {
     title: "MERN Stack Development",
     issuer: "Coursera",
     date: "2024",
+    link: "https://drive.google.com/file/d/REPLACE_WITH_FILE_ID/view",
   },
   {
     title: "Principles of Generative AI",
     issuer: "Coursera",
     date: "2024",
+    link: "https://drive.google.com/file/d/REPLACE_WITH_FILE_ID/view",
   },
   {
     title: "Web Development Bootcamp",
     issuer: "Udemy",
     date: "2023",
+    link: "https://drive.google.com/file/d/REPLACE_WITH_FILE_ID/view",
   },
   {
     title: "Data Structures & Algorithms",
     issuer: "GeeksforGeeks",
     date: "2023",
+    link: "https://drive.google.com/file/d/REPLACE_WITH_FILE_ID/view",
   },
   {
     title: "Cloud Computing Fundamentals",
     issuer: "Google Cloud",
     date: "2024",
+    link: "https://drive.google.com/file/d/REPLACE_WITH_FILE_ID/view",
   },
 ];
 
@@ -93,20 +95,30 @@ function ArrowIcon() {
   );
 }
 
-/* ── Language pill with skill-section-style highlight animation ── */
-function LangPill({ name, delay }: { name: string; delay: number }) {
+function LangIcon() {
+  return (
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="9"/>
+      <line x1="3" y1="12" x2="21" y2="12"/>
+      <path d="M12 3a13.6 13.6 0 0 1 0 18a13.6 13.6 0 0 1 0-18z"/>
+    </svg>
+  );
+}
+
+/* ── Language entry — divided list item with accent dot ── */
+function LangItem({ name, delay }: { name: string; delay: number }) {
   const ref = useRef<HTMLSpanElement>(null);
   const inView = useInView(ref, { once: true, margin: "-10% 0px -10% 0px" });
 
   return (
     <motion.span
       ref={ref}
-      className="lang-pill-item"
+      className="lang-item"
       initial={false}
-      animate={inView ? { opacity: 1, scale: 1, y: 0 } : { opacity: 0, scale: 0.82, y: 8 }}
-      transition={{ duration: 0.42, ease: [0.22, 1, 0.36, 1], delay: inView ? delay : 0 }}
+      animate={inView ? { opacity: 1, x: 0 } : { opacity: 0, x: 6 }}
+      transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1], delay: inView ? delay : 0 }}
     >
-      <span className="lang-pill-dot" />
+      <span className="lang-dot" />
       {name}
     </motion.span>
   );
@@ -146,7 +158,6 @@ function EduCard({ school, degree, short, period, index, sectionVisible }: {
 export function EducationSection() {
   const { ref, revealClass, visible } = useReveal();
   const { ref: ref2, revealClass: revealClass2, visible: vis2 } = useReveal();
-  const { openPdf } = usePdfModal();
 
   return (
     <>
@@ -275,83 +286,77 @@ export function EducationSection() {
           padding-top: 2px;
         }
 
-        /* ── language row — enhanced box layout ── */
+        /* ── language row — divided credential-style list, accent dot reuses
+               the site's own blue (Stats graphs) / gold (About highlights) ── */
         .lang-row {
           display: flex;
           align-items: center;
-          gap: 0;
+          gap: 16px;
           flex-wrap: nowrap;
           overflow-x: auto;
           -webkit-overflow-scrolling: touch;
           scrollbar-width: none;
-          margin-top: 8px;
-          padding: 14px 16px;
+          margin-top: 10px;
+          padding-top: 16px;
           border-top: 1px solid var(--border);
-          border: 1px solid rgba(59,130,246,0.22);
-          border-radius: 10px;
-          background: rgba(59,130,246,0.04);
-          box-shadow: 0 0 0 1px rgba(59,130,246,0.08) inset;
         }
         .lang-row::-webkit-scrollbar { display: none; }
-        .lang-label-txt {
-          font-size: 12px;
-          font-weight: 800;
-          letter-spacing: 0.06em;
-          text-transform: uppercase;
-          color: var(--text-primary);
-          font-family: ${MONO};
+        .lang-label-group {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          color: var(--text-muted);
           flex-shrink: 0;
         }
-        .lang-dash {
-          font-size: 13px;
-          font-weight: 400;
+        .lang-label-txt {
+          font-size: 11px;
+          font-weight: 700;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
           color: var(--text-muted);
           font-family: ${MONO};
-          margin: 0 12px;
           flex-shrink: 0;
         }
-        .lang-pills-wrap {
+        .lang-items-wrap {
           display: flex;
-          gap: 7px;
           align-items: center;
-          flex-wrap: nowrap;
+          flex-shrink: 0;
         }
-        .lang-pill-item {
+        .lang-item {
           display: inline-flex;
           align-items: center;
-          gap: 0;
-          padding: 5px 16px;
-          border-radius: 7px;
+          gap: 8px;
           font-size: 12.5px;
-          font-weight: 800;
+          font-weight: 600;
           font-family: ${SF};
-          letter-spacing: 0.06em;
-          border: 1px solid rgba(59,130,246,0.35);
-          color: #60a5fa;
-          background: rgba(59,130,246,0.08);
+          letter-spacing: -0.005em;
+          color: var(--text-secondary);
+          padding-right: 16px;
+          margin-right: 16px;
+          border-right: 1px solid var(--border);
           cursor: default;
           user-select: none;
-          transition: transform 0.18s cubic-bezier(0.22,1,0.36,1), box-shadow 0.18s, background 0.18s;
+          transition: color 0.2s ease;
         }
-        .lang-pill-item:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 4px 14px rgba(59,130,246,0.20);
-          background: rgba(59,130,246,0.14);
+        .lang-item:last-child {
+          padding-right: 0;
+          margin-right: 0;
+          border-right: none;
         }
-        html.light .lang-row {
-          border-color: rgba(29,78,216,0.20);
-          background: rgba(29,78,216,0.03);
+        .lang-item:hover { color: var(--text-primary); }
+        .lang-dot {
+          width: 5px; height: 5px;
+          border-radius: 50%;
+          background: #4d8eff;
+          box-shadow: 0 0 0 3px rgba(77,142,255,0.18);
+          flex-shrink: 0;
+          transition: transform 0.22s cubic-bezier(0.22,1,0.36,1);
         }
-        html.light .lang-pill-item {
-          color: #1d4ed8;
-          background: rgba(29,78,216,0.08);
-          border-color: rgba(29,78,216,0.28);
+        .lang-item:hover .lang-dot { transform: scale(1.4); }
+        html.light .lang-dot {
+          background: #b8860b;
+          box-shadow: 0 0 0 3px rgba(184,134,11,0.18);
         }
-        html.light .lang-pill-item:hover {
-          box-shadow: 0 4px 12px rgba(29,78,216,0.16);
-          background: rgba(29,78,216,0.13);
-        }
-        .lang-pill-dot { display: none; }
 
         /* ── cert section ── */
         .cert-count-badge {
@@ -462,11 +467,13 @@ export function EducationSection() {
 
             {/* Languages */}
             <div className="lang-row">
-              <span className="lang-label-txt">Languages</span>
-              <span className="lang-dash">—</span>
-              <div className="lang-pills-wrap">
+              <span className="lang-label-group">
+                <LangIcon />
+                <span className="lang-label-txt">Languages</span>
+              </span>
+              <div className="lang-items-wrap">
                 {LANGUAGES.map((lang, i) => (
-                  <LangPill key={i} name={lang.name} delay={0.18 + i * 0.08} />
+                  <LangItem key={i} name={lang.name} delay={0.18 + i * 0.08} />
                 ))}
               </div>
             </div>
@@ -494,34 +501,25 @@ export function EducationSection() {
             <div className="edu-sec-divider" />
 
             {/* Cert items */}
-            {CERTIFICATIONS.map((cert, i) => {
-              const pdfSrc = `/certificates/${slugify(cert.title)}.pdf`;
-              return (
-                <motion.div
-                  key={i}
-                  role="button"
-                  tabIndex={0}
-                  onClick={() => openPdf(pdfSrc, cert.title)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" || e.key === " ") {
-                      e.preventDefault();
-                      openPdf(pdfSrc, cert.title);
-                    }
-                  }}
-                  className="cert-item"
-                  initial={false}
-                  animate={vis2 ? { opacity: 1, y: 0, rotateX: 0 } : { opacity: 0, y: 14, rotateX: 6 }}
-                  transition={{ duration: 0.46, ease: [0.22, 1, 0.36, 1], delay: vis2 ? i * 0.08 : 0 }}
-                >
-                  <div className="cert-icon-box"><CertIcon /></div>
-                  <div style={{ flex: 1 }}>
-                    <p className="cert-title-txt">{cert.title}</p>
-                    <p className="cert-meta-txt">@ {cert.issuer} · {cert.date}</p>
-                  </div>
-                  <span className="cert-arrow-icon"><ArrowIcon /></span>
-                </motion.div>
-              );
-            })}
+            {CERTIFICATIONS.map((cert, i) => (
+              <motion.a
+                key={i}
+                href={cert.link}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="cert-item"
+                initial={false}
+                animate={vis2 ? { opacity: 1, y: 0, rotateX: 0 } : { opacity: 0, y: 14, rotateX: 6 }}
+                transition={{ duration: 0.46, ease: [0.22, 1, 0.36, 1], delay: vis2 ? i * 0.08 : 0 }}
+              >
+                <div className="cert-icon-box"><CertIcon /></div>
+                <div style={{ flex: 1 }}>
+                  <p className="cert-title-txt">{cert.title}</p>
+                  <p className="cert-meta-txt">@ {cert.issuer} · {cert.date}</p>
+                </div>
+                <span className="cert-arrow-icon"><ArrowIcon /></span>
+              </motion.a>
+            ))}
           </div>
         </div>
       </section>
