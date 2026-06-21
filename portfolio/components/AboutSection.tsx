@@ -688,16 +688,16 @@ export function AboutSection() {
         }
 
         .gh-cell-0 { background: rgba(255,255,255,0.04); outline: 1px solid rgba(255,255,255,0.10); outline-offset: -1px; }
-        .gh-cell-1 { background: #8fc6fa; }
-        .gh-cell-2 { background: #1262c4; }
-        .gh-cell-3 { background: #104b98; }
-        .gh-cell-4 { background: #4fd0e3; }
+        .gh-cell-1 { background: #bfdbfe; }
+        .gh-cell-2 { background: #60a5fa; }
+        .gh-cell-3 { background: #2563eb; }
+        .gh-cell-4 { background: #1e3a8a; }
 
         .lc-cell-0 { background: rgba(255,255,255,0.04); outline: 1px solid rgba(255,255,255,0.10); outline-offset: -1px; }
-        .lc-cell-1 { background: #8fc6fa; }
-        .lc-cell-2 { background: #1262c4; }
-        .lc-cell-3 { background: #104b98; }
-        .lc-cell-4 { background: #4fd0e3; }
+        .lc-cell-1 { background: #bfdbfe; }
+        .lc-cell-2 { background: #60a5fa; }
+        .lc-cell-3 { background: #2563eb; }
+        .lc-cell-4 { background: #1e3a8a; }
 
         html.light .name-highlight { color: #16a34a; background: rgba(22,163,74,0.08); border-color: rgba(22,163,74,0.20); box-shadow: none; }
         html.light .gold-box-word { color: #d97706 !important; background: rgba(245,158,11,0.13) !important; border-color: rgba(217,119,6,0.45) !important; }
