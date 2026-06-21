@@ -150,7 +150,10 @@
     nekoEl.style.height = '32px';
     nekoEl.style.position = 'fixed';
     nekoEl.style.pointerEvents = 'none';
-    nekoEl.style.imageRendering = 'pixelated';
+    // Sprite sheet is supersampled at 4x (128px per 32px frame) so the browser's
+    // own high-quality downscaling renders a crisp, smooth cat instead of the
+    // blocky/aliased look you get from 1:1 pixel art stretched on hi-DPI screens.
+    nekoEl.style.imageRendering = 'auto';
     nekoEl.style.backgroundRepeat = 'no-repeat';
     nekoEl.style.backgroundSize = '256px 128px';
     nekoEl.style.backgroundPosition = '0 0';

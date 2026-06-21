@@ -132,36 +132,71 @@ function GitHubLogo({ size = 30, isDark }: { size?: number; isDark: boolean }) {
   );
 }
 
-function DonutChart({ easy, medium, hard, totalSolved, totalProblems, attempting }: {
-  easy: number; medium: number; hard: number; totalSolved: number; totalProblems: number; attempting: number;
+function DonutChart({ easy, medium, hard, totalSolved, totalProblems, totalEasy, totalMedium, totalHard }: {
+  easy: number; medium: number; hard: number; totalSolved: number; totalProblems: number;
+  totalEasy: number; totalMedium: number; totalHard: number;
 }) {
   const size = 100, CX = 50, CY = 50, R = 38, STROKE = 8, gap = 3;
+  const [hoverKey, setHoverKey] = useState<string | null>(null);
   const easyFrac = easy / totalProblems, medFrac = medium / totalProblems, hardFrac = hard / totalProblems;
   const restFrac = Math.max(0, 1 - easyFrac - medFrac - hardFrac);
+  // "rest" (unattempted problems) uses the same theme-aware track color as the
+  // base ring — so light/dark mode both render a correct, visible donut instead
+  // of a hardcoded white-tinted stroke that nearly disappears in light theme.
   const segments = [
-    { frac: easyFrac, color: "#00b8a3" }, { frac: medFrac, color: "#ffc01e" },
-    { frac: hardFrac, color: "#ef4743" }, { frac: restFrac, color: "rgba(255,255,255,0.07)" },
+    { key: "Easy",   frac: easyFrac, color: "#00b8a3", solved: easy,   total: totalEasy },
+    { key: "Medium", frac: medFrac,  color: "#ffc01e", solved: medium, total: totalMedium },
+    { key: "Hard",   frac: hardFrac, color: "#ef4743", solved: hard,   total: totalHard },
+    { key: "rest",   frac: restFrac, color: "var(--line)", solved: 0,  total: 0 },
   ];
   let offset = -90;
-  const paths = segments.map((seg, i) => {
-    const degrees = seg.frac * 360 - gap;
+  const paths = segments.map((seg) => {
+    const degrees = Math.max(0, seg.frac * 360 - gap);
     const startRad = (offset * Math.PI) / 180;
     const x1 = CX + R * Math.cos(startRad), y1 = CY + R * Math.sin(startRad);
     const endDeg = offset + degrees, endRad = (endDeg * Math.PI) / 180;
     const x2 = CX + R * Math.cos(endRad), y2 = CY + R * Math.sin(endRad);
     const largeArc = degrees > 180 ? 1 : 0;
     offset += seg.frac * 360;
-    return { d: `M ${x1} ${y1} A ${R} ${R} 0 ${largeArc} 1 ${x2} ${y2}`, color: seg.color, key: i };
+    return { ...seg, d: `M ${x1} ${y1} A ${R} ${R} 0 ${largeArc} 1 ${x2} ${y2}`, degrees };
   });
+  const hovered = paths.find(p => p.key === hoverKey && p.key !== "rest");
+
   return (
     <div style={{ position: "relative", width: size, height: size, flexShrink: 0 }}>
+      {/* Hover tooltip — distinctly indicates what each donut color means */}
+      {hovered && (
+        <div
+          style={{
+            position: "absolute", top: -6, left: "50%", transform: "translate(-50%,-100%)",
+            padding: "4px 8px", borderRadius: 7, whiteSpace: "nowrap", pointerEvents: "none",
+            background: "var(--bg-card)", border: `1px solid ${hovered.color}55`,
+            boxShadow: "0 6px 16px rgba(0,0,0,0.25)", zIndex: 5,
+          }}
+        >
+          <span style={{ fontFamily: MONO, fontSize: 10, fontWeight: 800, color: hovered.color }}>{hovered.key}</span>
+          <span style={{ fontFamily: MONO, fontSize: 10, fontWeight: 700, color: "var(--text-primary)", marginLeft: 5 }}>
+            {hovered.solved}<span style={{ color: "var(--text-muted)", fontWeight: 400 }}>/{hovered.total}</span>
+          </span>
+        </div>
+      )}
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
-        <circle cx={CX} cy={CY} r={R} fill="none" stroke="rgba(255,255,255,0.07)" strokeWidth={STROKE} />
-        {paths.map(p => <path key={p.key} d={p.d} fill="none" stroke={p.color} strokeWidth={STROKE} strokeLinecap="round" />)}
-        <text x={CX} y={CY - 7} textAnchor="middle" fill="var(--text-primary)" style={{ fontFamily: MONO, fontSize: 16, fontWeight: 800, letterSpacing: "-0.04em" }}>{totalSolved}</text>
-        <text x={CX} y={CY + 5} textAnchor="middle" fill="var(--text-muted)" style={{ fontFamily: MONO, fontSize: 8 }}>/{totalProblems}</text>
+        <circle cx={CX} cy={CY} r={R} fill="none" stroke="var(--line)" strokeWidth={STROKE} />
+        {paths.map(p => p.degrees > 0 && (
+          <path
+            key={p.key} d={p.d} fill="none" stroke={p.color} strokeWidth={STROKE} strokeLinecap="round"
+            style={{
+              cursor: p.key === "rest" ? "default" : "pointer",
+              transition: "opacity 0.15s ease",
+              opacity: hoverKey && hoverKey !== p.key && p.key !== "rest" ? 0.35 : 1,
+            }}
+            onMouseEnter={() => p.key !== "rest" && setHoverKey(p.key)}
+            onMouseLeave={() => setHoverKey(null)}
+          />
+        ))}
+        <text x={CX} y={CY - 9} textAnchor="middle" fill="var(--text-primary)" style={{ fontFamily: MONO, fontSize: 16, fontWeight: 800, letterSpacing: "-0.04em" }}>{totalSolved}</text>
+        <text x={CX} y={CY + 4} textAnchor="middle" fill="var(--text-muted)" style={{ fontFamily: MONO, fontSize: 8 }}>/{totalProblems}</text>
         <text x={CX} y={CY + 16} textAnchor="middle" fill="#4ade80" style={{ fontFamily: SF, fontSize: 8, fontWeight: 600 }}>✓ Solved</text>
-        <text x={CX} y={CY + 27} textAnchor="middle" fill="var(--text-muted)" style={{ fontFamily: SF, fontSize: 7 }}>{attempting} Attempting</text>
       </svg>
     </div>
   );
@@ -400,7 +435,7 @@ function LeetCodeStats({ username = "IThakur09" }: { username?: string }) {
         <div style={{ width: "33%", flexShrink: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 5 }}>
           {loading ? <Spin color="#FFA116" /> : (
             <>
-              <DonutChart easy={d.easySolved} medium={d.mediumSolved} hard={d.hardSolved} totalSolved={d.totalSolved} totalProblems={LC_TOTAL} attempting={5} />
+              <DonutChart easy={d.easySolved} medium={d.mediumSolved} hard={d.hardSolved} totalSolved={d.totalSolved} totalProblems={LC_TOTAL} totalEasy={d.totalEasy} totalMedium={d.totalMedium} totalHard={d.totalHard} />
               <div style={{ display: "flex", flexDirection: "column", gap: 3, width: "100%", padding: "0 2px" }}>
                 {[
                   { label: "Easy", solved: d.easySolved, total: d.totalEasy, color: diffColors.Easy },
@@ -434,7 +469,7 @@ function LeetCodeStats({ username = "IThakur09" }: { username?: string }) {
         <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
           {loading ? <Spin color="#FFA116" /> : (
             <>
-              <DonutChart easy={d.easySolved} medium={d.mediumSolved} hard={d.hardSolved} totalSolved={d.totalSolved} totalProblems={LC_TOTAL} attempting={5} />
+              <DonutChart easy={d.easySolved} medium={d.mediumSolved} hard={d.hardSolved} totalSolved={d.totalSolved} totalProblems={LC_TOTAL} totalEasy={d.totalEasy} totalMedium={d.totalMedium} totalHard={d.totalHard} />
               <div style={{ display: "flex", flexDirection: "column", gap: 4, flex: 1 }}>
                 {[
                   { label: "Easy", solved: d.easySolved, total: d.totalEasy, color: diffColors.Easy },

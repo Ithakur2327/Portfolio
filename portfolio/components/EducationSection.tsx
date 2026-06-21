@@ -281,6 +281,8 @@ export function EducationSection() {
           align-items: center;
           gap: 0;
           flex-wrap: nowrap;
+          width: fit-content;
+          max-width: 100%;
           overflow-x: auto;
           -webkit-overflow-scrolling: touch;
           scrollbar-width: none;
@@ -339,17 +341,18 @@ export function EducationSection() {
           background: rgba(59,130,246,0.14);
         }
         html.light .lang-row {
-          border-color: rgba(29,78,216,0.20);
-          background: rgba(29,78,216,0.03);
+          border-color: rgba(217,119,6,0.28);
+          background: rgba(217,119,6,0.04);
+          box-shadow: 0 0 0 1px rgba(217,119,6,0.08) inset;
         }
         html.light .lang-pill-item {
-          color: #1d4ed8;
-          background: rgba(29,78,216,0.08);
-          border-color: rgba(29,78,216,0.28);
+          color: #92400e;
+          background: rgba(217,119,6,0.10);
+          border-color: rgba(217,119,6,0.35);
         }
         html.light .lang-pill-item:hover {
-          box-shadow: 0 4px 12px rgba(29,78,216,0.16);
-          background: rgba(29,78,216,0.13);
+          box-shadow: 0 4px 12px rgba(217,119,6,0.18);
+          background: rgba(217,119,6,0.16);
         }
         .lang-pill-dot { display: none; }
 
