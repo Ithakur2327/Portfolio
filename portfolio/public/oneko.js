@@ -150,10 +150,7 @@
     nekoEl.style.height = '32px';
     nekoEl.style.position = 'fixed';
     nekoEl.style.pointerEvents = 'none';
-    // Sprite sheet is supersampled at 4x (128px per 32px frame) so the browser's
-    // own high-quality downscaling renders a crisp, smooth cat instead of the
-    // blocky/aliased look you get from 1:1 pixel art stretched on hi-DPI screens.
-    nekoEl.style.imageRendering = 'auto';
+    nekoEl.style.imageRendering = 'pixelated';
     nekoEl.style.backgroundRepeat = 'no-repeat';
     nekoEl.style.backgroundSize = '256px 128px';
     nekoEl.style.backgroundPosition = '0 0';
@@ -174,20 +171,6 @@
     }
 
     document.body.appendChild(nekoEl);
-
-    // ── Hide while a modal (resume / certificate / project viewer) is open ──
-    // Those modals already set body.style.overflow = "hidden" while shown.
-    // We piggyback on that existing signal so the cat never sits on top of
-    // modal content (e.g. the resume text) without needing to touch any
-    // React component.
-    const syncModalVisibility = () => {
-      nekoEl.style.display = document.body.style.overflow === 'hidden' ? 'none' : '';
-    };
-    syncModalVisibility();
-    new MutationObserver(syncModalVisibility).observe(document.body, {
-      attributes: true,
-      attributeFilter: ['style'],
-    });
 
     document.addEventListener('mousemove', function (event) {
       mousePosX = event.clientX;
