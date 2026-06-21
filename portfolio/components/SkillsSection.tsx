@@ -3,7 +3,6 @@
 import React, { useRef, memo } from "react";
 import { useInView } from "motion/react";
 import { useReveal } from "./useReveal";
-import { useLowPerf } from "./PerfMode";
 
 const MONO = "'Geist Mono', 'SF Mono', monospace";
 const SF   = "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', sans-serif";
@@ -162,8 +161,10 @@ function LampSkillBox({
   title, glowColor, items, isLast,
 }: { title: string; glowColor: string; items: string[]; isLast?: boolean }) {
   const ref = useRef<HTMLDivElement>(null);
-  const lowPerf = useLowPerf();
-  const isInView = useInView(ref, { margin: "-60px 0px -60px 0px", once: lowPerf });
+  // Always animate in once — re-triggering this glow (two blurred radial
+  // gradients) on every scroll pass in/out of view was fighting the
+  // browser for frames during scroll, causing the jank felt on mobile.
+  const isInView = useInView(ref, { margin: "-60px 0px -60px 0px", once: true });
 
   return (
     <div
