@@ -92,8 +92,11 @@ export function ScrollEnhancements() {
           }
         }
 
-        /* Low-end mobile — disable expensive backdrop-filter */
-        @media (max-width: 480px) and (max-device-pixel-ratio: 2) {
+        /* High-density mobile screens — disable expensive backdrop-filter.
+           Blur cost scales with physical pixel count, so this targets
+           devices with min-device-pixel-ratio (the ones that actually
+           pay the most for it), not max. */
+        @media (max-width: 480px) and (min-device-pixel-ratio: 2) {
           .scroll-glass-fade::after {
             backdrop-filter: none !important;
             -webkit-backdrop-filter: none !important;

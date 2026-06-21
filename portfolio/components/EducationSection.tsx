@@ -2,6 +2,8 @@
 import { useRef } from "react";
 import { motion, useInView } from "motion/react";
 import { useReveal } from "./useReveal";
+import { usePdfModal } from "./PdfViewerModal";
+import { slugify } from "@/lib/utils";
 
 const SF = "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', sans-serif";
 const MONO = "'Geist Mono', monospace";
@@ -33,38 +35,34 @@ const LANGUAGES = [
   { name: "MAITHILI" },
 ];
 
-// Each cert opens its Google Drive share link directly in a new tab.
-// Paste your own "Anyone with the link can view" Drive URL into `link` below.
+// Each cert's PDF is auto-matched from its title:
+// "MERN Stack Development" -> /public/certificates/mern-stack-development.pdf
+// Just drop your PDFs into public/certificates/ using the slugified title as the filename.
 const CERTIFICATIONS = [
   {
     title: "MERN Stack Development",
     issuer: "Coursera",
     date: "2024",
-    link: "https://drive.google.com/file/d/REPLACE_WITH_FILE_ID/view",
   },
   {
     title: "Principles of Generative AI",
     issuer: "Coursera",
     date: "2024",
-    link: "https://drive.google.com/file/d/REPLACE_WITH_FILE_ID/view",
   },
   {
     title: "Web Development Bootcamp",
     issuer: "Udemy",
     date: "2023",
-    link: "https://drive.google.com/file/d/REPLACE_WITH_FILE_ID/view",
   },
   {
     title: "Data Structures & Algorithms",
     issuer: "GeeksforGeeks",
     date: "2023",
-    link: "https://drive.google.com/file/d/REPLACE_WITH_FILE_ID/view",
   },
   {
     title: "Cloud Computing Fundamentals",
     issuer: "Google Cloud",
     date: "2024",
-    link: "https://drive.google.com/file/d/REPLACE_WITH_FILE_ID/view",
   },
 ];
 
@@ -91,16 +89,6 @@ function ArrowIcon() {
     <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
       <line x1="7" y1="17" x2="17" y2="7"/>
       <polyline points="7 7 17 7 17 17"/>
-    </svg>
-  );
-}
-
-function LangIcon() {
-  return (
-    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="12" cy="12" r="9"/>
-      <line x1="3" y1="12" x2="21" y2="12"/>
-      <path d="M12 3a13.6 13.6 0 0 1 0 18a13.6 13.6 0 0 1 0-18z"/>
     </svg>
   );
 }
@@ -158,6 +146,7 @@ function EduCard({ school, degree, short, period, index, sectionVisible }: {
 export function EducationSection() {
   const { ref, revealClass, visible } = useReveal();
   const { ref: ref2, revealClass: revealClass2, visible: vis2 } = useReveal();
+  const { openPdf } = usePdfModal();
 
   return (
     <>
@@ -286,33 +275,30 @@ export function EducationSection() {
           padding-top: 2px;
         }
 
-        /* ── language row — simple, theme-matched tag list ── */
+        /* ── language row — enhanced box layout ── */
         .lang-row {
           display: flex;
           align-items: center;
-          gap: 10px;
+          gap: 0;
           flex-wrap: nowrap;
           overflow-x: auto;
           -webkit-overflow-scrolling: touch;
           scrollbar-width: none;
-          margin-top: 10px;
-          padding-top: 16px;
+          margin-top: 8px;
+          padding: 14px 16px;
           border-top: 1px solid var(--border);
+          border: 1px solid rgba(59,130,246,0.22);
+          border-radius: 10px;
+          background: rgba(59,130,246,0.04);
+          box-shadow: 0 0 0 1px rgba(59,130,246,0.08) inset;
         }
         .lang-row::-webkit-scrollbar { display: none; }
-        .lang-label-group {
-          display: flex;
-          align-items: center;
-          gap: 6px;
-          color: var(--text-muted);
-          flex-shrink: 0;
-        }
         .lang-label-txt {
-          font-size: 11px;
-          font-weight: 700;
-          letter-spacing: 0.08em;
+          font-size: 12px;
+          font-weight: 800;
+          letter-spacing: 0.06em;
           text-transform: uppercase;
-          color: var(--text-muted);
+          color: var(--text-primary);
           font-family: ${MONO};
           flex-shrink: 0;
         }
@@ -321,7 +307,7 @@ export function EducationSection() {
           font-weight: 400;
           color: var(--text-muted);
           font-family: ${MONO};
-          opacity: 0.5;
+          margin: 0 12px;
           flex-shrink: 0;
         }
         .lang-pills-wrap {
@@ -333,34 +319,39 @@ export function EducationSection() {
         .lang-pill-item {
           display: inline-flex;
           align-items: center;
-          gap: 6px;
-          padding: 5px 12px;
-          border-radius: 6px;
-          font-size: 11.5px;
-          font-weight: 600;
+          gap: 0;
+          padding: 5px 16px;
+          border-radius: 7px;
+          font-size: 12.5px;
+          font-weight: 800;
           font-family: ${SF};
-          letter-spacing: 0.01em;
-          border: 1px solid var(--tag-border);
-          color: var(--tag-text);
-          background: var(--tag-bg);
+          letter-spacing: 0.06em;
+          border: 1px solid rgba(59,130,246,0.35);
+          color: #60a5fa;
+          background: rgba(59,130,246,0.08);
           cursor: default;
           user-select: none;
-          transition: border-color 0.18s ease, color 0.18s ease, background 0.18s ease, transform 0.18s cubic-bezier(0.22,1,0.36,1);
+          transition: transform 0.18s cubic-bezier(0.22,1,0.36,1), box-shadow 0.18s, background 0.18s;
         }
         .lang-pill-item:hover {
-          transform: translateY(-1px);
-          border-color: var(--text-muted);
-          color: var(--text-primary);
-          background: var(--bg-hover);
+          transform: translateY(-2px);
+          box-shadow: 0 4px 14px rgba(59,130,246,0.20);
+          background: rgba(59,130,246,0.14);
         }
-        .lang-pill-dot {
-          display: inline-block;
-          width: 4px; height: 4px;
-          border-radius: 50%;
-          background: currentColor;
-          opacity: 0.45;
-          flex-shrink: 0;
+        html.light .lang-row {
+          border-color: rgba(29,78,216,0.20);
+          background: rgba(29,78,216,0.03);
         }
+        html.light .lang-pill-item {
+          color: #1d4ed8;
+          background: rgba(29,78,216,0.08);
+          border-color: rgba(29,78,216,0.28);
+        }
+        html.light .lang-pill-item:hover {
+          box-shadow: 0 4px 12px rgba(29,78,216,0.16);
+          background: rgba(29,78,216,0.13);
+        }
+        .lang-pill-dot { display: none; }
 
         /* ── cert section ── */
         .cert-count-badge {
@@ -471,10 +462,7 @@ export function EducationSection() {
 
             {/* Languages */}
             <div className="lang-row">
-              <span className="lang-label-group">
-                <LangIcon />
-                <span className="lang-label-txt">Languages</span>
-              </span>
+              <span className="lang-label-txt">Languages</span>
               <span className="lang-dash">—</span>
               <div className="lang-pills-wrap">
                 {LANGUAGES.map((lang, i) => (
@@ -506,25 +494,34 @@ export function EducationSection() {
             <div className="edu-sec-divider" />
 
             {/* Cert items */}
-            {CERTIFICATIONS.map((cert, i) => (
-              <motion.a
-                key={i}
-                href={cert.link}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="cert-item"
-                initial={false}
-                animate={vis2 ? { opacity: 1, y: 0, rotateX: 0 } : { opacity: 0, y: 14, rotateX: 6 }}
-                transition={{ duration: 0.46, ease: [0.22, 1, 0.36, 1], delay: vis2 ? i * 0.08 : 0 }}
-              >
-                <div className="cert-icon-box"><CertIcon /></div>
-                <div style={{ flex: 1 }}>
-                  <p className="cert-title-txt">{cert.title}</p>
-                  <p className="cert-meta-txt">@ {cert.issuer} · {cert.date}</p>
-                </div>
-                <span className="cert-arrow-icon"><ArrowIcon /></span>
-              </motion.a>
-            ))}
+            {CERTIFICATIONS.map((cert, i) => {
+              const pdfSrc = `/certificates/${slugify(cert.title)}.pdf`;
+              return (
+                <motion.div
+                  key={i}
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => openPdf(pdfSrc, cert.title)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      openPdf(pdfSrc, cert.title);
+                    }
+                  }}
+                  className="cert-item"
+                  initial={false}
+                  animate={vis2 ? { opacity: 1, y: 0, rotateX: 0 } : { opacity: 0, y: 14, rotateX: 6 }}
+                  transition={{ duration: 0.46, ease: [0.22, 1, 0.36, 1], delay: vis2 ? i * 0.08 : 0 }}
+                >
+                  <div className="cert-icon-box"><CertIcon /></div>
+                  <div style={{ flex: 1 }}>
+                    <p className="cert-title-txt">{cert.title}</p>
+                    <p className="cert-meta-txt">@ {cert.issuer} · {cert.date}</p>
+                  </div>
+                  <span className="cert-arrow-icon"><ArrowIcon /></span>
+                </motion.div>
+              );
+            })}
           </div>
         </div>
       </section>
