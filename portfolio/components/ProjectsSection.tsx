@@ -2,6 +2,7 @@
 import { useRef, useCallback, useState, useEffect, startTransition } from "react";
 import { createPortal } from "react-dom";
 import { useReveal } from "./useReveal";
+import { useLowPerf } from "./PerfMode";
 import {
   animate,
   motion,
@@ -227,6 +228,7 @@ function ProjectModal({
 }) {
   const [mounted, setMounted] = useState(false);
   const modalRef = useRef<HTMLDivElement>(null);
+  const lowPerf = useLowPerf();
 
   useEffect(() => {
     setMounted(true);
@@ -262,9 +264,13 @@ function ProjectModal({
         onClick={onClose}
         style={{
           position: "fixed", inset: 0, zIndex: 9000,
-          background: "rgba(0,0,0,0.52)",
-          backdropFilter: "blur(8px)",
-          WebkitBackdropFilter: "blur(8px)",
+          // A full-viewport animated backdrop-filter blur is the classic cause of
+          // jank on weak mobile GPUs. Capable devices get the exact same blurred
+          // backdrop as before; devices the PerfMode probe flags as struggling
+          // get a plain darker overlay instead — same look at rest, no stutter.
+          background: lowPerf ? "rgba(0,0,0,0.72)" : "rgba(0,0,0,0.52)",
+          backdropFilter: lowPerf ? "none" : "blur(8px)",
+          WebkitBackdropFilter: lowPerf ? "none" : "blur(8px)",
         }}
       />
 
@@ -290,7 +296,9 @@ function ProjectModal({
             background: "var(--bg-card)",
             border: "1px solid var(--border)",
             borderRadius: 20,
-            boxShadow: "0 40px 100px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.04)",
+            boxShadow: lowPerf
+              ? "0 10px 28px rgba(0,0,0,0.45), 0 0 0 1px rgba(255,255,255,0.04)"
+              : "0 40px 100px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.04)",
             overflow: "hidden",
             display: "flex", flexDirection: "column",
           }}

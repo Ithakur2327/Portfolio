@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import type { Viewport } from "next";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { MotionProvider } from "@/components/MotionProvider";
+import { PerfModeProvider } from "@/components/PerfMode";
 import { DotBackground } from "@/components/DotBackground";
 import { PdfModalProvider } from "@/components/PdfViewerModal";
 import OnekoCatLoader from "@/components/OnekoCatLoader";
@@ -61,15 +62,17 @@ export default function RootLayout({
       <body>
         <ThemeProvider>
           <MotionProvider>
-            <PdfModalProvider>
-              <DotBackground />
-              <div style={{ position: "relative", zIndex: 1 }}>
-                {children}
-              </div>
+            <PerfModeProvider>
+              <PdfModalProvider>
+                <DotBackground />
+                <div style={{ position: "relative", zIndex: 1 }}>
+                  {children}
+                </div>
 
-              {/* 🐱 Pixel cat — client-only, loaded after hydration */}
-              <OnekoCatLoader />
-            </PdfModalProvider>
+                {/* 🐱 Pixel cat — client-only, loaded after hydration */}
+                <OnekoCatLoader />
+              </PdfModalProvider>
+            </PerfModeProvider>
           </MotionProvider>
         </ThemeProvider>
       </body>
