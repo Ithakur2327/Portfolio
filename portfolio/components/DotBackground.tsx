@@ -207,6 +207,7 @@ function DotCanvas({ dotColor, activeDotColor }: { dotColor: string; activeDotCo
         width: "100vw", height: "100vh",
         pointerEvents: "none", zIndex: 0,
         opacity: 0, transition: "opacity 0.5s ease",
+        willChange: "transform",
       }}
     />
   );
