@@ -260,31 +260,35 @@ function ProjectModal({
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        transition={{ duration: 0.18 }}
+        transition={{ duration: 0.32, ease: "easeOut" }}
         onClick={onClose}
         style={{
           position: "fixed", inset: 0, zIndex: 9000,
-          // A full-viewport animated backdrop-filter blur is the classic cause of
-          // jank on weak mobile GPUs. Capable devices get the exact same blurred
-          // backdrop as before; devices the PerfMode probe flags as struggling
-          // get a plain darker overlay instead — same look at rest, no stutter.
-          background: lowPerf ? "rgba(0,0,0,0.72)" : "rgba(0,0,0,0.52)",
-          backdropFilter: lowPerf ? "none" : "blur(8px)",
-          WebkitBackdropFilter: lowPerf ? "none" : "blur(8px)",
+          background: "rgba(0,0,0,0.58)",
+          backdropFilter: "blur(12px) saturate(1.4)",
+          WebkitBackdropFilter: "blur(12px) saturate(1.4)",
         }}
       />
 
       {/* Modal */}
       <motion.div
-        initial={{ opacity: 0, scale: 0.95, y: 14 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        exit={{ opacity: 0, scale: 0.95, y: 14, transition: { duration: 0.14 } }}
-        transition={{ type: "tween", duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
+        initial={{ opacity: 0, scale: 0.88, y: 32, rotateX: 4 }}
+        animate={{ opacity: 1, scale: 1, y: 0, rotateX: 0 }}
+        exit={{ opacity: 0, scale: 0.92, y: 20, transition: { duration: 0.22, ease: [0.4, 0, 1, 1] } }}
+        transition={{
+          type: "spring",
+          stiffness: 340,
+          damping: 32,
+          mass: 0.85,
+          opacity: { duration: 0.22, ease: "easeOut" },
+        }}
         style={{
           position: "fixed", inset: 0, zIndex: 9001,
           display: "flex", alignItems: "center", justifyContent: "center",
           padding: "16px",
           pointerEvents: "none",
+          perspective: 1200,
+          transformStyle: "preserve-3d",
         }}
       >
         <div
@@ -296,9 +300,7 @@ function ProjectModal({
             background: "var(--bg-card)",
             border: "1px solid var(--border)",
             borderRadius: 20,
-            boxShadow: lowPerf
-              ? "0 10px 28px rgba(0,0,0,0.45), 0 0 0 1px rgba(255,255,255,0.04)"
-              : "0 40px 100px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.04)",
+            boxShadow: `0 50px 120px rgba(0,0,0,0.65), 0 20px 48px rgba(0,0,0,0.35), 0 0 0 1px rgba(255,255,255,0.05), 0 0 40px ${proj.accent}18`,
             overflow: "hidden",
             display: "flex", flexDirection: "column",
           }}
@@ -477,8 +479,8 @@ function ProjectCard({ proj, index, visible, onOpen }: {
       onClick={onOpen}
       onHoverStart={() => { if (cardRef.current) cardRef.current.style.willChange = "transform"; }}
       onHoverEnd={() => { setTimeout(() => { if (cardRef.current) cardRef.current.style.willChange = "auto"; }, 300); }}
-      whileHover={{ y: -4, scale: 1.012, transition: { type: "tween", duration: 0.15, ease: "easeOut" } }}
-      whileTap={{ scale: 0.972, transition: { type: "tween", duration: 0.1 } }}
+      whileHover={{ y: -6, scale: 1.018, transition: { type: "spring", stiffness: 380, damping: 28, mass: 0.7 } }}
+      whileTap={{ scale: 0.96, y: 2, transition: { type: "spring", stiffness: 500, damping: 30 } }}
     >
       <div style={{ overflow: "hidden", flexShrink: 0 }}>
         <img
