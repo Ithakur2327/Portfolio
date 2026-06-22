@@ -169,12 +169,12 @@ export function PdfModalProvider({ children }: { children: React.ReactNode }) {
             </div>
 
             {/* Body — image (e.g. resume.png) or PDF, same chrome either way */}
-            <div style={{ flex: 1, background: "#525659", overflow: "auto" }}>
+            <div style={{ flex: 1, background: "#525659", overflow: "auto", display: "flex", justifyContent: "center" }}>
               {/\.(png|jpe?g|webp|gif|avif)$/i.test(modal.src) ? (
                 <img
                   src={modal.src}
                   alt={modal.title}
-                  style={{ display: "block", width: "100%", height: "auto" }}
+                  style={{ display: "block", width: "100%", maxWidth: 900, height: "auto", objectFit: "contain" }}
                 />
               ) : (
                 <iframe

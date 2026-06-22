@@ -25,10 +25,10 @@ const TECH: Record<string, { color: string; logo: string }> = {
   FastAPI:        { color: "#009688", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/fastapi/fastapi-original.svg" },
   GraphQL:        { color: "#E10098", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/graphql/graphql-plain.svg" },
   "LLM APIs":     { color: "#10a37f", logo: "https://upload.wikimedia.org/wikipedia/commons/0/04/ChatGPT_logo.svg" },
-  LangChain:      { color: "#1C9E6E", logo: "https://registry.npmmirror.com/@lobehub/icons-static-png/latest/files/dark/langchain-color.png" },
-  LangGraph:      { color: "#2D6A4F", logo: "https://registry.npmmirror.com/@lobehub/icons-static-png/latest/files/dark/langgraph-color.png" },
-  RAG:            { color: "#a855f7", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/pytorch/pytorch-original.svg" },
-  "Vector DB":    { color: "#FF6333", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/redis/redis-original.svg" },
+  LangChain:      { color: "#1C9E6E", logo: "https://cdn.jsdelivr.net/npm/simple-icons@v11/icons/langchain.svg" },
+  LangGraph:      { color: "#2D6A4F", logo: "https://cdn.jsdelivr.net/npm/simple-icons@v11/icons/langchain.svg" },
+  RAG:            { color: "#a855f7", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg" },
+  "Vector DB":    { color: "#FF6333", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/postgresql/postgresql-original.svg" },
   MongoDB:        { color: "#47A248", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/mongodb/mongodb-original.svg" },
   MySQL:          { color: "#4479A1", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/mysql/mysql-original.svg" },
   PostgreSQL:     { color: "#4169E1", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/postgresql/postgresql-original.svg" },
@@ -112,6 +112,41 @@ const SkillChip = memo(function SkillChip({
 
 /* ── Lamp Beam ── */
 function LampBeam({ glowColor, visible }: { glowColor: string; visible: boolean }) {
+  const [flickerOpacity, setFlickerOpacity] = React.useState(1);
+
+  React.useEffect(() => {
+    if (!visible) return;
+    let timeoutId: ReturnType<typeof setTimeout>;
+
+    const flicker = () => {
+      // Random flicker: dip opacity briefly, unique pattern per card
+      const dip = 0.35 + Math.random() * 0.45; // dip to 35-80%
+      const dipDuration = 40 + Math.random() * 80; // 40-120ms dip
+      const nextDelay = 2500 + Math.random() * 6000; // 2.5-8.5s between flickers
+
+      setFlickerOpacity(dip);
+      setTimeout(() => {
+        // Sometimes double-flicker for realism
+        if (Math.random() > 0.6) {
+          setFlickerOpacity(1);
+          setTimeout(() => {
+            setFlickerOpacity(0.5 + Math.random() * 0.3);
+            setTimeout(() => setFlickerOpacity(1), 50 + Math.random() * 60);
+          }, 40 + Math.random() * 50);
+        } else {
+          setFlickerOpacity(1);
+        }
+      }, dipDuration);
+
+      timeoutId = setTimeout(flicker, nextDelay);
+    };
+
+    // Stagger start per card (based on glowColor hash)
+    const stagger = (glowColor.charCodeAt(1) % 5) * 800;
+    timeoutId = setTimeout(flicker, 1500 + stagger);
+    return () => clearTimeout(timeoutId);
+  }, [visible, glowColor]);
+
   return (
     <div style={{ position: "absolute", inset: 0, overflow: "hidden", pointerEvents: "none", zIndex: 0 }}>
       {/* Top beam line */}
@@ -123,9 +158,9 @@ function LampBeam({ glowColor, visible }: { glowColor: string; visible: boolean 
           background: `linear-gradient(90deg,transparent 0%,${glowColor} 18%,${glowColor} 82%,transparent 100%)`,
           boxShadow: visible ? `0 0 10px ${glowColor},0 0 24px ${glowColor}66` : "none",
           transformOrigin: "center",
-          opacity: visible ? 1 : 0,
+          opacity: visible ? flickerOpacity : 0,
           scaleX: visible ? 1 : 0.2,
-          transition: "opacity 0.72s cubic-bezier(0.22,1,0.36,1), transform 0.72s cubic-bezier(0.22,1,0.36,1), box-shadow 0.72s ease",
+          transition: `opacity ${flickerOpacity < 1 ? "0.04s" : "0.12s"} ease, transform 0.72s cubic-bezier(0.22,1,0.36,1), box-shadow 0.72s ease`,
         } as React.CSSProperties}
       />
       {/* Wide glow */}
@@ -137,8 +172,8 @@ function LampBeam({ glowColor, visible }: { glowColor: string; visible: boolean 
           width: "180%", height: "145%",
           background: `radial-gradient(ellipse 60% 70% at 50% 0%,${glowColor}2e 0%,${glowColor}16 25%,${glowColor}0e 45%,${glowColor}08 60%,transparent 82%)`,
           filter: "blur(18px)",
-          opacity: visible ? 1 : 0,
-          transition: "opacity 0.90s cubic-bezier(0.22,1,0.36,1)",
+          opacity: visible ? flickerOpacity : 0,
+          transition: `opacity ${flickerOpacity < 1 ? "0.04s" : "0.15s"} ease`,
         }}
       />
       {/* Inner glow */}
@@ -149,8 +184,8 @@ function LampBeam({ glowColor, visible }: { glowColor: string; visible: boolean 
           transform: "translateX(-50%)", width: "120%", height: "100%",
           background: `radial-gradient(ellipse 42% 38% at 50% 0%,${glowColor}40 0%,${glowColor}1e 35%,${glowColor}0e 55%,transparent 78%)`,
           filter: "blur(10px)",
-          opacity: visible ? 1 : 0,
-          transition: `opacity 0.78s cubic-bezier(0.22,1,0.36,1) ${visible ? "0.06s" : "0s"}`,
+          opacity: visible ? flickerOpacity * 0.9 : 0,
+          transition: `opacity ${flickerOpacity < 1 ? "0.04s" : "0.12s"} ease`,
         }}
       />
     </div>

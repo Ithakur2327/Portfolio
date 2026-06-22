@@ -27,16 +27,16 @@ const TECH_MAP: Record<string, { color: string; logo: string }> = {
   "Redux":        { color: "#764ABC", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/redux/redux-original.svg" },
   "LLM APIs":     { color: "#10a37f", logo: "https://upload.wikimedia.org/wikipedia/commons/0/04/ChatGPT_logo.svg" },
   "OpenAI API":   { color: "#10a37f", logo: "https://upload.wikimedia.org/wikipedia/commons/0/04/ChatGPT_logo.svg" },
-  "LangChain":    { color: "#1C9E6E", logo: "https://registry.npmmirror.com/@lobehub/icons-static-png/latest/files/dark/langchain-color.png" },
-  "RAG":          { color: "#a855f7", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/pytorch/pytorch-original.svg" },
-  "Vector DB":    { color: "#FF6333", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/redis/redis-original.svg" },
-  "YouTube API":  { color: "#FF0000", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/google/google-original.svg" },
+  "LangChain":    { color: "#1C9E6E", logo: "https://cdn.jsdelivr.net/npm/simple-icons@v11/icons/langchain.svg" },
+  "RAG":          { color: "#a855f7", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg" },
+  "Vector DB":    { color: "#FF6333", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/postgresql/postgresql-original.svg" },
+  "YouTube API":  { color: "#FF0000", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/youtube/youtube-original.svg" },
   "Chart.js":     { color: "#FF6384", logo: "https://www.chartjs.org/img/chartjs-logo.svg" },
   "Socket.io":    { color: "#aaaaaa", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/socketio/socketio-original.svg" },
   "JWT":          { color: "#d63aff", logo: "https://jwt.io/img/pic_logo.svg" },
-  "Framer Motion":{ color: "#bb4af8", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/react/react-original.svg" },
-  "shadcn/ui":    { color: "#ffffff", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nextjs/nextjs-original.svg" },
-  "Vercel":       { color: "#ffffff", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nextjs/nextjs-original.svg" },
+  "Framer Motion":{ color: "#bb4af8", logo: "https://cdn.jsdelivr.net/npm/simple-icons@v11/icons/framer.svg" },
+  "shadcn/ui":    { color: "#ffffff", logo: "https://avatars.githubusercontent.com/u/139895814?s=48" },
+  "Vercel":       { color: "#ffffff", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/vercel/vercel-original.svg" },
 };
 
 const PROJECTS = [
@@ -559,10 +559,9 @@ export function ProjectsSection() {
             <div style={{ height: 1, background: "var(--border)", margin: unlocked ? "20px 0 20px" : "14px 0 20px", transition: "margin 0.35s cubic-bezier(0.22,1,0.36,1)" }} />
 
             <style suppressHydrationWarning>{`
-              .proj-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
-              @media (max-width: 980px) { .proj-grid { grid-template-columns: repeat(3, 1fr); } }
-              @media (max-width: 680px) { .proj-grid { grid-template-columns: repeat(2, 1fr); } }
-              @media (max-width: 400px) { .proj-grid { grid-template-columns: 1fr; } }
+              .proj-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+              @media (max-width: 780px) { .proj-grid { grid-template-columns: repeat(2, 1fr); } }
+              @media (max-width: 480px) { .proj-grid { grid-template-columns: 1fr; } }
             `}</style>
 
             <motion.div

@@ -25,6 +25,17 @@ export function Avatar() {
 
   useEffect(() => { isDarkRef.current = isDark; }, [isDark]);
 
+  // Force immediate re-render when theme changes (override idle throttle)
+  useEffect(() => {
+    const G = glRef.current;
+    if (!G) return;
+    // Temporarily mark as active to bypass 2fps idle throttle
+    const prevHover = G.state.hover;
+    G.state.hover = true;
+    const t = setTimeout(() => { G.state.hover = prevHover; }, 600);
+    return () => clearTimeout(t);
+  }, [isDark]);
+
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
