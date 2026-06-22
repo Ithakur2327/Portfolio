@@ -146,19 +146,19 @@
   function init() {
     nekoEl.id = 'oneko';
     nekoEl.ariaHidden = true;
-    nekoEl.style.width = '32px';
-    nekoEl.style.height = '32px';
+    nekoEl.style.width = '64px';
+    nekoEl.style.height = '64px';
     nekoEl.style.position = 'fixed';
     nekoEl.style.pointerEvents = 'none';
-    nekoEl.style.imageRendering = 'pixelated';
+    nekoEl.style.imageRendering = 'auto';
     nekoEl.style.backgroundRepeat = 'no-repeat';
-    nekoEl.style.backgroundSize = '256px 128px';
+    nekoEl.style.backgroundSize = '512px 256px';
     nekoEl.style.backgroundPosition = '0 0';
     nekoEl.style.zIndex = 2147483647;
     nekoEl.style.willChange = 'transform';
     nekoEl.style.left = '0px';
     nekoEl.style.top = '0px';
-    nekoEl.style.transform = `translate(${nekoPosX - 16}px, ${nekoPosY - 16}px)`;
+    nekoEl.style.transform = `translate(${nekoPosX - 32}px, ${nekoPosY - 32}px)`;
 
     // Manual override: <script src="oneko.js" data-cat="my_cat.gif"></script>
     // If data-cat is set, use that image with no filter (full manual control)
@@ -227,7 +227,7 @@
     const lerpFactor = 0.28;
     renderX += (nekoPosX - renderX) * lerpFactor;
     renderY += (nekoPosY - renderY) * lerpFactor;
-    nekoEl.style.transform = `translate(${Math.round(renderX - 16)}px, ${Math.round(renderY - 16)}px)`;
+    nekoEl.style.transform = `translate(${Math.round(renderX - 32)}px, ${Math.round(renderY - 32)}px)`;
 
     window.requestAnimationFrame(onAnimationFrame);
   }
@@ -235,7 +235,7 @@
   // ── Sprite helpers ───────────────────────────────────────────────────────
   function setSprite(name, frame) {
     const sprite = spriteSets[name][frame % spriteSets[name].length];
-    nekoEl.style.backgroundPosition = `${sprite[0] * 32}px ${sprite[1] * 32}px`;
+    nekoEl.style.backgroundPosition = `${sprite[0] * 64}px ${sprite[1] * 64}px`;
   }
 
   function resetIdleAnimation() {
@@ -251,10 +251,10 @@
       idleAnimation == null
     ) {
       const available = ['sleeping', 'scratchSelf'];
-      if (nekoPosX < 32)                        available.push('scratchWallW');
-      if (nekoPosY < 32)                        available.push('scratchWallN');
-      if (nekoPosX > window.innerWidth  - 32)   available.push('scratchWallE');
-      if (nekoPosY > window.innerHeight - 32)   available.push('scratchWallS');
+      if (nekoPosX < 64)                        available.push('scratchWallW');
+      if (nekoPosY < 64)                        available.push('scratchWallN');
+      if (nekoPosX > window.innerWidth  - 64)   available.push('scratchWallE');
+      if (nekoPosY > window.innerHeight - 64)   available.push('scratchWallS');
       idleAnimation = available[Math.floor(Math.random() * available.length)];
     }
 
@@ -311,8 +311,8 @@
 
     nekoPosX -= (diffX / distance) * nekoSpeed;
     nekoPosY -= (diffY / distance) * nekoSpeed;
-    nekoPosX = Math.min(Math.max(16, nekoPosX), window.innerWidth  - 16);
-    nekoPosY = Math.min(Math.max(16, nekoPosY), window.innerHeight - 16);
+    nekoPosX = Math.min(Math.max(32, nekoPosX), window.innerWidth  - 32);
+    nekoPosY = Math.min(Math.max(32, nekoPosY), window.innerHeight - 32);
   }
 
   init();
