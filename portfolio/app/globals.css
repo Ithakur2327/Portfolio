@@ -1280,20 +1280,3 @@ html.light #scroll-arrow {
     background: rgba(245,245,243,0.96) !important;
   }
 }
-/* ── Performance: isolate expensive blur/animation elements ── */
-.skills-lamp-glow-wide,
-.skills-lamp-glow-inner {
-  will-change: opacity;
-  transform: translateZ(0);
-  backface-visibility: hidden;
-}
-
-.skills-strip-outer {
-  contain: layout style;
-  transform: translateZ(0);
-}
-
-/* Ensure modal backdrops don't repaint the main thread */
-[role="dialog"] {
-  contain: layout style;
-}
