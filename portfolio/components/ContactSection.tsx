@@ -7,7 +7,6 @@ const SF   = "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text'
 const MONO = "'Geist Mono', monospace";
 const TO_EMAIL = "ithakur2327@gmail.com";
 
-/* ── Quote data — add/remove as you like ── */
 const QUOTES = [
   { text: "A man who is master of patience is master of everything else.", author: "George Savile" },
   { text: "The secret of getting ahead is getting started.", author: "Mark Twain" },
@@ -19,8 +18,7 @@ const QUOTES = [
   { text: "Programs must be written for people to read.", author: "Harold Abelson" },
 ];
 
-function getQuoteForNow(): { text: string; author: string } {
-  // Changes every 6 hours so it feels "dynamic" without needing a server
+function getQuoteForNow() {
   const slot = Math.floor(Date.now() / (1000 * 60 * 60 * 6));
   return QUOTES[slot % QUOTES.length];
 }
@@ -75,21 +73,21 @@ export function ContactSection() {
         }
         .contact-divider { height: 1px; background: var(--border); margin-bottom: 28px; }
 
-        /* Quote box */
+        /* ── Quote Box ── */
         .quote-box {
           position: relative;
           background: var(--bg-card);
           border: 1px solid var(--border);
           border-radius: 14px;
-          padding: 22px 28px 22px 38px;
-          margin-top: 32px;
+          padding: 24px 28px 24px 44px;
+          margin-top: 26px;
           overflow: hidden;
         }
         .quote-mark {
-          position: absolute; left: 10px; top: 14px;
-          font-size: 64px; line-height: 1;
+          position: absolute; left: 10px; top: 10px;
+          font-size: 72px; line-height: 1;
           font-family: Georgia, serif;
-          color: var(--text-muted); opacity: 0.18;
+          color: var(--text-muted); opacity: 0.22;
           pointer-events: none; user-select: none;
           font-style: normal;
         }
@@ -97,10 +95,10 @@ export function ContactSection() {
           font-size: 13.5px;
           font-style: italic;
           color: var(--text-secondary);
-          font-family: ${SF};
-          line-height: 1.65;
+          font-family: Georgia, 'Times New Roman', serif;
+          line-height: 1.7;
           letter-spacing: 0.01em;
-          margin: 0 0 8px;
+          margin: 0 0 10px;
         }
         .quote-author {
           text-align: right;
@@ -110,10 +108,10 @@ export function ContactSection() {
           margin: 0;
         }
 
-        /* Collapsed CTA button */
+        /* ── CTA Button ── */
         .contact-cta-btn {
           display: flex; align-items: center; gap: 10px;
-          padding: 13px 22px; border-radius: 12px;
+          padding: 13px 18px; border-radius: 12px;
           background: var(--bg-card);
           border: 1px solid var(--border);
           color: var(--text-primary);
@@ -127,12 +125,13 @@ export function ContactSection() {
           background: var(--bg-hover);
         }
         .contact-cta-arrow {
-          margin-left: auto; transition: transform 0.3s cubic-bezier(0.22,1,0.36,1);
+          margin-left: auto;
+          transition: transform 0.3s cubic-bezier(0.22,1,0.36,1);
           color: var(--text-muted); flex-shrink: 0;
         }
         .contact-cta-arrow.open { transform: rotate(180deg); }
 
-        /* Form inside expansion */
+        /* ── Form Panel ── */
         .contact-form-label {
           display: block; font-size: 10.5px; font-weight: 600;
           color: var(--text-muted); margin-bottom: 6px;
@@ -152,7 +151,7 @@ export function ContactSection() {
         @media (max-width: 640px) {
           .contact-inner { padding: 0 16px 36px; }
           .contact-form-grid { grid-template-columns: 1fr; }
-          .quote-box { padding: 18px 18px 18px 32px; }
+          .quote-box { padding: 20px 18px 20px 36px; }
         }
       `}</style>
 
@@ -160,7 +159,7 @@ export function ContactSection() {
         <div className="contact-outer">
           <div className="contact-inner">
 
-            {/* Section title */}
+            {/* Section Title */}
             <div style={{ paddingTop: 28, marginBottom: 20 }}>
               <h2 style={{ fontSize: 28, fontWeight: 700, letterSpacing: "-0.03em", lineHeight: 1, fontFamily: SF, color: "var(--text-primary)", display: "flex", alignItems: "center", gap: 10, margin: 0 }}>
                 <span style={{ width: 34, height: 34, borderRadius: 9, background: "var(--bg-hover)", border: "1px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--text-secondary)", flexShrink: 0, boxShadow: "0 1px 3px rgba(0,0,0,0.18)" }}>
@@ -172,6 +171,7 @@ export function ContactSection() {
 
             <div className="contact-divider" />
 
+            {/* Headline */}
             <motion.div
               initial={false}
               animate={visible ? { opacity: 1, y: 0 } : { opacity: 0, y: 12 }}
@@ -188,18 +188,31 @@ export function ContactSection() {
               </p>
             </motion.div>
 
-            {/* ── Collapsed CTA → Expand Form ── */}
+            {/* CTA Button + Expandable Form */}
             <motion.div
               initial={false}
               animate={visible ? { opacity: 1, y: 0 } : { opacity: 0, y: 14 }}
               transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1], delay: 0.14 }}
             >
-              <button className="contact-cta-btn" onClick={() => setOpen(o => !o)} type="button">
+              <button
+                className="contact-cta-btn"
+                onClick={() => setOpen(o => !o)}
+                type="button"
+              >
                 <span style={{ width: 30, height: 30, borderRadius: 8, background: "rgba(99,102,241,0.12)", border: "1px solid rgba(99,102,241,0.28)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#818cf8" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#818cf8" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                    <polyline points="22,6 12,13 2,6"/>
+                  </svg>
                 </span>
                 <span>Send me a message</span>
-                <svg className={`contact-cta-arrow${open ? " open" : ""}`} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+                <svg
+                  className={`contact-cta-arrow${open ? " open" : ""}`}
+                  width="16" height="16" viewBox="0 0 24 24"
+                  fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"
+                >
+                  <polyline points="6 9 12 15 18 9"/>
+                </svg>
               </button>
 
               <AnimatePresence initial={false}>
@@ -212,28 +225,65 @@ export function ContactSection() {
                     transition={{ duration: 0.38, ease: [0.22, 1, 0.36, 1] }}
                     style={{ overflow: "hidden" }}
                   >
-                    <div style={{ borderLeft: "1px solid var(--border)", borderRight: "1px solid var(--border)", borderBottom: "1px solid var(--border)", borderRadius: "0 0 12px 12px", padding: "20px 20px 20px", background: "var(--bg-card)" }}>
+                    <div style={{ borderLeft: "1px solid var(--border)", borderRight: "1px solid var(--border)", borderBottom: "1px solid var(--border)", borderRadius: "0 0 12px 12px", padding: "20px", background: "var(--bg-card)" }}>
                       <form onSubmit={handleSubmit}>
                         <div className="contact-form-grid">
                           <div>
                             <label className="contact-form-label">Name</label>
-                            <input placeholder="Your name" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} required className="field-input" suppressHydrationWarning autoComplete="name" />
+                            <input
+                              placeholder="Your name"
+                              value={form.name}
+                              onChange={e => setForm({ ...form, name: e.target.value })}
+                              required
+                              className="field-input"
+                              suppressHydrationWarning
+                              autoComplete="name"
+                            />
                           </div>
                           <div>
                             <label className="contact-form-label">Email</label>
-                            <input type="email" placeholder="your@email.com" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} required className="field-input" suppressHydrationWarning autoComplete="email" />
+                            <input
+                              type="email"
+                              placeholder="your@email.com"
+                              value={form.email}
+                              onChange={e => setForm({ ...form, email: e.target.value })}
+                              required
+                              className="field-input"
+                              suppressHydrationWarning
+                              autoComplete="email"
+                            />
                           </div>
                         </div>
                         <div>
                           <label className="contact-form-label">Message</label>
-                          <textarea placeholder="Tell me about your project or idea..." value={form.message} onChange={e => setForm({ ...form, message: e.target.value })} required rows={5} className="field-input" suppressHydrationWarning style={{ resize: "vertical" }} />
+                          <textarea
+                            placeholder="Tell me about your project or idea..."
+                            value={form.message}
+                            onChange={e => setForm({ ...form, message: e.target.value })}
+                            required
+                            rows={5}
+                            className="field-input"
+                            suppressHydrationWarning
+                            style={{ resize: "vertical" }}
+                          />
                         </div>
                         <div className="contact-form-footer">
-                          <button type="button" onClick={() => setOpen(false)} style={{ padding: "9px 16px", borderRadius: 10, background: "transparent", border: "1px solid var(--border)", color: "var(--text-muted)", fontFamily: SF, fontSize: 13, fontWeight: 500, cursor: "pointer" }}>
+                          <button
+                            type="button"
+                            onClick={() => setOpen(false)}
+                            style={{ padding: "9px 16px", borderRadius: 10, background: "transparent", border: "1px solid var(--border)", color: "var(--text-muted)", fontFamily: SF, fontSize: 13, fontWeight: 500, cursor: "pointer" }}
+                          >
                             Cancel
                           </button>
-                          <button type="submit" className={`btn-primary${sent ? " sent" : ""}`} suppressHydrationWarning>
-                            {sent ? <>✓ Opening Email App...</> : <><SendIcon /> Send Message</>}
+                          <button
+                            type="submit"
+                            className={`btn-primary${sent ? " sent" : ""}`}
+                            suppressHydrationWarning
+                          >
+                            {sent
+                              ? <>&#10003; Opening Email App...</>
+                              : <><SendIcon /> Send Message</>
+                            }
                           </button>
                         </div>
                       </form>
@@ -243,7 +293,7 @@ export function ContactSection() {
               </AnimatePresence>
             </motion.div>
 
-            {/* ── Quote Box ── */}
+            {/* Quote Box */}
             <motion.div
               initial={false}
               animate={visible ? { opacity: 1, y: 0 } : { opacity: 0, y: 16 }}
