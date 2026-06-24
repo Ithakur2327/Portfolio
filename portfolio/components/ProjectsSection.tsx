@@ -526,12 +526,11 @@ export function ProjectsSection() {
               @media (max-width: 480px) { .proj-grid { grid-template-columns: 1fr; } }
             `}</style>
 
-            {/* Removed filter:blur on the grid — use opacity only for perf */}
             <motion.div
               className="proj-grid"
-              animate={{ opacity: unlocked ? 1 : 0.5 }}
-              transition={{ duration: 0.35, ease: "easeOut" }}
-              style={{ pointerEvents: unlocked ? "auto" : "none" }}
+              animate={{ opacity: unlocked ? 1 : 0.55, filter: unlocked ? "blur(0px)" : "blur(5px)" }}
+              transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+              style={{ pointerEvents: unlocked ? "auto" : "none", willChange: unlocked ? "auto" : "opacity, filter" }}
             >
               {PROJECTS.map((proj, i) => (
                 <ProjectCard
