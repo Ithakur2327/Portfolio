@@ -217,7 +217,7 @@ function SlideToUnlock({ onUnlock }: { onUnlock: () => void }) {
   );
 }
 
-/* ── Project Modal — optimised: no rotateX, lighter backdrop blur ── */
+/* ── Project Modal ── */
 function ProjectModal({ proj, onClose }: { proj: typeof PROJECTS[0]; onClose: () => void }) {
   const [mounted, setMounted] = useState(false);
   const modalRef = useRef<HTMLDivElement>(null);
@@ -226,7 +226,6 @@ function ProjectModal({ proj, onClose }: { proj: typeof PROJECTS[0]; onClose: ()
     setMounted(true);
     document.body.style.overflow = "hidden";
     document.body.style.touchAction = "none";
-    // Hide oneko cat while modal is open
     const cat = document.getElementById("oneko");
     if (cat) cat.style.display = "none";
 
@@ -253,7 +252,7 @@ function ProjectModal({ proj, onClose }: { proj: typeof PROJECTS[0]; onClose: ()
 
   const content = (
     <>
-      {/* Backdrop — NO blur, pure opacity only for max perf */}
+      {/* Backdrop — only change from pasted file: added backdropFilter blur */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -263,10 +262,12 @@ function ProjectModal({ proj, onClose }: { proj: typeof PROJECTS[0]; onClose: ()
         style={{
           position: "fixed", inset: 0, zIndex: 9000,
           background: "rgba(0,0,0,0.70)",
+          backdropFilter: "blur(8px)",
+          WebkitBackdropFilter: "blur(8px)",
         }}
       />
 
-      {/* Modal — only opacity + translateY, NO scale (scale causes repaint lag) */}
+      {/* Modal — only opacity + translateY, NO scale */}
       <motion.div
         initial={{ opacity: 0, y: 28 }}
         animate={{ opacity: 1, y: 0 }}
@@ -405,7 +406,7 @@ function ProjectModal({ proj, onClose }: { proj: typeof PROJECTS[0]; onClose: ()
   return createPortal(content, document.body);
 }
 
-/* ── Project Card — smooth, no heavy will-change abuse ── */
+/* ── Project Card ── */
 function ProjectCard({ proj, index, visible, onOpen }: {
   proj: typeof PROJECTS[0];
   index: number;
@@ -541,19 +542,17 @@ export function ProjectsSection() {
               }
             `}</style>
 
-            <div
-              className={`proj-grid-wrap${unlocked ? " unlocked" : ""}`}
-            >
+            <div className={`proj-grid-wrap${unlocked ? " unlocked" : ""}`}>
               <div className="proj-grid">
-              {PROJECTS.map((proj, i) => (
-                <ProjectCard
-                  key={proj.name}
-                  proj={proj}
-                  index={i}
-                  visible={visible}
-                  onOpen={() => startTransition(() => setActive(proj))}
-                />
-              ))}
+                {PROJECTS.map((proj, i) => (
+                  <ProjectCard
+                    key={proj.name}
+                    proj={proj}
+                    index={i}
+                    visible={visible}
+                    onOpen={() => startTransition(() => setActive(proj))}
+                  />
+                ))}
               </div>
             </div>
           </div>
