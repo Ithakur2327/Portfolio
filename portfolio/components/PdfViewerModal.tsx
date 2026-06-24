@@ -2,7 +2,6 @@
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
 
 type PdfModalState = { src: string; title: string; downloadSrc: string } | null;
-
 type PdfModalContextValue = {
   openPdf: (src: string, title: string, downloadSrc?: string) => void;
 };
@@ -17,7 +16,8 @@ export function usePdfModal() {
 
 function CloseIcon() {
   return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
       <line x1="18" y1="6" x2="6" y2="18" />
       <line x1="6" y1="6" x2="18" y2="18" />
     </svg>
@@ -37,14 +37,13 @@ export function PdfModalProvider({ children }: { children: React.ReactNode }) {
     if (!modal) return;
     const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") close(); };
     document.addEventListener("keydown", onKey);
-    const prevOverflow = document.body.style.overflow;
+    const prev = document.body.style.overflow;
     document.body.style.overflow = "hidden";
-    // Hide the oneko cat when modal is open
     const cat = document.getElementById("oneko");
     if (cat) cat.style.display = "none";
     return () => {
       document.removeEventListener("keydown", onKey);
-      document.body.style.overflow = prevOverflow;
+      document.body.style.overflow = prev;
       const cat = document.getElementById("oneko");
       if (cat) cat.style.display = "";
     };
@@ -64,29 +63,29 @@ export function PdfModalProvider({ children }: { children: React.ReactNode }) {
             position: "fixed",
             inset: 0,
             zIndex: 1000,
-            background: "rgba(0,0,0,0.72)",
+            background: "rgba(0,0,0,0.80)",
             display: "flex",
-            alignItems: "center",
+            alignItems: "flex-start",
             justifyContent: "center",
-            padding: "8px",
+            padding: "48px 12px 12px",
+            overflowY: "auto",
           }}
         >
           <div
             onClick={(e) => e.stopPropagation()}
             style={{
+              position: "relative",
               width: "100%",
-              maxWidth: 860,
-              height: "96vh",
+              maxWidth: 600,
               background: "var(--bg-base)",
               border: "1px solid var(--border)",
-              borderRadius: 14,
+              borderRadius: 12,
               overflow: "hidden",
-              display: "flex",
-              flexDirection: "column",
               boxShadow: "0 24px 70px rgba(0,0,0,0.6)",
+              marginBottom: 12,
             }}
           >
-            {/* Header */}
+            {/* Header — fixed at top */}
             <div
               style={{
                 display: "flex",
@@ -96,20 +95,17 @@ export function PdfModalProvider({ children }: { children: React.ReactNode }) {
                 padding: "10px 12px",
                 borderBottom: "1px solid var(--border)",
                 background: "var(--bg-secondary)",
-                flexShrink: 0,
               }}
             >
-              <span
-                style={{
-                  fontFamily: "'Geist',sans-serif",
-                  fontWeight: 600,
-                  fontSize: 14,
-                  color: "var(--text-primary)",
-                  overflow: "hidden",
-                  textOverflow: "ellipsis",
-                  whiteSpace: "nowrap",
-                }}
-              >
+              <span style={{
+                fontFamily: "'Geist',sans-serif",
+                fontWeight: 600,
+                fontSize: 13,
+                color: "var(--text-primary)",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
+              }}>
                 {modal.title}
               </span>
 
@@ -119,12 +115,12 @@ export function PdfModalProvider({ children }: { children: React.ReactNode }) {
                   download
                   style={{
                     fontFamily: "'Geist Mono',monospace",
-                    fontSize: 11.5,
+                    fontSize: 11,
                     color: "var(--text-muted)",
                     textDecoration: "none",
                     border: "1px solid var(--border)",
-                    borderRadius: 7,
-                    padding: "6px 10px",
+                    borderRadius: 6,
+                    padding: "5px 10px",
                     whiteSpace: "nowrap",
                   }}
                 >
@@ -134,9 +130,9 @@ export function PdfModalProvider({ children }: { children: React.ReactNode }) {
                   onClick={close}
                   aria-label="Close"
                   style={{
-                    width: 32,
-                    height: 32,
-                    borderRadius: 8,
+                    width: 30,
+                    height: 30,
+                    borderRadius: 7,
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
@@ -144,6 +140,7 @@ export function PdfModalProvider({ children }: { children: React.ReactNode }) {
                     border: "1px solid var(--border)",
                     color: "var(--text-primary)",
                     cursor: "pointer",
+                    flexShrink: 0,
                   }}
                 >
                   <CloseIcon />
@@ -151,27 +148,30 @@ export function PdfModalProvider({ children }: { children: React.ReactNode }) {
               </div>
             </div>
 
-            {/* Body — full-width image, no side gaps */}
-            <div style={{ flex: 1, background: "#ffffff", overflow: "auto" }}>
-              {/\.(png|jpe?g|webp|gif|avif)$/i.test(modal.src) ? (
+            {/* Image — shown at native width, never upscaled */}
+            {/\.(png|jpe?g|webp|gif|avif)$/i.test(modal.src) ? (
+              <div style={{ background: "#f5f5f5", textAlign: "center" }}>
                 <img
                   src={modal.src}
                   alt={modal.title}
                   style={{
                     display: "block",
                     width: "100%",
+                    maxWidth: "100%",
                     height: "auto",
                     imageRendering: "auto",
                   }}
                 />
-              ) : (
+              </div>
+            ) : (
+              <div style={{ height: "90vh" }}>
                 <iframe
                   src={`${modal.src}#view=FitH`}
                   title={modal.title}
                   style={{ width: "100%", height: "100%", border: "none" }}
                 />
-              )}
-            </div>
+              </div>
+            )}
           </div>
         </div>
       )}
