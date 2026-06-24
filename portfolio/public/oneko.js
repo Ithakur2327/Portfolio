@@ -150,7 +150,7 @@
     nekoEl.style.height = '32px';
     nekoEl.style.position = 'fixed';
     nekoEl.style.pointerEvents = 'none';
-    nekoEl.style.imageRendering = 'auto';
+    nekoEl.style.imageRendering = 'pixelated';
     nekoEl.style.backgroundRepeat = 'no-repeat';
     nekoEl.style.backgroundSize = '256px 128px';
     nekoEl.style.backgroundPosition = '0 0';
