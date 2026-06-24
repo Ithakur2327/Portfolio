@@ -148,26 +148,21 @@ export function PdfModalProvider({ children }: { children: React.ReactNode }) {
               </div>
             </div>
 
-            {/* Image — full width, high clarity */}
+            {/* PDF viewer via iframe — full height, no border */}
             {/\.(png|jpe?g|webp|gif|avif)$/i.test(modal.src) ? (
               <div style={{ background: "#ffffff", overflowY: "auto", maxHeight: "82vh" }}>
                 <img
                   src={modal.src}
                   alt={modal.title}
-                  style={{
-                    display: "block",
-                    width: "100%",
-                    height: "auto",
-                    imageRendering: "crisp-edges",
-                  }}
+                  style={{ display: "block", width: "100%", height: "auto" }}
                 />
               </div>
             ) : (
-              <div style={{ height: "90vh" }}>
+              <div style={{ height: "82vh" }}>
                 <iframe
-                  src={`${modal.src}#view=FitH`}
+                  src={`${modal.src}#toolbar=1&navpanes=0&scrollbar=1&view=FitH`}
                   title={modal.title}
-                  style={{ width: "100%", height: "100%", border: "none" }}
+                  style={{ width: "100%", height: "100%", border: "none", display: "block" }}
                 />
               </div>
             )}
