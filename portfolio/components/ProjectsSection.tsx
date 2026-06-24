@@ -436,7 +436,6 @@ function ProjectCard({ proj, index, visible, onOpen }: {
         position: "relative",
         display: "flex",
         flexDirection: "column",
-        transform: "translateZ(0)",
       }}
       onClick={onOpen}
       whileHover={{ y: -6, scale: 1.018, transition: { type: "spring", stiffness: 380, damping: 28, mass: 0.7 } }}
@@ -521,16 +520,18 @@ export function ProjectsSection() {
             <div style={{ height: 1, background: "var(--border)", margin: unlocked ? "20px 0 20px" : "14px 0 20px", transition: "margin 0.3s ease" }} />
 
             <style suppressHydrationWarning>{`
-              .proj-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+              .proj-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; contain: layout style; }
               @media (max-width: 780px) { .proj-grid { grid-template-columns: repeat(2, 1fr); } }
               @media (max-width: 480px) { .proj-grid { grid-template-columns: 1fr; } }
             `}</style>
 
-            <motion.div
+            <div
               className="proj-grid"
-              animate={{ opacity: unlocked ? 1 : 0.55, filter: unlocked ? "blur(0px)" : "blur(5px)" }}
-              transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-              style={{ pointerEvents: unlocked ? "auto" : "none", willChange: unlocked ? "auto" : "opacity, filter" }}
+              style={{
+                pointerEvents: unlocked ? "auto" : "none",
+                opacity: unlocked ? 1 : 0.45,
+                transition: "opacity 0.38s cubic-bezier(0.22,1,0.36,1)",
+              }}
             >
               {PROJECTS.map((proj, i) => (
                 <ProjectCard
@@ -541,7 +542,7 @@ export function ProjectsSection() {
                   onOpen={() => startTransition(() => setActive(proj))}
                 />
               ))}
-            </motion.div>
+            </div>
           </div>
         </div>
       </div>
