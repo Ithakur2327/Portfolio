@@ -136,7 +136,7 @@ function LampBeam({ glowColor, visible }: { glowColor: string; visible: boolean 
           transform: "translate3d(-50%,0,0)",
           width: "180%", height: "145%",
           background: `radial-gradient(ellipse 60% 70% at 50% 0%,${glowColor}2e 0%,${glowColor}16 25%,${glowColor}0e 45%,${glowColor}08 60%,transparent 82%)`,
-          filter: "blur(18px)",
+          filter: "blur(18px)", willChange: "opacity",
           opacity: visible ? 1 : 0,
           transition: "opacity 0.90s cubic-bezier(0.22,1,0.36,1)",
         }}
@@ -146,9 +146,9 @@ function LampBeam({ glowColor, visible }: { glowColor: string; visible: boolean 
         className="skills-lamp-glow-inner"
         style={{
           position: "absolute", left: "50%", top: 0,
-          transform: "translateX(-50%)", width: "120%", height: "100%",
+          transform: "translateX(-50%) translateZ(0)", width: "120%", height: "100%",
           background: `radial-gradient(ellipse 42% 38% at 50% 0%,${glowColor}40 0%,${glowColor}1e 35%,${glowColor}0e 55%,transparent 78%)`,
-          filter: "blur(10px)",
+          filter: "blur(10px)", willChange: "opacity",
           opacity: visible ? 1 : 0,
           transition: `opacity 0.78s cubic-bezier(0.22,1,0.36,1) ${visible ? "0.06s" : "0s"}`,
         }}
@@ -180,7 +180,7 @@ function LampSkillBox({
         paddingRight: isLast ? 0 : 0,
         willChange: "transform", transform: "translateZ(0)",
         backfaceVisibility: "hidden", minHeight: 285,
-        contain: "layout style",
+        contain: "layout style paint",
       }}
     >
       <LampBeam glowColor={glowColor} visible={isInView} />
