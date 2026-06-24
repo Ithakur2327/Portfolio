@@ -253,32 +253,31 @@ function ProjectModal({ proj, onClose }: { proj: typeof PROJECTS[0]; onClose: ()
 
   const content = (
     <>
-      {/* Backdrop — lighter blur for perf */}
+      {/* Backdrop — NO blur, pure opacity only for max perf */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        transition={{ duration: 0.2, ease: "easeOut" }}
+        transition={{ duration: 0.15, ease: "easeOut" }}
         onClick={onClose}
         style={{
           position: "fixed", inset: 0, zIndex: 9000,
-          background: "rgba(0,0,0,0.62)",
-          backdropFilter: "blur(4px)",
-          WebkitBackdropFilter: "blur(4px)",
+          background: "rgba(0,0,0,0.70)",
         }}
       />
 
-      {/* Modal — no rotateX/3D, simple scale+opacity for speed */}
+      {/* Modal — only opacity + translateY, NO scale (scale causes repaint lag) */}
       <motion.div
-        initial={{ opacity: 0, scale: 0.94, y: 20 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        exit={{ opacity: 0, scale: 0.96, y: 12, transition: { duration: 0.16, ease: "easeIn" } }}
-        transition={{ type: "spring", stiffness: 420, damping: 36, mass: 0.75, opacity: { duration: 0.18, ease: "easeOut" } }}
+        initial={{ opacity: 0, y: 28 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: 16, transition: { duration: 0.13, ease: "easeIn" } }}
+        transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
         style={{
           position: "fixed", inset: 0, zIndex: 9001,
           display: "flex", alignItems: "center", justifyContent: "center",
           padding: "16px",
           pointerEvents: "none",
+          willChange: "transform, opacity",
         }}
       >
         <div
@@ -293,6 +292,8 @@ function ProjectModal({ proj, onClose }: { proj: typeof PROJECTS[0]; onClose: ()
             boxShadow: `0 40px 100px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.05), 0 0 32px ${proj.accent}18`,
             overflow: "hidden",
             display: "flex", flexDirection: "column",
+            contain: "layout style paint",
+            willChange: "transform",
           }}
         >
           <style suppressHydrationWarning>{`
@@ -438,8 +439,8 @@ function ProjectCard({ proj, index, visible, onOpen }: {
         flexDirection: "column",
       }}
       onClick={onOpen}
-      whileHover={{ y: -6, scale: 1.018, transition: { type: "spring", stiffness: 380, damping: 28, mass: 0.7 } }}
-      whileTap={{ scale: 0.96, y: 2, transition: { type: "spring", stiffness: 500, damping: 30 } }}
+      whileHover={{ y: -5, transition: { type: "spring", stiffness: 380, damping: 28, mass: 0.7 } }}
+      whileTap={{ scale: 0.97, y: 0, transition: { duration: 0.1 } }}
     >
       <div style={{ overflow: "hidden", flexShrink: 0 }}>
         <img

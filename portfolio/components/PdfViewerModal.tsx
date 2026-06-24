@@ -76,7 +76,7 @@ export function PdfModalProvider({ children }: { children: React.ReactNode }) {
             style={{
               position: "relative",
               width: "100%",
-              maxWidth: 600,
+              maxWidth: 780,
               background: "var(--bg-base)",
               border: "1px solid var(--border)",
               borderRadius: 12,
@@ -112,7 +112,7 @@ export function PdfModalProvider({ children }: { children: React.ReactNode }) {
               <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
                 <a
                   href={modal.downloadSrc}
-                  download
+                  download={modal.title.replace(/\s+/g, "_") + (modal.downloadSrc.match(/\.[a-z]+$/i)?.[0] ?? "")}
                   style={{
                     fontFamily: "'Geist Mono',monospace",
                     fontSize: 11,
@@ -148,18 +148,20 @@ export function PdfModalProvider({ children }: { children: React.ReactNode }) {
               </div>
             </div>
 
-            {/* Image — shown at native width, never upscaled */}
+            {/* Image — shown properly, scrollable like a real resume */}
             {/\.(png|jpe?g|webp|gif|avif)$/i.test(modal.src) ? (
-              <div style={{ background: "#f5f5f5", textAlign: "center" }}>
+              <div style={{ background: "#e8e8e8", overflowY: "auto", maxHeight: "82vh", padding: "16px", display: "flex", justifyContent: "center" }}>
                 <img
                   src={modal.src}
                   alt={modal.title}
                   style={{
                     display: "block",
                     width: "100%",
-                    maxWidth: "100%",
+                    maxWidth: "700px",
                     height: "auto",
                     imageRendering: "auto",
+                    boxShadow: "0 4px 24px rgba(0,0,0,0.18)",
+                    borderRadius: 4,
                   }}
                 />
               </div>
