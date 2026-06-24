@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useRef, memo, useEffect, useState, useCallback } from "react";
-import { useLowPerf } from "./PerfMode";
+import React, { useRef, memo } from "react";
+import { useInView } from "motion/react";
 import { useReveal } from "./useReveal";
 
 const MONO = "'Geist Mono', 'SF Mono', monospace";
@@ -51,222 +51,168 @@ const STRIP_NAMES = [
   "VS Code", "Vercel", "Postman", "Docker",
 ];
 
-/* ─────────────────────────────────────────────────────────────────
-   useBoxInView — lightweight IntersectionObserver hook
-   • lowPerf → once:true (fire once, never disconnect on exit)
-   • full    → re-fires on every enter/exit so the lamp toggles
-     each time the user scrolls the section into / out of view
-   ───────────────────────────────────────────────────────────────── */
-function useBoxInView(lowPerf: boolean) {
-  const ref = useRef<HTMLDivElement>(null);
-  const [inView, setInView] = useState(false);
-
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-
-    const obs = new IntersectionObserver(
-      ([entry]) => {
-        const isIn = entry.isIntersecting;
-        setInView(isIn);
-        if (isIn && lowPerf) obs.disconnect(); // once mode on low-perf
-      },
-      { rootMargin: "-60px 0px -60px 0px", threshold: 0 }
-    );
-
-    obs.observe(el);
-    return () => obs.disconnect();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [lowPerf]);
-
-  return { ref, inView };
-}
-
-/* ── Skill Chip — stable inline styles, only changes on `visible` toggle ── */
+/* ── Skill Chip ── */
 const SkillChip = memo(function SkillChip({
   name, visible, delay = 0,
 }: { name: string; visible: boolean; delay?: number }) {
   const tech = TECH[name] ?? { color: "#71717a", logo: "" };
 
-  const chipStyle: React.CSSProperties = {
-    display: "flex", flexDirection: "column", alignItems: "center",
-    gap: 7, width: 68, cursor: "default",
-    opacity: visible ? 1 : 0,
-    transform: visible ? "translateY(0px)" : "translateY(10px)",
-    // Delay only on enter, not on exit (avoids staggered re-paints while scrolling away)
-    transition: visible
-      ? `opacity 0.48s cubic-bezier(0.22,1,0.36,1) ${delay}s, transform 0.48s cubic-bezier(0.22,1,0.36,1) ${delay}s`
-      : "opacity 0.3s ease, transform 0.3s ease",
-  };
-
-  const boxStyle: React.CSSProperties = {
-    width: 46, height: 46,
-    display: "flex", alignItems: "center", justifyContent: "center",
-    borderRadius: 12,
-    // Use CSS vars via className so no inline style recalc on visible change
-    background: `${tech.color}18`,
-    border: `1px solid ${tech.color}${visible ? "42" : "20"}`,
-    transition: "border-color 0.4s ease, transform 0.22s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.22s ease",
-  };
-
-  const imgStyle: React.CSSProperties = {
-    objectFit: "contain", userSelect: "none", pointerEvents: "none",
-    filter: visible ? "none" : "grayscale(1) opacity(.35)",
-    transition: "filter 0.38s ease",
-  };
-
-  const labelStyle: React.CSSProperties = {
-    fontSize: 9.5, fontWeight: 500,
-    color: visible ? "var(--text-secondary)" : "var(--text-muted)",
-    fontFamily: MONO, textAlign: "center",
-    lineHeight: 1.3, transition: "color 0.38s ease",
-    userSelect: "none",
-  };
-
   return (
-    <div className="skill-chip" style={chipStyle}>
-      <div className="skill-chip-box" style={boxStyle}>
+    <div
+      className="skill-chip"
+      style={{
+        display: "flex", flexDirection: "column", alignItems: "center",
+        gap: 7, width: 68, cursor: "default",
+        opacity: visible ? 1 : 0,
+        transform: visible ? "none" : "translateY(10px)",
+        transition: `opacity 0.48s cubic-bezier(0.22,1,0.36,1) ${visible ? delay : 0}s,
+                     transform 0.48s cubic-bezier(0.22,1,0.36,1) ${visible ? delay : 0}s`,
+      }}
+    >
+      <div
+        className="skill-chip-box"
+        style={{
+          width: 46, height: 46,
+          display: "flex", alignItems: "center", justifyContent: "center",
+          borderRadius: 12,
+          background: visible ? `${tech.color}18` : `${tech.color}08`,
+          border: `1px solid ${tech.color}${visible ? "42" : "20"}`,
+          backfaceVisibility: "hidden",
+          transition: "background 0.4s ease, border-color 0.4s ease, transform 0.22s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.22s ease",
+        }}
+      >
         {tech.logo && (
           <img
             src={tech.logo} alt={name}
             width={26} height={26}
             loading="lazy" draggable={false}
-            style={imgStyle}
+            style={{
+              objectFit: "contain",
+              userSelect: "none", pointerEvents: "none",
+              filter: visible ? "none" : "grayscale(1) opacity(.35)",
+              transition: "filter 0.38s ease",
+            }}
             onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
           />
         )}
       </div>
-      <span style={labelStyle}>{name}</span>
+      <span style={{
+        fontSize: 9.5, fontWeight: 500,
+        color: visible ? "var(--text-secondary)" : "var(--text-muted)",
+        fontFamily: MONO, textAlign: "center",
+        lineHeight: 1.3, transition: "color 0.38s ease",
+        userSelect: "none",
+      }}>
+        {name}
+      </span>
     </div>
   );
 });
 
-/* ── Lamp Beam — NO filter:blur, uses opacity + box-shadow only ──
-   Why: filter:blur triggers a compositing layer upgrade AND a repaint every
-   time opacity changes → jank during scroll. Instead we rely on the browser's
-   native GPU-accelerated opacity transitions on already-composited layers.
-   The visual result is indistinguishable at normal monitor brightness.         */
-const LampBeam = memo(function LampBeam({
-  glowColor, visible,
-}: { glowColor: string; visible: boolean }) {
+/* ── Lamp Beam ── */
+function LampBeam({ glowColor, visible }: { glowColor: string; visible: boolean }) {
   return (
-    <div
-      aria-hidden
-      style={{
-        position: "absolute", inset: 0, overflow: "hidden",
-        pointerEvents: "none", zIndex: 0,
-        // Single compositing layer for the whole beam
-        transform: "translateZ(0)",
-        willChange: "opacity",
-      }}
-    >
-      {/* Top beam line — glow via box-shadow only (no filter) */}
+    <div style={{ position: "absolute", inset: 0, overflow: "hidden", pointerEvents: "none", zIndex: 0 }}>
+      {/* Top beam line */}
       <div
         style={{
           position: "absolute", top: 0, left: "50%",
           transform: "translateX(-50%)",
           width: "74%", height: 1.5, borderRadius: 999,
           background: `linear-gradient(90deg,transparent 0%,${glowColor} 18%,${glowColor} 82%,transparent 100%)`,
-          boxShadow: visible
-            ? `0 0 10px ${glowColor},0 0 24px ${glowColor}66`
-            : `0 0 0px transparent`,
+          boxShadow: visible ? `0 0 10px ${glowColor},0 0 24px ${glowColor}66` : "none",
+          transformOrigin: "center",
           opacity: visible ? 1 : 0,
-          transition: "opacity 0.72s cubic-bezier(0.22,1,0.36,1), box-shadow 0.72s ease",
-        }}
+          scaleX: visible ? 1 : 0.2,
+          transition: "opacity 0.72s cubic-bezier(0.22,1,0.36,1), transform 0.72s cubic-bezier(0.22,1,0.36,1), box-shadow 0.72s ease",
+        } as React.CSSProperties}
       />
-      {/* Wide glow — radial gradient div, opacity animated (no blur) */}
+      {/* Wide glow */}
       <div
+        className="skills-lamp-glow-wide"
         style={{
           position: "absolute", left: "50%", top: 0,
           transform: "translate3d(-50%,0,0)",
           width: "180%", height: "145%",
           background: `radial-gradient(ellipse 60% 70% at 50% 0%,${glowColor}2e 0%,${glowColor}16 25%,${glowColor}0e 45%,${glowColor}08 60%,transparent 82%)`,
+          filter: "blur(18px)", willChange: "opacity",
           opacity: visible ? 1 : 0,
           transition: "opacity 0.90s cubic-bezier(0.22,1,0.36,1)",
         }}
       />
-      {/* Inner glow — slightly stronger at center */}
+      {/* Inner glow */}
       <div
+        className="skills-lamp-glow-inner"
         style={{
           position: "absolute", left: "50%", top: 0,
-          transform: "translateX(-50%)",
-          width: "120%", height: "100%",
+          transform: "translateX(-50%) translateZ(0)", width: "120%", height: "100%",
           background: `radial-gradient(ellipse 42% 38% at 50% 0%,${glowColor}40 0%,${glowColor}1e 35%,${glowColor}0e 55%,transparent 78%)`,
+          filter: "blur(10px)", willChange: "opacity",
           opacity: visible ? 1 : 0,
           transition: `opacity 0.78s cubic-bezier(0.22,1,0.36,1) ${visible ? "0.06s" : "0s"}`,
         }}
       />
     </div>
   );
-});
+}
 
-/* ── Lamp Skill Box ── */
+/* ── Lamp Skill Box — no card background, border-only partition ── */
 function LampSkillBox({
   title, glowColor, items, isLast,
 }: { title: string; glowColor: string; items: string[]; isLast?: boolean }) {
-  const lowPerf = useLowPerf();
-  const { ref, inView } = useBoxInView(lowPerf);
+  const ref = useRef<HTMLDivElement>(null);
+  const isInView = useInView(ref, { margin: "-60px 0px -60px 0px", once: false });
 
   return (
     <div
       ref={ref}
       style={{
         flex: 1, minWidth: 0,
+        /* No card background — transparent */
         background: "transparent",
         overflow: "hidden",
         display: "flex", flexDirection: "column",
         position: "relative",
+        /* Right border as divider (except last) */
         borderRight: isLast ? "none" : "1px solid var(--border)",
-        // Single GPU layer for the box; no willChange on children
-        transform: "translateZ(0)",
-        backfaceVisibility: "hidden",
-        minHeight: 285,
+        paddingRight: isLast ? 0 : 0,
+        willChange: "transform", transform: "translateZ(0)",
+        backfaceVisibility: "hidden", minHeight: 285,
+        contain: "layout style paint",
       }}
     >
-      <LampBeam glowColor={glowColor} visible={inView} />
-
-      <div style={{
-        position: "relative", zIndex: 1,
-        paddingTop: 20,
-        display: "flex", flexDirection: "column", height: "100%",
-      }}>
-        {/* Title */}
+      <LampBeam glowColor={glowColor} visible={isInView} />
+      <div style={{ position: "relative", zIndex: 1, paddingTop: 20, display: "flex", flexDirection: "column", height: "100%" }}>
         <div style={{ textAlign: "center", marginBottom: 12 }}>
           <span
             style={{
               display: "inline-block",
               fontSize: 10, fontWeight: 700, letterSpacing: "0.12em",
               textTransform: "uppercase",
-              color: inView ? glowColor : "var(--text-muted)",
+              color: isInView ? glowColor : "var(--text-muted)",
               fontFamily: MONO,
-              opacity: inView ? 1 : 0.22,
-              transform: inView ? "none" : "translateY(4px)",
+              opacity: isInView ? 1 : 0.22,
+              transform: isInView ? "none" : "translateY(4px)",
               transition: "opacity 0.48s cubic-bezier(0.22,1,0.36,1), transform 0.48s cubic-bezier(0.22,1,0.36,1), color 0.42s ease",
             }}
           >
             {title}
           </span>
         </div>
-
-        {/* Separator */}
         <div style={{
           height: 1, margin: "0 14px 18px",
-          background: `linear-gradient(to right,transparent,${glowColor}${inView ? "35" : "08"},transparent)`,
+          background: `linear-gradient(to right,transparent,${glowColor}${isInView ? "35" : "08"},transparent)`,
           transition: "background 0.5s ease",
         }} />
-
-        {/* Chips */}
         <div style={{
-          padding: "0 14px 20px",
-          display: "flex", flexWrap: "wrap", gap: 12,
-          justifyContent: "center", alignContent: "flex-start", flex: 1,
+          padding: "0 14px 20px", display: "flex",
+          flexWrap: "wrap", gap: 12, justifyContent: "center",
+          alignContent: "flex-start", flex: 1,
         }}>
           {items.map((name, i) => (
             <SkillChip
-              key={name}
-              name={name}
-              visible={inView}
-              delay={inView ? 0.075 + i * 0.042 : 0}
+              key={name} name={name} visible={isInView}
+              delay={isInView ? 0.075 + i * 0.042 : 0}
             />
           ))}
         </div>
@@ -275,10 +221,10 @@ function LampSkillBox({
   );
 }
 
-/* ── Moving Strip — single GPU layer, no per-chip willChange ── */
-const STRIP_ALL = [...STRIP_NAMES, ...STRIP_NAMES, ...STRIP_NAMES];
+/* ── Moving Strip — fixed with hover pause ── */
+function MovingStrip({ items }: { items: string[] }) {
+  const all = [...items, ...items, ...items];
 
-const MovingStrip = memo(function MovingStrip() {
   return (
     <div
       className="skills-strip-outer"
@@ -288,18 +234,15 @@ const MovingStrip = memo(function MovingStrip() {
         WebkitMaskImage: "linear-gradient(to right,transparent,black 8%,black 92%,transparent)",
       }}
     >
-      {/* Single translate layer — only this div composited */}
       <div
         className="skills-strip"
         style={{
           display: "flex", gap: 10, width: "max-content",
           animation: "skills-scroll-left 32s linear infinite",
-          // One layer for the whole track, not per-chip
-          willChange: "transform",
-          transform: "translateZ(0)",
+          willChange: "transform", transform: "translateZ(0)",
         }}
       >
-        {STRIP_ALL.map((name, idx) => {
+        {all.map((name, idx) => {
           const tech = TECH[name] ?? { color: "#71717a", logo: "" };
           return (
             <div
@@ -309,7 +252,8 @@ const MovingStrip = memo(function MovingStrip() {
                 padding: "8px 14px", borderRadius: 10,
                 border: `1px solid ${tech.color}28`,
                 background: "var(--bg-card)", flexShrink: 0,
-                // No willChange/transform per chip — already inside composited parent
+                willChange: "transform", transform: "translateZ(0)",
+                backfaceVisibility: "hidden",
               }}
             >
               <div style={{
@@ -318,8 +262,7 @@ const MovingStrip = memo(function MovingStrip() {
                 display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
               }}>
                 {tech.logo && (
-                  <img
-                    src={tech.logo} alt={name} width={16} height={16}
+                  <img src={tech.logo} alt={name} width={16} height={16}
                     loading="lazy" draggable={false}
                     style={{ objectFit: "contain" }}
                     onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
@@ -327,8 +270,7 @@ const MovingStrip = memo(function MovingStrip() {
                 )}
               </div>
               <span style={{
-                fontSize: 12, fontWeight: 500,
-                color: "var(--text-secondary)",
+                fontSize: 12, fontWeight: 500, color: "var(--text-secondary)",
                 fontFamily: MONO, whiteSpace: "nowrap",
               }}>
                 {name}
@@ -339,7 +281,7 @@ const MovingStrip = memo(function MovingStrip() {
       </div>
     </div>
   );
-});
+}
 
 /* ── Main ── */
 export function SkillsSection() {
@@ -348,15 +290,9 @@ export function SkillsSection() {
   return (
     <>
       <style suppressHydrationWarning>{`
-        /* Hover pause: CSS-only, zero JS */
+        /* Hover pause fix for moving strip */
         .skills-strip-outer:hover .skills-strip {
           animation-play-state: paused !important;
-        }
-
-        /* Chip hover — CSS-only, no JS state */
-        .skill-chip:hover .skill-chip-box {
-          transform: translateY(-3px) scale(1.07);
-          box-shadow: 0 6px 18px rgba(0,0,0,0.35);
         }
 
         /* Skills lamp grid */
@@ -380,8 +316,11 @@ export function SkillsSection() {
           }
         }
       `}</style>
-
-      <section ref={ref} id="skills" className={revealClass}>
+      <section
+        ref={ref}
+        id="skills"
+        className={revealClass}
+      >
         <div style={{
           position: "relative",
           left: "50%", marginLeft: "-50vw",
@@ -412,7 +351,7 @@ export function SkillsSection() {
               ))}
             </div>
             <div style={{ marginTop: 28, marginLeft: -20, marginRight: -20 }}>
-              <MovingStrip />
+              <MovingStrip items={STRIP_NAMES} />
             </div>
           </div>
         </div>
