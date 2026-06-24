@@ -148,20 +148,17 @@ export function PdfModalProvider({ children }: { children: React.ReactNode }) {
               </div>
             </div>
 
-            {/* Image — shown properly, scrollable like a real resume */}
+            {/* Image — full width, high clarity */}
             {/\.(png|jpe?g|webp|gif|avif)$/i.test(modal.src) ? (
-              <div style={{ background: "#e8e8e8", overflowY: "auto", maxHeight: "82vh", padding: "16px", display: "flex", justifyContent: "center" }}>
+              <div style={{ background: "#ffffff", overflowY: "auto", maxHeight: "82vh" }}>
                 <img
                   src={modal.src}
                   alt={modal.title}
                   style={{
                     display: "block",
                     width: "100%",
-                    maxWidth: "700px",
                     height: "auto",
-                    imageRendering: "auto",
-                    boxShadow: "0 4px 24px rgba(0,0,0,0.18)",
-                    borderRadius: 4,
+                    imageRendering: "crisp-edges",
                   }}
                 />
               </div>
