@@ -45,7 +45,7 @@ const PROJECTS = [
     accent: "#6366f1",
     accentBg: "rgba(99,102,241,0.10)",
     accentBorder: "rgba(99,102,241,0.30)",
-    img: "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=600&q=80",
+    img: "/portfolio-preview.png",
     desc: "Personal developer portfolio with animated sections, dark/light mode, 3D cards and smooth reveal animations.",
     longDesc: "A fully responsive developer portfolio showcasing skills, projects and experience. Features a dot-grid animated background, custom reveal animations, 3D tilt cards, infinite scrolling skill ticker and a working contact form. Deployed on Vercel with automatic CI/CD.",
     tags: ["Next.js", "TypeScript", "Tailwind CSS", "Framer Motion", "shadcn/ui", "Vercel"],
@@ -66,12 +66,12 @@ const PROJECTS = [
     live: "#",
   },
   {
-    name: "Smart Expense Tracker",
+    name: "FinLedgerAI",
     year: "2025",
     accent: "#f59e0b",
     accentBg: "rgba(245,158,11,0.10)",
     accentBorder: "rgba(245,158,11,0.25)",
-    img: "https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=600&q=80",
+    img: "/finledger-preview.png",
     desc: "AI-driven expense tracker that auto-categorizes transactions and delivers smart budget insights with Chart.js dashboards.",
     longDesc: "An intelligent personal finance tool. Transactions are auto-categorized using OpenAI API. The ML layer detects unusual spending patterns and generates weekly budget insights. Chart.js dashboards visualize trends. Users set budgets per category and receive alerts.",
     tags: ["React.js", "Node.js", "MongoDB", "OpenAI API", "Chart.js"],
@@ -84,7 +84,7 @@ const PROJECTS = [
     accent: "#8b5cf6",
     accentBg: "rgba(139,92,246,0.10)",
     accentBorder: "rgba(139,92,246,0.25)",
-    img: "https://images.unsplash.com/photo-1677442135703-1787eea5ce01?w=600&q=80",
+    img: "/snipix-preview.png",
     desc: "RAG-based multimodal summarization for PDFs, images, text and audio with semantic search and sub-200ms query latency.",
     longDesc: "A multimodal RAG pipeline ingesting PDFs, images, text and audio. Documents are chunked and embedded into a Vector DB. LangChain orchestrates retrieval and generation — users query documents with natural language. Supports semantic search with sub-200ms query latency.",
     tags: ["Next.js", "TypeScript", "LangChain", "RAG", "Vector DB", "LLM APIs"],
@@ -450,7 +450,7 @@ function ProjectCard({ proj, index, visible, onOpen }: {
           alt={proj.name}
           loading="lazy"
           decoding="async"
-          style={{ width: "100%", height: 110, objectFit: "cover", objectPosition: "center top", display: "block", transform: "scale(1)", transition: "transform 0.45s cubic-bezier(0.22,1,0.36,1)" }}
+          style={{ width: "100%", height: 130, objectFit: "cover", objectPosition: "top center", display: "block", transform: "scale(1)", transition: "transform 0.45s cubic-bezier(0.22,1,0.36,1)" }}
           onMouseEnter={handleImgEnter}
           onMouseLeave={handleImgLeave}
         />
