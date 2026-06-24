@@ -1,23 +1,6 @@
 "use client";
 import { createContext, useContext, useEffect, useState } from "react";
 
-/**
- * ── Adaptive performance mode ──────────────────────────────────────────
- *
- * The site previously guessed "low-end device" purely from screen width +
- * device-pixel-ratio media queries. That's a bad proxy — plenty of phones
- * with small screens have fast GPUs, and plenty of large-screen laptops
- * are weak (cheap Windows machines, old MacBooks, etc). It also meant
- * nothing ever adapted for a weak device with a normal-sized screen.
- *
- * This instead looks at real device signals (CPU core count, RAM, data-
- * saver preference, reduced-motion preference) AND runs a short actual
- * frame-rate probe so we react to genuine GPU/CPU struggle rather than
- * screen size. Capable devices are completely unaffected — every visual
- * stays exactly as designed. Only devices that are actually struggling
- * get cheaper blur radii, simpler transitions, etc.
- */
-
 type PerfMode = "full" | "low";
 
 const PerfContext = createContext<PerfMode>("full");

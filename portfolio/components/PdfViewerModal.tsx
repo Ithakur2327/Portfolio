@@ -4,26 +4,14 @@ import { createContext, useCallback, useContext, useEffect, useState } from "rea
 type PdfModalState = { src: string; title: string; downloadSrc: string } | null;
 
 type PdfModalContextValue = {
-  /**
-   * Opens the in-app viewer.
-   * @param src         What to display in the preview (PDF or image).
-   * @param title       Header title.
-   * @param downloadSrc Optional — what the Download button links to, if
-   *                     different from `src` (e.g. preview a resume image
-   *                     but let people download the real resume.pdf).
-   *                     Defaults to `src`.
-   */
   openPdf: (src: string, title: string, downloadSrc?: string) => void;
 };
 
 const PdfModalContext = createContext<PdfModalContextValue | null>(null);
 
-/** Call this from any component to open a PDF inside the in-app viewer. */
 export function usePdfModal() {
   const ctx = useContext(PdfModalContext);
-  if (!ctx) {
-    throw new Error("usePdfModal must be used within a PdfModalProvider");
-  }
+  if (!ctx) throw new Error("usePdfModal must be used within a PdfModalProvider");
   return ctx;
 }
 
@@ -36,12 +24,6 @@ function CloseIcon() {
   );
 }
 
-/**
- * Wrap the app with this provider once (in layout.tsx).
- * Any descendant can then call usePdfModal().openPdf(src, title)
- * to open a PDF (resume, certificate, etc.) in an in-app overlay
- * with its own close (X) button — no new tab, no external app.
- */
 export function PdfModalProvider({ children }: { children: React.ReactNode }) {
   const [modal, setModal] = useState<PdfModalState>(null);
 
@@ -51,18 +33,20 @@ export function PdfModalProvider({ children }: { children: React.ReactNode }) {
 
   const close = useCallback(() => setModal(null), []);
 
-  // Escape key closes the modal; lock background scroll while open.
   useEffect(() => {
     if (!modal) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") close();
-    };
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") close(); };
     document.addEventListener("keydown", onKey);
     const prevOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
+    // Hide the oneko cat when modal is open
+    const cat = document.getElementById("oneko");
+    if (cat) cat.style.display = "none";
     return () => {
       document.removeEventListener("keydown", onKey);
       document.body.style.overflow = prevOverflow;
+      const cat = document.getElementById("oneko");
+      if (cat) cat.style.display = "";
     };
   }, [modal, close]);
 
@@ -80,27 +64,26 @@ export function PdfModalProvider({ children }: { children: React.ReactNode }) {
             position: "fixed",
             inset: 0,
             zIndex: 1000,
-            background: "rgba(0,0,0,0.62)",
-            backdropFilter: "blur(3px)",
+            background: "rgba(0,0,0,0.72)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            padding: 18,
+            padding: "8px",
           }}
         >
           <div
             onClick={(e) => e.stopPropagation()}
             style={{
               width: "100%",
-              maxWidth: 960,
-              height: "92vh",
+              maxWidth: 860,
+              height: "96vh",
               background: "var(--bg-base)",
               border: "1px solid var(--border)",
               borderRadius: 14,
               overflow: "hidden",
               display: "flex",
               flexDirection: "column",
-              boxShadow: "0 24px 70px rgba(0,0,0,0.5)",
+              boxShadow: "0 24px 70px rgba(0,0,0,0.6)",
             }}
           >
             {/* Header */}
@@ -110,7 +93,7 @@ export function PdfModalProvider({ children }: { children: React.ReactNode }) {
                 alignItems: "center",
                 justifyContent: "space-between",
                 gap: 12,
-                padding: "12px 14px",
+                padding: "10px 12px",
                 borderBottom: "1px solid var(--border)",
                 background: "var(--bg-secondary)",
                 flexShrink: 0,
@@ -168,13 +151,18 @@ export function PdfModalProvider({ children }: { children: React.ReactNode }) {
               </div>
             </div>
 
-            {/* Body — image (e.g. resume.png) or PDF, same chrome either way */}
-            <div style={{ flex: 1, background: "#525659", overflow: "auto", display: "flex", justifyContent: "center" }}>
+            {/* Body — full-width image, no side gaps */}
+            <div style={{ flex: 1, background: "#ffffff", overflow: "auto" }}>
               {/\.(png|jpe?g|webp|gif|avif)$/i.test(modal.src) ? (
                 <img
                   src={modal.src}
                   alt={modal.title}
-                  style={{ display: "block", width: "100%", maxWidth: 900, height: "auto", objectFit: "contain" }}
+                  style={{
+                    display: "block",
+                    width: "100%",
+                    height: "auto",
+                    imageRendering: "auto",
+                  }}
                 />
               ) : (
                 <iframe

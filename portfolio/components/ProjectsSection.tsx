@@ -2,7 +2,6 @@
 import { useRef, useCallback, useState, useEffect, startTransition } from "react";
 import { createPortal } from "react-dom";
 import { useReveal } from "./useReveal";
-import { useLowPerf } from "./PerfMode";
 import {
   animate,
   motion,
@@ -218,22 +217,19 @@ function SlideToUnlock({ onUnlock }: { onUnlock: () => void }) {
   );
 }
 
-/* ── Expandable Project Modal (Horizontal, like Aceternity pattern) ── */
-function ProjectModal({
-  proj,
-  onClose,
-}: {
-  proj: typeof PROJECTS[0];
-  onClose: () => void;
-}) {
+/* ── Project Modal — optimised: no rotateX, lighter backdrop blur ── */
+function ProjectModal({ proj, onClose }: { proj: typeof PROJECTS[0]; onClose: () => void }) {
   const [mounted, setMounted] = useState(false);
   const modalRef = useRef<HTMLDivElement>(null);
-  const lowPerf = useLowPerf();
 
   useEffect(() => {
     setMounted(true);
     document.body.style.overflow = "hidden";
     document.body.style.touchAction = "none";
+    // Hide oneko cat while modal is open
+    const cat = document.getElementById("oneko");
+    if (cat) cat.style.display = "none";
+
     const esc = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
     window.addEventListener("keydown", esc);
     const t = setTimeout(() => {
@@ -246,6 +242,8 @@ function ProjectModal({
     return () => {
       document.body.style.overflow = "";
       document.body.style.touchAction = "";
+      const cat = document.getElementById("oneko");
+      if (cat) cat.style.display = "";
       window.removeEventListener("keydown", esc);
       clearTimeout(t);
     };
@@ -255,40 +253,32 @@ function ProjectModal({
 
   const content = (
     <>
-      {/* Backdrop */}
+      {/* Backdrop — lighter blur for perf */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        transition={{ duration: 0.32, ease: "easeOut" }}
+        transition={{ duration: 0.2, ease: "easeOut" }}
         onClick={onClose}
         style={{
           position: "fixed", inset: 0, zIndex: 9000,
-          background: "rgba(0,0,0,0.58)",
-          backdropFilter: "blur(12px) saturate(1.4)",
-          WebkitBackdropFilter: "blur(12px) saturate(1.4)",
+          background: "rgba(0,0,0,0.62)",
+          backdropFilter: "blur(4px)",
+          WebkitBackdropFilter: "blur(4px)",
         }}
       />
 
-      {/* Modal */}
+      {/* Modal — no rotateX/3D, simple scale+opacity for speed */}
       <motion.div
-        initial={{ opacity: 0, scale: 0.88, y: 32, rotateX: 4 }}
-        animate={{ opacity: 1, scale: 1, y: 0, rotateX: 0 }}
-        exit={{ opacity: 0, scale: 0.92, y: 20, transition: { duration: 0.22, ease: [0.4, 0, 1, 1] } }}
-        transition={{
-          type: "spring",
-          stiffness: 340,
-          damping: 32,
-          mass: 0.85,
-          opacity: { duration: 0.22, ease: "easeOut" },
-        }}
+        initial={{ opacity: 0, scale: 0.94, y: 20 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.96, y: 12, transition: { duration: 0.16, ease: "easeIn" } }}
+        transition={{ type: "spring", stiffness: 420, damping: 36, mass: 0.75, opacity: { duration: 0.18, ease: "easeOut" } }}
         style={{
           position: "fixed", inset: 0, zIndex: 9001,
           display: "flex", alignItems: "center", justifyContent: "center",
           padding: "16px",
           pointerEvents: "none",
-          perspective: 1200,
-          transformStyle: "preserve-3d",
         }}
       >
         <div
@@ -300,7 +290,7 @@ function ProjectModal({
             background: "var(--bg-card)",
             border: "1px solid var(--border)",
             borderRadius: 20,
-            boxShadow: `0 50px 120px rgba(0,0,0,0.65), 0 20px 48px rgba(0,0,0,0.35), 0 0 0 1px rgba(255,255,255,0.05), 0 0 40px ${proj.accent}18`,
+            boxShadow: `0 40px 100px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.05), 0 0 32px ${proj.accent}18`,
             overflow: "hidden",
             display: "flex", flexDirection: "column",
           }}
@@ -338,7 +328,6 @@ function ProjectModal({
                 {proj.year}
               </span>
             </div>
-            {/* Close X */}
             <button
               onClick={onClose}
               style={{
@@ -358,42 +347,23 @@ function ProjectModal({
             </button>
           </div>
 
-          {/* Body — horizontal layout */}
+          {/* Body */}
           <div className="pm-scroll pm-layout" style={{ overflowY: "auto", scrollbarWidth: "none", flex: 1 }}>
             {/* Left: image + buttons */}
-            <div
-              className="pm-img-col"
-              style={{
-                borderRight: "1px solid var(--border)",
-                display: "flex", flexDirection: "column",
-                padding: "20px",
-                gap: 14,
-                flexShrink: 0,
-              }}
-            >
+            <div className="pm-img-col" style={{ borderRight: "1px solid var(--border)", display: "flex", flexDirection: "column", padding: "20px", gap: 14, flexShrink: 0 }}>
               <div style={{ borderRadius: 12, overflow: "hidden", border: "1px solid var(--border)" }}>
-                <img
-                  src={proj.img}
-                  alt={proj.name}
-                  style={{ width: "100%", height: 160, objectFit: "cover", objectPosition: "center top", display: "block" }}
-                />
+                <img src={proj.img} alt={proj.name} style={{ width: "100%", height: 160, objectFit: "cover", objectPosition: "center top", display: "block" }} />
               </div>
-
-              <p style={{ fontSize: 12.5, color: "var(--text-secondary)", lineHeight: 1.65, margin: 0, fontFamily: SF }}>
-                {proj.desc}
-              </p>
-
+              <p style={{ fontSize: 12.5, color: "var(--text-secondary)", lineHeight: 1.65, margin: 0, fontFamily: SF }}>{proj.desc}</p>
               <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: "auto" }}>
-                <a
-                  href={proj.github} target="_blank" rel="noreferrer"
+                <a href={proj.github} target="_blank" rel="noreferrer"
                   style={{ flex: 1, minWidth: 90, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6, padding: "9px 14px", borderRadius: 10, fontSize: 12, fontWeight: 600, textDecoration: "none", fontFamily: SF, background: "var(--bg-hover)", border: "1px solid var(--border)", color: "var(--text-primary)", transition: "opacity 0.15s, transform 0.15s" }}
                   onMouseEnter={e => { (e.currentTarget as HTMLElement).style.opacity = "0.75"; (e.currentTarget as HTMLElement).style.transform = "translateY(-1px)"; }}
                   onMouseLeave={e => { (e.currentTarget as HTMLElement).style.opacity = "1"; (e.currentTarget as HTMLElement).style.transform = "none"; }}
                 >
                   <GithubIcon /> GitHub
                 </a>
-                <a
-                  href={proj.live} target="_blank" rel="noreferrer"
+                <a href={proj.live} target="_blank" rel="noreferrer"
                   style={{ flex: 1, minWidth: 90, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6, padding: "9px 14px", borderRadius: 10, fontSize: 12, fontWeight: 600, textDecoration: "none", fontFamily: SF, background: proj.accentBg, border: `1px solid ${proj.accentBorder}`, color: proj.accent, transition: "opacity 0.15s, transform 0.15s" }}
                   onMouseEnter={e => { (e.currentTarget as HTMLElement).style.opacity = "0.75"; (e.currentTarget as HTMLElement).style.transform = "translateY(-1px)"; }}
                   onMouseLeave={e => { (e.currentTarget as HTMLElement).style.opacity = "1"; (e.currentTarget as HTMLElement).style.transform = "none"; }}
@@ -403,15 +373,13 @@ function ProjectModal({
               </div>
             </div>
 
-            {/* Right: full description + tech stack */}
+            {/* Right: description + tech stack */}
             <div style={{ padding: "20px", display: "flex", flexDirection: "column", gap: 20 }}>
               <div>
-                <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.09em", textTransform: "uppercase", color: "var(--text-muted)", marginBottom: 10, fontFamily: MONO, margin: "0 0 8px" }}>About</p>
+                <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.09em", textTransform: "uppercase", color: "var(--text-muted)", fontFamily: MONO, margin: "0 0 8px" }}>About</p>
                 <p style={{ fontSize: 13.5, color: "var(--text-secondary)", lineHeight: 1.85, margin: 0, fontFamily: SF }}>{proj.longDesc}</p>
               </div>
-
               <div style={{ height: 1, background: "var(--border)" }} />
-
               <div>
                 <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.09em", textTransform: "uppercase", color: "var(--text-muted)", fontFamily: MONO, margin: "0 0 12px" }}>Tech Stack</p>
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
@@ -436,30 +404,26 @@ function ProjectModal({
   return createPortal(content, document.body);
 }
 
-/* ── Project Card ── */
+/* ── Project Card — smooth, no heavy will-change abuse ── */
 function ProjectCard({ proj, index, visible, onOpen }: {
   proj: typeof PROJECTS[0];
   index: number;
   visible: boolean;
   onOpen: () => void;
 }) {
-  const cardRef = useRef<HTMLDivElement>(null);
-  const imgRef  = useRef<HTMLImageElement>(null);
+  const imgRef = useRef<HTMLImageElement>(null);
 
   const handleImgEnter = useCallback(() => {
     const el = imgRef.current; if (!el) return;
-    el.style.willChange = "transform";
-    el.style.transform  = "translateZ(0) scale(1.08)";
+    el.style.transform = "scale(1.08)";
   }, []);
   const handleImgLeave = useCallback(() => {
     const el = imgRef.current; if (!el) return;
-    el.style.transform = "translateZ(0) scale(1)";
-    setTimeout(() => { if (el.isConnected) el.style.willChange = "auto"; }, 500);
+    el.style.transform = "scale(1)";
   }, []);
 
   return (
     <motion.div
-      ref={cardRef}
       initial={false}
       animate={{ opacity: visible ? 1 : 0, y: visible ? 0 : 22 }}
       transition={{ delay: visible ? 0.055 * index : 0, type: "spring", stiffness: 340, damping: 26, mass: 0.75 }}
@@ -472,13 +436,9 @@ function ProjectCard({ proj, index, visible, onOpen }: {
         position: "relative",
         display: "flex",
         flexDirection: "column",
-        backfaceVisibility: "hidden",
-        WebkitBackfaceVisibility: "hidden",
         transform: "translateZ(0)",
       }}
       onClick={onOpen}
-      onHoverStart={() => { if (cardRef.current) cardRef.current.style.willChange = "transform"; }}
-      onHoverEnd={() => { setTimeout(() => { if (cardRef.current) cardRef.current.style.willChange = "auto"; }, 300); }}
       whileHover={{ y: -6, scale: 1.018, transition: { type: "spring", stiffness: 380, damping: 28, mass: 0.7 } }}
       whileTap={{ scale: 0.96, y: 2, transition: { type: "spring", stiffness: 500, damping: 30 } }}
     >
@@ -489,7 +449,7 @@ function ProjectCard({ proj, index, visible, onOpen }: {
           alt={proj.name}
           loading="lazy"
           decoding="async"
-          style={{ width: "100%", height: 110, objectFit: "cover", objectPosition: "center top", display: "block", transform: "translateZ(0) scale(1)", transition: "transform 0.5s cubic-bezier(0.22,1,0.36,1)", willChange: "auto" }}
+          style={{ width: "100%", height: 110, objectFit: "cover", objectPosition: "center top", display: "block", transform: "scale(1)", transition: "transform 0.45s cubic-bezier(0.22,1,0.36,1)" }}
           onMouseEnter={handleImgEnter}
           onMouseLeave={handleImgLeave}
         />
@@ -547,9 +507,9 @@ export function ProjectsSection() {
               {!unlocked && (
                 <motion.div
                   key="slide"
-                  initial={{ opacity: 0, y: 12, scale: 0.94 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: -12, scale: 0.94 }}
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -12 }}
                   transition={{ type: "spring", stiffness: 400, damping: 28, mass: 0.8 }}
                   style={{ display: "flex", justifyContent: "center", padding: "16px 0 6px" }}
                 >
@@ -558,7 +518,7 @@ export function ProjectsSection() {
               )}
             </AnimatePresence>
 
-            <div style={{ height: 1, background: "var(--border)", margin: unlocked ? "20px 0 20px" : "14px 0 20px", transition: "margin 0.35s cubic-bezier(0.22,1,0.36,1)" }} />
+            <div style={{ height: 1, background: "var(--border)", margin: unlocked ? "20px 0 20px" : "14px 0 20px", transition: "margin 0.3s ease" }} />
 
             <style suppressHydrationWarning>{`
               .proj-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
@@ -566,11 +526,12 @@ export function ProjectsSection() {
               @media (max-width: 480px) { .proj-grid { grid-template-columns: 1fr; } }
             `}</style>
 
+            {/* Removed filter:blur on the grid — use opacity only for perf */}
             <motion.div
               className="proj-grid"
-              animate={{ opacity: unlocked ? 1 : 0.55, scale: unlocked ? 1 : 0.997, filter: unlocked ? "blur(0px)" : "blur(5px)" }}
-              transition={{ duration: 0.48, ease: [0.22, 1, 0.36, 1] }}
-              style={{ pointerEvents: unlocked ? "auto" : "none", willChange: unlocked ? "auto" : "transform, opacity, filter" }}
+              animate={{ opacity: unlocked ? 1 : 0.5 }}
+              transition={{ duration: 0.35, ease: "easeOut" }}
+              style={{ pointerEvents: unlocked ? "auto" : "none" }}
             >
               {PROJECTS.map((proj, i) => (
                 <ProjectCard
