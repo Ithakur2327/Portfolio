@@ -148,7 +148,7 @@ img, svg, canvas {
   image-rendering: auto;
 }
 
-/* Oneko cat sprite — pixel-art sprite sheet must render crisply */
+/* Oneko pixel-art sprite — must render crisp, not smoothed */
 #oneko {
   image-rendering: pixelated;
   image-rendering: -moz-crisp-edges;

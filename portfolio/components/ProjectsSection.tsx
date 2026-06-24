@@ -520,19 +520,30 @@ export function ProjectsSection() {
             <div style={{ height: 1, background: "var(--border)", margin: unlocked ? "20px 0 20px" : "14px 0 20px", transition: "margin 0.3s ease" }} />
 
             <style suppressHydrationWarning>{`
-              .proj-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; contain: layout style; }
+              .proj-grid {
+                display: grid;
+                grid-template-columns: repeat(3, 1fr);
+                gap: 10px;
+              }
               @media (max-width: 780px) { .proj-grid { grid-template-columns: repeat(2, 1fr); } }
               @media (max-width: 480px) { .proj-grid { grid-template-columns: 1fr; } }
+              .proj-grid-wrap {
+                filter: blur(5px);
+                opacity: 0.55;
+                pointer-events: none;
+                transition: filter 0.45s cubic-bezier(0.22,1,0.36,1), opacity 0.45s cubic-bezier(0.22,1,0.36,1);
+              }
+              .proj-grid-wrap.unlocked {
+                filter: blur(0px);
+                opacity: 1;
+                pointer-events: auto;
+              }
             `}</style>
 
             <div
-              className="proj-grid"
-              style={{
-                pointerEvents: unlocked ? "auto" : "none",
-                opacity: unlocked ? 1 : 0.45,
-                transition: "opacity 0.38s cubic-bezier(0.22,1,0.36,1)",
-              }}
+              className={`proj-grid-wrap${unlocked ? " unlocked" : ""}`}
             >
+              <div className="proj-grid">
               {PROJECTS.map((proj, i) => (
                 <ProjectCard
                   key={proj.name}
@@ -542,6 +553,7 @@ export function ProjectsSection() {
                   onOpen={() => startTransition(() => setActive(proj))}
                 />
               ))}
+              </div>
             </div>
           </div>
         </div>
