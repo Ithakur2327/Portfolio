@@ -313,23 +313,31 @@ function ProjectModal({ proj, onClose }: { proj: typeof PROJECTS[0]; onClose: ()
               min-height: 0;
             }
             .pm-img-col {
-              width: 42%;
+              width: 48%;
               flex-shrink: 0;
               position: relative;
               border-right: 1px solid var(--border);
               background: var(--bg-secondary);
               display: flex;
-              align-items: flex-start;
-              justify-content: center;
-              overflow-y: auto;
-              scrollbar-width: none;
+              flex-direction: column;
+              align-items: stretch;
+              overflow: hidden;
             }
-            .pm-img-col::-webkit-scrollbar { display: none; }
             .pm-img-col img {
               width: 100%;
-              height: auto;
+              height: 260px;
               display: block;
-              object-fit: contain;
+              object-fit: cover;
+              object-position: top center;
+              flex-shrink: 0;
+            }
+            .pm-img-links {
+              display: flex;
+              gap: 8px;
+              padding: 12px;
+              border-top: 1px solid var(--border);
+              background: var(--bg-card);
+              flex-shrink: 0;
             }
             .pm-content-col {
               flex: 1;
@@ -343,15 +351,13 @@ function ProjectModal({ proj, onClose }: { proj: typeof PROJECTS[0]; onClose: ()
               }
               .pm-img-col {
                 width: 100%;
-                overflow-y: visible;
                 border-right: none;
                 border-bottom: 1px solid var(--border);
                 flex-shrink: 0;
               }
               .pm-img-col img {
-                width: 100%;
-                height: auto;
-                object-fit: contain;
+                height: 200px;
+                object-fit: cover;
               }
             }
           `}</style>
@@ -393,35 +399,31 @@ function ProjectModal({ proj, onClose }: { proj: typeof PROJECTS[0]; onClose: ()
           {/* Body — horizontal on desktop, vertical on mobile */}
           <div className="pm-body">
 
-            {/* Left: Image */}
+            {/* Left: Image + Links */}
             <div className="pm-img-col">
               <img src={proj.img} alt={proj.name} />
-              <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: 48, background: `linear-gradient(to top, var(--bg-card), transparent)`, pointerEvents: "none" }} />
+              {/* GitHub & Live Demo below image */}
+              <div className="pm-img-links">
+                <a href={proj.github} target="_blank" rel="noreferrer"
+                  style={{ flex: 1, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 7, padding: "10px 14px", borderRadius: 10, fontSize: 12.5, fontWeight: 600, textDecoration: "none", fontFamily: SF, background: "var(--bg-hover)", border: "1px solid var(--border)", color: "var(--text-primary)", transition: "opacity 0.15s, transform 0.15s" }}
+                  onMouseEnter={e => { (e.currentTarget as HTMLElement).style.opacity = "0.75"; (e.currentTarget as HTMLElement).style.transform = "translateY(-1px)"; }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.opacity = "1"; (e.currentTarget as HTMLElement).style.transform = "none"; }}
+                >
+                  <GithubIcon /> GitHub
+                </a>
+                <a href={proj.live} target="_blank" rel="noreferrer"
+                  style={{ flex: 1, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 7, padding: "10px 14px", borderRadius: 10, fontSize: 12.5, fontWeight: 600, textDecoration: "none", fontFamily: SF, background: proj.accentBg, border: `1px solid ${proj.accentBorder}`, color: proj.accent, transition: "opacity 0.15s, transform 0.15s" }}
+                  onMouseEnter={e => { (e.currentTarget as HTMLElement).style.opacity = "0.75"; (e.currentTarget as HTMLElement).style.transform = "translateY(-1px)"; }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.opacity = "1"; (e.currentTarget as HTMLElement).style.transform = "none"; }}
+                >
+                  <ExternalIcon /> Live Demo
+                </a>
+              </div>
             </div>
 
             {/* Right: Scrollable content */}
             <div className="pm-content-col pm-scroll">
               <div style={{ padding: "20px 20px 24px", display: "flex", flexDirection: "column", gap: 20 }}>
-
-                {/* Action buttons — TOP */}
-                <div style={{ display: "flex", gap: 10 }}>
-                  <a href={proj.github} target="_blank" rel="noreferrer"
-                    style={{ flex: 1, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 7, padding: "11px 16px", borderRadius: 11, fontSize: 13, fontWeight: 600, textDecoration: "none", fontFamily: SF, background: "var(--bg-hover)", border: "1px solid var(--border)", color: "var(--text-primary)", transition: "opacity 0.15s, transform 0.15s" }}
-                    onMouseEnter={e => { (e.currentTarget as HTMLElement).style.opacity = "0.75"; (e.currentTarget as HTMLElement).style.transform = "translateY(-1px)"; }}
-                    onMouseLeave={e => { (e.currentTarget as HTMLElement).style.opacity = "1"; (e.currentTarget as HTMLElement).style.transform = "none"; }}
-                  >
-                    <GithubIcon /> GitHub
-                  </a>
-                  <a href={proj.live} target="_blank" rel="noreferrer"
-                    style={{ flex: 1, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 7, padding: "11px 16px", borderRadius: 11, fontSize: 13, fontWeight: 600, textDecoration: "none", fontFamily: SF, background: proj.accentBg, border: `1px solid ${proj.accentBorder}`, color: proj.accent, transition: "opacity 0.15s, transform 0.15s" }}
-                    onMouseEnter={e => { (e.currentTarget as HTMLElement).style.opacity = "0.75"; (e.currentTarget as HTMLElement).style.transform = "translateY(-1px)"; }}
-                    onMouseLeave={e => { (e.currentTarget as HTMLElement).style.opacity = "1"; (e.currentTarget as HTMLElement).style.transform = "none"; }}
-                  >
-                    <ExternalIcon /> Live Demo
-                  </a>
-                </div>
-
-                <div style={{ height: 1, background: "var(--border)" }} />
 
                 {/* About */}
                 <div>
