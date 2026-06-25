@@ -1,6 +1,6 @@
 "use client";
 import { useState, useCallback, memo } from "react";
-import { motion, AnimatePresence } from "motion/react";
+import { motion } from "motion/react";
 import { useReveal } from "./useReveal";
 import dynamic from "next/dynamic";
 
@@ -45,32 +45,24 @@ function SendIcon() {
 }
 
 /*
-  ── WHY PREVIOUS APPROACHES LAGGED ───────────────────────────────
-  
-  grid-template-rows, max-height, height — ALL cause layout recalc
-  on EVERY frame of the animation (~18 frames at 60fps).
-  LightRays runs a WebGL requestAnimationFrame loop simultaneously.
-  Together: RAF + style + layout + paint + composite per frame
-  = frame budget blown = visible jank.
+  WHY ALL PREVIOUS APPROACHES LAGGED
+  ───────────────────────────────────
+  grid-template-rows  → layout recalc every frame  ✗
+  max-height          → layout recalc every frame  ✗
+  Framer layout prop  → useLayoutEffect sync DOM read + LightRays RAF = jank  ✗
+  scrollHeight ref    → forced layout reflow on click  ✗
 
-  ── THE FIX: Framer Motion `layout` prop (FLIP technique) ────────
-
-  FLIP = First, Last, Invert, Play:
-  1. Framer reads card height BEFORE the state change (First)
-  2. React re-renders — card instantly jumps to full height (Last)
-  3. Framer applies a CSS transform to make it LOOK like old height (Invert)
-  4. Framer animates transform back to identity (Play) — COMPOSITOR ONLY ✅
-
-  Result:
-  • Zero layout recalc during animation (transform doesn't trigger layout)
-  • Content fades in with opacity (also compositor ✅)
-  • Runs entirely on GPU thread — smooth even with LightRays WebGL running
-  ─────────────────────────────────────────────────────────────────
+  THE ONLY LAG-FREE APPROACH
+  ──────────────────────────
+  Height changes INSTANTLY (zero animation = zero layout recalc).
+  Content reveals with CSS keyframe on opacity + translateY only.
+  Both are compositor-only properties → runs on GPU thread.
+  LightRays WebGL never competes with layout work.
 */
 const ContactCard = memo(function ContactCard() {
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({ name: "", email: "", message: "" });
-  const [sent, setSent]   = useState(false);
+  const [sent, setSent] = useState(false);
 
   const handleSubmit = useCallback((e: React.FormEvent) => {
     e.preventDefault();
@@ -83,21 +75,9 @@ const ContactCard = memo(function ContactCard() {
   }, [form]);
 
   return (
-    /*
-      `layout` on this div = FLIP animation.
-      When open toggles, Framer animates the height change using
-      transform only. borderRadius must be passed inline so Framer
-      can animate it without triggering paint.
-    */
-    <motion.div
-      layout
-      transition={{ duration: 0.32, ease: [0.4, 0, 0.2, 1] }}
-      className="contact-card"
-      style={{ borderRadius: 16, overflow: "hidden" }}
-    >
-      {/* Header */}
-      <motion.div
-        layout="position"
+    <div className="contact-card">
+      {/* Toggle header */}
+      <div
         className="contact-card-header"
         onClick={() => setOpen(o => !o)}
         role="button"
@@ -119,82 +99,74 @@ const ContactCard = memo(function ContactCard() {
         >
           <polyline points="6 9 12 15 18 9"/>
         </svg>
-      </motion.div>
+      </div>
 
       {/*
-        AnimatePresence unmounts content when closed.
-        opacity-only animation — compositor property → zero layout recalc.
-        The card height change is handled by the parent `layout` FLIP above.
+        Zero height animation — height changes in ONE frame (imperceptible).
+        CSS keyframe handles only opacity + translateY (compositor-only).
+        No JS, no RAF, no layout recalc → absolutely no lag.
       */}
-      <AnimatePresence initial={false}>
-        {open && (
-          <motion.div
-            key="form-content"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.18, ease: "easeOut" }}
-          >
-            <div className="contact-card-sep" />
-            <div className="contact-card-body">
-              <form onSubmit={handleSubmit}>
-                <div className="contact-form-grid">
-                  <div>
-                    <label className="contact-form-label">Name</label>
-                    <input
-                      placeholder="Your name"
-                      value={form.name}
-                      onChange={e => setForm({ ...form, name: e.target.value })}
-                      required className="field-input"
-                      suppressHydrationWarning autoComplete="name"
-                    />
-                  </div>
-                  <div>
-                    <label className="contact-form-label">Email</label>
-                    <input
-                      type="email" placeholder="your@email.com"
-                      value={form.email}
-                      onChange={e => setForm({ ...form, email: e.target.value })}
-                      required className="field-input"
-                      suppressHydrationWarning autoComplete="email"
-                    />
-                  </div>
-                </div>
+      {open && (
+        <div className="contact-form-panel">
+          <div className="contact-card-sep" />
+          <div className="contact-card-body">
+            <form onSubmit={handleSubmit}>
+              <div className="contact-form-grid">
                 <div>
-                  <label className="contact-form-label">Message</label>
-                  <textarea
-                    placeholder="Tell me about your project or idea..."
-                    value={form.message}
-                    onChange={e => setForm({ ...form, message: e.target.value })}
-                    required rows={5} className="field-input"
-                    suppressHydrationWarning style={{ resize: "vertical" }}
+                  <label className="contact-form-label">Name</label>
+                  <input
+                    placeholder="Your name"
+                    value={form.name}
+                    onChange={e => setForm({ ...form, name: e.target.value })}
+                    required className="field-input"
+                    suppressHydrationWarning autoComplete="name"
                   />
                 </div>
-                <div className="contact-form-footer">
-                  <button
-                    type="button"
-                    onClick={() => setOpen(false)}
-                    style={{ padding: "9px 16px", borderRadius: 10, background: "transparent", border: "1px solid var(--border)", color: "var(--text-muted)", fontFamily: SF, fontSize: 13, fontWeight: 500, cursor: "pointer" }}
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    className={`btn-primary${sent ? " sent" : ""}`}
-                    suppressHydrationWarning
-                  >
-                    {sent
-                      ? <>&#10003;&nbsp;Opening Email App...</>
-                      : <><SendIcon />&nbsp;Send Message</>
-                    }
-                  </button>
+                <div>
+                  <label className="contact-form-label">Email</label>
+                  <input
+                    type="email" placeholder="your@email.com"
+                    value={form.email}
+                    onChange={e => setForm({ ...form, email: e.target.value })}
+                    required className="field-input"
+                    suppressHydrationWarning autoComplete="email"
+                  />
                 </div>
-              </form>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </motion.div>
+              </div>
+              <div>
+                <label className="contact-form-label">Message</label>
+                <textarea
+                  placeholder="Tell me about your project or idea..."
+                  value={form.message}
+                  onChange={e => setForm({ ...form, message: e.target.value })}
+                  required rows={5} className="field-input"
+                  suppressHydrationWarning style={{ resize: "vertical" }}
+                />
+              </div>
+              <div className="contact-form-footer">
+                <button
+                  type="button"
+                  onClick={() => setOpen(false)}
+                  style={{ padding: "9px 16px", borderRadius: 10, background: "transparent", border: "1px solid var(--border)", color: "var(--text-muted)", fontFamily: SF, fontSize: 13, fontWeight: 500, cursor: "pointer" }}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className={`btn-primary${sent ? " sent" : ""}`}
+                  suppressHydrationWarning
+                >
+                  {sent
+                    ? <>&#10003;&nbsp;Opening Email App...</>
+                    : <><SendIcon />&nbsp;Send Message</>
+                  }
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+    </div>
   );
 });
 
@@ -214,11 +186,12 @@ export function ContactSection() {
         .contact-inner { max-width: 1060px; margin: 0 auto; padding: 0 32px 52px; }
         .contact-divider { height: 1px; background: var(--border); margin-bottom: 28px; }
 
-        /* ── Unified Card ── */
+        /* ── Card ── */
         .contact-card {
           background: var(--bg-card);
           border: 1px solid var(--border);
-          /* borderRadius and overflow handled inline for Framer FLIP */
+          border-radius: 16px;
+          overflow: hidden;
         }
         .contact-card-header {
           display: flex; align-items: center; gap: 12px;
@@ -238,11 +211,24 @@ export function ContactSection() {
         }
         .contact-card-chevron {
           color: var(--text-muted); flex-shrink: 0;
-          transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+          transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1);
         }
         .contact-card-chevron.open { transform: rotate(180deg); }
         .contact-card-sep { height: 1px; background: var(--border); }
         .contact-card-body { padding: 20px; }
+
+        /*
+          THE KEY: only opacity + translateY are animated.
+          Both are compositor-only — zero layout recalc, zero paint.
+          Duration 220ms feels instant but still smooth.
+        */
+        @keyframes contactReveal {
+          from { opacity: 0; transform: translateY(-6px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        .contact-form-panel {
+          animation: contactReveal 0.22s cubic-bezier(0.22, 1, 0.36, 1) both;
+        }
 
         /* Form */
         .contact-form-label {
@@ -273,7 +259,6 @@ export function ContactSection() {
           display: flex;
           flex-direction: column;
           justify-content: center;
-          /* Own compositor layer so WebGL canvas doesn't repaint with card */
           transform: translateZ(0);
         }
         .quote-rays-wrap {
@@ -343,7 +328,7 @@ export function ContactSection() {
               </p>
             </motion.div>
 
-            {/* Card — open/sent state isolated inside ContactCard via memo */}
+            {/* Card */}
             <motion.div
               initial={false}
               animate={visible ? { opacity: 1, y: 0 } : { opacity: 0, y: 14 }}
@@ -352,7 +337,7 @@ export function ContactSection() {
               <ContactCard />
             </motion.div>
 
-            {/* Quote Box */}
+            {/* Quote */}
             <motion.div
               initial={false}
               animate={visible ? { opacity: 1, y: 0 } : { opacity: 0, y: 16 }}
