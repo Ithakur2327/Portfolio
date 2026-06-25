@@ -283,8 +283,9 @@ function ProjectModal({ proj, onClose }: { proj: typeof PROJECTS[0]; onClose: ()
           ref={modalRef}
           style={{
             pointerEvents: "auto",
-            width: "100%", maxWidth: 560,
+            width: "100%", maxWidth: 860,
             maxHeight: "calc(100dvh - 32px)",
+            minHeight: 420,
             background: "var(--bg-card)",
             border: "1px solid var(--border)",
             borderRadius: 20,
@@ -301,6 +302,56 @@ function ProjectModal({ proj, onClose }: { proj: typeof PROJECTS[0]; onClose: ()
               font-family: 'Geist Mono', monospace; font-weight: 600;
             }
           `}</style>
+          {/* (extra style block merged above) */}
+
+          <style suppressHydrationWarning>{`
+            .pm-body {
+              display: flex;
+              flex-direction: row;
+              flex: 1;
+              overflow: hidden;
+              min-height: 0;
+            }
+            .pm-img-col {
+              width: 45%;
+              flex-shrink: 0;
+              position: relative;
+              border-right: 1px solid var(--border);
+            }
+            .pm-img-col img {
+              width: 100%;
+              height: 100%;
+              object-fit: cover;
+              object-position: center center;
+              display: block;
+            }
+            .pm-content-col {
+              flex: 1;
+              overflow-y: auto;
+              scrollbar-width: none;
+            }
+            .pm-content-col::-webkit-scrollbar { display: none; }
+            @media (max-width: 600px) {
+              .pm-body {
+                flex-direction: column;
+              }
+              .pm-img-col {
+                width: 100%;
+                height: auto;
+                border-right: none;
+                border-bottom: 1px solid var(--border);
+                flex-shrink: 0;
+              }
+              .pm-img-col img {
+                width: 100%;
+                height: auto;
+                min-height: 200px;
+                object-fit: contain;
+                object-position: center center;
+                background: var(--bg-secondary);
+              }
+            }
+          `}</style>
 
           {/* Header */}
           <div style={{
@@ -310,7 +361,6 @@ function ProjectModal({ proj, onClose }: { proj: typeof PROJECTS[0]; onClose: ()
             flexShrink: 0,
           }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <div style={{ width: 10, height: 10, borderRadius: "50%", background: proj.accent, flexShrink: 0 }} />
               <h3 style={{ fontSize: 16, fontWeight: 800, color: "var(--text-primary)", letterSpacing: "-0.03em", fontFamily: SF, margin: 0 }}>
                 {proj.name}
               </h3>
@@ -337,74 +387,71 @@ function ProjectModal({ proj, onClose }: { proj: typeof PROJECTS[0]; onClose: ()
             </button>
           </div>
 
-          {/* Scrollable body — single column */}
-          <div className="pm-scroll" style={{ overflowY: "auto", scrollbarWidth: "none", flex: 1 }}>
+          {/* Body — horizontal on desktop, vertical on mobile */}
+          <div className="pm-body">
 
-            {/* Big image */}
-            <div style={{ position: "relative", overflow: "hidden", borderBottom: "1px solid var(--border)" }}>
-              <img
-                src={proj.img}
-                alt={proj.name}
-                style={{ width: "100%", height: 240, objectFit: "cover", objectPosition: "top center", display: "block" }}
-              />
-              {/* accent gradient overlay at bottom of image */}
-              <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: 60, background: `linear-gradient(to top, var(--bg-card), transparent)`, pointerEvents: "none" }} />
+            {/* Left: Image */}
+            <div className="pm-img-col">
+              <img src={proj.img} alt={proj.name} />
+              <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: 48, background: `linear-gradient(to top, var(--bg-card), transparent)`, pointerEvents: "none" }} />
             </div>
 
-            {/* Content */}
-            <div style={{ padding: "20px 20px 24px", display: "flex", flexDirection: "column", gap: 20 }}>
+            {/* Right: Scrollable content */}
+            <div className="pm-content-col pm-scroll">
+              <div style={{ padding: "20px 20px 24px", display: "flex", flexDirection: "column", gap: 20 }}>
 
-              {/* Short desc */}
-              <p style={{ fontSize: 13.5, color: "var(--text-secondary)", lineHeight: 1.7, margin: 0, fontFamily: SF }}>
-                {proj.desc}
-              </p>
+                {/* Short desc */}
+                <p style={{ fontSize: 13.5, color: "var(--text-secondary)", lineHeight: 1.7, margin: 0, fontFamily: SF }}>
+                  {proj.desc}
+                </p>
 
-              <div style={{ height: 1, background: "var(--border)" }} />
+                <div style={{ height: 1, background: "var(--border)" }} />
 
-              {/* About */}
-              <div>
-                <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.09em", textTransform: "uppercase", color: "var(--text-muted)", fontFamily: MONO, margin: "0 0 8px" }}>About</p>
-                <p style={{ fontSize: 13, color: "var(--text-secondary)", lineHeight: 1.85, margin: 0, fontFamily: SF }}>{proj.longDesc}</p>
-              </div>
-
-              <div style={{ height: 1, background: "var(--border)" }} />
-
-              {/* Tech Stack */}
-              <div>
-                <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.09em", textTransform: "uppercase", color: "var(--text-muted)", fontFamily: MONO, margin: "0 0 12px" }}>Tech Stack</p>
-                <div style={{ display: "flex", flexWrap: "wrap", gap: 7 }}>
-                  {proj.tags.map(tag => {
-                    const tech = TECH_MAP[tag];
-                    return (
-                      <span key={tag} className="pm-tag" style={{ color: "var(--tag-text)", background: "var(--tag-bg)", border: "1px solid var(--tag-border)" }}>
-                        {tech && <img src={tech.logo} alt={tag} width={13} height={13} decoding="async" style={{ objectFit: "contain", flexShrink: 0, filter: tag === "Express.js" ? "brightness(0) invert(0.6)" : "none" }} />}
-                        {tag}
-                      </span>
-                    );
-                  })}
+                {/* About */}
+                <div>
+                  <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.09em", textTransform: "uppercase", color: "var(--text-muted)", fontFamily: MONO, margin: "0 0 8px" }}>About</p>
+                  <p style={{ fontSize: 13, color: "var(--text-secondary)", lineHeight: 1.85, margin: 0, fontFamily: SF }}>{proj.longDesc}</p>
                 </div>
+
+                <div style={{ height: 1, background: "var(--border)" }} />
+
+                {/* Tech Stack */}
+                <div>
+                  <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.09em", textTransform: "uppercase", color: "var(--text-muted)", fontFamily: MONO, margin: "0 0 12px" }}>Tech Stack</p>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 7 }}>
+                    {proj.tags.map(tag => {
+                      const tech = TECH_MAP[tag];
+                      return (
+                        <span key={tag} className="pm-tag" style={{ color: "var(--tag-text)", background: "var(--tag-bg)", border: "1px solid var(--tag-border)" }}>
+                          {tech && <img src={tech.logo} alt={tag} width={13} height={13} decoding="async" style={{ objectFit: "contain", flexShrink: 0, filter: tag === "Express.js" ? "brightness(0) invert(0.6)" : "none" }} />}
+                          {tag}
+                        </span>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div style={{ height: 1, background: "var(--border)" }} />
+
+                {/* Action buttons */}
+                <div style={{ display: "flex", gap: 10 }}>
+                  <a href={proj.github} target="_blank" rel="noreferrer"
+                    style={{ flex: 1, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 7, padding: "11px 16px", borderRadius: 11, fontSize: 13, fontWeight: 600, textDecoration: "none", fontFamily: SF, background: "var(--bg-hover)", border: "1px solid var(--border)", color: "var(--text-primary)", transition: "opacity 0.15s, transform 0.15s" }}
+                    onMouseEnter={e => { (e.currentTarget as HTMLElement).style.opacity = "0.75"; (e.currentTarget as HTMLElement).style.transform = "translateY(-1px)"; }}
+                    onMouseLeave={e => { (e.currentTarget as HTMLElement).style.opacity = "1"; (e.currentTarget as HTMLElement).style.transform = "none"; }}
+                  >
+                    <GithubIcon /> GitHub
+                  </a>
+                  <a href={proj.live} target="_blank" rel="noreferrer"
+                    style={{ flex: 1, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 7, padding: "11px 16px", borderRadius: 11, fontSize: 13, fontWeight: 600, textDecoration: "none", fontFamily: SF, background: proj.accentBg, border: `1px solid ${proj.accentBorder}`, color: proj.accent, transition: "opacity 0.15s, transform 0.15s" }}
+                    onMouseEnter={e => { (e.currentTarget as HTMLElement).style.opacity = "0.75"; (e.currentTarget as HTMLElement).style.transform = "translateY(-1px)"; }}
+                    onMouseLeave={e => { (e.currentTarget as HTMLElement).style.opacity = "1"; (e.currentTarget as HTMLElement).style.transform = "none"; }}
+                  >
+                    <ExternalIcon /> Live Demo
+                  </a>
+                </div>
+
               </div>
-
-              <div style={{ height: 1, background: "var(--border)" }} />
-
-              {/* Action buttons */}
-              <div style={{ display: "flex", gap: 10 }}>
-                <a href={proj.github} target="_blank" rel="noreferrer"
-                  style={{ flex: 1, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 7, padding: "11px 16px", borderRadius: 11, fontSize: 13, fontWeight: 600, textDecoration: "none", fontFamily: SF, background: "var(--bg-hover)", border: "1px solid var(--border)", color: "var(--text-primary)", transition: "opacity 0.15s, transform 0.15s" }}
-                  onMouseEnter={e => { (e.currentTarget as HTMLElement).style.opacity = "0.75"; (e.currentTarget as HTMLElement).style.transform = "translateY(-1px)"; }}
-                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.opacity = "1"; (e.currentTarget as HTMLElement).style.transform = "none"; }}
-                >
-                  <GithubIcon /> GitHub
-                </a>
-                <a href={proj.live} target="_blank" rel="noreferrer"
-                  style={{ flex: 1, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 7, padding: "11px 16px", borderRadius: 11, fontSize: 13, fontWeight: 600, textDecoration: "none", fontFamily: SF, background: proj.accentBg, border: `1px solid ${proj.accentBorder}`, color: proj.accent, transition: "opacity 0.15s, transform 0.15s" }}
-                  onMouseEnter={e => { (e.currentTarget as HTMLElement).style.opacity = "0.75"; (e.currentTarget as HTMLElement).style.transform = "translateY(-1px)"; }}
-                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.opacity = "1"; (e.currentTarget as HTMLElement).style.transform = "none"; }}
-                >
-                  <ExternalIcon /> Live Demo
-                </a>
-              </div>
-
             </div>
           </div>
         </div>
