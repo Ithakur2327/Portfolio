@@ -1,5 +1,5 @@
 "use client";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { motion } from "motion/react";
 import { useReveal } from "./useReveal";
 import dynamic from "next/dynamic";
@@ -12,7 +12,13 @@ const TO_EMAIL = "ithakur2327@gmail.com";
 
 const QUOTES = [
   { text: "A man who is master of patience is master of everything else.", author: "George Savile" },
- 
+  { text: "The secret of getting ahead is getting started.", author: "Mark Twain" },
+  { text: "Code is like humor. When you have to explain it, it's bad.", author: "Cory House" },
+  { text: "Simplicity is the soul of efficiency.", author: "Austin Freeman" },
+  { text: "First, solve the problem. Then, write the code.", author: "John Johnson" },
+  { text: "Make it work, make it right, make it fast.", author: "Kent Beck" },
+  { text: "The best error message is the one that never shows up.", author: "Thomas Fuchs" },
+  { text: "Programs must be written for people to read.", author: "Harold Abelson" },
 ];
 
 function getQuoteForNow() {
@@ -38,19 +44,33 @@ function SendIcon() {
   );
 }
 
-/* ── Lag-free expand: CSS grid-template-rows trick — no JS measurement ── */
+/* ── Smooth expand: measures real height then animates max-height ── */
 function ExpandPanel({ open, children }: { open: boolean; children: React.ReactNode }) {
+  const innerRef = useRef<HTMLDivElement>(null);
+  const [height, setHeight] = useState(0);
+
+  useEffect(() => {
+    if (!innerRef.current) return;
+    // Measure only when opening — gives exact pixel value, no overshooting
+    if (open) {
+      setHeight(innerRef.current.scrollHeight);
+    }
+  }, [open]);
+
   return (
     <div
       style={{
-        display: "grid",
-        gridTemplateRows: open ? "1fr" : "0fr",
+        maxHeight: open ? height : 0,
         opacity: open ? 1 : 0,
-        transition: "grid-template-rows 0.28s cubic-bezier(0.4,0,0.2,1), opacity 0.2s ease",
-        willChange: "grid-template-rows",
+        overflow: "hidden",
+        // Only animate max-height and opacity — both are GPU-compositable
+        transition: open
+          ? "max-height 0.32s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.22s ease"
+          : "max-height 0.26s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.16s ease",
+        // No willChange — avoids premature layer promotion that causes lag
       }}
     >
-      <div style={{ overflow: "hidden", minHeight: 0 }}>
+      <div ref={innerRef}>
         {children}
       </div>
     </div>
@@ -59,9 +79,9 @@ function ExpandPanel({ open, children }: { open: boolean; children: React.ReactN
 
 export function ContactSection() {
   const { ref, revealClass, visible } = useReveal();
-  const [open, setOpen] = useState(false);
-  const [form, setForm] = useState({ name: "", email: "", message: "" });
-  const [sent, setSent] = useState(false);
+  const [open, setOpen]   = useState(false);
+  const [form, setForm]   = useState({ name: "", email: "", message: "" });
+  const [sent, setSent]   = useState(false);
   const quote = getQuoteForNow();
 
   const handleSubmit = useCallback((e: React.FormEvent) => {
@@ -91,13 +111,18 @@ export function ContactSection() {
           background: var(--bg-card);
           border: 1px solid var(--border);
           border-radius: 16px;
+          /* Contain the card so children don't bleed during animation */
+          contain: layout style;
         }
         .contact-card-header {
           display: flex; align-items: center; gap: 12px;
           padding: 16px 20px; cursor: pointer;
-          transition: background 0.18s ease; user-select: none;
+          transition: background 0.15s ease;
+          user-select: none; border-radius: 16px;
         }
         .contact-card-header:hover { background: var(--bg-hover); }
+        /* When form is open, only round top corners */
+        .contact-card-header.open { border-radius: 16px 16px 0 0; }
         .contact-card-icon {
           width: 34px; height: 34px; border-radius: 9px; flex-shrink: 0;
           background: rgba(99,102,241,0.12); border: 1px solid rgba(99,102,241,0.28);
@@ -109,20 +134,26 @@ export function ContactSection() {
         }
         .contact-card-chevron {
           color: var(--text-muted); flex-shrink: 0;
-          transition: transform 0.32s cubic-bezier(0.22,1,0.36,1);
+          transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
         }
         .contact-card-chevron.open { transform: rotate(180deg); }
-        .contact-card-sep { height: 1px; background: var(--border); margin: 0 20px; }
+        .contact-card-sep { height: 1px; background: var(--border); }
         .contact-card-body { padding: 20px; }
 
-        /* Form */
+        /* Form fields */
         .contact-form-label {
           display: block; font-size: 10px; font-weight: 700;
           color: var(--text-muted); margin-bottom: 7px;
           font-family: ${MONO}; letter-spacing: 0.09em; text-transform: uppercase;
         }
-        .contact-form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px; }
-        .contact-form-footer { display: flex; align-items: center; justify-content: flex-end; margin-top: 20px; gap: 10px; }
+        .contact-form-grid {
+          display: grid; grid-template-columns: 1fr 1fr;
+          gap: 12px; margin-bottom: 14px;
+        }
+        .contact-form-footer {
+          display: flex; align-items: center; justify-content: flex-end;
+          margin-top: 20px; gap: 10px;
+        }
 
         /* ── Quote Box ── */
         .quote-box {
@@ -130,7 +161,7 @@ export function ContactSection() {
           background: var(--bg-card);
           border: 1px solid var(--border);
           border-radius: 16px;
-          padding: 36px 40px 36px 40px;
+          padding: 36px 40px;
           margin-top: 20px;
           overflow: hidden;
           isolation: isolate;
@@ -140,33 +171,24 @@ export function ContactSection() {
           justify-content: center;
         }
         .quote-rays-wrap {
-          position: absolute;
-          inset: 0;
-          z-index: 0;
-          pointer-events: none;
-          border-radius: 16px;
-          overflow: hidden;
+          position: absolute; inset: 0; z-index: 0;
+          pointer-events: none; border-radius: 16px; overflow: hidden;
         }
-        /* Big " mark — behind text, overlapping */
         .quote-mark {
           position: absolute;
           left: 24px; top: 10px; z-index: 1;
           font-size: 200px; line-height: 1;
           font-family: Georgia, serif;
           color: var(--text-secondary); opacity: 0.10;
-          pointer-events: none; user-select: none;
-          font-style: normal;
+          pointer-events: none; user-select: none; font-style: normal;
         }
         .quote-content { position: relative; z-index: 2; }
         .quote-text {
           font-size: clamp(15px, 1.55vw, 20px);
-          font-style: italic;
-          color: var(--text-secondary);
+          font-style: italic; color: var(--text-secondary);
           font-family: Georgia, 'Times New Roman', serif;
-          line-height: 1.65;
-          letter-spacing: 0.01em;
-          margin: 0 0 12px;
-          word-break: break-word;
+          line-height: 1.65; letter-spacing: 0.01em;
+          margin: 0 0 12px; word-break: break-word;
         }
         .quote-author {
           text-align: right; font-size: 13px;
@@ -200,7 +222,7 @@ export function ContactSection() {
 
             <div className="contact-divider" />
 
-            {/* Headline */}
+            {/* Headline — fades in on scroll */}
             <motion.div
               initial={false}
               animate={visible ? { opacity: 1, y: 0 } : { opacity: 0, y: 12 }}
@@ -217,17 +239,23 @@ export function ContactSection() {
               </p>
             </motion.div>
 
-            {/* ── Unified Card: Header + Form ── */}
+            {/* ── Unified Card ── */}
+            {/*
+              NOTE: Card is NOT inside motion.div so the reveal animation
+              never fights the expand animation. Only the initial fade uses motion.
+            */}
             <motion.div
-              initial={false}
+              initial={{ opacity: 0, y: 14 }}
               animate={visible ? { opacity: 1, y: 0 } : { opacity: 0, y: 14 }}
               transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1], delay: 0.14 }}
             >
               <div className="contact-card">
+                {/* Header / Toggle */}
                 <div
-                  className="contact-card-header"
+                  className={`contact-card-header${open ? " open" : ""}`}
                   onClick={() => setOpen(o => !o)}
-                  role="button" tabIndex={0}
+                  role="button"
+                  tabIndex={0}
                   onKeyDown={e => e.key === "Enter" && setOpen(o => !o)}
                   aria-expanded={open}
                 >
@@ -238,11 +266,16 @@ export function ContactSection() {
                     </svg>
                   </span>
                   <span className="contact-card-title">Send me a message</span>
-                  <svg className={`contact-card-chevron${open ? " open" : ""}`} width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
+                  <svg
+                    className={`contact-card-chevron${open ? " open" : ""}`}
+                    width="17" height="17" viewBox="0 0 24 24"
+                    fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"
+                  >
                     <polyline points="6 9 12 15 18 9"/>
                   </svg>
                 </div>
 
+                {/* Expandable Form */}
                 <ExpandPanel open={open}>
                   <div className="contact-card-sep" />
                   <div className="contact-card-body">
@@ -250,23 +283,51 @@ export function ContactSection() {
                       <div className="contact-form-grid">
                         <div>
                           <label className="contact-form-label">Name</label>
-                          <input placeholder="Your name" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} required className="field-input" suppressHydrationWarning autoComplete="name" />
+                          <input
+                            placeholder="Your name"
+                            value={form.name}
+                            onChange={e => setForm({ ...form, name: e.target.value })}
+                            required className="field-input"
+                            suppressHydrationWarning autoComplete="name"
+                          />
                         </div>
                         <div>
                           <label className="contact-form-label">Email</label>
-                          <input type="email" placeholder="your@email.com" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} required className="field-input" suppressHydrationWarning autoComplete="email" />
+                          <input
+                            type="email" placeholder="your@email.com"
+                            value={form.email}
+                            onChange={e => setForm({ ...form, email: e.target.value })}
+                            required className="field-input"
+                            suppressHydrationWarning autoComplete="email"
+                          />
                         </div>
                       </div>
                       <div>
                         <label className="contact-form-label">Message</label>
-                        <textarea placeholder="Tell me about your project or idea..." value={form.message} onChange={e => setForm({ ...form, message: e.target.value })} required rows={5} className="field-input" suppressHydrationWarning style={{ resize: "vertical" }} />
+                        <textarea
+                          placeholder="Tell me about your project or idea..."
+                          value={form.message}
+                          onChange={e => setForm({ ...form, message: e.target.value })}
+                          required rows={5} className="field-input"
+                          suppressHydrationWarning style={{ resize: "vertical" }}
+                        />
                       </div>
                       <div className="contact-form-footer">
-                        <button type="button" onClick={() => setOpen(false)} style={{ padding: "9px 16px", borderRadius: 10, background: "transparent", border: "1px solid var(--border)", color: "var(--text-muted)", fontFamily: SF, fontSize: 13, fontWeight: 500, cursor: "pointer" }}>
+                        <button
+                          type="button" onClick={() => setOpen(false)}
+                          style={{ padding: "9px 16px", borderRadius: 10, background: "transparent", border: "1px solid var(--border)", color: "var(--text-muted)", fontFamily: SF, fontSize: 13, fontWeight: 500, cursor: "pointer" }}
+                        >
                           Cancel
                         </button>
-                        <button type="submit" className={`btn-primary${sent ? " sent" : ""}`} suppressHydrationWarning>
-                          {sent ? <>&#10003;&nbsp;Opening Email App...</> : <><SendIcon />&nbsp;Send Message</>}
+                        <button
+                          type="submit"
+                          className={`btn-primary${sent ? " sent" : ""}`}
+                          suppressHydrationWarning
+                        >
+                          {sent
+                            ? <>&#10003;&nbsp;Opening Email App...</>
+                            : <><SendIcon />&nbsp;Send Message</>
+                          }
                         </button>
                       </div>
                     </form>
@@ -275,9 +336,9 @@ export function ContactSection() {
               </div>
             </motion.div>
 
-            {/* ── Quote Box with LightRays ── */}
+            {/* ── Quote Box ── */}
             <motion.div
-              initial={false}
+              initial={{ opacity: 0, y: 16 }}
               animate={visible ? { opacity: 1, y: 0 } : { opacity: 0, y: 16 }}
               transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1], delay: 0.22 }}
             >
