@@ -26,6 +26,14 @@ function CloseIcon() {
 
 export function PdfModalProvider({ children }: { children: React.ReactNode }) {
   const [modal, setModal] = useState<PdfModalState>(null);
+  const [isMobile, setIsMobile] = useState(false);
+  const [origin, setOrigin] = useState("");
+
+  // Detect mobile & grab origin client-side only (avoids SSR mismatch)
+  useEffect(() => {
+    setIsMobile(window.innerWidth <= 768);
+    setOrigin(window.location.origin);
+  }, []);
 
   const openPdf = useCallback((src: string, title: string, downloadSrc?: string) => {
     setModal({ src, title, downloadSrc: downloadSrc ?? src });
@@ -49,6 +57,15 @@ export function PdfModalProvider({ children }: { children: React.ReactNode }) {
     };
   }, [modal, close]);
 
+  // Build the correct iframe src:
+  // - Desktop: direct PDF with toolbar
+  // - Mobile: Google Docs Viewer — renders PDF in any browser including iOS Safari
+  function getPdfSrc(src: string) {
+    if (!isMobile) return `${src}#toolbar=1&navpanes=0&scrollbar=1&view=FitH`;
+    const fullUrl = src.startsWith("http") ? src : `${origin}${src}`;
+    return `https://docs.google.com/viewer?url=${encodeURIComponent(fullUrl)}&embedded=true`;
+  }
+
   return (
     <PdfModalContext.Provider value={{ openPdf }}>
       {children}
@@ -67,7 +84,7 @@ export function PdfModalProvider({ children }: { children: React.ReactNode }) {
             display: "flex",
             alignItems: "flex-start",
             justifyContent: "center",
-            padding: "48px 12px 12px",
+            padding: isMobile ? "0" : "48px 12px 12px",
             overflowY: "auto",
           }}
         >
@@ -76,16 +93,19 @@ export function PdfModalProvider({ children }: { children: React.ReactNode }) {
             style={{
               position: "relative",
               width: "100%",
-              maxWidth: 780,
+              maxWidth: isMobile ? "100%" : 780,
+              height: isMobile ? "100dvh" : "auto",
               background: "var(--bg-base)",
-              border: "1px solid var(--border)",
-              borderRadius: 12,
+              border: isMobile ? "none" : "1px solid var(--border)",
+              borderRadius: isMobile ? 0 : 12,
               overflow: "hidden",
               boxShadow: "0 24px 70px rgba(0,0,0,0.6)",
-              marginBottom: 12,
+              marginBottom: isMobile ? 0 : 12,
+              display: "flex",
+              flexDirection: "column",
             }}
           >
-            {/* Header — fixed at top */}
+            {/* Header */}
             <div
               style={{
                 display: "flex",
@@ -95,6 +115,7 @@ export function PdfModalProvider({ children }: { children: React.ReactNode }) {
                 padding: "10px 12px",
                 borderBottom: "1px solid var(--border)",
                 background: "var(--bg-secondary)",
+                flexShrink: 0,
               }}
             >
               <span style={{
@@ -112,7 +133,7 @@ export function PdfModalProvider({ children }: { children: React.ReactNode }) {
               <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
                 <a
                   href={modal.downloadSrc}
-                  download={modal.title.replace(/\s+/g, "_") + (modal.downloadSrc.match(/\.[a-z]+$/i)?.[0] ?? "")}
+                  download={modal.title.replace(/\s+/g, "_") + ".pdf"}
                   style={{
                     fontFamily: "'Geist Mono',monospace",
                     fontSize: 11,
@@ -148,9 +169,9 @@ export function PdfModalProvider({ children }: { children: React.ReactNode }) {
               </div>
             </div>
 
-            {/* PDF viewer — iframe on desktop, download prompt on mobile */}
+            {/* Content */}
             {/\.(png|jpe?g|webp|gif|avif)$/i.test(modal.src) ? (
-              <div style={{ background: "#ffffff", overflowY: "auto", maxHeight: "82vh" }}>
+              <div style={{ background: "#ffffff", overflowY: "auto", flex: 1 }}>
                 <img
                   src={modal.src}
                   alt={modal.title}
@@ -158,86 +179,32 @@ export function PdfModalProvider({ children }: { children: React.ReactNode }) {
                 />
               </div>
             ) : (
-              <>
-                {/* Desktop: iframe works fine */}
-                <div className="pdf-iframe-wrap" style={{ height: "82vh" }}>
-                  <iframe
-                    src={`${modal.src}#toolbar=1&navpanes=0&scrollbar=1&view=FitH`}
-                    title={modal.title}
-                    style={{ width: "100%", height: "100%", border: "none", display: "block" }}
-                  />
-                </div>
-                {/* Mobile: show a clean open/download card instead */}
-                <div className="pdf-mobile-fallback" style={{
-                  display: "none",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: 18,
-                  padding: "48px 24px",
-                  background: "var(--bg-base)",
-                  minHeight: 260,
-                }}>
-                  <div style={{
-                    width: 64, height: 64, borderRadius: 16,
-                    background: "rgba(239,68,68,0.12)",
-                    border: "1px solid rgba(239,68,68,0.28)",
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                  }}>
-                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                      <polyline points="14 2 14 8 20 8"/>
-                      <line x1="12" y1="18" x2="12" y2="12"/>
-                      <line x1="9" y1="15" x2="15" y2="15"/>
-                    </svg>
-                  </div>
-                  <div style={{ textAlign: "center" }}>
-                    <p style={{ fontFamily: "'Geist',sans-serif", fontWeight: 700, fontSize: 15, color: "var(--text-primary)", margin: "0 0 6px" }}>
-                      {modal.title}
-                    </p>
-                    <p style={{ fontFamily: "'Geist',sans-serif", fontSize: 13, color: "var(--text-secondary)", margin: 0, lineHeight: 1.5 }}>
-                      PDF preview not supported on mobile browsers.<br/>Open or download below.
-                    </p>
-                  </div>
-                  <div style={{ display: "flex", gap: 10 }}>
-                    <a
-                      href={modal.src}
-                      target="_blank"
-                      rel="noreferrer"
-                      style={{
-                        display: "inline-flex", alignItems: "center", gap: 7,
-                        padding: "10px 20px", borderRadius: 10,
-                        background: "var(--bg-hover)", border: "1px solid var(--border)",
-                        color: "var(--text-primary)", textDecoration: "none",
-                        fontFamily: "'Geist',sans-serif", fontSize: 13, fontWeight: 600,
-                      }}
-                    >
-                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-                      Open
-                    </a>
-                    <a
-                      href={modal.downloadSrc}
-                      download={modal.title.replace(/\s+/g, "_") + ".pdf"}
-                      style={{
-                        display: "inline-flex", alignItems: "center", gap: 7,
-                        padding: "10px 20px", borderRadius: 10,
-                        background: "rgba(99,102,241,0.12)", border: "1px solid rgba(99,102,241,0.3)",
-                        color: "#818cf8", textDecoration: "none",
-                        fontFamily: "'Geist',sans-serif", fontSize: 13, fontWeight: 600,
-                      }}
-                    >
-                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                      Download
-                    </a>
-                  </div>
-                </div>
-                <style suppressHydrationWarning>{`
-                  @media (max-width: 640px) {
-                    .pdf-iframe-wrap { display: none !important; }
-                    .pdf-mobile-fallback { display: flex !important; }
-                  }
-                `}</style>
-              </>
+              /*
+                MOBILE FIX:
+                Previously: CSS hid the iframe on mobile and showed a
+                "PDF preview not supported" fallback — useless UX.
+
+                Now: Google Docs Viewer URL is used on mobile.
+                This renders PDFs in ALL browsers including:
+                - Chrome Android ✓
+                - Samsung Internet ✓
+                - iOS Safari ✓
+                - Firefox Mobile ✓
+
+                Desktop: direct iframe with PDF toolbar (unchanged).
+              */
+              <iframe
+                key={isMobile ? "mobile" : "desktop"}
+                src={origin ? getPdfSrc(modal.src) : ""}
+                title={modal.title}
+                style={{
+                  width: "100%",
+                  flex: 1,
+                  border: "none",
+                  display: "block",
+                  minHeight: isMobile ? 0 : "82vh",
+                }}
+              />
             )}
           </div>
         </div>
