@@ -283,7 +283,7 @@ function ProjectModal({ proj, onClose }: { proj: typeof PROJECTS[0]; onClose: ()
           ref={modalRef}
           style={{
             pointerEvents: "auto",
-            width: "100%", maxWidth: 860,
+            width: "100%", maxWidth: 960,
             maxHeight: "calc(100dvh - 32px)",
             minHeight: 420,
             background: "var(--bg-card)",
@@ -313,22 +313,22 @@ function ProjectModal({ proj, onClose }: { proj: typeof PROJECTS[0]; onClose: ()
               min-height: 0;
             }
             .pm-img-col {
-              width: 48%;
+              width: 50%;
               flex-shrink: 0;
-              position: relative;
               border-right: 1px solid var(--border);
               background: var(--bg-secondary);
               display: flex;
               flex-direction: column;
               align-items: stretch;
-              overflow: hidden;
+              overflow-y: auto;
+              scrollbar-width: none;
             }
+            .pm-img-col::-webkit-scrollbar { display: none; }
             .pm-img-col img {
               width: 100%;
-              height: 260px;
+              height: auto;
               display: block;
-              object-fit: cover;
-              object-position: top center;
+              object-fit: contain;
               flex-shrink: 0;
             }
             .pm-img-links {
@@ -338,6 +338,8 @@ function ProjectModal({ proj, onClose }: { proj: typeof PROJECTS[0]; onClose: ()
               border-top: 1px solid var(--border);
               background: var(--bg-card);
               flex-shrink: 0;
+              position: sticky;
+              bottom: 0;
             }
             .pm-content-col {
               flex: 1;
@@ -354,10 +356,12 @@ function ProjectModal({ proj, onClose }: { proj: typeof PROJECTS[0]; onClose: ()
                 border-right: none;
                 border-bottom: 1px solid var(--border);
                 flex-shrink: 0;
+                overflow-y: visible;
               }
               .pm-img-col img {
-                height: 200px;
-                object-fit: cover;
+                width: 100%;
+                height: auto;
+                object-fit: contain;
               }
             }
           `}</style>
