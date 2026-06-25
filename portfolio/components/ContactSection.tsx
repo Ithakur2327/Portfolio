@@ -28,7 +28,7 @@ function MailIcon() {
 
 function SendIcon() {
   return (
-    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
       <line x1="22" y1="2" x2="11" y2="13"/>
       <polygon points="22 2 15 22 11 13 2 9 22 2"/>
     </svg>
@@ -37,9 +37,9 @@ function SendIcon() {
 
 export function ContactSection() {
   const { ref, revealClass, visible } = useReveal();
-  const [open, setOpen]   = useState(false);
-  const [form, setForm]   = useState({ name: "", email: "", message: "" });
-  const [sent, setSent]   = useState(false);
+  const [open, setOpen] = useState(false);
+  const [form, setForm] = useState({ name: "", email: "", message: "" });
+  const [sent, setSent] = useState(false);
   const quote = getQuoteForNow();
 
   const handleSubmit = useCallback((e: React.FormEvent) => {
@@ -67,32 +67,89 @@ export function ContactSection() {
         }
         .contact-divider { height: 1px; background: var(--border); margin-bottom: 28px; }
 
+        /* ── Unified Contact Card ── */
+        .contact-card {
+          background: var(--bg-card);
+          border: 1px solid var(--border);
+          border-radius: 16px;
+          overflow: hidden;
+        }
+
+        /* Header row — always visible, clickable */
+        .contact-card-header {
+          display: flex; align-items: center; gap: 12px;
+          padding: 16px 20px;
+          cursor: pointer;
+          transition: background 0.18s ease;
+          user-select: none;
+        }
+        .contact-card-header:hover { background: var(--bg-hover); }
+
+        .contact-card-icon {
+          width: 34px; height: 34px; border-radius: 9px; flex-shrink: 0;
+          background: rgba(99,102,241,0.12);
+          border: 1px solid rgba(99,102,241,0.28);
+          display: flex; align-items: center; justify-content: center;
+        }
+        .contact-card-title {
+          font-family: ${SF}; font-size: 15px; font-weight: 600;
+          color: var(--text-primary); flex: 1;
+        }
+        .contact-card-chevron {
+          color: var(--text-muted); flex-shrink: 0;
+          transition: transform 0.3s cubic-bezier(0.22,1,0.36,1);
+        }
+        .contact-card-chevron.open { transform: rotate(180deg); }
+
+        /* Divider between header and form */
+        .contact-card-sep {
+          height: 1px; background: var(--border);
+          margin: 0 20px;
+        }
+
+        /* Form body */
+        .contact-card-body { padding: 20px; }
+
+        .contact-form-label {
+          display: block; font-size: 10px; font-weight: 700;
+          color: var(--text-muted); margin-bottom: 7px;
+          font-family: ${MONO}; letter-spacing: 0.09em;
+          text-transform: uppercase;
+        }
+        .contact-form-grid {
+          display: grid; grid-template-columns: 1fr 1fr;
+          gap: 12px; margin-bottom: 14px;
+        }
+        .contact-form-footer {
+          display: flex; align-items: center; justify-content: flex-end;
+          margin-top: 20px; gap: 10px;
+        }
+
         /* ── Quote Box ── */
         .quote-box {
           position: relative;
           background: var(--bg-card);
           border: 1px solid var(--border);
-          border-radius: 14px;
-          padding: 24px 28px 24px 44px;
-          margin-top: 26px;
+          border-radius: 16px;
+          padding: 28px 32px 28px 64px;
+          margin-top: 20px;
           overflow: hidden;
         }
         .quote-mark {
-          position: absolute; left: 10px; top: 10px;
-          font-size: 72px; line-height: 1;
+          position: absolute; left: 12px; top: 8px;
+          font-size: 96px; line-height: 1;
           font-family: Georgia, serif;
-          color: var(--text-muted); opacity: 0.22;
+          color: var(--text-muted); opacity: 0.20;
           pointer-events: none; user-select: none;
-          font-style: normal;
         }
         .quote-text {
-          font-size: 13.5px;
+          font-size: 15.5px;
           font-style: italic;
           color: var(--text-secondary);
           font-family: Georgia, 'Times New Roman', serif;
-          line-height: 1.7;
-          letter-spacing: 0.01em;
-          margin: 0 0 10px;
+          line-height: 1.75;
+          letter-spacing: 0.015em;
+          margin: 0 0 12px;
         }
         .quote-author {
           text-align: right;
@@ -100,52 +157,16 @@ export function ContactSection() {
           font-family: ${MONO};
           color: var(--text-muted);
           margin: 0;
-        }
-
-        /* ── CTA Button ── */
-        .contact-cta-btn {
-          display: flex; align-items: center; gap: 10px;
-          padding: 13px 18px; border-radius: 12px;
-          background: var(--bg-card);
-          border: 1px solid var(--border);
-          color: var(--text-primary);
-          font-family: ${SF}; font-size: 14px; font-weight: 600;
-          cursor: pointer; width: 100%;
-          transition: border-color 0.2s ease, background 0.2s ease;
-          text-align: left;
-        }
-        .contact-cta-btn:hover {
-          border-color: rgba(99,102,241,0.5);
-          background: var(--bg-hover);
-        }
-        .contact-cta-arrow {
-          margin-left: auto;
-          transition: transform 0.3s cubic-bezier(0.22,1,0.36,1);
-          color: var(--text-muted); flex-shrink: 0;
-        }
-        .contact-cta-arrow.open { transform: rotate(180deg); }
-
-        /* ── Form Panel ── */
-        .contact-form-label {
-          display: block; font-size: 10.5px; font-weight: 600;
-          color: var(--text-muted); margin-bottom: 6px;
-          font-family: ${MONO}; letter-spacing: 0.07em;
-          text-transform: uppercase;
-        }
-        .contact-form-grid {
-          display: grid; grid-template-columns: 1fr 1fr;
-          gap: 12px; margin-bottom: 12px;
-        }
-        .contact-form-footer {
-          display: flex; align-items: center; justify-content: flex-end;
-          margin-top: 18px; gap: 10px;
+          letter-spacing: 0.04em;
         }
 
         @media (max-width: 860px) { .contact-inner { padding: 0 22px 44px; } }
         @media (max-width: 640px) {
           .contact-inner { padding: 0 16px 36px; }
           .contact-form-grid { grid-template-columns: 1fr; }
-          .quote-box { padding: 20px 18px 20px 36px; }
+          .quote-box { padding: 24px 20px 24px 52px; }
+          .quote-mark { font-size: 72px; left: 10px; }
+          .quote-text { font-size: 14px; }
         }
       `}</style>
 
@@ -156,7 +177,7 @@ export function ContactSection() {
             {/* Section Title */}
             <div style={{ paddingTop: 28, marginBottom: 20 }}>
               <h2 style={{ fontSize: 28, fontWeight: 700, letterSpacing: "-0.03em", lineHeight: 1, fontFamily: SF, color: "var(--text-primary)", display: "flex", alignItems: "center", gap: 10, margin: 0 }}>
-                <span style={{ width: 34, height: 34, borderRadius: 9, background: "var(--bg-hover)", border: "1px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--text-secondary)", flexShrink: 0, boxShadow: "0 1px 3px rgba(0,0,0,0.18)" }}>
+                <span style={{ width: 34, height: 34, borderRadius: 9, background: "var(--bg-hover)", border: "1px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--text-secondary)", flexShrink: 0 }}>
                   <MailIcon />
                 </span>
                 Contact
@@ -182,112 +203,119 @@ export function ContactSection() {
               </p>
             </motion.div>
 
-            {/* CTA Button + Expandable Form */}
+            {/* ── Unified Card: Header + Expandable Form ── */}
             <motion.div
               initial={false}
               animate={visible ? { opacity: 1, y: 0 } : { opacity: 0, y: 14 }}
               transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1], delay: 0.14 }}
             >
-              <button
-                className="contact-cta-btn"
-                onClick={() => setOpen(o => !o)}
-                type="button"
-              >
-                <span style={{ width: 30, height: 30, borderRadius: 8, background: "rgba(99,102,241,0.12)", border: "1px solid rgba(99,102,241,0.28)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#818cf8" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
-                    <polyline points="22,6 12,13 2,6"/>
-                  </svg>
-                </span>
-                <span>Send me a message</span>
-                <svg
-                  className={`contact-cta-arrow${open ? " open" : ""}`}
-                  width="16" height="16" viewBox="0 0 24 24"
-                  fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"
-                >
-                  <polyline points="6 9 12 15 18 9"/>
-                </svg>
-              </button>
+              <div className="contact-card">
 
-              <AnimatePresence initial={false}>
-                {open && (
-                  <motion.div
-                    key="form-panel"
-                    initial={{ opacity: 0, height: 0, y: -8 }}
-                    animate={{ opacity: 1, height: "auto", y: 0 }}
-                    exit={{ opacity: 0, height: 0, y: -8 }}
-                    transition={{ duration: 0.38, ease: [0.22, 1, 0.36, 1] }}
-                    style={{ overflow: "hidden" }}
+                {/* Header — toggle */}
+                <div
+                  className="contact-card-header"
+                  onClick={() => setOpen(o => !o)}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={e => e.key === "Enter" && setOpen(o => !o)}
+                  aria-expanded={open}
+                >
+                  <span className="contact-card-icon">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#818cf8" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                      <polyline points="22,6 12,13 2,6"/>
+                    </svg>
+                  </span>
+                  <span className="contact-card-title">Send me a message</span>
+                  <svg
+                    className={`contact-card-chevron${open ? " open" : ""}`}
+                    width="17" height="17" viewBox="0 0 24 24"
+                    fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"
                   >
-                    <div style={{ borderLeft: "1px solid var(--border)", borderRight: "1px solid var(--border)", borderBottom: "1px solid var(--border)", borderRadius: "0 0 12px 12px", padding: "20px", background: "var(--bg-card)" }}>
-                      <form onSubmit={handleSubmit}>
-                        <div className="contact-form-grid">
-                          <div>
-                            <label className="contact-form-label">Name</label>
-                            <input
-                              placeholder="Your name"
-                              value={form.name}
-                              onChange={e => setForm({ ...form, name: e.target.value })}
-                              required
-                              className="field-input"
-                              suppressHydrationWarning
-                              autoComplete="name"
-                            />
+                    <polyline points="6 9 12 15 18 9"/>
+                  </svg>
+                </div>
+
+                {/* Expandable form — same card, no gap */}
+                <AnimatePresence initial={false}>
+                  {open && (
+                    <motion.div
+                      key="form-body"
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      exit={{ opacity: 0, height: 0 }}
+                      transition={{ duration: 0.36, ease: [0.22, 1, 0.36, 1] }}
+                      style={{ overflow: "hidden" }}
+                    >
+                      <div className="contact-card-sep" />
+                      <div className="contact-card-body">
+                        <form onSubmit={handleSubmit}>
+                          <div className="contact-form-grid">
+                            <div>
+                              <label className="contact-form-label">Name</label>
+                              <input
+                                placeholder="Your name"
+                                value={form.name}
+                                onChange={e => setForm({ ...form, name: e.target.value })}
+                                required
+                                className="field-input"
+                                suppressHydrationWarning
+                                autoComplete="name"
+                              />
+                            </div>
+                            <div>
+                              <label className="contact-form-label">Email</label>
+                              <input
+                                type="email"
+                                placeholder="your@email.com"
+                                value={form.email}
+                                onChange={e => setForm({ ...form, email: e.target.value })}
+                                required
+                                className="field-input"
+                                suppressHydrationWarning
+                                autoComplete="email"
+                              />
+                            </div>
                           </div>
                           <div>
-                            <label className="contact-form-label">Email</label>
-                            <input
-                              type="email"
-                              placeholder="your@email.com"
-                              value={form.email}
-                              onChange={e => setForm({ ...form, email: e.target.value })}
+                            <label className="contact-form-label">Message</label>
+                            <textarea
+                              placeholder="Tell me about your project or idea..."
+                              value={form.message}
+                              onChange={e => setForm({ ...form, message: e.target.value })}
                               required
+                              rows={5}
                               className="field-input"
                               suppressHydrationWarning
-                              autoComplete="email"
+                              style={{ resize: "vertical" }}
                             />
                           </div>
-                        </div>
-                        <div>
-                          <label className="contact-form-label">Message</label>
-                          <textarea
-                            placeholder="Tell me about your project or idea..."
-                            value={form.message}
-                            onChange={e => setForm({ ...form, message: e.target.value })}
-                            required
-                            rows={5}
-                            className="field-input"
-                            suppressHydrationWarning
-                            style={{ resize: "vertical" }}
-                          />
-                        </div>
-                        <div className="contact-form-footer">
-                          <button
-                            type="button"
-                            onClick={() => setOpen(false)}
-                            style={{ padding: "9px 16px", borderRadius: 10, background: "transparent", border: "1px solid var(--border)", color: "var(--text-muted)", fontFamily: SF, fontSize: 13, fontWeight: 500, cursor: "pointer" }}
-                          >
-                            Cancel
-                          </button>
-                          <button
-                            type="submit"
-                            className={`btn-primary${sent ? " sent" : ""}`}
-                            suppressHydrationWarning
-                          >
-                            {sent
-                              ? <>&#10003; Opening Email App...</>
-                              : <><SendIcon /> Send Message</>
-                            }
-                          </button>
-                        </div>
-                      </form>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
+                          <div className="contact-form-footer">
+                            <button
+                              type="button"
+                              onClick={() => setOpen(false)}
+                              style={{ padding: "9px 16px", borderRadius: 10, background: "transparent", border: "1px solid var(--border)", color: "var(--text-muted)", fontFamily: SF, fontSize: 13, fontWeight: 500, cursor: "pointer" }}
+                            >
+                              Cancel
+                            </button>
+                            <button
+                              type="submit"
+                              className={`btn-primary${sent ? " sent" : ""}`}
+                              suppressHydrationWarning
+                            >
+                              {sent ? <>&#10003;&nbsp;Opening Email App...</> : <><SendIcon />&nbsp;Send Message</>}
+                            </button>
+                          </div>
+                        </form>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+              </div>
             </motion.div>
 
-            {/* Quote Box */}
+            {/* ── Quote Box ── */}
             <motion.div
               initial={false}
               animate={visible ? { opacity: 1, y: 0 } : { opacity: 0, y: 16 }}
