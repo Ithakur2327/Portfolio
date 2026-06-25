@@ -12,13 +12,7 @@ const TO_EMAIL = "ithakur2327@gmail.com";
 
 const QUOTES = [
   { text: "A man who is master of patience is master of everything else.", author: "George Savile" },
-  { text: "The secret of getting ahead is getting started.", author: "Mark Twain" },
-  { text: "Code is like humor. When you have to explain it, it's bad.", author: "Cory House" },
-  { text: "Simplicity is the soul of efficiency.", author: "Austin Freeman" },
-  { text: "First, solve the problem. Then, write the code.", author: "John Johnson" },
-  { text: "Make it work, make it right, make it fast.", author: "Kent Beck" },
-  { text: "The best error message is the one that never shows up.", author: "Thomas Fuchs" },
-  { text: "Programs must be written for people to read.", author: "Harold Abelson" },
+  
 ];
 
 function getQuoteForNow() {
