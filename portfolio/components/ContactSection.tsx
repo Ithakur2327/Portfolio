@@ -1,5 +1,5 @@
 "use client";
-import { useState, useCallback, useRef, useEffect } from "react";
+import { useState, useCallback } from "react";
 import { motion } from "motion/react";
 import { useReveal } from "./useReveal";
 import dynamic from "next/dynamic";
@@ -44,33 +44,26 @@ function SendIcon() {
   );
 }
 
-/* ── Smooth expand: measures real height then animates max-height ── */
+/*
+  ── ExpandPanel ──────────────────────────────────────────────────
+  Pure CSS grid-template-rows trick.
+  • Zero JS (no scrollHeight, no useRef, no useEffect, no useState)
+  • Zero willChange  →  no premature GPU layer = zero lag
+  • Browser interpolates grid rows natively on the compositor thread
+  ─────────────────────────────────────────────────────────────────
+*/
 function ExpandPanel({ open, children }: { open: boolean; children: React.ReactNode }) {
-  const innerRef = useRef<HTMLDivElement>(null);
-  const [height, setHeight] = useState(0);
-
-  useEffect(() => {
-    if (!innerRef.current) return;
-    // Measure only when opening — gives exact pixel value, no overshooting
-    if (open) {
-      setHeight(innerRef.current.scrollHeight);
-    }
-  }, [open]);
-
   return (
     <div
+      aria-hidden={!open}
       style={{
-        maxHeight: open ? height : 0,
-        opacity: open ? 1 : 0,
-        overflow: "hidden",
-        // Only animate max-height and opacity — both are GPU-compositable
-        transition: open
-          ? "max-height 0.32s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.22s ease"
-          : "max-height 0.26s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.16s ease",
-        // No willChange — avoids premature layer promotion that causes lag
+        display: "grid",
+        gridTemplateRows: open ? "1fr" : "0fr",
+        transition: "grid-template-rows 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
       }}
     >
-      <div ref={innerRef}>
+      {/* min-height:0 is mandatory — lets the inner div collapse to 0 */}
+      <div style={{ minHeight: 0, overflow: "hidden" }}>
         {children}
       </div>
     </div>
@@ -111,18 +104,15 @@ export function ContactSection() {
           background: var(--bg-card);
           border: 1px solid var(--border);
           border-radius: 16px;
-          /* Contain the card so children don't bleed during animation */
-          contain: layout style;
+          overflow: hidden;
         }
         .contact-card-header {
           display: flex; align-items: center; gap: 12px;
           padding: 16px 20px; cursor: pointer;
           transition: background 0.15s ease;
-          user-select: none; border-radius: 16px;
+          user-select: none;
         }
         .contact-card-header:hover { background: var(--bg-hover); }
-        /* When form is open, only round top corners */
-        .contact-card-header.open { border-radius: 16px 16px 0 0; }
         .contact-card-icon {
           width: 34px; height: 34px; border-radius: 9px; flex-shrink: 0;
           background: rgba(99,102,241,0.12); border: 1px solid rgba(99,102,241,0.28);
@@ -140,7 +130,7 @@ export function ContactSection() {
         .contact-card-sep { height: 1px; background: var(--border); }
         .contact-card-body { padding: 20px; }
 
-        /* Form fields */
+        /* Form */
         .contact-form-label {
           display: block; font-size: 10px; font-weight: 700;
           color: var(--text-muted); margin-bottom: 7px;
@@ -175,10 +165,8 @@ export function ContactSection() {
           pointer-events: none; border-radius: 16px; overflow: hidden;
         }
         .quote-mark {
-          position: absolute;
-          left: 24px; top: 10px; z-index: 1;
-          font-size: 200px; line-height: 1;
-          font-family: Georgia, serif;
+          position: absolute; left: 24px; top: 10px; z-index: 1;
+          font-size: 200px; line-height: 1; font-family: Georgia, serif;
           color: var(--text-secondary); opacity: 0.10;
           pointer-events: none; user-select: none; font-style: normal;
         }
@@ -222,7 +210,7 @@ export function ContactSection() {
 
             <div className="contact-divider" />
 
-            {/* Headline — fades in on scroll */}
+            {/* Headline */}
             <motion.div
               initial={false}
               animate={visible ? { opacity: 1, y: 0 } : { opacity: 0, y: 12 }}
@@ -240,19 +228,14 @@ export function ContactSection() {
             </motion.div>
 
             {/* ── Unified Card ── */}
-            {/*
-              NOTE: Card is NOT inside motion.div so the reveal animation
-              never fights the expand animation. Only the initial fade uses motion.
-            */}
             <motion.div
-              initial={{ opacity: 0, y: 14 }}
+              initial={false}
               animate={visible ? { opacity: 1, y: 0 } : { opacity: 0, y: 14 }}
               transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1], delay: 0.14 }}
             >
               <div className="contact-card">
-                {/* Header / Toggle */}
                 <div
-                  className={`contact-card-header${open ? " open" : ""}`}
+                  className="contact-card-header"
                   onClick={() => setOpen(o => !o)}
                   role="button"
                   tabIndex={0}
@@ -275,7 +258,6 @@ export function ContactSection() {
                   </svg>
                 </div>
 
-                {/* Expandable Form */}
                 <ExpandPanel open={open}>
                   <div className="contact-card-sep" />
                   <div className="contact-card-body">
@@ -314,7 +296,8 @@ export function ContactSection() {
                       </div>
                       <div className="contact-form-footer">
                         <button
-                          type="button" onClick={() => setOpen(false)}
+                          type="button"
+                          onClick={() => setOpen(false)}
                           style={{ padding: "9px 16px", borderRadius: 10, background: "transparent", border: "1px solid var(--border)", color: "var(--text-muted)", fontFamily: SF, fontSize: 13, fontWeight: 500, cursor: "pointer" }}
                         >
                           Cancel
@@ -338,7 +321,7 @@ export function ContactSection() {
 
             {/* ── Quote Box ── */}
             <motion.div
-              initial={{ opacity: 0, y: 16 }}
+              initial={false}
               animate={visible ? { opacity: 1, y: 0 } : { opacity: 0, y: 16 }}
               transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1], delay: 0.22 }}
             >
