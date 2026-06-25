@@ -2,8 +2,6 @@
 import { useRef } from "react";
 import { motion, useInView } from "motion/react";
 import { useReveal } from "./useReveal";
-import { usePdfModal } from "./PdfViewerModal";
-import { slugify } from "@/lib/utils";
 
 const SF = "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', sans-serif";
 const MONO = "'Geist Mono', monospace";
@@ -35,34 +33,55 @@ const LANGUAGES = [
   { name: "MAITHILI" },
 ];
 
-// Each cert's PDF is auto-matched from its title:
-// "MERN Stack Development" -> /public/certificates/mern-stack-development.pdf
-// Just drop your PDFs into public/certificates/ using the slugified title as the filename.
+// ── Certifications — edit driveLink when you add the file to Drive ──
 const CERTIFICATIONS = [
   {
     title: "MERN Stack Development",
     issuer: "Coursera",
     date: "2024",
+    driveLink: "",
+    logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/97/Coursera-Logo_600x600.svg/1200px-Coursera-Logo_600x600.svg.png",
+    logoBg: "#0056D2",
   },
   {
     title: "Principles of Generative AI",
     issuer: "Coursera",
     date: "2024",
+    driveLink: "",
+    logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/97/Coursera-Logo_600x600.svg/1200px-Coursera-Logo_600x600.svg.png",
+    logoBg: "#0056D2",
   },
   {
     title: "Web Development Bootcamp",
     issuer: "Udemy",
-    date: "2023",
+    date: "2024",
+    driveLink: "",
+    logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e3/Udemy_logo.svg/2560px-Udemy_logo.svg.png",
+    logoBg: "#A435F0",
   },
   {
     title: "Data Structures & Algorithms",
     issuer: "GeeksforGeeks",
-    date: "2023",
+    date: "2024",
+    driveLink: "",
+    logo: "https://upload.wikimedia.org/wikipedia/commons/4/43/GeeksforGeeks.svg",
+    logoBg: "#2F8D46",
+  },
+  {
+    title: "Machine Learning & Deep Learning",
+    issuer: "Coursera",
+    date: "2025",
+    driveLink: "",
+    logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/97/Coursera-Logo_600x600.svg/1200px-Coursera-Logo_600x600.svg.png",
+    logoBg: "#0056D2",
   },
   {
     title: "Cloud Computing Fundamentals",
     issuer: "Google Cloud",
-    date: "2024",
+    date: "2025",
+    driveLink: "",
+    logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/51/Google_Cloud_logo.svg/2560px-Google_Cloud_logo.svg.png",
+    logoBg: "#FFFFFF",
   },
 ];
 
@@ -84,14 +103,6 @@ function CertIcon() {
   );
 }
 
-function ArrowIcon() {
-  return (
-    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-      <line x1="7" y1="17" x2="17" y2="7"/>
-      <polyline points="7 7 17 7 17 17"/>
-    </svg>
-  );
-}
 
 /* ── Language pill with skill-section-style highlight animation ── */
 function LangPill({ name, delay }: { name: string; delay: number }) {
@@ -146,7 +157,6 @@ function EduCard({ school, degree, short, period, index, sectionVisible }: {
 export function EducationSection() {
   const { ref, revealClass, visible } = useReveal();
   const { ref: ref2, revealClass: revealClass2, visible: vis2 } = useReveal();
-  const { openPdf } = usePdfModal();
 
   return (
     <>
@@ -368,70 +378,121 @@ export function EducationSection() {
           margin-left: 8px;
           vertical-align: middle;
         }
-        .cert-item {
+
+        /* ── New card grid ── */
+        .cert-grid {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 14px;
+        }
+        .cert-card {
+          position: relative;
+          display: flex;
+          flex-direction: column;
+          background: var(--bg-card);
+          border: 1px solid var(--border);
+          border-radius: 14px;
+          overflow: hidden;
+          cursor: pointer;
+          text-decoration: none;
+          color: inherit;
+          transition: border-color 0.2s ease, transform 0.2s cubic-bezier(0.22,1,0.36,1), box-shadow 0.2s ease;
+        }
+        .cert-card:hover {
+          border-color: rgba(99,102,241,0.45);
+          transform: translateY(-3px);
+          box-shadow: 0 8px 28px rgba(0,0,0,0.22);
+        }
+        /* Top banner — issuer logo */
+        .cert-card-banner {
+          height: 72px;
           display: flex;
           align-items: center;
-          gap: 13px;
-          padding: 13px 8px;
-          margin: 0 -8px;
-          border-radius: 8px;
+          justify-content: center;
+          padding: 12px 16px;
           border-bottom: 1px solid var(--border);
-          text-decoration: none;
-          color: var(--text-primary);
-          transition: background 0.14s;
-          cursor: pointer;
+          position: relative;
+          overflow: hidden;
         }
-        .cert-item:last-child { border-bottom: none; }
-        .cert-item:hover { background: var(--bg-hover); }
-        .cert-item:hover .cert-arrow-icon {
-          opacity: 1;
-          transform: translate(2px, -2px);
+        .cert-card-banner-bg {
+          position: absolute; inset: 0;
+          opacity: 0.12;
+          transition: opacity 0.2s;
         }
-        .cert-icon-box {
-          width: 34px; height: 34px;
-          border-radius: 9px;
-          background: var(--bg-hover);
-          border: 1px solid var(--border);
-          display: flex; align-items: center; justify-content: center;
-          color: var(--text-secondary);
-          flex-shrink: 0;
-          box-shadow: 0 1px 3px rgba(0,0,0,0.14);
-          transition: box-shadow 0.2s, transform 0.2s;
+        .cert-card:hover .cert-card-banner-bg { opacity: 0.18; }
+        .cert-card-logo {
+          height: 32px;
+          max-width: 110px;
+          object-fit: contain;
+          position: relative; z-index: 1;
+          filter: none;
         }
-        .cert-item:hover .cert-icon-box {
-          box-shadow: 0 3px 10px rgba(0,0,0,0.22);
-          transform: translateY(-1px);
+        /* Bottom content */
+        .cert-card-body {
+          padding: 13px 14px 14px;
+          display: flex;
+          flex-direction: column;
+          gap: 6px;
+          flex: 1;
         }
-        .cert-title-txt {
-          font-size: 13.5px;
+        .cert-card-title {
+          font-size: 12.5px;
           font-weight: 700;
           color: var(--text-primary);
-          letter-spacing: -0.015em;
           font-family: ${SF};
+          letter-spacing: -0.018em;
+          line-height: 1.35;
         }
-        .cert-meta-txt {
-          font-size: 11.5px;
-          color: var(--text-muted);
-          margin-top: 2px;
+        .cert-card-meta {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          margin-top: auto;
+          padding-top: 6px;
+        }
+        .cert-card-issuer {
+          font-size: 10.5px;
           font-family: ${MONO};
-        }
-        .cert-arrow-icon {
           color: var(--text-muted);
-          flex-shrink: 0;
-          opacity: 0.4;
-          transition: opacity 0.15s, transform 0.2s cubic-bezier(0.22,1,0.36,1);
-          margin-left: auto;
+          letter-spacing: 0.02em;
         }
+        .cert-card-date {
+          font-size: 10px;
+          font-family: ${MONO};
+          color: var(--text-muted);
+          background: var(--bg-hover);
+          border: 1px solid var(--border);
+          border-radius: 4px;
+          padding: 2px 6px;
+        }
+        /* Drive link badge */
+        .cert-card-link-badge {
+          position: absolute;
+          top: 8px; right: 8px;
+          width: 22px; height: 22px;
+          border-radius: 6px;
+          background: rgba(99,102,241,0.15);
+          border: 1px solid rgba(99,102,241,0.30);
+          display: flex; align-items: center; justify-content: center;
+          opacity: 0;
+          transition: opacity 0.18s ease;
+          z-index: 2;
+        }
+        .cert-card:hover .cert-card-link-badge { opacity: 1; }
 
-        /* ── responsive ── */
         @media (max-width: 860px) {
           .edu-inner { padding: 0 22px 34px; }
+          .cert-grid { grid-template-columns: repeat(2, 1fr); }
         }
         @media (max-width: 640px) {
           .edu-inner { padding: 0 16px 28px; }
           .edu-card-top { flex-direction: column; gap: 4px; }
           .edu-card-period { margin-left: 0; }
           .edu-sec-title { font-size: 22px; }
+          .cert-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+        }
+        @media (max-width: 420px) {
+          .cert-grid { grid-template-columns: 1fr; }
         }
       `}</style>
 
@@ -496,35 +557,63 @@ export function EducationSection() {
 
             <div className="edu-sec-divider" />
 
-            {/* Cert items */}
-            {CERTIFICATIONS.map((cert, i) => {
-              const pdfSrc = `/certificates/${slugify(cert.title)}.pdf`;
-              return (
-                <motion.div
-                  key={i}
-                  role="button"
-                  tabIndex={0}
-                  onClick={() => openPdf(pdfSrc, cert.title)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" || e.key === " ") {
-                      e.preventDefault();
-                      openPdf(pdfSrc, cert.title);
-                    }
-                  }}
-                  className="cert-item"
-                  initial={false}
-                  animate={vis2 ? { opacity: 1, y: 0, rotateX: 0 } : { opacity: 0, y: 14, rotateX: 6 }}
-                  transition={{ duration: 0.46, ease: [0.22, 1, 0.36, 1], delay: vis2 ? i * 0.08 : 0 }}
-                >
-                  <div className="cert-icon-box"><CertIcon /></div>
-                  <div style={{ flex: 1 }}>
-                    <p className="cert-title-txt">{cert.title}</p>
-                    <p className="cert-meta-txt">@ {cert.issuer} · {cert.date}</p>
-                  </div>
-                  <span className="cert-arrow-icon"><ArrowIcon /></span>
-                </motion.div>
-              );
-            })}
+            {/* Cert cards — 3 per row */}
+            <div className="cert-grid">
+              {CERTIFICATIONS.map((cert, i) => {
+                const handleOpen = () => {
+                  if (cert.driveLink) {
+                    window.open(cert.driveLink, "_blank", "noopener,noreferrer");
+                  }
+                };
+                return (
+                  <motion.div
+                    key={i}
+                    className="cert-card"
+                    role="button"
+                    tabIndex={0}
+                    onClick={handleOpen}
+                    onKeyDown={e => (e.key === "Enter" || e.key === " ") && handleOpen()}
+                    initial={false}
+                    animate={vis2 ? { opacity: 1, y: 0 } : { opacity: 0, y: 18 }}
+                    transition={{ duration: 0.46, ease: [0.22, 1, 0.36, 1], delay: vis2 ? i * 0.07 : 0 }}
+                  >
+                    {/* Drive link indicator */}
+                    {cert.driveLink && (
+                      <span className="cert-card-link-badge">
+                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#818cf8" strokeWidth="2.5" strokeLinecap="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                      </span>
+                    )}
+
+                    {/* Banner with real logo */}
+                    <div className="cert-card-banner">
+                      <div
+                        className="cert-card-banner-bg"
+                        style={{ background: cert.logoBg }}
+                      />
+                      <img
+                        src={cert.logo}
+                        alt={cert.issuer}
+                        className="cert-card-logo"
+                        loading="lazy"
+                        draggable={false}
+                        onError={e => {
+                          (e.target as HTMLImageElement).style.display = "none";
+                        }}
+                      />
+                    </div>
+
+                    {/* Content */}
+                    <div className="cert-card-body">
+                      <p className="cert-card-title">{cert.title}</p>
+                      <div className="cert-card-meta">
+                        <span className="cert-card-issuer">{cert.issuer}</span>
+                        <span className="cert-card-date">{cert.date}</span>
+                      </div>
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </div>
           </div>
         </div>
       </section>
