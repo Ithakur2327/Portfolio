@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@radix-ui/react-tooltip": "^1.1.6",
+    "ogl": "^1.0.11",
     "clsx": "^2.1.1",
     "lucide-react": "^0.468.0",
     "motion": "^12.40.0",

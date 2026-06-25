@@ -1,7 +1,10 @@
 "use client";
-import { useState, useCallback } from "react";
-import { motion, AnimatePresence } from "motion/react";
+import { useState, useCallback, useRef, useEffect } from "react";
+import { motion } from "motion/react";
 import { useReveal } from "./useReveal";
+import dynamic from "next/dynamic";
+
+const LightRays = dynamic(() => import("./LightRays"), { ssr: false });
 
 const SF   = "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', sans-serif";
 const MONO = "'Geist Mono', monospace";
@@ -9,7 +12,7 @@ const TO_EMAIL = "ithakur2327@gmail.com";
 
 const QUOTES = [
   { text: "A man who is master of patience is master of everything else.", author: "George Savile" },
-  
+ 
 ];
 
 function getQuoteForNow() {
@@ -32,6 +35,47 @@ function SendIcon() {
       <line x1="22" y1="2" x2="11" y2="13"/>
       <polygon points="22 2 15 22 11 13 2 9 22 2"/>
     </svg>
+  );
+}
+
+/* Lag-free expand — CSS max-height trick, no framer-motion height animation */
+function ExpandPanel({ open, children }: { open: boolean; children: React.ReactNode }) {
+  const innerRef = useRef<HTMLDivElement>(null);
+  const [maxH, setMaxH] = useState(0);
+
+  useEffect(() => {
+    if (!innerRef.current) return;
+    if (open) {
+      // measure real height then set
+      setMaxH(innerRef.current.scrollHeight);
+    } else {
+      setMaxH(0);
+    }
+  }, [open]);
+
+  // Re-measure on children change (e.g. textarea resize)
+  useEffect(() => {
+    if (!open || !innerRef.current) return;
+    const ro = new ResizeObserver(() => {
+      if (innerRef.current) setMaxH(innerRef.current.scrollHeight);
+    });
+    ro.observe(innerRef.current);
+    return () => ro.disconnect();
+  }, [open]);
+
+  return (
+    <div
+      style={{
+        maxHeight: maxH,
+        overflow: "hidden",
+        transition: "max-height 0.36s cubic-bezier(0.22,1,0.36,1), opacity 0.28s ease",
+        opacity: open ? 1 : 0,
+      }}
+    >
+      <div ref={innerRef}>
+        {children}
+      </div>
+    </div>
   );
 }
 
@@ -61,34 +105,25 @@ export function ContactSection() {
           border-top: 1px solid var(--line);
           border-bottom: 1px solid var(--line);
         }
-        .contact-inner {
-          max-width: 1060px; margin: 0 auto;
-          padding: 0 32px 52px;
-        }
+        .contact-inner { max-width: 1060px; margin: 0 auto; padding: 0 32px 52px; }
         .contact-divider { height: 1px; background: var(--border); margin-bottom: 28px; }
 
-        /* ── Unified Contact Card ── */
+        /* ── Unified Card ── */
         .contact-card {
           background: var(--bg-card);
           border: 1px solid var(--border);
           border-radius: 16px;
           overflow: hidden;
         }
-
-        /* Header row — always visible, clickable */
         .contact-card-header {
           display: flex; align-items: center; gap: 12px;
-          padding: 16px 20px;
-          cursor: pointer;
-          transition: background 0.18s ease;
-          user-select: none;
+          padding: 16px 20px; cursor: pointer;
+          transition: background 0.18s ease; user-select: none;
         }
         .contact-card-header:hover { background: var(--bg-hover); }
-
         .contact-card-icon {
           width: 34px; height: 34px; border-radius: 9px; flex-shrink: 0;
-          background: rgba(99,102,241,0.12);
-          border: 1px solid rgba(99,102,241,0.28);
+          background: rgba(99,102,241,0.12); border: 1px solid rgba(99,102,241,0.28);
           display: flex; align-items: center; justify-content: center;
         }
         .contact-card-title {
@@ -97,33 +132,20 @@ export function ContactSection() {
         }
         .contact-card-chevron {
           color: var(--text-muted); flex-shrink: 0;
-          transition: transform 0.3s cubic-bezier(0.22,1,0.36,1);
+          transition: transform 0.32s cubic-bezier(0.22,1,0.36,1);
         }
         .contact-card-chevron.open { transform: rotate(180deg); }
-
-        /* Divider between header and form */
-        .contact-card-sep {
-          height: 1px; background: var(--border);
-          margin: 0 20px;
-        }
-
-        /* Form body */
+        .contact-card-sep { height: 1px; background: var(--border); margin: 0 20px; }
         .contact-card-body { padding: 20px; }
 
+        /* Form */
         .contact-form-label {
           display: block; font-size: 10px; font-weight: 700;
           color: var(--text-muted); margin-bottom: 7px;
-          font-family: ${MONO}; letter-spacing: 0.09em;
-          text-transform: uppercase;
+          font-family: ${MONO}; letter-spacing: 0.09em; text-transform: uppercase;
         }
-        .contact-form-grid {
-          display: grid; grid-template-columns: 1fr 1fr;
-          gap: 12px; margin-bottom: 14px;
-        }
-        .contact-form-footer {
-          display: flex; align-items: center; justify-content: flex-end;
-          margin-top: 20px; gap: 10px;
-        }
+        .contact-form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px; }
+        .contact-form-footer { display: flex; align-items: center; justify-content: flex-end; margin-top: 20px; gap: 10px; }
 
         /* ── Quote Box ── */
         .quote-box {
@@ -131,42 +153,52 @@ export function ContactSection() {
           background: var(--bg-card);
           border: 1px solid var(--border);
           border-radius: 16px;
-          padding: 28px 32px 28px 64px;
+          padding: 32px 36px 32px 70px;
           margin-top: 20px;
           overflow: hidden;
+          min-height: 110px;
+          /* clip LightRays canvas */
+          isolation: isolate;
         }
+        /* WebGL canvas absolutely fills the box */
+        .quote-rays-wrap {
+          position: absolute;
+          inset: 0;
+          z-index: 0;
+          pointer-events: none;
+          border-radius: 16px;
+          overflow: hidden;
+        }
+        .quote-content { position: relative; z-index: 1; }
         .quote-mark {
-          position: absolute; left: 12px; top: 8px;
-          font-size: 96px; line-height: 1;
+          position: absolute; left: 12px; top: 4px; z-index: 1;
+          font-size: 110px; line-height: 1;
           font-family: Georgia, serif;
-          color: var(--text-muted); opacity: 0.20;
+          color: var(--text-muted); opacity: 0.22;
           pointer-events: none; user-select: none;
         }
         .quote-text {
-          font-size: 15.5px;
+          font-size: 17px;
           font-style: italic;
           color: var(--text-secondary);
           font-family: Georgia, 'Times New Roman', serif;
-          line-height: 1.75;
+          line-height: 1.8;
           letter-spacing: 0.015em;
-          margin: 0 0 12px;
+          margin: 0 0 14px;
         }
         .quote-author {
-          text-align: right;
-          font-size: 12px;
-          font-family: ${MONO};
-          color: var(--text-muted);
-          margin: 0;
-          letter-spacing: 0.04em;
+          text-align: right; font-size: 12.5px;
+          font-family: ${MONO}; color: var(--text-muted);
+          margin: 0; letter-spacing: 0.04em;
         }
 
         @media (max-width: 860px) { .contact-inner { padding: 0 22px 44px; } }
         @media (max-width: 640px) {
           .contact-inner { padding: 0 16px 36px; }
           .contact-form-grid { grid-template-columns: 1fr; }
-          .quote-box { padding: 24px 20px 24px 52px; }
-          .quote-mark { font-size: 72px; left: 10px; }
-          .quote-text { font-size: 14px; }
+          .quote-box { padding: 28px 20px 28px 52px; }
+          .quote-mark { font-size: 80px; left: 10px; }
+          .quote-text { font-size: 15px; }
         }
       `}</style>
 
@@ -203,20 +235,17 @@ export function ContactSection() {
               </p>
             </motion.div>
 
-            {/* ── Unified Card: Header + Expandable Form ── */}
+            {/* ── Unified Card: Header + Form ── */}
             <motion.div
               initial={false}
               animate={visible ? { opacity: 1, y: 0 } : { opacity: 0, y: 14 }}
               transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1], delay: 0.14 }}
             >
               <div className="contact-card">
-
-                {/* Header — toggle */}
                 <div
                   className="contact-card-header"
                   onClick={() => setOpen(o => !o)}
-                  role="button"
-                  tabIndex={0}
+                  role="button" tabIndex={0}
                   onKeyDown={e => e.key === "Enter" && setOpen(o => !o)}
                   aria-expanded={open}
                 >
@@ -227,104 +256,71 @@ export function ContactSection() {
                     </svg>
                   </span>
                   <span className="contact-card-title">Send me a message</span>
-                  <svg
-                    className={`contact-card-chevron${open ? " open" : ""}`}
-                    width="17" height="17" viewBox="0 0 24 24"
-                    fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"
-                  >
+                  <svg className={`contact-card-chevron${open ? " open" : ""}`} width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
                     <polyline points="6 9 12 15 18 9"/>
                   </svg>
                 </div>
 
-                {/* Expandable form — same card, no gap */}
-                <AnimatePresence initial={false}>
-                  {open && (
-                    <motion.div
-                      key="form-body"
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: "auto" }}
-                      exit={{ opacity: 0, height: 0 }}
-                      transition={{ duration: 0.36, ease: [0.22, 1, 0.36, 1] }}
-                      style={{ overflow: "hidden" }}
-                    >
-                      <div className="contact-card-sep" />
-                      <div className="contact-card-body">
-                        <form onSubmit={handleSubmit}>
-                          <div className="contact-form-grid">
-                            <div>
-                              <label className="contact-form-label">Name</label>
-                              <input
-                                placeholder="Your name"
-                                value={form.name}
-                                onChange={e => setForm({ ...form, name: e.target.value })}
-                                required
-                                className="field-input"
-                                suppressHydrationWarning
-                                autoComplete="name"
-                              />
-                            </div>
-                            <div>
-                              <label className="contact-form-label">Email</label>
-                              <input
-                                type="email"
-                                placeholder="your@email.com"
-                                value={form.email}
-                                onChange={e => setForm({ ...form, email: e.target.value })}
-                                required
-                                className="field-input"
-                                suppressHydrationWarning
-                                autoComplete="email"
-                              />
-                            </div>
-                          </div>
-                          <div>
-                            <label className="contact-form-label">Message</label>
-                            <textarea
-                              placeholder="Tell me about your project or idea..."
-                              value={form.message}
-                              onChange={e => setForm({ ...form, message: e.target.value })}
-                              required
-                              rows={5}
-                              className="field-input"
-                              suppressHydrationWarning
-                              style={{ resize: "vertical" }}
-                            />
-                          </div>
-                          <div className="contact-form-footer">
-                            <button
-                              type="button"
-                              onClick={() => setOpen(false)}
-                              style={{ padding: "9px 16px", borderRadius: 10, background: "transparent", border: "1px solid var(--border)", color: "var(--text-muted)", fontFamily: SF, fontSize: 13, fontWeight: 500, cursor: "pointer" }}
-                            >
-                              Cancel
-                            </button>
-                            <button
-                              type="submit"
-                              className={`btn-primary${sent ? " sent" : ""}`}
-                              suppressHydrationWarning
-                            >
-                              {sent ? <>&#10003;&nbsp;Opening Email App...</> : <><SendIcon />&nbsp;Send Message</>}
-                            </button>
-                          </div>
-                        </form>
+                <ExpandPanel open={open}>
+                  <div className="contact-card-sep" />
+                  <div className="contact-card-body">
+                    <form onSubmit={handleSubmit}>
+                      <div className="contact-form-grid">
+                        <div>
+                          <label className="contact-form-label">Name</label>
+                          <input placeholder="Your name" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} required className="field-input" suppressHydrationWarning autoComplete="name" />
+                        </div>
+                        <div>
+                          <label className="contact-form-label">Email</label>
+                          <input type="email" placeholder="your@email.com" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} required className="field-input" suppressHydrationWarning autoComplete="email" />
+                        </div>
                       </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-
+                      <div>
+                        <label className="contact-form-label">Message</label>
+                        <textarea placeholder="Tell me about your project or idea..." value={form.message} onChange={e => setForm({ ...form, message: e.target.value })} required rows={5} className="field-input" suppressHydrationWarning style={{ resize: "vertical" }} />
+                      </div>
+                      <div className="contact-form-footer">
+                        <button type="button" onClick={() => setOpen(false)} style={{ padding: "9px 16px", borderRadius: 10, background: "transparent", border: "1px solid var(--border)", color: "var(--text-muted)", fontFamily: SF, fontSize: 13, fontWeight: 500, cursor: "pointer" }}>
+                          Cancel
+                        </button>
+                        <button type="submit" className={`btn-primary${sent ? " sent" : ""}`} suppressHydrationWarning>
+                          {sent ? <>&#10003;&nbsp;Opening Email App...</> : <><SendIcon />&nbsp;Send Message</>}
+                        </button>
+                      </div>
+                    </form>
+                  </div>
+                </ExpandPanel>
               </div>
             </motion.div>
 
-            {/* ── Quote Box ── */}
+            {/* ── Quote Box with LightRays ── */}
             <motion.div
               initial={false}
               animate={visible ? { opacity: 1, y: 0 } : { opacity: 0, y: 16 }}
               transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1], delay: 0.22 }}
             >
               <div className="quote-box">
+                {/* LightRays from top-right corner */}
+                <div className="quote-rays-wrap">
+                  <LightRays
+                    raysOrigin="top-right"
+                    raysColor="#a78bfa"
+                    raysSpeed={0.6}
+                    lightSpread={1.4}
+                    rayLength={1.8}
+                    fadeDistance={0.9}
+                    saturation={0.8}
+                    followMouse={false}
+                    mouseInfluence={0}
+                    pulsating={true}
+                  />
+                </div>
+                {/* Large decorative quote mark */}
                 <span className="quote-mark" aria-hidden="true">&ldquo;</span>
-                <p className="quote-text">&ldquo;{quote.text}&rdquo;</p>
-                <p className="quote-author">— {quote.author}</p>
+                <div className="quote-content">
+                  <p className="quote-text">&ldquo;{quote.text}&rdquo;</p>
+                  <p className="quote-author">— {quote.author}</p>
+                </div>
               </div>
             </motion.div>
 
