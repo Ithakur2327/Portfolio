@@ -101,7 +101,13 @@ const LightRays: React.FC<LightRaysProps> = ({
   useEffect(() => {
     if (!containerRef.current) return;
     observerRef.current = new IntersectionObserver(
-      entries => setIsVisible(entries[0].isIntersecting),
+      entries => {
+        if (entries[0].isIntersecting) {
+          setIsVisible(true);
+          observerRef.current?.disconnect();
+          observerRef.current = null;
+        }
+      },
       { threshold: 0.1 }
     );
     observerRef.current.observe(containerRef.current);

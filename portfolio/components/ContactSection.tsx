@@ -1,5 +1,5 @@
 "use client";
-import { useState, useCallback, useRef, useEffect } from "react";
+import { useState, useCallback } from "react";
 import { motion } from "motion/react";
 import { useReveal } from "./useReveal";
 import dynamic from "next/dynamic";
@@ -12,7 +12,12 @@ const TO_EMAIL = "ithakur2327@gmail.com";
 
 const QUOTES = [
   { text: "A man who is master of patience is master of everything else.", author: "George Savile" },
- 
+  
+  
+  { text: "Simplicity is the soul of efficiency.", author: "Austin Freeman" },
+  
+  
+  
 ];
 
 function getQuoteForNow() {
@@ -38,41 +43,18 @@ function SendIcon() {
   );
 }
 
-/* Lag-free expand — CSS max-height trick, no framer-motion height animation */
+/* ── Lag-free expand: CSS grid-template-rows trick — no JS measurement ── */
 function ExpandPanel({ open, children }: { open: boolean; children: React.ReactNode }) {
-  const innerRef = useRef<HTMLDivElement>(null);
-  const [maxH, setMaxH] = useState(0);
-
-  useEffect(() => {
-    if (!innerRef.current) return;
-    if (open) {
-      // measure real height then set
-      setMaxH(innerRef.current.scrollHeight);
-    } else {
-      setMaxH(0);
-    }
-  }, [open]);
-
-  // Re-measure on children change (e.g. textarea resize)
-  useEffect(() => {
-    if (!open || !innerRef.current) return;
-    const ro = new ResizeObserver(() => {
-      if (innerRef.current) setMaxH(innerRef.current.scrollHeight);
-    });
-    ro.observe(innerRef.current);
-    return () => ro.disconnect();
-  }, [open]);
-
   return (
     <div
       style={{
-        maxHeight: maxH,
-        overflow: "hidden",
-        transition: "max-height 0.36s cubic-bezier(0.22,1,0.36,1), opacity 0.28s ease",
+        display: "grid",
+        gridTemplateRows: open ? "1fr" : "0fr",
         opacity: open ? 1 : 0,
+        transition: "grid-template-rows 0.32s cubic-bezier(0.22,1,0.36,1), opacity 0.22s ease",
       }}
     >
-      <div ref={innerRef}>
+      <div style={{ overflow: "hidden" }}>
         {children}
       </div>
     </div>
@@ -153,15 +135,15 @@ export function ContactSection() {
           background: var(--bg-card);
           border: 1px solid var(--border);
           border-radius: 16px;
-          padding: 28px 32px 28px 32px;
+          padding: 36px 40px 36px 40px;
           margin-top: 20px;
           overflow: hidden;
           isolation: isolate;
+          min-height: 120px;
           display: flex;
-          align-items: center;
-          gap: 20px;
+          flex-direction: column;
+          justify-content: center;
         }
-        /* WebGL canvas absolutely fills the box */
         .quote-rays-wrap {
           position: absolute;
           inset: 0;
@@ -170,38 +152,29 @@ export function ContactSection() {
           border-radius: 16px;
           overflow: hidden;
         }
-        /* Big decorative marks — left side block */
-        .quote-marks-block {
-          position: relative; z-index: 1;
-          flex-shrink: 0;
-          display: flex;
-          flex-direction: column;
-          gap: -8px;
-          opacity: 0.28;
-          user-select: none;
-          pointer-events: none;
-          line-height: 1;
+        /* Big " mark — behind text, overlapping */
+        .quote-mark {
+          position: absolute;
+          left: 24px; top: 10px; z-index: 1;
+          font-size: 200px; line-height: 1;
+          font-family: Georgia, serif;
+          color: var(--text-secondary); opacity: 0.10;
+          pointer-events: none; user-select: none;
+          font-style: normal;
         }
-        .quote-mark-svg {
-          width: 52px; height: 52px;
-          fill: var(--text-muted);
-          display: block;
-        }
-        .quote-mark-svg + .quote-mark-svg { margin-top: -18px; }
-
-        .quote-content { position: relative; z-index: 1; flex: 1; min-width: 0; }
+        .quote-content { position: relative; z-index: 2; }
         .quote-text {
-          font-size: 14.5px;
+          font-size: clamp(15px, 1.55vw, 20px);
           font-style: italic;
           color: var(--text-secondary);
           font-family: Georgia, 'Times New Roman', serif;
-          line-height: 1.75;
+          line-height: 1.65;
           letter-spacing: 0.01em;
-          margin: 0 0 10px;
+          margin: 0 0 12px;
           word-break: break-word;
         }
         .quote-author {
-          text-align: right; font-size: 12px;
+          text-align: right; font-size: 13px;
           font-family: ${MONO}; color: var(--text-muted);
           margin: 0; letter-spacing: 0.04em;
         }
@@ -210,9 +183,9 @@ export function ContactSection() {
         @media (max-width: 640px) {
           .contact-inner { padding: 0 16px 36px; }
           .contact-form-grid { grid-template-columns: 1fr; }
-          .quote-box { padding: 22px 20px; gap: 14px; }
-          .quote-mark-svg { width: 38px; height: 38px; }
-          .quote-text { font-size: 13.5px; }
+          .quote-box { padding: 28px 22px; }
+          .quote-mark { font-size: 140px; left: 16px; top: 6px; }
+          .quote-text { font-size: 14px; }
         }
       `}</style>
 
@@ -314,28 +287,21 @@ export function ContactSection() {
               transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1], delay: 0.22 }}
             >
               <div className="quote-box">
-                {/* LightRays from top-right corner */}
                 <div className="quote-rays-wrap">
                   <LightRays
-                    raysOrigin="top-right"
+                    raysOrigin="top-center"
                     raysColor="#a78bfa"
-                    raysSpeed={0.6}
-                    lightSpread={1.4}
-                    rayLength={1.8}
-                    fadeDistance={0.9}
-                    saturation={0.8}
+                    raysSpeed={0.5}
+                    lightSpread={2.8}
+                    rayLength={2.5}
+                    fadeDistance={1.2}
+                    saturation={0.7}
                     followMouse={false}
                     mouseInfluence={0}
                     pulsating={true}
                   />
                 </div>
-                {/* Two stacked quote marks — left column */}
-                <div className="quote-marks-block" aria-hidden="true">
-                  <svg className="quote-mark-svg" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M0 34C0 20.745 9.371 9.645 22.113 6L25 12.323C17.758 14.839 13.226 20.968 12.5 27h5C21.328 27 25 30.672 25 35v8C25 47.418 21.418 51 17 51H8C3.582 51 0 47.418 0 43V34zm35 0C35 20.745 44.371 9.645 57.113 6L60 12.323C52.758 14.839 48.226 20.968 47.5 27h5C56.328 27 60 30.672 60 35v8C60 47.418 56.418 51 52 51H43C38.582 51 35 47.418 35 43V34z"/>
-                  </svg>
-                </div>
-                {/* Quote text — right side, fully inside box */}
+                <span className="quote-mark" aria-hidden="true">&ldquo;</span>
                 <div className="quote-content">
                   <p className="quote-text">&ldquo;{quote.text}&rdquo;</p>
                   <p className="quote-author">— {quote.author}</p>
