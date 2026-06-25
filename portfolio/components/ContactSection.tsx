@@ -341,14 +341,7 @@ export function ContactSection() {
             </motion.div>
 
             {/*
-              ── Contact Card ─────────────────────────────────────────
-              motion.div here only runs its animation ONCE (when visible
-              flips true). After that it's static — open/sent state
-              changes are isolated inside <ContactCard> via memo(),
-              so these motion.div wrappers are NEVER re-rendered during
-              form expand. This eliminates the Framer useLayoutEffect
-              re-runs that were causing the lag.
-              ─────────────────────────────────────────────────────────
+            
             */}
             <motion.div
               initial={false}
