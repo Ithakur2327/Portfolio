@@ -1,5 +1,5 @@
 "use client";
-import { useState, useCallback } from "react";
+import { useState, useCallback, memo } from "react";
 import { motion } from "motion/react";
 import { useReveal } from "./useReveal";
 import dynamic from "next/dynamic";
@@ -45,11 +45,9 @@ function SendIcon() {
 }
 
 /*
-  ── ExpandPanel ──────────────────────────────────────────────────
-  Pure CSS grid-template-rows trick.
-  • Zero JS (no scrollHeight, no useRef, no useEffect, no useState)
-  • Zero willChange  →  no premature GPU layer = zero lag
-  • Browser interpolates grid rows natively on the compositor thread
+  ── ExpandPanel ───────────────────────────────────────────────────
+  Pure CSS grid-template-rows trick — zero JS, zero layout reads.
+  Browser animates grid rows on the compositor thread → no jank.
   ─────────────────────────────────────────────────────────────────
 */
 function ExpandPanel({ open, children }: { open: boolean; children: React.ReactNode }) {
@@ -62,7 +60,6 @@ function ExpandPanel({ open, children }: { open: boolean; children: React.ReactN
         transition: "grid-template-rows 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
       }}
     >
-      {/* min-height:0 is mandatory — lets the inner div collapse to 0 */}
       <div style={{ minHeight: 0, overflow: "hidden" }}>
         {children}
       </div>
@@ -70,12 +67,23 @@ function ExpandPanel({ open, children }: { open: boolean; children: React.ReactN
   );
 }
 
-export function ContactSection() {
-  const { ref, revealClass, visible } = useReveal();
-  const [open, setOpen]   = useState(false);
-  const [form, setForm]   = useState({ name: "", email: "", message: "" });
-  const [sent, setSent]   = useState(false);
-  const quote = getQuoteForNow();
+/*
+  ── ContactCard ───────────────────────────────────────────────────
+  ISOLATED into its own memo component.
+
+  BUG FIXED: previously `open` and `sent` lived in ContactSection,
+  so every toggle caused the whole parent to re-render — including
+  all motion.div wrappers, which fire Framer's internal useLayoutEffect
+  (a synchronous layout read) on every render → visible jank during expand.
+
+  Now only ContactCard re-renders on toggle. The motion.divs and
+  LightRays in the parent are completely unaffected.
+  ─────────────────────────────────────────────────────────────────
+*/
+const ContactCard = memo(function ContactCard() {
+  const [open, setOpen] = useState(false);
+  const [form, setForm] = useState({ name: "", email: "", message: "" });
+  const [sent, setSent] = useState(false);
 
   const handleSubmit = useCallback((e: React.FormEvent) => {
     e.preventDefault();
@@ -88,6 +96,100 @@ export function ContactSection() {
   }, [form]);
 
   return (
+    <div className="contact-card">
+      {/* Header / Toggle */}
+      <div
+        className="contact-card-header"
+        onClick={() => setOpen(o => !o)}
+        role="button"
+        tabIndex={0}
+        onKeyDown={e => e.key === "Enter" && setOpen(o => !o)}
+        aria-expanded={open}
+      >
+        <span className="contact-card-icon">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#818cf8" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+            <polyline points="22,6 12,13 2,6"/>
+          </svg>
+        </span>
+        <span className="contact-card-title">Send me a message</span>
+        <svg
+          className={`contact-card-chevron${open ? " open" : ""}`}
+          width="17" height="17" viewBox="0 0 24 24"
+          fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"
+        >
+          <polyline points="6 9 12 15 18 9"/>
+        </svg>
+      </div>
+
+      {/* Expandable Form — pure CSS, zero JS measurement */}
+      <ExpandPanel open={open}>
+        <div className="contact-card-sep" />
+        <div className="contact-card-body">
+          <form onSubmit={handleSubmit}>
+            <div className="contact-form-grid">
+              <div>
+                <label className="contact-form-label">Name</label>
+                <input
+                  placeholder="Your name"
+                  value={form.name}
+                  onChange={e => setForm({ ...form, name: e.target.value })}
+                  required className="field-input"
+                  suppressHydrationWarning autoComplete="name"
+                />
+              </div>
+              <div>
+                <label className="contact-form-label">Email</label>
+                <input
+                  type="email" placeholder="your@email.com"
+                  value={form.email}
+                  onChange={e => setForm({ ...form, email: e.target.value })}
+                  required className="field-input"
+                  suppressHydrationWarning autoComplete="email"
+                />
+              </div>
+            </div>
+            <div>
+              <label className="contact-form-label">Message</label>
+              <textarea
+                placeholder="Tell me about your project or idea..."
+                value={form.message}
+                onChange={e => setForm({ ...form, message: e.target.value })}
+                required rows={5} className="field-input"
+                suppressHydrationWarning style={{ resize: "vertical" }}
+              />
+            </div>
+            <div className="contact-form-footer">
+              <button
+                type="button"
+                onClick={() => setOpen(false)}
+                style={{ padding: "9px 16px", borderRadius: 10, background: "transparent", border: "1px solid var(--border)", color: "var(--text-muted)", fontFamily: SF, fontSize: 13, fontWeight: 500, cursor: "pointer" }}
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className={`btn-primary${sent ? " sent" : ""}`}
+                suppressHydrationWarning
+              >
+                {sent
+                  ? <>&#10003;&nbsp;Opening Email App...</>
+                  : <><SendIcon />&nbsp;Send Message</>
+                }
+              </button>
+            </div>
+          </form>
+        </div>
+      </ExpandPanel>
+    </div>
+  );
+});
+
+export function ContactSection() {
+  const { ref, revealClass, visible } = useReveal();
+  const quote = getQuoteForNow();
+
+  return (
     <>
       <style suppressHydrationWarning>{`
         .contact-outer {
@@ -96,7 +198,13 @@ export function ContactSection() {
           border-top: 1px solid var(--line);
           border-bottom: 1px solid var(--line);
         }
-        .contact-inner { max-width: 1060px; margin: 0 auto; padding: 0 32px 52px; }
+        .contact-inner {
+          max-width: 1060px; margin: 0 auto; padding: 0 32px 52px;
+          /* FIX: scope layout recalc to this container only.
+             Without this, any height change (form expand) triggers a
+             full-page reflow because contact-outer is 100vw. */
+          contain: layout style;
+        }
         .contact-divider { height: 1px; background: var(--border); margin-bottom: 28px; }
 
         /* ── Unified Card ── */
@@ -105,6 +213,8 @@ export function ContactSection() {
           border: 1px solid var(--border);
           border-radius: 16px;
           overflow: hidden;
+          /* Contain so form expand doesn't cause paint outside the card */
+          contain: layout style;
         }
         .contact-card-header {
           display: flex; align-items: center; gap: 12px;
@@ -159,6 +269,9 @@ export function ContactSection() {
           display: flex;
           flex-direction: column;
           justify-content: center;
+          /* Isolate WebGL canvas from the card's layout so LightRays
+             RAF loop doesn't interfere with form expand repaints */
+          transform: translateZ(0);
         }
         .quote-rays-wrap {
           position: absolute; inset: 0; z-index: 0;
@@ -210,7 +323,7 @@ export function ContactSection() {
 
             <div className="contact-divider" />
 
-            {/* Headline */}
+            {/* Headline — animates once on scroll into view */}
             <motion.div
               initial={false}
               animate={visible ? { opacity: 1, y: 0 } : { opacity: 0, y: 12 }}
@@ -227,96 +340,22 @@ export function ContactSection() {
               </p>
             </motion.div>
 
-            {/* ── Unified Card ── */}
+            {/*
+              ── Contact Card ─────────────────────────────────────────
+              motion.div here only runs its animation ONCE (when visible
+              flips true). After that it's static — open/sent state
+              changes are isolated inside <ContactCard> via memo(),
+              so these motion.div wrappers are NEVER re-rendered during
+              form expand. This eliminates the Framer useLayoutEffect
+              re-runs that were causing the lag.
+              ─────────────────────────────────────────────────────────
+            */}
             <motion.div
               initial={false}
               animate={visible ? { opacity: 1, y: 0 } : { opacity: 0, y: 14 }}
               transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1], delay: 0.14 }}
             >
-              <div className="contact-card">
-                <div
-                  className="contact-card-header"
-                  onClick={() => setOpen(o => !o)}
-                  role="button"
-                  tabIndex={0}
-                  onKeyDown={e => e.key === "Enter" && setOpen(o => !o)}
-                  aria-expanded={open}
-                >
-                  <span className="contact-card-icon">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#818cf8" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
-                      <polyline points="22,6 12,13 2,6"/>
-                    </svg>
-                  </span>
-                  <span className="contact-card-title">Send me a message</span>
-                  <svg
-                    className={`contact-card-chevron${open ? " open" : ""}`}
-                    width="17" height="17" viewBox="0 0 24 24"
-                    fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"
-                  >
-                    <polyline points="6 9 12 15 18 9"/>
-                  </svg>
-                </div>
-
-                <ExpandPanel open={open}>
-                  <div className="contact-card-sep" />
-                  <div className="contact-card-body">
-                    <form onSubmit={handleSubmit}>
-                      <div className="contact-form-grid">
-                        <div>
-                          <label className="contact-form-label">Name</label>
-                          <input
-                            placeholder="Your name"
-                            value={form.name}
-                            onChange={e => setForm({ ...form, name: e.target.value })}
-                            required className="field-input"
-                            suppressHydrationWarning autoComplete="name"
-                          />
-                        </div>
-                        <div>
-                          <label className="contact-form-label">Email</label>
-                          <input
-                            type="email" placeholder="your@email.com"
-                            value={form.email}
-                            onChange={e => setForm({ ...form, email: e.target.value })}
-                            required className="field-input"
-                            suppressHydrationWarning autoComplete="email"
-                          />
-                        </div>
-                      </div>
-                      <div>
-                        <label className="contact-form-label">Message</label>
-                        <textarea
-                          placeholder="Tell me about your project or idea..."
-                          value={form.message}
-                          onChange={e => setForm({ ...form, message: e.target.value })}
-                          required rows={5} className="field-input"
-                          suppressHydrationWarning style={{ resize: "vertical" }}
-                        />
-                      </div>
-                      <div className="contact-form-footer">
-                        <button
-                          type="button"
-                          onClick={() => setOpen(false)}
-                          style={{ padding: "9px 16px", borderRadius: 10, background: "transparent", border: "1px solid var(--border)", color: "var(--text-muted)", fontFamily: SF, fontSize: 13, fontWeight: 500, cursor: "pointer" }}
-                        >
-                          Cancel
-                        </button>
-                        <button
-                          type="submit"
-                          className={`btn-primary${sent ? " sent" : ""}`}
-                          suppressHydrationWarning
-                        >
-                          {sent
-                            ? <>&#10003;&nbsp;Opening Email App...</>
-                            : <><SendIcon />&nbsp;Send Message</>
-                          }
-                        </button>
-                      </div>
-                    </form>
-                  </div>
-                </ExpandPanel>
-              </div>
+              <ContactCard />
             </motion.div>
 
             {/* ── Quote Box ── */}
