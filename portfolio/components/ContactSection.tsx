@@ -153,12 +153,13 @@ export function ContactSection() {
           background: var(--bg-card);
           border: 1px solid var(--border);
           border-radius: 16px;
-          padding: 32px 36px 32px 70px;
+          padding: 28px 32px 28px 32px;
           margin-top: 20px;
           overflow: hidden;
-          min-height: 110px;
-          /* clip LightRays canvas */
           isolation: isolate;
+          display: flex;
+          align-items: center;
+          gap: 20px;
         }
         /* WebGL canvas absolutely fills the box */
         .quote-rays-wrap {
@@ -169,25 +170,38 @@ export function ContactSection() {
           border-radius: 16px;
           overflow: hidden;
         }
-        .quote-content { position: relative; z-index: 1; }
-        .quote-mark {
-          position: absolute; left: 12px; top: 4px; z-index: 1;
-          font-size: 110px; line-height: 1;
-          font-family: Georgia, serif;
-          color: var(--text-muted); opacity: 0.22;
-          pointer-events: none; user-select: none;
+        /* Big decorative marks — left side block */
+        .quote-marks-block {
+          position: relative; z-index: 1;
+          flex-shrink: 0;
+          display: flex;
+          flex-direction: column;
+          gap: -8px;
+          opacity: 0.28;
+          user-select: none;
+          pointer-events: none;
+          line-height: 1;
         }
+        .quote-mark-svg {
+          width: 52px; height: 52px;
+          fill: var(--text-muted);
+          display: block;
+        }
+        .quote-mark-svg + .quote-mark-svg { margin-top: -18px; }
+
+        .quote-content { position: relative; z-index: 1; flex: 1; min-width: 0; }
         .quote-text {
-          font-size: 17px;
+          font-size: 14.5px;
           font-style: italic;
           color: var(--text-secondary);
           font-family: Georgia, 'Times New Roman', serif;
-          line-height: 1.8;
-          letter-spacing: 0.015em;
-          margin: 0 0 14px;
+          line-height: 1.75;
+          letter-spacing: 0.01em;
+          margin: 0 0 10px;
+          word-break: break-word;
         }
         .quote-author {
-          text-align: right; font-size: 12.5px;
+          text-align: right; font-size: 12px;
           font-family: ${MONO}; color: var(--text-muted);
           margin: 0; letter-spacing: 0.04em;
         }
@@ -196,9 +210,9 @@ export function ContactSection() {
         @media (max-width: 640px) {
           .contact-inner { padding: 0 16px 36px; }
           .contact-form-grid { grid-template-columns: 1fr; }
-          .quote-box { padding: 28px 20px 28px 52px; }
-          .quote-mark { font-size: 80px; left: 10px; }
-          .quote-text { font-size: 15px; }
+          .quote-box { padding: 22px 20px; gap: 14px; }
+          .quote-mark-svg { width: 38px; height: 38px; }
+          .quote-text { font-size: 13.5px; }
         }
       `}</style>
 
@@ -315,8 +329,13 @@ export function ContactSection() {
                     pulsating={true}
                   />
                 </div>
-                {/* Large decorative quote mark */}
-                <span className="quote-mark" aria-hidden="true">&ldquo;</span>
+                {/* Two stacked quote marks — left column */}
+                <div className="quote-marks-block" aria-hidden="true">
+                  <svg className="quote-mark-svg" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M0 34C0 20.745 9.371 9.645 22.113 6L25 12.323C17.758 14.839 13.226 20.968 12.5 27h5C21.328 27 25 30.672 25 35v8C25 47.418 21.418 51 17 51H8C3.582 51 0 47.418 0 43V34zm35 0C35 20.745 44.371 9.645 57.113 6L60 12.323C52.758 14.839 48.226 20.968 47.5 27h5C56.328 27 60 30.672 60 35v8C60 47.418 56.418 51 52 51H43C38.582 51 35 47.418 35 43V34z"/>
+                  </svg>
+                </div>
+                {/* Quote text — right side, fully inside box */}
                 <div className="quote-content">
                   <p className="quote-text">&ldquo;{quote.text}&rdquo;</p>
                   <p className="quote-author">— {quote.author}</p>
