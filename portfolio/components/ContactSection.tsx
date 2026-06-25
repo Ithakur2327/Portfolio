@@ -11,10 +11,8 @@ const MONO = "'Geist Mono', monospace";
 const TO_EMAIL = "ithakur2327@gmail.com";
 
 const QUOTES = [
-  { text: "A man who is master of patience is master of everything else.", author: "George Savile" },
+  { text: "A person who is master of patience is master of everything else.", author: "George Savile" },
   
-  
-  { text: "Simplicity is the soul of efficiency.", author: "Austin Freeman" },
   
   
   
