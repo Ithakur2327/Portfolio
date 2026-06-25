@@ -313,22 +313,23 @@ function ProjectModal({ proj, onClose }: { proj: typeof PROJECTS[0]; onClose: ()
               min-height: 0;
             }
             .pm-img-col {
-              width: 45%;
+              width: 42%;
               flex-shrink: 0;
               position: relative;
               border-right: 1px solid var(--border);
               background: var(--bg-secondary);
               display: flex;
-              align-items: center;
+              align-items: flex-start;
               justify-content: center;
-              overflow: hidden;
+              overflow-y: auto;
+              scrollbar-width: none;
             }
+            .pm-img-col::-webkit-scrollbar { display: none; }
             .pm-img-col img {
               width: 100%;
-              height: 100%;
-              object-fit: contain;
-              object-position: center center;
+              height: auto;
               display: block;
+              object-fit: contain;
             }
             .pm-content-col {
               flex: 1;
@@ -342,7 +343,7 @@ function ProjectModal({ proj, onClose }: { proj: typeof PROJECTS[0]; onClose: ()
               }
               .pm-img-col {
                 width: 100%;
-                height: auto;
+                overflow-y: visible;
                 border-right: none;
                 border-bottom: 1px solid var(--border);
                 flex-shrink: 0;
@@ -350,10 +351,7 @@ function ProjectModal({ proj, onClose }: { proj: typeof PROJECTS[0]; onClose: ()
               .pm-img-col img {
                 width: 100%;
                 height: auto;
-                min-height: 200px;
                 object-fit: contain;
-                object-position: center center;
-                background: var(--bg-secondary);
               }
             }
           `}</style>
