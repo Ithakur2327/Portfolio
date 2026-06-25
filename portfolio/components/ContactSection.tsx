@@ -11,11 +11,8 @@ const MONO = "'Geist Mono', monospace";
 const TO_EMAIL = "ithakur2327@gmail.com";
 
 const QUOTES = [
-  { text: "A person who is master of patience is master of everything else.", author: "George Savile" },
-  
-  
-  
-  
+  { text: "A man who is master of patience is master of everything else.", author: "George Savile" },
+ 
 ];
 
 function getQuoteForNow() {
@@ -49,10 +46,11 @@ function ExpandPanel({ open, children }: { open: boolean; children: React.ReactN
         display: "grid",
         gridTemplateRows: open ? "1fr" : "0fr",
         opacity: open ? 1 : 0,
-        transition: "grid-template-rows 0.32s cubic-bezier(0.22,1,0.36,1), opacity 0.22s ease",
+        transition: "grid-template-rows 0.28s cubic-bezier(0.4,0,0.2,1), opacity 0.2s ease",
+        willChange: "grid-template-rows",
       }}
     >
-      <div style={{ overflow: "hidden" }}>
+      <div style={{ overflow: "hidden", minHeight: 0 }}>
         {children}
       </div>
     </div>
@@ -93,7 +91,6 @@ export function ContactSection() {
           background: var(--bg-card);
           border: 1px solid var(--border);
           border-radius: 16px;
-          overflow: hidden;
         }
         .contact-card-header {
           display: flex; align-items: center; gap: 12px;
