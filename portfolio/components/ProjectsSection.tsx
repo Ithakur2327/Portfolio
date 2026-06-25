@@ -252,7 +252,6 @@ function ProjectModal({ proj, onClose }: { proj: typeof PROJECTS[0]; onClose: ()
 
   const content = (
     <>
-      {/* Backdrop — only change from pasted file: added backdropFilter blur */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -261,13 +260,12 @@ function ProjectModal({ proj, onClose }: { proj: typeof PROJECTS[0]; onClose: ()
         onClick={onClose}
         style={{
           position: "fixed", inset: 0, zIndex: 9000,
-          background: "rgba(0,0,0,0.70)",
-          backdropFilter: "blur(8px)",
-          WebkitBackdropFilter: "blur(8px)",
+          background: "rgba(0,0,0,0.75)",
+          backdropFilter: "blur(10px)",
+          WebkitBackdropFilter: "blur(10px)",
         }}
       />
 
-      {/* Modal — only opacity + translateY, NO scale */}
       <motion.div
         initial={{ opacity: 0, y: 28 }}
         animate={{ opacity: 1, y: 0 }}
@@ -285,117 +283,128 @@ function ProjectModal({ proj, onClose }: { proj: typeof PROJECTS[0]; onClose: ()
           ref={modalRef}
           style={{
             pointerEvents: "auto",
-            width: "100%", maxWidth: 820,
+            width: "100%", maxWidth: 560,
             maxHeight: "calc(100dvh - 32px)",
             background: "var(--bg-card)",
             border: "1px solid var(--border)",
             borderRadius: 20,
-            boxShadow: `0 40px 100px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.05), 0 0 32px ${proj.accent}18`,
+            boxShadow: `0 40px 100px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.05), 0 0 32px ${proj.accent}20`,
             overflow: "hidden",
             display: "flex", flexDirection: "column",
-            contain: "layout style paint",
-            willChange: "transform",
           }}
         >
           <style suppressHydrationWarning>{`
             .pm-scroll::-webkit-scrollbar { display: none; }
-            .pm-layout {
-              display: grid;
-              grid-template-columns: 240px 1fr;
-              gap: 0;
-            }
-            @media (max-width: 560px) {
-              .pm-layout { grid-template-columns: 1fr; }
-              .pm-img-col { border-right: none !important; border-bottom: 1px solid var(--border); }
-            }
             .pm-tag {
-              display: inline-flex; align-items: center; gap: 4px;
-              font-size: 10.5px; padding: 4px 10px; border-radius: 7px;
-              font-family: 'Geist Mono', monospace;
+              display: inline-flex; align-items: center; gap: 5px;
+              font-size: 11px; padding: 5px 11px; border-radius: 8px;
+              font-family: 'Geist Mono', monospace; font-weight: 600;
             }
           `}</style>
 
           {/* Header */}
           <div style={{
             display: "flex", alignItems: "center", justifyContent: "space-between",
-            padding: "16px 20px",
+            padding: "14px 18px",
             borderBottom: "1px solid var(--border)",
             flexShrink: 0,
           }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              <h3 style={{ fontSize: "clamp(15px,2.2vw,19px)", fontWeight: 800, color: "var(--text-primary)", letterSpacing: "-0.03em", fontFamily: SF, margin: 0 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <div style={{ width: 10, height: 10, borderRadius: "50%", background: proj.accent, flexShrink: 0 }} />
+              <h3 style={{ fontSize: 16, fontWeight: 800, color: "var(--text-primary)", letterSpacing: "-0.03em", fontFamily: SF, margin: 0 }}>
                 {proj.name}
               </h3>
-              <span style={{ fontFamily: MONO, fontSize: 10.5, color: "var(--text-muted)", background: "var(--bg-secondary)", border: "1px solid var(--border)", padding: "2px 8px", borderRadius: 6 }}>
+              <span style={{ fontFamily: MONO, fontSize: 10, color: "var(--text-muted)", background: "var(--bg-secondary)", border: "1px solid var(--border)", padding: "2px 7px", borderRadius: 5 }}>
                 {proj.year}
               </span>
             </div>
             <button
               onClick={onClose}
               style={{
-                width: 32, height: 32, borderRadius: "50%",
+                width: 30, height: 30, borderRadius: "50%",
                 background: "var(--bg-hover)", border: "1px solid var(--border)",
                 color: "var(--text-muted)",
                 display: "flex", alignItems: "center", justifyContent: "center",
                 cursor: "pointer", flexShrink: 0,
-                transition: "background 0.15s, color 0.15s",
+                transition: "background 0.15s",
               }}
               onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = "var(--bg-secondary)"; }}
               onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "var(--bg-hover)"; }}
             >
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
                 <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
               </svg>
             </button>
           </div>
 
-          {/* Body */}
-          <div className="pm-scroll pm-layout" style={{ overflowY: "auto", scrollbarWidth: "none", flex: 1 }}>
-            {/* Left: image + buttons */}
-            <div className="pm-img-col" style={{ borderRight: "1px solid var(--border)", display: "flex", flexDirection: "column", padding: "20px", gap: 14, flexShrink: 0 }}>
-              <div style={{ borderRadius: 12, overflow: "hidden", border: "1px solid var(--border)" }}>
-                <img src={proj.img} alt={proj.name} style={{ width: "100%", height: 160, objectFit: "cover", objectPosition: "center top", display: "block" }} />
-              </div>
-              <p style={{ fontSize: 12.5, color: "var(--text-secondary)", lineHeight: 1.65, margin: 0, fontFamily: SF }}>{proj.desc}</p>
-              <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: "auto" }}>
-                <a href={proj.github} target="_blank" rel="noreferrer"
-                  style={{ flex: 1, minWidth: 90, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6, padding: "9px 14px", borderRadius: 10, fontSize: 12, fontWeight: 600, textDecoration: "none", fontFamily: SF, background: "var(--bg-hover)", border: "1px solid var(--border)", color: "var(--text-primary)", transition: "opacity 0.15s, transform 0.15s" }}
-                  onMouseEnter={e => { (e.currentTarget as HTMLElement).style.opacity = "0.75"; (e.currentTarget as HTMLElement).style.transform = "translateY(-1px)"; }}
-                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.opacity = "1"; (e.currentTarget as HTMLElement).style.transform = "none"; }}
-                >
-                  <GithubIcon /> GitHub
-                </a>
-                <a href={proj.live} target="_blank" rel="noreferrer"
-                  style={{ flex: 1, minWidth: 90, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6, padding: "9px 14px", borderRadius: 10, fontSize: 12, fontWeight: 600, textDecoration: "none", fontFamily: SF, background: proj.accentBg, border: `1px solid ${proj.accentBorder}`, color: proj.accent, transition: "opacity 0.15s, transform 0.15s" }}
-                  onMouseEnter={e => { (e.currentTarget as HTMLElement).style.opacity = "0.75"; (e.currentTarget as HTMLElement).style.transform = "translateY(-1px)"; }}
-                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.opacity = "1"; (e.currentTarget as HTMLElement).style.transform = "none"; }}
-                >
-                  <ExternalIcon /> Live Demo
-                </a>
-              </div>
+          {/* Scrollable body — single column */}
+          <div className="pm-scroll" style={{ overflowY: "auto", scrollbarWidth: "none", flex: 1 }}>
+
+            {/* Big image */}
+            <div style={{ position: "relative", overflow: "hidden", borderBottom: "1px solid var(--border)" }}>
+              <img
+                src={proj.img}
+                alt={proj.name}
+                style={{ width: "100%", height: 240, objectFit: "cover", objectPosition: "top center", display: "block" }}
+              />
+              {/* accent gradient overlay at bottom of image */}
+              <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: 60, background: `linear-gradient(to top, var(--bg-card), transparent)`, pointerEvents: "none" }} />
             </div>
 
-            {/* Right: description + tech stack */}
-            <div style={{ padding: "20px", display: "flex", flexDirection: "column", gap: 20 }}>
+            {/* Content */}
+            <div style={{ padding: "20px 20px 24px", display: "flex", flexDirection: "column", gap: 20 }}>
+
+              {/* Short desc */}
+              <p style={{ fontSize: 13.5, color: "var(--text-secondary)", lineHeight: 1.7, margin: 0, fontFamily: SF }}>
+                {proj.desc}
+              </p>
+
+              <div style={{ height: 1, background: "var(--border)" }} />
+
+              {/* About */}
               <div>
                 <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.09em", textTransform: "uppercase", color: "var(--text-muted)", fontFamily: MONO, margin: "0 0 8px" }}>About</p>
-                <p style={{ fontSize: 13.5, color: "var(--text-secondary)", lineHeight: 1.85, margin: 0, fontFamily: SF }}>{proj.longDesc}</p>
+                <p style={{ fontSize: 13, color: "var(--text-secondary)", lineHeight: 1.85, margin: 0, fontFamily: SF }}>{proj.longDesc}</p>
               </div>
+
               <div style={{ height: 1, background: "var(--border)" }} />
+
+              {/* Tech Stack */}
               <div>
                 <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.09em", textTransform: "uppercase", color: "var(--text-muted)", fontFamily: MONO, margin: "0 0 12px" }}>Tech Stack</p>
-                <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 7 }}>
                   {proj.tags.map(tag => {
                     const tech = TECH_MAP[tag];
                     return (
                       <span key={tag} className="pm-tag" style={{ color: "var(--tag-text)", background: "var(--tag-bg)", border: "1px solid var(--tag-border)" }}>
-                        {tech && <img src={tech.logo} alt={tag} width={11} height={11} decoding="async" style={{ objectFit: "contain", flexShrink: 0, filter: tag === "Express.js" ? "brightness(0) invert(0.6)" : "none" }} />}
+                        {tech && <img src={tech.logo} alt={tag} width={13} height={13} decoding="async" style={{ objectFit: "contain", flexShrink: 0, filter: tag === "Express.js" ? "brightness(0) invert(0.6)" : "none" }} />}
                         {tag}
                       </span>
                     );
                   })}
                 </div>
               </div>
+
+              <div style={{ height: 1, background: "var(--border)" }} />
+
+              {/* Action buttons */}
+              <div style={{ display: "flex", gap: 10 }}>
+                <a href={proj.github} target="_blank" rel="noreferrer"
+                  style={{ flex: 1, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 7, padding: "11px 16px", borderRadius: 11, fontSize: 13, fontWeight: 600, textDecoration: "none", fontFamily: SF, background: "var(--bg-hover)", border: "1px solid var(--border)", color: "var(--text-primary)", transition: "opacity 0.15s, transform 0.15s" }}
+                  onMouseEnter={e => { (e.currentTarget as HTMLElement).style.opacity = "0.75"; (e.currentTarget as HTMLElement).style.transform = "translateY(-1px)"; }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.opacity = "1"; (e.currentTarget as HTMLElement).style.transform = "none"; }}
+                >
+                  <GithubIcon /> GitHub
+                </a>
+                <a href={proj.live} target="_blank" rel="noreferrer"
+                  style={{ flex: 1, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 7, padding: "11px 16px", borderRadius: 11, fontSize: 13, fontWeight: 600, textDecoration: "none", fontFamily: SF, background: proj.accentBg, border: `1px solid ${proj.accentBorder}`, color: proj.accent, transition: "opacity 0.15s, transform 0.15s" }}
+                  onMouseEnter={e => { (e.currentTarget as HTMLElement).style.opacity = "0.75"; (e.currentTarget as HTMLElement).style.transform = "translateY(-1px)"; }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.opacity = "1"; (e.currentTarget as HTMLElement).style.transform = "none"; }}
+                >
+                  <ExternalIcon /> Live Demo
+                </a>
+              </div>
+
             </div>
           </div>
         </div>
