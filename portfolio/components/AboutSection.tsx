@@ -287,7 +287,9 @@ function LeetCodeStats({ username = "IThakur09" }: { username?: string }) {
     (async () => {
       const apis = [
         `https://alfa-leetcode-api.onrender.com/${username}/calendar`,
+        `https://alfa-leetcode-api.onrender.com/userProfileCalendar?username=${username}&year=2025`,
         `https://alfa-leetcode-api.onrender.com/userProfileCalendar?username=${username}&year=2026`,
+        `https://leetcode-stats-api.herokuapp.com/${username}`,
       ];
       for (const url of apis) {
         try {
@@ -311,10 +313,8 @@ function LeetCodeStats({ username = "IThakur09" }: { username?: string }) {
   const countMap = new Map<string, number>();
   calData.forEach(day => {
     const dt = new Date(day.date * 1000);
-    if (dt.getFullYear() === 2026) {
-      const k = dt.toISOString().split("T")[0];
-      countMap.set(k, (countMap.get(k) ?? 0) + day.count);
-    }
+    const k = dt.toISOString().split("T")[0];
+    countMap.set(k, (countMap.get(k) ?? 0) + day.count);
   });
 
   const today = new Date(); today.setHours(0,0,0,0);
@@ -455,35 +455,12 @@ function LeetCodeStats({ username = "IThakur09" }: { username?: string }) {
         {/* Right: grid */}
         <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column" }}>
           <div style={{ fontSize: 9, color: "var(--text-muted)", fontFamily: MONO, marginBottom: 4 }}>2026 activity</div>
-          {!loading && calData.length === 0 ? (
-            /* API down fallback — reliable leetcard embed */
-            <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", gap: 8 }}>
-              <img
-                src={`https://leetcard.jacoblin.cool/${username}?theme=dark&font=Karma&ext=heatmap&border=0&radius=8&width=420`}
-                alt="LeetCode activity heatmap"
-                style={{ width: "100%", maxWidth: 420, borderRadius: 8, opacity: 0.92, display: "block" }}
-                onError={e => {
-                  (e.currentTarget as HTMLImageElement).style.display = "none";
-                  const next = e.currentTarget.nextElementSibling as HTMLElement;
-                  if (next) next.style.display = "flex";
-                }}
-              />
-              <div style={{ display: "none", flexDirection: "column", alignItems: "center", gap: 4, padding: "12px 0" }}>
-                <span style={{ fontSize: 10, color: "var(--text-muted)", fontFamily: MONO }}>Activity data unavailable</span>
-                <a href={`https://leetcode.com/${username}`} target="_blank" rel="noreferrer"
-                  style={{ fontSize: 10, color: "#FFA116", fontFamily: MONO, textDecoration: "none" }}>
-                  View on LeetCode →
-                </a>
-              </div>
-            </div>
-          ) : (
-            <div
-              style={{ width: "100%", overflowX: "auto", overflowY: "visible", WebkitOverflowScrolling: "touch", scrollbarWidth: "thin", scrollbarColor: "rgba(255,161,22,0.3) transparent" }}
-              onMouseLeave={() => setHovered(null)}
-            >
-              {gridContent}
-            </div>
-          )}
+          <div
+            style={{ width: "100%", overflowX: "auto", overflowY: "visible", WebkitOverflowScrolling: "touch", scrollbarWidth: "thin", scrollbarColor: "rgba(255,161,22,0.3) transparent" }}
+            onMouseLeave={() => setHovered(null)}
+          >
+            {gridContent}
+          </div>
         </div>
       </div>
 
@@ -511,23 +488,12 @@ function LeetCodeStats({ username = "IThakur09" }: { username?: string }) {
         <div style={{ height: 1, background: "var(--border)" }} />
         <div>
           <div style={{ fontSize: 9, color: "var(--text-muted)", fontFamily: MONO, marginBottom: 4 }}>2026 activity</div>
-          {!loading && calData.length === 0 ? (
-            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>
-              <img
-                src={`https://leetcard.jacoblin.cool/${username}?theme=dark&font=Karma&ext=heatmap&border=0&radius=8&width=360`}
-                alt="LeetCode activity heatmap"
-                style={{ width: "100%", borderRadius: 8, opacity: 0.92 }}
-                onError={e => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
-              />
-            </div>
-          ) : (
-            <div
-              style={{ overflowX: "auto", WebkitOverflowScrolling: "touch", scrollbarWidth: "thin" }}
-              onMouseLeave={() => setHovered(null)}
-            >
-              {gridContent}
-            </div>
-          )}
+          <div
+            style={{ overflowX: "auto", WebkitOverflowScrolling: "touch", scrollbarWidth: "thin" }}
+            onMouseLeave={() => setHovered(null)}
+          >
+            {gridContent}
+          </div>
         </div>
       </div>
     </div>
