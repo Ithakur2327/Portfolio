@@ -35,7 +35,7 @@ function FluidGradientText({ text }: { text: string }) {
   };
 
   // Stroke color for hollow state
-  const strokeColor = isDark ? "#1a4a2e" : "#5b21b6";
+  const strokeColor = isDark ? "#166534" : "#6d28d9";
 
   // Base fill gradient (bottom-to-top)
   const baseStops = isDark
@@ -97,7 +97,7 @@ function FluidGradientText({ text }: { text: string }) {
           textAnchor="middle" dominantBaseline="central"
           fill="none"
           stroke={strokeColor}
-          strokeWidth="0.8"
+          strokeWidth="1.5"
           opacity={hollowOpacity}
           textLength={tl}
           lengthAdjust="spacingAndGlyphs"
@@ -274,9 +274,9 @@ export function Footer() {
           display: block;
           width: 100%;
           height: auto;
-          /* Kills the 4px descender gap browsers add under inline SVG */
+          /* Block + overflow hidden on parent kills all inline gaps */
           vertical-align: bottom;
-          margin-bottom: -1px;
+          margin-bottom: -4px;
         }
         .fgt-text {
           font-family: 'Press Start 2P', 'Courier New', monospace;
