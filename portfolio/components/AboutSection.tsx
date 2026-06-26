@@ -810,6 +810,8 @@ export function AboutSection() {
           .about-content  { padding: 0 14px 28px; }
           .about-para     { font-size: 14px !important; line-height: 1.8 !important; }
           .stat-card-3d   { width: 100% !important; min-width: 0 !important; padding: 12px !important; }
+        }
+        @media (max-width: 1024px) {
           .lc-body-desktop { display: none !important; }
           .lc-body-mobile  { display: flex !important; }
         }
