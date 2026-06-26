@@ -6,7 +6,7 @@ import { motion, useMotionValue, useSpring, useTransform, animate } from "motion
 const MONO = "'Geist Mono', monospace";
 const SF = "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', sans-serif";
 
-const VW = 1920, VH = 320, FONT_SIZE = 268;
+const VW = 1920, VH = 230, FONT_SIZE = 193;
 
 function FluidGradientText({ text }: { text: string }) {
   const mouseXRaw = useMotionValue(VW / 2);
@@ -274,9 +274,8 @@ export function Footer() {
           display: block;
           width: 100%;
           height: auto;
-          /* Block + overflow hidden on parent kills all inline gaps */
           vertical-align: bottom;
-          margin-bottom: -4px;
+          margin-bottom: clamp(-18px, -0.95vw, -6px);
         }
         .fgt-text {
           font-family: 'Press Start 2P', 'Courier New', monospace;
