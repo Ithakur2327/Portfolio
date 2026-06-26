@@ -287,9 +287,7 @@ function LeetCodeStats({ username = "IThakur09" }: { username?: string }) {
     (async () => {
       const apis = [
         `https://alfa-leetcode-api.onrender.com/${username}/calendar`,
-        `https://alfa-leetcode-api.onrender.com/userProfileCalendar?username=${username}&year=2025`,
         `https://alfa-leetcode-api.onrender.com/userProfileCalendar?username=${username}&year=2026`,
-        `https://leetcode-stats-api.herokuapp.com/${username}`,
       ];
       for (const url of apis) {
         try {
@@ -313,14 +311,15 @@ function LeetCodeStats({ username = "IThakur09" }: { username?: string }) {
   const countMap = new Map<string, number>();
   calData.forEach(day => {
     const dt = new Date(day.date * 1000);
-    const k = `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,"0")}-${String(dt.getDate()).padStart(2,"0")}`;
-    countMap.set(k, (countMap.get(k) ?? 0) + day.count);
+    if (dt.getFullYear() === 2026) {
+      const k = dt.toISOString().split("T")[0];
+      countMap.set(k, (countMap.get(k) ?? 0) + day.count);
+    }
   });
 
   const today = new Date(); today.setHours(0,0,0,0);
-  // Show last 12 months like GitHub — so streak is visible
-  const twelveMonthsAgo = new Date(today); twelveMonthsAgo.setFullYear(twelveMonthsAgo.getFullYear() - 1);
-  const startSun = new Date(twelveMonthsAgo); startSun.setDate(startSun.getDate() - startSun.getDay());
+  const jan1 = new Date(2026, 0, 1);
+  const startSun = new Date(jan1); startSun.setDate(startSun.getDate() - startSun.getDay());
 
   const lcWeeks: { date: Date; count: number }[][] = [];
   let cur = new Date(startSun);
@@ -328,7 +327,7 @@ function LeetCodeStats({ username = "IThakur09" }: { username?: string }) {
     const wk: { date: Date; count: number }[] = [];
     for (let i = 0; i < 7; i++) {
       const dt = new Date(cur); dt.setDate(cur.getDate() + i);
-      const k = `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,"0")}-${String(dt.getDate()).padStart(2,"0")}`;
+      const k = dt.toISOString().split("T")[0];
       wk.push({ date: dt, count: countMap.get(k) ?? 0 });
     }
     lcWeeks.push(wk);
@@ -385,7 +384,7 @@ function LeetCodeStats({ username = "IThakur09" }: { username?: string }) {
           {lcWeeks.map((wk, wi) => (
             <div key={wi} style={{ display: "flex", flexDirection: "column", gap: GAP }}>
               {wk.map((day, di) => {
-                const k = `${day.date.getFullYear()}-${String(day.date.getMonth()+1).padStart(2,"0")}-${String(day.date.getDate()).padStart(2,"0")}`;
+                const k = day.date.toISOString().split("T")[0];
                 return (
                   <div
                     key={di}
@@ -455,7 +454,7 @@ function LeetCodeStats({ username = "IThakur09" }: { username?: string }) {
         <div style={{ width: 1, background: "var(--border)", flexShrink: 0, margin: "0 8px" }} />
         {/* Right: grid */}
         <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column" }}>
-          <div style={{ fontSize: 9, color: "var(--text-muted)", fontFamily: MONO, marginBottom: 4 }}>last 12 months</div>
+          <div style={{ fontSize: 9, color: "var(--text-muted)", fontFamily: MONO, marginBottom: 4 }}>2026 activity</div>
           <div
             style={{ width: "100%", overflowX: "auto", overflowY: "visible", WebkitOverflowScrolling: "touch", scrollbarWidth: "thin", scrollbarColor: "rgba(255,161,22,0.3) transparent" }}
             onMouseLeave={() => setHovered(null)}
@@ -488,7 +487,7 @@ function LeetCodeStats({ username = "IThakur09" }: { username?: string }) {
         </div>
         <div style={{ height: 1, background: "var(--border)" }} />
         <div>
-          <div style={{ fontSize: 9, color: "var(--text-muted)", fontFamily: MONO, marginBottom: 4 }}>last 12 months</div>
+          <div style={{ fontSize: 9, color: "var(--text-muted)", fontFamily: MONO, marginBottom: 4 }}>2026 activity</div>
           <div
             style={{ overflowX: "auto", WebkitOverflowScrolling: "touch", scrollbarWidth: "thin" }}
             onMouseLeave={() => setHovered(null)}
@@ -729,11 +728,11 @@ export function AboutSection() {
         .gh-cell-3 { background: #104b98; }
         .gh-cell-4 { background: #0d0a6b; }
 
-        .lc-cell-0 { background: rgba(255,255,255,0.06); outline: 1px solid rgba(255,255,255,0.10); outline-offset: -1px; }
-        .lc-cell-1 { background: #5a3a1a; }
-        .lc-cell-2 { background: #a85c1a; }
-        .lc-cell-3 { background: #d97a20; }
-        .lc-cell-4 { background: #FFA116; }
+        .lc-cell-0 { background: rgba(255,255,255,0.04); outline: 1px solid rgba(255,255,255,0.10); outline-offset: -1px; }
+        .lc-cell-1 { background: #8fc6fa; }
+        .lc-cell-2 { background: #1262c4; }
+        .lc-cell-3 { background: #104b98; }
+        .lc-cell-4 { background: #0d0a6b; }
 
         html.light .name-highlight { color: #16a34a; background: rgba(22,163,74,0.08); border-color: rgba(22,163,74,0.20); box-shadow: none; }
         html.light .gold-box-word { color: #d97706 !important; background: rgba(245,158,11,0.13) !important; border-color: rgba(217,119,6,0.45) !important; }
