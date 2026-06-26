@@ -239,14 +239,13 @@ export function ContactSection() {
           margin-top: 20px; gap: 10px;
         }
 
-        /* ── Quote Box ── */
         .quote-box {
           position: relative;
           background: var(--bg-card);
           border: 1px solid var(--border);
           border-radius: 16px;
           padding: 36px 40px;
-          margin-top: 20px;
+          margin-top: 0;
           overflow: hidden;
           isolation: isolate;
           min-height: 120px;
@@ -254,6 +253,28 @@ export function ContactSection() {
           flex-direction: column;
           justify-content: center;
           transform: translateZ(0);
+        }
+        .quote-section-divider {
+          display: flex;
+          align-items: center;
+          gap: 14px;
+          margin: 32px 0;
+        }
+        .quote-section-divider::before,
+        .quote-section-divider::after {
+          content: '';
+          flex: 1;
+          height: 1px;
+          background: var(--border);
+        }
+        .quote-section-divider span {
+          font-size: 10px;
+          font-family: ${MONO};
+          color: var(--text-muted);
+          letter-spacing: 0.1em;
+          text-transform: uppercase;
+          white-space: nowrap;
+          user-select: none;
         }
         .quote-rays-wrap {
           position: absolute; inset: 0; z-index: 0;
@@ -337,6 +358,11 @@ export function ContactSection() {
               animate={visible ? { opacity: 1, y: 0 } : { opacity: 0, y: 16 }}
               transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1], delay: 0.22 }}
             >
+              {/* Divider between form and quote */}
+              <div className="quote-section-divider">
+                <span>✦ &nbsp; words to code by &nbsp; ✦</span>
+              </div>
+
               <div className="quote-box">
                 <div className="quote-rays-wrap">
                   <LightRays
