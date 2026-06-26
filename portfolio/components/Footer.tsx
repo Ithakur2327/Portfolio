@@ -9,20 +9,33 @@ import {
 const MONO = "'Geist Mono', monospace";
 const SF = "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', sans-serif";
 
-/* ── Fluid Gradient Text (lux green) ─────────────────── */
+/* ── Full-width half-visible text (dark=green, light=purple) ─ */
 function FluidGradientText({ text }: { text: string }) {
-  const W = 900;
-  const H = 160;
-
+  const W = 1920, H = 260;
   const gradX = useMotionValue(W / 2);
   const smoothX = useSpring(gradX, { stiffness: 180, damping: 28, mass: 0.5 });
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
 
   const handleMove = (e: React.MouseEvent<HTMLDivElement>) => {
     const rect = e.currentTarget.getBoundingClientRect();
-    const x = ((e.clientX - rect.left) / rect.width) * W;
-    gradX.set(Math.max(0, Math.min(W, x)));
+    gradX.set(((e.clientX - rect.left) / rect.width) * W);
   };
   const handleLeave = () => gradX.set(W / 2);
+
+  const stops = isDark
+    ? [
+        { offset: "0%",   color: "#052e16" },
+        { offset: "40%",  color: "#16a34a" },
+        { offset: "72%",  color: "#4ade80" },
+        { offset: "100%", color: "#86efac" },
+      ]
+    : [
+        { offset: "0%",   color: "#3b0764" },
+        { offset: "40%",  color: "#7c3aed" },
+        { offset: "72%",  color: "#a855f7" },
+        { offset: "100%", color: "#d8b4fe" },
+      ];
 
   return (
     <div
@@ -34,28 +47,10 @@ function FluidGradientText({ text }: { text: string }) {
         viewBox={`0 0 ${W} ${H}`}
         width="100%"
         height="100%"
-        fill="none"
         xmlns="http://www.w3.org/2000/svg"
         style={{ display: "block" }}
+        preserveAspectRatio="xMidYMax meet"
       >
-        <text
-          x="50%"
-          y="52%"
-          textAnchor="middle"
-          dominantBaseline="central"
-          stroke="currentColor"
-          strokeOpacity="0.06"
-          strokeWidth="1.5"
-          fill="url(#footer_fluid_gradient)"
-          style={{
-            fontFamily: "Helvetica, Arial, sans-serif",
-            fontSize: H * 0.82,
-            fontWeight: 900,
-            letterSpacing: "-0.04em",
-          }}
-        >
-          {text}
-        </text>
         <defs>
           <motion.linearGradient
             id="footer_fluid_gradient"
@@ -65,17 +60,28 @@ function FluidGradientText({ text }: { text: string }) {
             y2={H}
             gradientUnits="userSpaceOnUse"
           >
-            {/* lux green gradient — matches screenshot */}
-            <stop offset="0%"   stopColor="#00ff88" stopOpacity="0" />
-            <stop offset="45%"  stopColor="#00ff88" stopOpacity="0.08" />
-            <stop offset="72%"  stopColor="#22c55e" stopOpacity="0.55" />
-            <stop offset="88%"  stopColor="#4ade80" stopOpacity="0.85" />
-            <stop offset="100%" stopColor="#86efac" stopOpacity="1" />
+            {stops.map((s, i) => (
+              <stop key={i} offset={s.offset} stopColor={s.color} />
+            ))}
           </motion.linearGradient>
         </defs>
+        <text
+          x="50%"
+          y={H}
+          textAnchor="middle"
+          dominantBaseline="auto"
+          fill="url(#footer_fluid_gradient)"
+          textLength={W}
+          lengthAdjust="spacingAndGlyphs"
+          style={{
+            fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
+            fontSize: H,
+            fontWeight: 900,
+          }}
+        >
+          {text}
+        </text>
       </svg>
-      {/* Underline shimmer */}
-      <div className="fluid-text-line" />
     </div>
   );
 }
@@ -200,42 +206,29 @@ export function Footer() {
           transform: translateY(-2px);
         }
 
-        /* ── Fluid gradient text at bottom ── */
+        /* ── Full-width half-visible text ── */
         .fluid-text-wrap {
           position: relative;
-          width: 100%;
-          padding: 0 32px;
-          max-width: 1060px;
-          margin: 0 auto;
+          left: 50%;
+          margin-left: -50vw;
+          width: 100vw;
+          height: clamp(72px, 9vw, 160px);
+          overflow: hidden;
           cursor: default;
-          height: clamp(80px, 12vw, 140px);
           user-select: none;
+          margin-top: 8px;
         }
-        .fluid-text-wrap svg {
-          width: 100%;
-          height: 100%;
-        }
-        .fluid-text-line {
-          position: absolute;
-          bottom: 0;
-          left: 32px; right: 32px;
-          height: 1px;
-          background: rgba(74,222,128,0.15);
-        }
-
+        .fluid-text-wrap svg { width: 100%; display: block; }
         @media (max-width: 720px) {
           .footer-profile-band { padding: 32px 22px 28px; }
           .footer-bottom-band  { padding: 14px 22px; gap: 14px; }
-          .fluid-text-wrap     { padding: 0 22px; }
-          .fluid-text-line     { left: 22px; right: 22px; }
         }
         @media (max-width: 480px) {
           .footer-profile-band { padding: 24px 16px 22px; flex-direction: column; align-items: flex-start; }
           .footer-bottom-band  { padding: 12px 16px; flex-direction: column; gap: 10px; }
           .footer-socials-row  { gap: 8px; flex-wrap: nowrap; }
           .footer-social-btn   { width: 38px; height: 38px; }
-          .fluid-text-wrap     { padding: 0 16px; height: clamp(60px, 16vw, 100px); }
-          .fluid-text-line     { left: 16px; right: 16px; }
+          .fluid-text-wrap     { height: clamp(50px, 14vw, 90px); }
         }
       `}</style>
 
