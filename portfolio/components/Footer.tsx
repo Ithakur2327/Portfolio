@@ -53,7 +53,7 @@ function FluidGradientText({ text }: { text: string }) {
   const gx1 = useTransform(mouseX, v => v - spread);
   const gx2 = useTransform(mouseX, v => v + spread);
 
-  const tl = VW * 0.965;
+  const tl = VW * 0.88;
 
   return (
     <div
