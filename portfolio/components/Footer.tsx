@@ -1,6 +1,7 @@
 "use client";
+import React from "react";
 import { useTheme } from "./ThemeProvider";
-import { motion, useMotionValue, useSpring } from "motion/react";
+import { motion, useMotionValue, useSpring, animate } from "motion/react";
 
 const MONO = "'Geist Mono', monospace";
 const SF = "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', sans-serif";
@@ -9,14 +10,19 @@ const VW = 1920, VH = 320, FONT_SIZE = 268;
 
 function FluidGradientText({ text }: { text: string }) {
   const gradientX1Raw = useMotionValue(VW / 2);
-  const gradientX1 = useSpring(gradientX1Raw, {
-    stiffness: 200,
-    damping: 30,
-    mass: 0.5,
-  });
+  const gradientX1 = useSpring(gradientX1Raw, { stiffness: 200, damping: 30, mass: 0.5 });
+
+  // Opacity motion values for smooth CSS-independent animation
+  const hollowOpacity = useMotionValue(1);
+  const fillOpacity   = useMotionValue(0);
+
   const { theme } = useTheme();
   const isDark = theme === "dark";
 
+  const handleMouseEnter = () => {
+    animate(hollowOpacity, 0, { duration: 0.3 });
+    animate(fillOpacity,   1, { duration: 0.3 });
+  };
   const handleMouseMove = (event: React.MouseEvent<HTMLDivElement>) => {
     const rect = event.currentTarget.getBoundingClientRect();
     const x = ((event.clientX - rect.left) / rect.width) * VW;
@@ -24,27 +30,28 @@ function FluidGradientText({ text }: { text: string }) {
   };
   const handleMouseLeave = () => {
     gradientX1Raw.set(VW / 2);
+    animate(hollowOpacity, 1, { duration: 0.3 });
+    animate(fillOpacity,   0, { duration: 0.3 });
   };
 
-  // dark: lux green top-to-bottom | light: deep purple top-to-bottom
-  const restStops = isDark
-    ? [
-        { offset: "0%",   color: "#052e16" },
-        { offset: "40%",  color: "#166534" },
-        { offset: "100%", color: "#4ade80" },
-      ]
-    : [
-        { offset: "0%",   color: "#3b0764" },
-        { offset: "40%",  color: "#7c3aed" },
-        { offset: "100%", color: "#c084fc" },
-      ];
+  // Hollow stroke color — dark: dim green, light: dim purple
+  const strokeColor = isDark ? "#2d6a4f" : "#7c3aed";
 
-  const hoverBright = isDark ? "#86efac" : "#e9d5ff";
-  const hoverMid    = isDark ? "#4ade80" : "#a855f7";
+  // Fill gradient on hover
+  const darkFillStops  = [{ o: "0%", c: "#052e16" }, { o: "40%", c: "#16a34a" }, { o: "100%", c: "#4ade80" }];
+  const lightFillStops = [{ o: "0%", c: "#3b0764" }, { o: "40%", c: "#7c3aed" }, { o: "100%", c: "#a855f7" }];
+  const fillStops = isDark ? darkFillStops : lightFillStops;
+
+  // Sweep highlight
+  const hoverBright = isDark ? "#86efac" : "#c084fc";
+  const hoverMid    = isDark ? "#4ade80" : "#7c3aed";
+
+  const tl = VW * 0.965; // textLength — tighter than 0.98 so letters aren't too spread
 
   return (
     <div
       className="fgt-outer"
+      onMouseEnter={handleMouseEnter}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
     >
@@ -57,20 +64,15 @@ function FluidGradientText({ text }: { text: string }) {
         aria-hidden="true"
       >
         <defs>
-          {/* Resting gradient — solid fill, top dark → bottom bright */}
-          <linearGradient id="fgt_rest" x1="0" y1="0" x2="0" y2={VH} gradientUnits="userSpaceOnUse">
-            {restStops.map((s, i) => (
-              <stop key={i} offset={s.offset} stopColor={s.color} />
-            ))}
+          {/* Hover fill gradient */}
+          <linearGradient id="fgt_fill" x1="0" y1="0" x2="0" y2={VH} gradientUnits="userSpaceOnUse">
+            {fillStops.map((s, i) => <stop key={i} offset={s.o} stopColor={s.c} />)}
           </linearGradient>
 
-          {/* Hover gradient — mouse-tracked horizontal sweep, brighter */}
+          {/* Mouse sweep gradient */}
           <motion.linearGradient
-            id="fgt_hover"
-            x1={gradientX1}
-            y1="0"
-            x2={VW / 2}
-            y2={VH}
+            id="fgt_sweep"
+            x1={gradientX1} y1="0" x2={VW / 2} y2={VH}
             gradientUnits="userSpaceOnUse"
           >
             <stop offset="0"    stopColor={hoverMid}    stopOpacity="0" />
@@ -80,60 +82,61 @@ function FluidGradientText({ text }: { text: string }) {
           </motion.linearGradient>
         </defs>
 
-        {/* Layer 1: solid resting fill */}
-        <text
-          x="50%"
-          y="50%"
-          textAnchor="middle"
-          dominantBaseline="central"
-          fill="url(#fgt_rest)"
-          stroke="none"
-          textLength={VW * 0.98}
+        {/* Layer 1 — hollow outline (resting state) */}
+        <motion.text
+          x="50%" y="50%"
+          textAnchor="middle" dominantBaseline="central"
+          fill="none"
+          stroke={strokeColor}
+          strokeWidth="1.5"
+          opacity={hollowOpacity}
+          textLength={tl}
           lengthAdjust="spacingAndGlyphs"
           className="fgt-text"
         >
           {text}
-        </text>
+        </motion.text>
 
-        {/* Layer 2: hover brightening overlay */}
-        <text
-          x="50%"
-          y="50%"
-          textAnchor="middle"
-          dominantBaseline="central"
-          fill="url(#fgt_hover)"
+        {/* Layer 2 — gradient fill (hover state) */}
+        <motion.text
+          x="50%" y="50%"
+          textAnchor="middle" dominantBaseline="central"
+          fill="url(#fgt_fill)"
           stroke="none"
-          textLength={VW * 0.98}
+          opacity={fillOpacity}
+          textLength={tl}
           lengthAdjust="spacingAndGlyphs"
           className="fgt-text"
         >
           {text}
-        </text>
+        </motion.text>
+
+        {/* Layer 3 — sweep brightening on hover */}
+        <motion.text
+          x="50%" y="50%"
+          textAnchor="middle" dominantBaseline="central"
+          fill="url(#fgt_sweep)"
+          stroke="none"
+          opacity={fillOpacity}
+          textLength={tl}
+          lengthAdjust="spacingAndGlyphs"
+          className="fgt-text"
+        >
+          {text}
+        </motion.text>
       </svg>
 
-      {/* Partition line flush with bottom of SVG */}
+      {/* Line flush with bottom of SVG */}
       <div className="fgt-line" />
     </div>
   );
 }
 
 function SocialIcon({
-  href,
-  label,
-  children,
-}: {
-  href: string;
-  label: string;
-  children: React.ReactNode;
-}) {
+  href, label, children,
+}: { href: string; label: string; children: React.ReactNode }) {
   return (
-    <a
-      href={href}
-      target="_blank"
-      rel="noreferrer"
-      aria-label={label}
-      className="footer-social-btn"
-    >
+    <a href={href} target="_blank" rel="noreferrer" aria-label={label} className="footer-social-btn">
       {children}
     </a>
   );
@@ -261,6 +264,7 @@ export function Footer() {
           display: block;
           width: 100%;
           height: auto;
+          vertical-align: bottom;
         }
         .fgt-text {
           font-family: 'Press Start 2P', 'Courier New', monospace;
