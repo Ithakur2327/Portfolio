@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
 import { useTheme } from "./ThemeProvider";
-import { motion, useMotionValue, useSpring, animate } from "motion/react";
+import { motion, useMotionValue, useSpring, useTransform, animate } from "motion/react";
 
 const MONO = "'Geist Mono', monospace";
 const SF = "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', sans-serif";
@@ -9,44 +9,51 @@ const SF = "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 
 const VW = 1920, VH = 320, FONT_SIZE = 268;
 
 function FluidGradientText({ text }: { text: string }) {
-  const gradientX1Raw = useMotionValue(VW / 2);
-  const gradientX1 = useSpring(gradientX1Raw, { stiffness: 200, damping: 30, mass: 0.5 });
+  const mouseXRaw = useMotionValue(VW / 2);
+  const mouseX    = useSpring(mouseXRaw, { stiffness: 180, damping: 28, mass: 0.4 });
 
-  // Opacity motion values for smooth CSS-independent animation
+  // Hollow <-> fill opacity
   const hollowOpacity = useMotionValue(1);
   const fillOpacity   = useMotionValue(0);
 
   const { theme } = useTheme();
   const isDark = theme === "dark";
 
-  const handleMouseEnter = () => {
-    animate(hollowOpacity, 0, { duration: 0.3 });
-    animate(fillOpacity,   1, { duration: 0.3 });
+  const handleMouseEnter = (event: React.MouseEvent<HTMLDivElement>) => {
+    const rect = event.currentTarget.getBoundingClientRect();
+    mouseXRaw.jump(((event.clientX - rect.left) / rect.width) * VW);
+    animate(hollowOpacity, 0, { duration: 0.25, ease: "easeOut" });
+    animate(fillOpacity,   1, { duration: 0.25, ease: "easeOut" });
   };
   const handleMouseMove = (event: React.MouseEvent<HTMLDivElement>) => {
     const rect = event.currentTarget.getBoundingClientRect();
-    const x = ((event.clientX - rect.left) / rect.width) * VW;
-    gradientX1Raw.set(Math.max(0, Math.min(VW, x)));
+    mouseXRaw.set(((event.clientX - rect.left) / rect.width) * VW);
   };
   const handleMouseLeave = () => {
-    gradientX1Raw.set(VW / 2);
-    animate(hollowOpacity, 1, { duration: 0.3 });
-    animate(fillOpacity,   0, { duration: 0.3 });
+    animate(hollowOpacity, 1, { duration: 0.35, ease: "easeOut" });
+    animate(fillOpacity,   0, { duration: 0.35, ease: "easeOut" });
   };
 
-  // Hollow stroke color — dark: dim green, light: dim purple
-  const strokeColor = isDark ? "#2d6a4f" : "#7c3aed";
+  // Stroke color for hollow state
+  const strokeColor = isDark ? "#1a5c35" : "#6d28d9";
 
-  // Fill gradient on hover
-  const darkFillStops  = [{ o: "0%", c: "#052e16" }, { o: "40%", c: "#16a34a" }, { o: "100%", c: "#4ade80" }];
-  const lightFillStops = [{ o: "0%", c: "#3b0764" }, { o: "40%", c: "#7c3aed" }, { o: "100%", c: "#a855f7" }];
-  const fillStops = isDark ? darkFillStops : lightFillStops;
+  // Base fill gradient (bottom-to-top)
+  const baseStops = isDark
+    ? [{ o: "0%", c: "#071f10" }, { o: "45%", c: "#14532d" }, { o: "100%", c: "#22c55e" }]
+    : [{ o: "0%", c: "#1e0345" }, { o: "45%", c: "#5b21b6" }, { o: "100%", c: "#a855f7" }];
 
-  // Sweep highlight
-  const hoverBright = isDark ? "#86efac" : "#c084fc";
-  const hoverMid    = isDark ? "#4ade80" : "#7c3aed";
+  // Bright highlight color that follows mouse
+  const brightColor = isDark ? "#4ade80" : "#c084fc";
+  const midColor    = isDark ? "#16a34a" : "#7c3aed";
+  const dimColor    = isDark ? "#071f10" : "#1e0345";
 
-  const tl = VW * 0.965; // textLength — tighter than 0.98 so letters aren't too spread
+  // The sweep gradient: bright at mouseX, fades out on both sides
+  // x1 = mouseX - spread, x2 = mouseX + spread — centered on cursor
+  const spread = VW * 0.28;
+  const gx1 = useTransform(mouseX, v => v - spread);
+  const gx2 = useTransform(mouseX, v => v + spread);
+
+  const tl = VW * 0.965;
 
   return (
     <div
@@ -64,31 +71,33 @@ function FluidGradientText({ text }: { text: string }) {
         aria-hidden="true"
       >
         <defs>
-          {/* Hover fill gradient */}
-          <linearGradient id="fgt_fill" x1="0" y1="0" x2="0" y2={VH} gradientUnits="userSpaceOnUse">
-            {fillStops.map((s, i) => <stop key={i} offset={s.o} stopColor={s.c} />)}
+          {/* Base fill — bottom bright → top dark */}
+          <linearGradient id="fgt_base" x1="0" y1={VH} x2="0" y2="0" gradientUnits="userSpaceOnUse">
+            {baseStops.map((s, i) => <stop key={i} offset={s.o} stopColor={s.c} />)}
           </linearGradient>
 
-          {/* Mouse sweep gradient */}
+          {/* Sweep highlight — centered on mouse, horizontal */}
           <motion.linearGradient
             id="fgt_sweep"
-            x1={gradientX1} y1="0" x2={VW / 2} y2={VH}
+            x1={gx1} y1="0"
+            x2={gx2} y2="0"
             gradientUnits="userSpaceOnUse"
           >
-            <stop offset="0"    stopColor={hoverMid}    stopOpacity="0" />
-            <stop offset="0.55" stopColor={hoverMid}    stopOpacity="0" />
-            <stop offset="0.80" stopColor={hoverMid}    stopOpacity="1" />
-            <stop offset="1"    stopColor={hoverBright} stopOpacity="1" />
+            <stop offset="0%"   stopColor={dimColor}    stopOpacity="0" />
+            <stop offset="35%"  stopColor={midColor}    stopOpacity="0.6" />
+            <stop offset="50%"  stopColor={brightColor} stopOpacity="1" />
+            <stop offset="65%"  stopColor={midColor}    stopOpacity="0.6" />
+            <stop offset="100%" stopColor={dimColor}    stopOpacity="0" />
           </motion.linearGradient>
         </defs>
 
-        {/* Layer 1 — hollow outline (resting state) */}
+        {/* Layer 1 — hollow outline (resting) */}
         <motion.text
           x="50%" y="50%"
           textAnchor="middle" dominantBaseline="central"
           fill="none"
           stroke={strokeColor}
-          strokeWidth="1.5"
+          strokeWidth="1.2"
           opacity={hollowOpacity}
           textLength={tl}
           lengthAdjust="spacingAndGlyphs"
@@ -97,11 +106,11 @@ function FluidGradientText({ text }: { text: string }) {
           {text}
         </motion.text>
 
-        {/* Layer 2 — gradient fill (hover state) */}
+        {/* Layer 2 — base fill (hover) */}
         <motion.text
           x="50%" y="50%"
           textAnchor="middle" dominantBaseline="central"
-          fill="url(#fgt_fill)"
+          fill="url(#fgt_base)"
           stroke="none"
           opacity={fillOpacity}
           textLength={tl}
@@ -111,7 +120,7 @@ function FluidGradientText({ text }: { text: string }) {
           {text}
         </motion.text>
 
-        {/* Layer 3 — sweep brightening on hover */}
+        {/* Layer 3 — mouse sweep highlight (hover) */}
         <motion.text
           x="50%" y="50%"
           textAnchor="middle" dominantBaseline="central"
@@ -126,7 +135,7 @@ function FluidGradientText({ text }: { text: string }) {
         </motion.text>
       </svg>
 
-      {/* Line flush with bottom of SVG */}
+      {/* Line flush with SVG bottom — negative margin kills the SVG inline gap */}
       <div className="fgt-line" />
     </div>
   );
@@ -257,6 +266,7 @@ export function Footer() {
           margin-top: clamp(24px, 3.5vw, 48px);
           cursor: crosshair;
           user-select: none;
+          /* line-height 0 + font-size 0 kills the inline-block gap below SVG */
           font-size: 0;
           line-height: 0;
         }
@@ -264,14 +274,16 @@ export function Footer() {
           display: block;
           width: 100%;
           height: auto;
+          /* Kills the 4px descender gap browsers add under inline SVG */
           vertical-align: bottom;
+          margin-bottom: -1px;
         }
         .fgt-text {
           font-family: 'Press Start 2P', 'Courier New', monospace;
           font-size: ${FONT_SIZE}px;
           font-weight: 400;
         }
-        /* Line sits flush directly below SVG — no gap */
+        /* Line sits flush directly below SVG */
         .fgt-line {
           display: block;
           width: 100%;
