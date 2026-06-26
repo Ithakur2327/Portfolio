@@ -9,8 +9,8 @@ const MONO = "'Geist Mono', 'SF Mono', monospace";
 const SF   = "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', sans-serif";
 
 /* ─── Tech definitions
-   bright: true  → white/light SVG that needs brightness boost in dark mode
-   invert: true  → black/dark SVG that needs invert(1) to appear white in dark mode
+   bright: true  → white/light SVG (needs brightness boost in dark, darken in light)
+   invert: true  → black/dark SVG (needs invert(1) in dark to appear white; visible as-is in light)
 ──────────────────────────────────────────────────────────────── */
 const TECH: Record<string, { color: string; logo: string; bright?: boolean; invert?: boolean }> = {
   // Languages
@@ -21,13 +21,13 @@ const TECH: Record<string, { color: string; logo: string; bright?: boolean; inve
   JavaScript:     { color: "#F7DF1E", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/javascript/javascript-original.svg" },
   // Frontend
   "React.js":     { color: "#61DAFB", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/react/react-original.svg" },
-  "Next.js":      { color: "#e2e8f0", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nextjs/nextjs-original.svg", bright: true },
+  "Next.js":      { color: "#555555", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nextjs/nextjs-original.svg", bright: true },
   "Tailwind CSS": { color: "#38BDF8", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/tailwindcss/tailwindcss-original.svg" },
   HTML5:          { color: "#E34F26", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/html5/html5-original.svg" },
   CSS3:           { color: "#1572B6", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/css3/css3-original.svg" },
   // Backend
   "Node.js":      { color: "#339933", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nodejs/nodejs-original.svg" },
-  "Express.js":   { color: "#e2e8f0", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/express/express-original.svg", invert: true },
+  "Express.js":   { color: "#555555", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/express/express-original.svg", invert: true },
   "REST APIs":    { color: "#85EA2D", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/swagger/swagger-original.svg" },
   FastAPI:        { color: "#009688", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/fastapi/fastapi-original.svg" },
   GraphQL:        { color: "#E10098", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/graphql/graphql-plain.svg" },
@@ -42,13 +42,13 @@ const TECH: Record<string, { color: string; logo: string; bright?: boolean; inve
   Kubernetes:     { color: "#326CE5", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/kubernetes/kubernetes-plain.svg" },
   Docker:         { color: "#2496ED", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/docker/docker-original.svg" },
   "CI/CD":        { color: "#f05032", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/githubactions/githubactions-original.svg" },
-  Vercel:         { color: "#e2e8f0", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/vercel/vercel-original.svg", invert: true },
+  Vercel:         { color: "#555555", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/vercel/vercel-original.svg", invert: true },
   // Tools & Database
   MongoDB:        { color: "#47A248", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/mongodb/mongodb-original.svg" },
   MySQL:          { color: "#4479A1", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/mysql/mysql-original.svg" },
   PostgreSQL:     { color: "#4169E1", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/postgresql/postgresql-original.svg" },
   Git:            { color: "#F05032", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/git/git-original.svg" },
-  GitHub:         { color: "#e2e8f0", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/github/github-original.svg", invert: true },
+  GitHub:         { color: "#555555", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/github/github-original.svg", invert: true },
   Postman:        { color: "#FF6C37", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/postman/postman-original.svg" },
   // Strip extras
   "VS Code":      { color: "#007ACC", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/vscode/vscode-original.svg" },
@@ -61,11 +61,11 @@ const LAMP_ROW1 = [
   { title: "BACKEND",   glowColor: "#339933", items: ["Node.js", "Express.js", "REST APIs", "FastAPI", "GraphQL"] },
 ];
 
-// ROW 2: Cloud first, then Tools, then GenAI
+// ROW 2: Cloud first, then GenAI, then Tools last
 const LAMP_ROW2 = [
   { title: "CLOUD & DEVOPS",   glowColor: "#FF9900", items: ["AWS", "Kubernetes", "Docker", "CI/CD", "Vercel"] },
-  { title: "TOOLS & DATABASE", glowColor: "#47A248", items: ["MongoDB", "MySQL", "PostgreSQL", "Git", "GitHub", "Postman"] },
   { title: "GENAI / AI",       glowColor: "#10a37f", items: ["LLM APIs", "LangChain", "LangGraph", "RAG", "Vector DB"] },
+  { title: "TOOLS & DATABASE", glowColor: "#47A248", items: ["MongoDB", "MySQL", "PostgreSQL", "Git", "GitHub", "Postman"] },
 ];
 
 const STRIP_NAMES = [
@@ -74,12 +74,6 @@ const STRIP_NAMES = [
   "AWS", "Kubernetes", "Git", "VS Code", "Postman",
 ];
 
-/* ─── Staggered grid column calculator ───
-   Uses a 6-column grid so:
-   • Full rows:       items at cols 1-2, 3-4, 5-6
-   • Last row of 2:   items at cols 2-3, 4-5  (centered under gaps)
-   • Last row of 1:   item at cols 3-4         (centered)
-────────────────────────────────────────── */
 function getGridColumn(idx: number, total: number): string {
   const remainder = total % 3;
   const lastRowCount = remainder === 0 ? 3 : remainder;
@@ -88,23 +82,20 @@ function getGridColumn(idx: number, total: number): string {
   const posInRow = idx % 3;
 
   if (!isLastRow || lastRowCount === 3) {
-    const col = posInRow * 2 + 1; // 1, 3, 5
+    const col = posInRow * 2 + 1;
     return `${col} / ${col + 2}`;
   }
 
   const posInLastRow = idx - lastRowStart;
 
   if (lastRowCount === 2) {
-    // Offset by 1 column so icons sit under gaps of row above
-    const col = posInLastRow * 2 + 2; // 2, 4
+    const col = posInLastRow * 2 + 2;
     return `${col} / ${col + 2}`;
   }
 
-  // lastRowCount === 1 → center
   return "3 / 5";
 }
 
-/* ─── useBoxInView ─── */
 function useBoxInView(lowPerf: boolean) {
   const ref = useRef<HTMLDivElement>(null);
   const [inView, setInView] = useState(false);
@@ -128,11 +119,6 @@ function useBoxInView(lowPerf: boolean) {
   return { ref, inView };
 }
 
-/* ─── SkillChip ───
-   • 6-col grid so 2nd row of 5 sits under gaps of 1st row
-   • bright icons → brightness boost in dark mode
-   • invert icons → invert(1) in dark mode (black SVGs → white)
-─────────────────── */
 const SkillChip = memo(function SkillChip({
   name, visible, delay = 0, gridColumn,
 }: { name: string; visible: boolean; delay?: number; gridColumn?: string }) {
@@ -152,24 +138,26 @@ const SkillChip = memo(function SkillChip({
   };
 
   const boxStyle: React.CSSProperties = {
-    width: 44, height: 44,
+    width: 38, height: 38,
     display: "flex", alignItems: "center", justifyContent: "center",
-    borderRadius: 10,
+    borderRadius: 9,
     background: `${tech.color}20`,
     border: `1px solid ${tech.color}${visible ? "50" : "20"}`,
     transition: "border-color 0.4s ease, transform 0.22s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.22s ease",
   };
 
-  // Compute filter based on theme and icon type
   const getImgFilter = () => {
     if (!visible) return "grayscale(1) opacity(.3)";
     if (isDark) {
+      // Dark mode: invert black icons to white; boost very light/white icons
       if (tech.invert) return "invert(1) brightness(0.92)";
-      if (tech.bright) return "brightness(1.9) contrast(1.1)";
+      if (tech.bright) return "brightness(1.8) contrast(1.1)";
     } else {
-      // light mode: inverted (originally dark/black) icons are fine as-is
-      // bright (white) icons need darkening so they're visible
-      if (tech.bright) return "brightness(0.15)";
+      // Light mode:
+      // invert icons (black SVGs) → render fine on white bg, no filter needed
+      // bright icons (white SVGs) → need to be darkened to show up on light bg
+      if (tech.bright) return "brightness(0.1) saturate(0)";
+      // invert icons are dark/black → perfectly visible on light bg, no filter
     }
     return "none";
   };
@@ -194,7 +182,7 @@ const SkillChip = memo(function SkillChip({
         {tech.logo && (
           <img
             src={tech.logo} alt={name}
-            width={24} height={24}
+            width={20} height={20}
             loading="lazy" draggable={false}
             style={imgStyle}
             onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
@@ -207,14 +195,19 @@ const SkillChip = memo(function SkillChip({
 });
 
 /* ─── LampBeam ───
-   Dark mode → white glow (clean, minimal)
-   Light mode → card's own glowColor (current behaviour)
+   Dark mode → reduced glow (was too strong)
+   Light mode → card's own glowColor
 ──────────────── */
 const LampBeam = memo(function LampBeam({
   glowColor, visible,
 }: { glowColor: string; visible: boolean }) {
   const { theme } = useTheme();
-  const effectiveColor = theme === "dark" ? "#ffffff" : glowColor;
+  const isDark = theme === "dark";
+  // Dark mode: use white but at reduced opacity via the gradient stops
+  const effectiveColor = isDark ? "#ffffff" : glowColor;
+  // Dark mode glow is reduced (was too intense)
+  const glowIntensity = isDark ? "08" : "2e";
+  const innerIntensity = isDark ? "18" : "40";
 
   return (
     <div
@@ -231,8 +224,12 @@ const LampBeam = memo(function LampBeam({
         transform: "translateX(-50%)",
         width: "74%", height: 1.5, borderRadius: 999,
         background: `linear-gradient(90deg,transparent 0%,${effectiveColor} 18%,${effectiveColor} 82%,transparent 100%)`,
-        boxShadow: visible ? `0 0 10px ${effectiveColor},0 0 24px ${effectiveColor}66` : "0 0 0px transparent",
-        opacity: visible ? 1 : 0,
+        boxShadow: visible
+          ? isDark
+            ? `0 0 6px ${effectiveColor}55,0 0 14px ${effectiveColor}33`
+            : `0 0 10px ${effectiveColor},0 0 24px ${effectiveColor}66`
+          : "0 0 0px transparent",
+        opacity: visible ? (isDark ? 0.45 : 1) : 0,
         transition: "opacity 0.72s cubic-bezier(0.22,1,0.36,1), box-shadow 0.72s ease",
       }} />
       {/* Wide glow cone */}
@@ -240,7 +237,7 @@ const LampBeam = memo(function LampBeam({
         position: "absolute", left: "50%", top: 0,
         transform: "translate3d(-50%,0,0)",
         width: "180%", height: "145%",
-        background: `radial-gradient(ellipse 60% 70% at 50% 0%,${effectiveColor}2e 0%,${effectiveColor}16 25%,${effectiveColor}0e 45%,${effectiveColor}08 60%,transparent 82%)`,
+        background: `radial-gradient(ellipse 60% 70% at 50% 0%,${effectiveColor}${glowIntensity} 0%,${effectiveColor}10 25%,${effectiveColor}08 45%,${effectiveColor}04 60%,transparent 82%)`,
         opacity: visible ? 1 : 0,
         transition: "opacity 0.90s cubic-bezier(0.22,1,0.36,1)",
       }} />
@@ -249,7 +246,7 @@ const LampBeam = memo(function LampBeam({
         position: "absolute", left: "50%", top: 0,
         transform: "translateX(-50%)",
         width: "120%", height: "100%",
-        background: `radial-gradient(ellipse 42% 38% at 50% 0%,${effectiveColor}40 0%,${effectiveColor}1e 35%,${effectiveColor}0e 55%,transparent 78%)`,
+        background: `radial-gradient(ellipse 42% 38% at 50% 0%,${effectiveColor}${innerIntensity} 0%,${effectiveColor}0e 35%,${effectiveColor}06 55%,transparent 78%)`,
         opacity: visible ? 1 : 0,
         transition: `opacity 0.78s cubic-bezier(0.22,1,0.36,1) ${visible ? "0.06s" : "0s"}`,
       }} />
@@ -257,11 +254,6 @@ const LampBeam = memo(function LampBeam({
   );
 });
 
-/* ─── LampSkillBox ───
-   Chips use a 6-column CSS grid so:
-   • 5 items → row 1: 3 icons, row 2: 2 icons centred under gaps
-   • 6 items → 2 equal rows of 3
-──────────────────── */
 function LampSkillBox({
   title, glowColor, items,
 }: { title: string; glowColor: string; items: string[] }) {
@@ -285,7 +277,7 @@ function LampSkillBox({
 
       <div style={{
         position: "relative", zIndex: 1,
-        paddingTop: 16,
+        paddingTop: 12,
         display: "flex", flexDirection: "column", height: "100%",
       }}>
         {/* Title */}
@@ -306,17 +298,17 @@ function LampSkillBox({
 
         {/* Separator */}
         <div style={{
-          height: 1, margin: "0 14px 16px",
+          height: 1, margin: "0 12px 12px",
           background: `linear-gradient(to right,transparent,${glowColor}${inView ? "35" : "08"},transparent)`,
           transition: "background 0.5s ease",
         }} />
 
         {/* Chips — 6-column grid for staggered layout */}
         <div style={{
-          padding: "0 14px 18px",
+          padding: "0 10px 14px",
           display: "grid",
           gridTemplateColumns: "repeat(6, 1fr)",
-          gap: "12px 4px",
+          gap: "10px 2px",
           justifyItems: "center",
           flex: 1,
         }}>
@@ -363,9 +355,9 @@ const MovingStrip = memo(function MovingStrip() {
           const tech = TECH[name] ?? { color: "#71717a", logo: "" };
           const stripFilter = isDark
             ? tech.invert ? "invert(1) brightness(0.92)"
-              : tech.bright ? "brightness(1.9) contrast(1.1)"
+              : tech.bright ? "brightness(1.8) contrast(1.1)"
               : "none"
-            : tech.bright ? "brightness(0.15)" : "none";
+            : tech.bright ? "brightness(0.1) saturate(0)" : "none";
 
           return (
             <div key={idx} style={{
@@ -423,16 +415,15 @@ export function SkillsSection() {
         .skills-grid-wrapper {
           display: flex;
           flex-direction: column;
-          border: 1px solid var(--border);
-          border-radius: 14px;
-          overflow: hidden;
+          gap: 10px;
         }
 
-        /* Each row */
+        /* Each row — 3 columns on desktop */
         .skills-grid-row {
           display: grid;
           grid-template-columns: repeat(3, 1fr);
-          border-bottom: 1px solid var(--border);
+          gap: 10px;
+          border-bottom: none;
         }
         .skills-grid-row:last-child {
           border-bottom: none;
@@ -440,23 +431,34 @@ export function SkillsSection() {
 
         /* Each card inside row */
         .lamp-skill-box {
-          border-right: 1px solid var(--border);
-          min-height: 220px;
+          border: 1px solid var(--border);
+          border-radius: 12px;
+          border-right: 1px solid var(--border) !important;
+          min-height: 180px;
+          overflow: hidden;
         }
         .lamp-skill-box:last-child {
-          border-right: none;
+          border-right: 1px solid var(--border);
         }
 
-        /* ── Tablet: 2 cards per row ── */
-        @media (max-width: 900px) {
+        /* ── Tablet (≤1024px): strictly 2 cards per row ── */
+        @media (max-width: 1024px) {
           .skills-grid-row {
             grid-template-columns: repeat(2, 1fr);
-            flex-wrap: wrap;
           }
+          /* 3rd card in each row: full-width bottom card */
           .skills-grid-row .lamp-skill-box:nth-child(3) {
             grid-column: span 2;
             border-right: none;
             border-top: 1px solid var(--border);
+          }
+          /* Reset right-border on 2nd card so it shows */
+          .skills-grid-row .lamp-skill-box:nth-child(2) {
+            border-right: none;
+          }
+          /* 1st card always has border-right */
+          .skills-grid-row .lamp-skill-box:nth-child(1) {
+            border-right: 1px solid var(--border);
           }
           .lamp-skill-box {
             min-height: 200px;
@@ -470,6 +472,7 @@ export function SkillsSection() {
           }
           .skills-grid-row .lamp-skill-box:nth-child(3) {
             grid-column: span 1;
+            border-top: 1px solid var(--border);
           }
           .lamp-skill-box {
             border-right: none !important;
