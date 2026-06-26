@@ -360,7 +360,7 @@ export function ContactSection() {
             >
               {/* Divider between form and quote */}
               <div className="quote-section-divider">
-                <span>✦ &nbsp; &nbsp; ✦</span>
+                <span>✦ &nbsp;&nbsp; ✦</span>
               </div>
 
               <div className="quote-box">
