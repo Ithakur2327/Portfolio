@@ -285,19 +285,57 @@ function LeetCodeStats({ username = "IThakur09" }: { username?: string }) {
 
   useEffect(() => {
     (async () => {
-      const apis = [
-        `https://alfa-leetcode-api.onrender.com/${username}/calendar`,
-        `https://alfa-leetcode-api.onrender.com/userProfileCalendar?username=${username}&year=2026`,
-      ];
-      for (const url of apis) {
+      // Try LeetCode's official GraphQL API first, then fallback to third-party
+      const graphqlQuery = {
+        query: `query userProfileCalendar($username: String!, $year: Int) {
+          matchedUser(username: $username) {
+            userCalendar(year: $year) {
+              submissionCalendar
+            }
+          }
+        }`,
+        variables: { username, year: 2026 },
+      };
+
+      const tryParseCal = (calStr: unknown): LCCalDay[] | null => {
         try {
-          const cr = await fetch(url, { signal: AbortSignal.timeout(6000) });
+          const calObj: Record<string, number> = typeof calStr === "string" ? JSON.parse(calStr) : (calStr as Record<string, number>);
+          const days: LCCalDay[] = Object.entries(calObj).map(([ts, cnt]) => ({ date: Number(ts), count: Number(cnt) }));
+          return days.length > 0 ? days.sort((a, b) => a.date - b.date) : null;
+        } catch { return null; }
+      };
+
+      // 1) Official LeetCode GraphQL
+      try {
+        const r = await fetch("https://leetcode.com/graphql", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "Referer": "https://leetcode.com" },
+          body: JSON.stringify(graphqlQuery),
+          signal: AbortSignal.timeout(8000),
+        });
+        if (r.ok) {
+          const j = await r.json();
+          const calStr = j?.data?.matchedUser?.userCalendar?.submissionCalendar;
+          const days = calStr ? tryParseCal(calStr) : null;
+          if (days) { setCalData(days); return; }
+        }
+      } catch { /* try next */ }
+
+      // 2) Fallback third-party APIs
+      const fallbackApis = [
+        `https://alfa-leetcode-api.onrender.com/userProfileCalendar?username=${username}&year=2026`,
+        `https://alfa-leetcode-api.onrender.com/${username}/calendar`,
+        `https://leetcode-stats-api.herokuapp.com/${username}`,
+      ];
+      for (const url of fallbackApis) {
+        try {
+          const cr = await fetch(url, { signal: AbortSignal.timeout(7000) });
           if (!cr.ok) continue;
           const cj = await cr.json();
-          const calStr = cj?.submissionCalendar ?? cj?.calendar ?? cj?.data?.matchedUser?.userCalendar?.submissionCalendar ?? "{}";
-          const calObj: Record<string, number> = typeof calStr === "string" ? JSON.parse(calStr) : calStr;
-          const days: LCCalDay[] = Object.entries(calObj).map(([ts, cnt]) => ({ date: Number(ts), count: Number(cnt) }));
-          if (days.length > 0) { setCalData(days.sort((a, b) => a.date - b.date)); return; }
+          const calStr = cj?.submissionCalendar ?? cj?.calendar ?? cj?.data?.matchedUser?.userCalendar?.submissionCalendar;
+          if (!calStr) continue;
+          const days = tryParseCal(calStr);
+          if (days) { setCalData(days); return; }
         } catch { /* try next */ }
       }
     })();
@@ -580,10 +618,12 @@ function GitHubGraph({ username = "Ithakur2327" }: { username?: string }) {
   weeks.forEach((w, wi) => {
     if (!w.days[0]) return;
     const d = new Date(w.days[0].date + "T00:00:00");
+    // Skip Dec 2025 (partial week before Jan 1 2026) — only label 2026 months
+    if (d.getFullYear() < 2026) return;
     const lbl = MONTHS_GH[d.getMonth()];
     const last = monthLabels[monthLabels.length - 1];
     if (!last || last.label !== lbl) {
-      if (!last || wi - last.col >= 1) monthLabels.push({ label: lbl, col: wi });
+      if (!last || wi - last.col >= 2) monthLabels.push({ label: lbl, col: wi });
     }
   });
 
