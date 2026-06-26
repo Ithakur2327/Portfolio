@@ -35,7 +35,7 @@ function FluidGradientText({ text }: { text: string }) {
   };
 
   // Stroke color for hollow state
-  const strokeColor = isDark ? "#1a5c35" : "#6d28d9";
+  const strokeColor = isDark ? "#1a4a2e" : "#5b21b6";
 
   // Base fill gradient (bottom-to-top)
   const baseStops = isDark
@@ -97,7 +97,7 @@ function FluidGradientText({ text }: { text: string }) {
           textAnchor="middle" dominantBaseline="central"
           fill="none"
           stroke={strokeColor}
-          strokeWidth="1.2"
+          strokeWidth="0.8"
           opacity={hollowOpacity}
           textLength={tl}
           lengthAdjust="spacingAndGlyphs"
