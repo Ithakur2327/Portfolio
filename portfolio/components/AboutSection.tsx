@@ -313,7 +313,7 @@ function LeetCodeStats({ username = "IThakur09" }: { username?: string }) {
   const countMap = new Map<string, number>();
   calData.forEach(day => {
     const dt = new Date(day.date * 1000);
-    const k = dt.toISOString().split("T")[0];
+    const k = `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,"0")}-${String(dt.getDate()).padStart(2,"0")}`;
     countMap.set(k, (countMap.get(k) ?? 0) + day.count);
   });
 
@@ -327,7 +327,7 @@ function LeetCodeStats({ username = "IThakur09" }: { username?: string }) {
     const wk: { date: Date; count: number }[] = [];
     for (let i = 0; i < 7; i++) {
       const dt = new Date(cur); dt.setDate(cur.getDate() + i);
-      const k = dt.toISOString().split("T")[0];
+      const k = `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,"0")}-${String(dt.getDate()).padStart(2,"0")}`;
       wk.push({ date: dt, count: countMap.get(k) ?? 0 });
     }
     lcWeeks.push(wk);
@@ -384,7 +384,7 @@ function LeetCodeStats({ username = "IThakur09" }: { username?: string }) {
           {lcWeeks.map((wk, wi) => (
             <div key={wi} style={{ display: "flex", flexDirection: "column", gap: GAP }}>
               {wk.map((day, di) => {
-                const k = day.date.toISOString().split("T")[0];
+                const k = `${day.date.getFullYear()}-${String(day.date.getMonth()+1).padStart(2,"0")}-${String(day.date.getDate()).padStart(2,"0")}`;
                 return (
                   <div
                     key={di}
