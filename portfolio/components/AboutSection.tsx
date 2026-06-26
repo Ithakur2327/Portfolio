@@ -285,59 +285,21 @@ function LeetCodeStats({ username = "IThakur09" }: { username?: string }) {
 
   useEffect(() => {
     (async () => {
-      // Try LeetCode's official GraphQL API first, then fallback to third-party
-      const graphqlQuery = {
-        query: `query userProfileCalendar($username: String!, $year: Int) {
-          matchedUser(username: $username) {
-            userCalendar(year: $year) {
-              submissionCalendar
-            }
-          }
-        }`,
-        variables: { username, year: 2026 },
-      };
-
-      const tryParseCal = (calStr: unknown): LCCalDay[] | null => {
-        try {
-          const calObj: Record<string, number> = typeof calStr === "string" ? JSON.parse(calStr) : (calStr as Record<string, number>);
-          const days: LCCalDay[] = Object.entries(calObj).map(([ts, cnt]) => ({ date: Number(ts), count: Number(cnt) }));
-          return days.length > 0 ? days.sort((a, b) => a.date - b.date) : null;
-        } catch { return null; }
-      };
-
-      // 1) Official LeetCode GraphQL
+      // Call our own server-side proxy so CORS is never an issue.
+      // The route lives at app/api/leetcode-calendar/route.ts
       try {
-        const r = await fetch("https://leetcode.com/graphql", {
-          method: "POST",
-          headers: { "Content-Type": "application/json", "Referer": "https://leetcode.com" },
-          body: JSON.stringify(graphqlQuery),
-          signal: AbortSignal.timeout(8000),
-        });
+        const r = await fetch(
+          `/api/leetcode-calendar?username=${encodeURIComponent(username)}&year=2026`,
+          { signal: AbortSignal.timeout(12000) }
+        );
         if (r.ok) {
-          const j = await r.json();
-          const calStr = j?.data?.matchedUser?.userCalendar?.submissionCalendar;
-          const days = calStr ? tryParseCal(calStr) : null;
-          if (days) { setCalData(days); return; }
+          const json = await r.json();
+          const days: LCCalDay[] = (json.days ?? []).sort(
+            (a: LCCalDay, b: LCCalDay) => a.date - b.date
+          );
+          if (days.length > 0) { setCalData(days); return; }
         }
-      } catch { /* try next */ }
-
-      // 2) Fallback third-party APIs
-      const fallbackApis = [
-        `https://alfa-leetcode-api.onrender.com/userProfileCalendar?username=${username}&year=2026`,
-        `https://alfa-leetcode-api.onrender.com/${username}/calendar`,
-        `https://leetcode-stats-api.herokuapp.com/${username}`,
-      ];
-      for (const url of fallbackApis) {
-        try {
-          const cr = await fetch(url, { signal: AbortSignal.timeout(7000) });
-          if (!cr.ok) continue;
-          const cj = await cr.json();
-          const calStr = cj?.submissionCalendar ?? cj?.calendar ?? cj?.data?.matchedUser?.userCalendar?.submissionCalendar;
-          if (!calStr) continue;
-          const days = tryParseCal(calStr);
-          if (days) { setCalData(days); return; }
-        } catch { /* try next */ }
-      }
+      } catch { /* show blank grid gracefully */ }
     })();
   }, [username]);
 
