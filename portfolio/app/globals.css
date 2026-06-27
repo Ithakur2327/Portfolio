@@ -188,9 +188,9 @@ a, button, [role="button"] {
    LAYOUT — page-wrapper
 ═══════════════════════════════════════════════════════════ */
 .page-wrapper {
-  max-width: 1057px;
+  max-width: 1040px;
   margin: 0 auto;
-  padding: 0 6px;
+  padding: 0 px;
   min-height: 100vh;
   position: relative;
   z-index: 1;
