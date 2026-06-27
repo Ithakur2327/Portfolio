@@ -188,9 +188,9 @@ a, button, [role="button"] {
    LAYOUT — page-wrapper
 ═══════════════════════════════════════════════════════════ */
 .page-wrapper {
-  max-width: 1040px;
+  max-width: 1060px;
   margin: 0 auto;
-  padding: 0 px;
+  padding: 0;
   min-height: 100vh;
   position: relative;
   z-index: 1;
@@ -268,7 +268,7 @@ html.light .nav-root.scrolled {
 }
 
 .nav-inner {
-  max-width: 1057px; margin: 0 auto;
+  max-width: 1060px; margin: 0 auto;
   padding: 0 16px; height: 52px;
   display: flex; align-items: center; justify-content: space-between;
 }
@@ -821,27 +821,27 @@ html.light .stat-badge {
     0 8px 32px rgba(0,0,0,0.40);
 }
 
-/* ── Light theme — ultra-thin mirror glass ── */
+/* ── Light theme — mirror glass ── */
 html.light .nav-root {
-  backdrop-filter: blur(60px) saturate(320%) brightness(1.12) !important;
-  -webkit-backdrop-filter: blur(60px) saturate(320%) brightness(1.12) !important;
-  background: rgba(252,252,250,0.10) !important;
-  border-bottom: 0.5px solid rgba(255,255,255,0.85) !important;
+  backdrop-filter: blur(48px) saturate(280%) brightness(1.08) !important;
+  -webkit-backdrop-filter: blur(48px) saturate(280%) brightness(1.08) !important;
+  background: rgba(252,252,250,0.22) !important;
+  border-bottom: 0.5px solid rgba(255,255,255,0.75) !important;
   box-shadow:
-    0 0.5px 0 rgba(255,255,255,0.98) inset,
-    0 0 0 0.5px rgba(255,255,255,0.55) inset,
-    0 2px 12px rgba(0,0,0,0.04);
+    0 0.5px 0 rgba(255,255,255,0.95) inset,
+    0 0 0 0.5px rgba(255,255,255,0.50) inset,
+    0 2px 12px rgba(0,0,0,0.05);
 }
 html.light .nav-root.scrolled {
-  backdrop-filter: blur(72px) saturate(360%) brightness(1.14) !important;
-  -webkit-backdrop-filter: blur(72px) saturate(360%) brightness(1.14) !important;
-  background: rgba(252,252,250,0.18) !important;
-  border-bottom: 0.5px solid rgba(255,255,255,0.92) !important;
+  backdrop-filter: blur(60px) saturate(320%) brightness(1.10) !important;
+  -webkit-backdrop-filter: blur(60px) saturate(320%) brightness(1.10) !important;
+  background: rgba(252,252,250,0.42) !important;
+  border-bottom: 0.5px solid rgba(255,255,255,0.90) !important;
   box-shadow:
     0 0.5px 0 rgba(255,255,255,1.0) inset,
-    0 0 0 0.5px rgba(255,255,255,0.72) inset,
-    0 6px 28px rgba(0,0,0,0.06),
-    0 1px 4px rgba(0,0,0,0.02);
+    0 0 0 0.5px rgba(255,255,255,0.70) inset,
+    0 6px 28px rgba(0,0,0,0.07),
+    0 1px 4px rgba(0,0,0,0.03);
 }
 
 /* Mobile nav height */
@@ -1128,7 +1128,7 @@ html.light #scroll-arrow {
 }
 
 @media (min-width: 1200px) {
-  .page-wrapper { max-width: 1057px; }
+  .page-wrapper { max-width: 1060px; }
 }
 
 /* ═══════════════════════════════════════════════════════════

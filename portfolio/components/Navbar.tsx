@@ -1,62 +1,271 @@
 "use client";
-import { useEffect, useRef, useState, useCallback, CSSProperties } from "react";
+
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
+import { motion, useAnimation } from "motion/react";
+import type { Transition, Variants } from "motion/react";
 import { useTheme } from "./ThemeProvider";
 import { playThemeToggleSound } from "@/lib/soundcn/sounds";
 
-/* ══════════════════════
-   NAV SECTIONS for search
-══════════════════════ */
-const NAV_MENU = [
-  { label: "Home",           href: "#",              shortcut: "GH" },
-  { label: "About",          href: "#about",         shortcut: "GA" },
-  { label: "Skills",         href: "#skills",        shortcut: "GS" },
-  { label: "Projects",       href: "#projects",      shortcut: "GP" },
-  { label: "Certifications", href: "#certifications",shortcut: "GC" },
-  { label: "Education",      href: "#education",     shortcut: "GE" },
-  { label: "Contact",        href: "#contact",       shortcut: "GN" },
+/* ─────────────────────────────────────────────
+   SECTION DATA — what appears in command menu
+───────────────────────────────────────────── */
+const PORTFOLIO_LINKS = [
+  { label: "Home",            href: "#",               icon: "home"   },
+  { label: "About",           href: "#about",          icon: "about"  },
+  { label: "Stats",           href: "#stats",          icon: "chart"  },
+  { label: "Skills",          href: "#skills",         icon: "layers" },
+  { label: "Projects",        href: "#projects",       icon: "box"    },
+  { label: "Certifications",  href: "#certifications", icon: "badge"  },
+  { label: "Education",       href: "#education",      icon: "book"   },
+  { label: "Contact",         href: "#contact",        icon: "mail"   },
 ];
 
-/* ── Icons ── */
-function SunIcon()    { return <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>; }
-function MoonIcon()   { return <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>; }
-function SearchIcon() { return <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>; }
-function EnterIcon()  { return <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 10 4 15 9 20"/><path d="M20 4v7a4 4 0 0 1-4 4H4"/></svg>; }
-function MenuIcon()   { return <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>; }
-function CloseIcon()  { return <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>; }
+/* ─────────────────────────────────────────────
+   SMALL SVG ICONS for command menu items
+───────────────────────────────────────────── */
+function MenuItemIcon({ type, color }: { type: string; color: string }) {
+  const props = { width: 14, height: 14, viewBox: "0 0 24 24", fill: "none", stroke: color, strokeWidth: 2, strokeLinecap: "round" as const, strokeLinejoin: "round" as const };
+  switch (type) {
+    case "home":    return <svg {...props}><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>;
+    case "about":   return <svg {...props}><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>;
+    case "chart":   return <svg {...props}><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>;
+    case "layers":  return <svg {...props}><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>;
+    case "box":     return <svg {...props}><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>;
+    case "badge":   return <svg {...props}><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/></svg>;
+    case "book":    return <svg {...props}><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>;
+    case "mail":    return <svg {...props}><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>;
+    default:        return <svg {...props}><rect x="3" y="3" width="18" height="18" rx="3"/></svg>;
+  }
+}
 
-/* ══════════════════════════════════════════════
-   COMMAND PALETTE  — exactly like reference image
-══════════════════════════════════════════════ */
-function CommandPalette({ open, onClose, isDark }: { open: boolean; onClose: () => void; isDark: boolean }) {
-  const [query,     setQuery]    = useState("");
-  const [selected,  setSelected] = useState(0);
-  const [animIn,    setAnimIn]   = useState(false);
-  const inputRef   = useRef<HTMLInputElement>(null);
-  const listRef    = useRef<HTMLDivElement>(null);
+function SearchIcon({ size = 16 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+    </svg>
+  );
+}
+
+function CornerDownLeftIcon() {
+  return (
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="9 10 4 15 9 20"/><path d="M20 4v7a4 4 0 0 1-4 4H4"/>
+    </svg>
+  );
+}
+
+// "I" mark — replaces ChanhDaiMark in footer
+function IMark({ size = 24, color = "currentColor" }: { size?: number; color?: string }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+      <rect x="4" y="3" width="16" height="18" rx="2"/>
+      <line x1="9" y1="3" x2="9" y2="21"/>
+    </svg>
+  );
+}
+
+/* ─────────────────────────────────────────────
+   KBD — styled exactly like chanhdai
+───────────────────────────────────────────── */
+function Kbd({ children, className = "", style: extraStyle }: { children: React.ReactNode; className?: string; style?: React.CSSProperties }) {
+  return (
+    <kbd
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
+        height: 20,
+        minWidth: 24,
+        width: "fit-content",
+        gap: 4,
+        borderRadius: 4,
+        padding: "0 4px",
+        fontFamily: "inherit",
+        fontSize: 13,
+        fontWeight: 400,
+        letterSpacing: "-0.01em",
+        color: "var(--text-muted)",
+        userSelect: "none",
+        pointerEvents: "none",
+        lineHeight: 1,
+        background: "rgba(0,0,0,0.05)",
+        boxShadow: "inset 0 0 1px rgba(0,0,0,0.1)",
+        ...extraStyle,
+      }}
+      className={`dark-kbd ${className}`}
+    >
+      {children}
+    </kbd>
+  );
+}
+
+/* ─────────────────────────────────────────────
+   ANIMATED MOON ICON (from chanhdai)
+───────────────────────────────────────────── */
+const moonVariants: Variants = {
+  normal: { rotate: 0 },
+  animate: { rotate: [0, -10, 10, -5, 5, 0] },
+};
+const moonTransition: Transition = { duration: 1.2, ease: "easeInOut" };
+
+function MoonIconAnimated({ size = 16 }: { size?: number }) {
+  const controls = useAnimation();
+  return (
+    <div
+      onMouseEnter={() => controls.start("animate")}
+      onMouseLeave={() => controls.start("normal")}
+    >
+      <motion.svg
+        xmlns="http://www.w3.org/2000/svg"
+        width={size} height={size}
+        viewBox="0 0 24 24"
+        fill="none" stroke="currentColor"
+        strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+        variants={moonVariants}
+        animate={controls}
+        transition={moonTransition}
+      >
+        <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>
+      </motion.svg>
+    </div>
+  );
+}
+
+/* ─────────────────────────────────────────────
+   ANIMATED SUN ICON (from chanhdai)
+───────────────────────────────────────────── */
+const sunPathVariants: Variants = {
+  normal: { opacity: 1 },
+  animate: (i: number) => ({
+    opacity: [0, 1],
+    transition: { delay: i * 0.1, duration: 0.3 },
+  }),
+};
+const SUN_RAYS = ["M12 3v1","M12 20v1","M3 12h1","M20 12h1","m18.364 5.636-.707.707","m6.343 17.657-.707.707","m5.636 5.636.707.707","m17.657 17.657.707.707"];
+
+function SunIconAnimated({ size = 16 }: { size?: number }) {
+  const controls = useAnimation();
+  return (
+    <div
+      onMouseEnter={() => controls.start("animate")}
+      onMouseLeave={() => controls.start("normal")}
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="12" cy="12" r="4"/>
+        {SUN_RAYS.map((d, i) => (
+          <motion.path key={d} d={d} animate={controls} variants={sunPathVariants} custom={i + 1}/>
+        ))}
+      </svg>
+    </div>
+  );
+}
+
+/* ─────────────────────────────────────────────
+   TOOLTIP — styled same as chanhdai
+   (bg-foreground text-background, with arrow)
+───────────────────────────────────────────── */
+function NavTooltip({ children, label, kbd }: { children: React.ReactNode; label: string; kbd?: string }) {
+  const [show, setShow] = useState(false);
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  return (
+    <div
+      style={{ position: "relative", display: "inline-flex" }}
+      onMouseEnter={() => { timer.current = setTimeout(() => setShow(true), 400); }}
+      onMouseLeave={() => { if (timer.current) clearTimeout(timer.current); setShow(false); }}
+    >
+      {children}
+      {show && (
+        <div
+          style={{
+            position: "absolute",
+            top: "calc(100% + 8px)",
+            left: "50%",
+            transform: "translateX(-50%)",
+            background: "var(--text-primary)",
+            color: "var(--bg-base)",
+            fontSize: 12,
+            fontWeight: 500,
+            fontFamily: "-apple-system,'SF Pro Display','Helvetica Neue',sans-serif",
+            padding: "6px 12px",
+            borderRadius: 8,
+            whiteSpace: "nowrap",
+            pointerEvents: "none",
+            zIndex: 1000,
+            display: "flex",
+            alignItems: "center",
+            gap: 10,
+            boxShadow: "0 4px 16px rgba(0,0,0,0.22)",
+          }}
+        >
+          {/* Arrow pointing UP — tooltip is below button */}
+          <span style={{
+            position: "absolute", bottom: "100%", left: "50%", transform: "translateX(-50%)",
+            width: 0, height: 0,
+            borderLeft: "5px solid transparent",
+            borderRight: "5px solid transparent",
+            borderBottom: "5px solid var(--text-primary)",
+          }}/>
+          {label}
+          {kbd && (
+            <kbd style={{
+              display: "inline-flex", alignItems: "center", justifyContent: "center",
+              height: 18, minWidth: 20, padding: "0 4px",
+              borderRadius: 3, fontSize: 11, fontWeight: 400,
+              background: "rgba(255,255,255,0.2)",
+              boxShadow: "inset 0 0 1px rgba(255,255,255,0.2)",
+              color: "inherit", userSelect: "none",
+            }}>
+              {kbd}
+            </kbd>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ─────────────────────────────────────────────
+   COMMAND DIALOG — styled exactly like chanhdai
+───────────────────────────────────────────── */
+function CommandMenu({ open, onClose, isDark }: { open: boolean; onClose: () => void; isDark: boolean }) {
+  const [query,    setQuery]    = useState("");
+  const [selected, setSelected] = useState(0);
+  const [visible,  setVisible]  = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const listRef  = useRef<HTMLDivElement>(null);
 
   const filtered = query.trim()
-    ? NAV_MENU.filter(i => i.label.toLowerCase().includes(query.toLowerCase()))
-    : NAV_MENU;
+    ? PORTFOLIO_LINKS.filter(i => i.label.toLowerCase().includes(query.toLowerCase()))
+    : PORTFOLIO_LINKS;
 
   useEffect(() => {
     if (open) {
-      setTimeout(() => { setAnimIn(true); inputRef.current?.focus(); }, 10);
+      setVisible(true);
+      setTimeout(() => inputRef.current?.focus(), 30);
       setQuery(""); setSelected(0);
     } else {
-      setAnimIn(false);
+      // delay hiding to allow close animation
+      const t = setTimeout(() => setVisible(false), 200);
+      return () => clearTimeout(t);
     }
   }, [open]);
 
   useEffect(() => {
     if (!open) return;
     const fn = (e: KeyboardEvent) => {
-      if (e.key === "Escape")     { onClose(); }
-      if (e.key === "ArrowDown")  { e.preventDefault(); setSelected(s => Math.min(s + 1, filtered.length - 1)); }
-      if (e.key === "ArrowUp")    { e.preventDefault(); setSelected(s => Math.max(s - 1, 0)); }
+      if (e.key === "Escape")    { onClose(); }
+      if (e.key === "ArrowDown") { e.preventDefault(); setSelected(s => Math.min(s + 1, filtered.length - 1)); }
+      if (e.key === "ArrowUp")   { e.preventDefault(); setSelected(s => Math.max(s - 1, 0)); }
       if (e.key === "Enter" && filtered[selected]) {
         const href = filtered[selected].href;
         if (href === "#") window.scrollTo({ top: 0, behavior: "smooth" });
-        else { const el = document.querySelector(href); if (el) el.scrollIntoView({ behavior: "smooth" }); }
+        else { const el = document.querySelector(href); el?.scrollIntoView({ behavior: "smooth" }); }
         onClose();
       }
     };
@@ -66,251 +275,187 @@ function CommandPalette({ open, onClose, isDark }: { open: boolean; onClose: () 
 
   useEffect(() => { setSelected(0); }, [query]);
 
-  // scroll selected into view
   useEffect(() => {
-    const list = listRef.current;
-    if (!list) return;
-    const items = list.querySelectorAll("[data-cmd-item]");
-    const el = items[selected] as HTMLElement;
-    if (el) el.scrollIntoView({ block: "nearest" });
+    if (!listRef.current) return;
+    const items = listRef.current.querySelectorAll("[data-cmd-item]");
+    (items[selected] as HTMLElement)?.scrollIntoView({ block: "nearest" });
   }, [selected]);
 
-  if (!open && !animIn) return null;
+  if (!visible) return null;
 
-  const bg        = isDark ? "#0a0a0a" : "#ffffff";
-  const surface   = isDark ? "#141414" : "#f5f5f3";
-  const border    = isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.08)";
-  const inputClr  = isDark ? "#fafafa" : "#0a0a0a";
-  const mutedClr  = isDark ? "#71717a" : "#6b6b6b";
-  const hoverBg   = isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)";
-  const activeBg  = isDark ? "rgba(255,255,255,0.10)" : "rgba(0,0,0,0.08)";
-  const kbdBg     = isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.07)";
-  const kbdBorder = isDark ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.12)";
+  // chanhdai palette colours
+  const bg       = isDark ? "hsl(0 0% 3.9%)"  : "hsl(0 0% 100%)";
+  const surface  = isDark ? "hsl(0 0% 9%)"    : "hsl(0 0% 96.1%)";
+  const border   = isDark ? "hsl(0 0% 14.9%)" : "hsl(0 0% 89.8%)";
+  const fg       = isDark ? "hsl(0 0% 98%)"   : "hsl(0 0% 3.9%)";
+  const muted    = isDark ? "hsl(0 0% 45%)"   : "hsl(0 0% 45%)";
+  const accent   = isDark ? "hsl(0 0% 14.9%)" : "hsl(0 0% 92%)";
+  const iconBg   = isDark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.06)";
 
   return (
-    <div
-      style={{ position:"fixed", inset:0, zIndex:9999, display:"flex", alignItems:"flex-start", justifyContent:"center", paddingTop:"clamp(48px,6vh,96px)" }}
-      onClick={onClose}
-    >
-      {/* Backdrop */}
-      <div style={{
-        position:"absolute", inset:0,
-        background: isDark ? "rgba(0,0,0,0.6)" : "rgba(0,0,0,0.25)",
-        backdropFilter:"blur(6px)", WebkitBackdropFilter:"blur(6px)",
-        opacity: animIn ? 1 : 0, transition:"opacity 0.18s ease",
-      }} />
+    <>
+      <style suppressHydrationWarning>{`
+        .cmdk-overlay { animation: cmdk-backdrop-in 0.18s ease forwards; }
+        .cmdk-panel   { animation: cmdk-panel-in 0.2s cubic-bezier(0.22,1,0.36,1) forwards; }
+        .cmdk-overlay.closing { animation: cmdk-backdrop-out 0.16s ease forwards; }
+        .cmdk-panel.closing   { animation: cmdk-panel-out 0.16s ease forwards; }
+        @keyframes cmdk-backdrop-in  { from { opacity:0 } to { opacity:1 } }
+        @keyframes cmdk-backdrop-out { from { opacity:1 } to { opacity:0 } }
+        @keyframes cmdk-panel-in  { from { opacity:0; transform:translateX(-50%) translateY(-8px) scale(0.97) } to { opacity:1; transform:translateX(-50%) translateY(0) scale(1) } }
+        @keyframes cmdk-panel-out { from { opacity:1; transform:translateX(-50%) translateY(0) scale(1) } to { opacity:0; transform:translateX(-50%) translateY(-8px) scale(0.97) } }
+        .dark-kbd { background: rgba(0,0,0,0.05) !important; }
+        html.dark .dark-kbd { background: rgba(255,255,255,0.1) !important; box-shadow: inset 0 0 1px rgba(255,255,255,0.2) !important; }
+        .scroll-fade {
+          mask-image: linear-gradient(to bottom, transparent 0, black 40px, black calc(100% - 40px), transparent 100%);
+          -webkit-mask-image: linear-gradient(to bottom, transparent 0, black 40px, black calc(100% - 40px), transparent 100%);
+        }
+      `}</style>
 
-      {/* Panel */}
+      {/* Overlay */}
       <div
-        onClick={e => e.stopPropagation()}
+        className={`cmdk-overlay${!open ? " closing" : ""}`}
+        onClick={onClose}
         style={{
-          position:"relative",
-          width:"min(600px,92vw)",
-          background: bg,
-          border: `1px solid ${border}`,
-          borderRadius: 16,
-          overflow: "hidden",
-          boxShadow: isDark
-            ? "0 0 0 1px rgba(255,255,255,0.04) inset, 0 32px 80px rgba(0,0,0,0.80)"
-            : "0 0 0 1px rgba(255,255,255,0.8) inset, 0 20px 60px rgba(0,0,0,0.15)",
-          transform: animIn ? "translateY(0) scale(1)" : "translateY(-10px) scale(0.97)",
-          opacity: animIn ? 1 : 0,
-          transition:"transform 0.22s cubic-bezier(0.22,1,0.36,1), opacity 0.18s ease",
+          position: "fixed", inset: 0, zIndex: 9998,
+          background: "rgba(0,0,0,0.5)",
         }}
+      />
+
+      {/* Panel — below nav bar, left-aligned to search trigger */}
+      <div
+        className={`cmdk-panel${!open ? " closing" : ""}`}
+        style={{
+          position: "fixed",
+          top: 60, left: "50%",
+          transform: "translateX(-50%)",
+          zIndex: 9999,
+          width: "min(512px, calc(100vw - 32px))",
+          maxHeight: "min(520px, calc(100vh - 80px))",
+          background: bg,
+          borderRadius: 16,
+          border: `1px solid ${border}`,
+          boxShadow: "0 25px 50px -12px rgba(0,0,0,0.5)",
+          overflow: "hidden",
+          display: "flex",
+          flexDirection: "column",
+          padding: 4,
+          outline: "none",
+        }}
+        role="dialog"
+        aria-label="Command palette"
       >
-        {/* Search input row */}
-        <div style={{ display:"flex", alignItems:"center", gap:10, padding:"14px 14px 12px", borderBottom:`1px solid ${border}` }}>
-          <span style={{ color:mutedClr, flexShrink:0, display:"flex" }}><SearchIcon /></span>
+        {/* Input row */}
+        <div style={{ display: "flex", alignItems: "center", gap: 8, height: 48, padding: "0 12px", flexShrink: 0 }}>
+          <span style={{ color: muted, display: "flex", flexShrink: 0 }}><SearchIcon size={20} /></span>
           <input
             ref={inputRef}
             value={query}
             onChange={e => setQuery(e.target.value)}
             placeholder="Type a command or search…"
             style={{
-              flex:1, background:"transparent", border:"none", outline:"none",
-              color: inputClr,
-              fontSize:14, fontWeight:400,
-              fontFamily:"-apple-system,'SF Pro Display','Helvetica Neue',Arial,sans-serif",
-              caretColor: inputClr,
+              flex: 1, background: "transparent", border: "none", outline: "none",
+              color: fg, fontSize: 14, fontWeight: 500,
+              fontFamily: "-apple-system,'SF Pro Display','Helvetica Neue',sans-serif",
+              caretColor: fg,
+              letterSpacing: "-0.01em",
             }}
           />
         </div>
 
-        {/* List */}
-        <div ref={listRef} style={{ background: surface, margin:8, borderRadius:12, overflow:"hidden" }}>
-          {/* Group heading */}
-          <div style={{ padding:"8px 10px 4px", fontSize:11.5, fontWeight:500, color:mutedClr, fontFamily:"-apple-system,'SF Pro Display','Helvetica Neue',Arial,sans-serif", letterSpacing:"0.01em" }}>
-            {query ? "Results" : "Menu"}
-          </div>
-
-          {filtered.length === 0 ? (
-            <div style={{ padding:"20px 12px", textAlign:"center", color:mutedClr, fontSize:13, fontFamily:"-apple-system,'SF Pro Display','Helvetica Neue',Arial,sans-serif" }}>
-              No results found.
+        {/* Results list with chanhdai's surface card + ring */}
+        <div
+          ref={listRef}
+          style={{
+            borderRadius: 12,
+            background: surface,
+            border: `1px solid ${border}`,
+            overflow: "hidden",
+            display: "flex",
+            flexDirection: "column",
+          }}
+        >
+          {/* Scrollable area */}
+          <div
+            className="scroll-fade"
+            style={{
+              maxHeight: 320,
+              overflowY: "auto",
+              padding: "8px 0",
+            }}
+          >
+            {/* Group heading */}
+            <div style={{
+              padding: "2px 10px 6px",
+              fontSize: 11.5, fontWeight: 600,
+              color: muted,
+              fontFamily: "-apple-system,'SF Pro Display','Helvetica Neue',sans-serif",
+              letterSpacing: "0.04em",
+              textTransform: "uppercase",
+            }}>
+              {query ? "Results" : "Portfolio"}
             </div>
-          ) : (
-            filtered.map((item, idx) => {
-              const isActive = idx === selected;
-              return (
-                <a
-                  key={item.href}
-                  data-cmd-item
-                  href={item.href}
-                  onClick={onClose}
-                  onMouseEnter={() => setSelected(idx)}
-                  style={{
-                    display:"flex", alignItems:"center", gap:10,
-                    padding:"9px 10px", margin:"1px 4px",
-                    borderRadius:8,
-                    background: isActive ? activeBg : "transparent",
-                    color: inputClr,
-                    textDecoration:"none",
-                    cursor:"pointer",
-                    transition:"background 0.1s",
-                  }}
-                >
-                  {/* Small icon box */}
-                  <div style={{
-                    width:28, height:28, borderRadius:7, flexShrink:0,
-                    background: kbdBg,
-                    border:`1px solid ${kbdBorder}`,
-                    display:"flex", alignItems:"center", justifyContent:"center",
-                  }}>
-                    {/* Generic page icon */}
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={mutedClr} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <rect x="3" y="3" width="18" height="18" rx="3"/>
-                      <line x1="3" y1="9" x2="21" y2="9"/>
-                      <line x1="9" y1="21" x2="9" y2="9"/>
-                    </svg>
-                  </div>
 
-                  <span style={{ flex:1, fontSize:14, fontWeight:450, fontFamily:"-apple-system,'SF Pro Display','Helvetica Neue',Arial,sans-serif" }}>
-                    {item.label}
-                  </span>
+            {filtered.length === 0 ? (
+              <div style={{ padding: "24px 12px", textAlign: "center", color: muted, fontSize: 13, fontFamily: "monospace" }}>
+                No results found.
+              </div>
+            ) : (
+              filtered.map((item, idx) => {
+                const isActive = idx === selected;
+                return (
+                  <a
+                    key={item.href}
+                    data-cmd-item
+                    href={item.href}
+                    onClick={onClose}
+                    onMouseEnter={() => setSelected(idx)}
+                    style={{
+                      display: "flex", alignItems: "center", gap: 8,
+                      padding: "8px 10px", margin: "0 4px",
+                      borderRadius: 8,
+                      background: isActive ? accent : "transparent",
+                      color: fg,
+                      textDecoration: "none",
+                      cursor: "pointer",
+                      transition: "background 0.1s",
+                      outline: "none",
+                    }}
+                  >
+                    {/* Icon box */}
+                    <div style={{
+                      width: 28, height: 28,
+                      borderRadius: 6,
+                      background: iconBg,
+                      border: `1px solid ${border}`,
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      flexShrink: 0,
+                    }}>
+                      <MenuItemIcon type={item.icon} color={isActive ? fg : muted} />
+                    </div>
 
-                  {/* Shortcut */}
-                  <span style={{
-                    fontSize:12, fontWeight:500, letterSpacing:"0.12em",
-                    color:mutedClr,
-                    fontFamily:"'Geist Mono','SF Mono',monospace",
-                  }}>
-                    {item.shortcut}
-                  </span>
-                </a>
-              );
-            })
-          )}
+                    {/* Label */}
+                    <span style={{ flex: 1, fontSize: 14, fontWeight: 500, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", fontFamily: "-apple-system,'SF Pro Display','Helvetica Neue',sans-serif", letterSpacing: "-0.01em" }}>
+                      {item.label}
+                    </span>
+                  </a>
+                );
+              })
+            )}
+          </div>
         </div>
 
-        {/* Footer */}
+        {/* Footer — "I" mark on left, "Go to page ↵" on right — chanhdai style */}
         <div style={{
-          display:"flex", alignItems:"center", justifyContent:"space-between",
-          padding:"10px 14px 12px",
-          borderTop: `1px solid ${border}`,
+          display: "flex", alignItems: "center", justifyContent: "space-between",
+          height: 40, padding: "0 6px 0 4px", flexShrink: 0,
         }}>
-          {/* Left: logo mark placeholder */}
-          <div style={{
-            width:24, height:24, display:"flex", alignItems:"center", justifyContent:"center",
-            color:mutedClr,
-          }}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <rect x="3" y="3" width="18" height="18" rx="3"/>
-              <line x1="3" y1="9" x2="21" y2="9"/>
-              <line x1="9" y1="21" x2="9" y2="9"/>
-            </svg>
-          </div>
+          <IMark size={24} color={muted} />
 
-          {/* Right: Go to page + enter key */}
-          <div style={{ display:"flex", alignItems:"center", gap:8 }}>
-            <span style={{ fontSize:12, fontWeight:500, color:mutedClr, fontFamily:"-apple-system,'SF Pro Display','Helvetica Neue',Arial,sans-serif" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+            <span style={{ fontSize: 12, fontWeight: 500, color: muted, fontFamily: "-apple-system,'SF Pro Display','Helvetica Neue',sans-serif", letterSpacing: "-0.01em" }}>
               Go to page
             </span>
-            <kbd style={{
-              display:"flex", alignItems:"center", justifyContent:"center",
-              width:26, height:22, borderRadius:5,
-              background:kbdBg, border:`1px solid ${kbdBorder}`,
-              color:mutedClr, fontSize:10,
-            }}>
-              <EnterIcon />
-            </kbd>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/* ══════════════════════════════════════
-   MOBILE BLOB MENU
-══════════════════════════════════════ */
-const NAV_LINKS_MOBILE = [
-  { label: "About",          href: "#about",          color: "#6366f1" },
-  { label: "Skills",         href: "#skills",         color: "#10b981" },
-  { label: "Projects",       href: "#projects",       color: "#f59e0b" },
-  { label: "Education",      href: "#education",      color: "#ef4444" },
-  { label: "Certifications", href: "#certifications", color: "#3b82f6" },
-  { label: "Contact",        href: "#contact",        color: "#8b5cf6" },
-];
-const BLOB_SHAPES = [
-  "62% 38% 46% 54% / 60% 44% 56% 40%","46% 54% 62% 38% / 44% 60% 40% 56%",
-  "54% 46% 38% 62% / 56% 40% 60% 44%","38% 62% 54% 46% / 40% 56% 44% 60%",
-  "60% 40% 42% 58% / 48% 62% 38% 52%","42% 58% 60% 40% / 62% 38% 52% 48%",
-];
-
-function BlobItem({ item, idx, blobBg, onClose }: { item: typeof NAV_LINKS_MOBILE[0]; idx: number; blobBg: string; onClose: () => void }) {
-  const [hovered, setHovered] = useState(false);
-  const blobSize = "clamp(90px,20vw,155px)";
-  return (
-    <a href={item.href} className="blob-item"
-      style={{ display:"flex", alignItems:"center", justifyContent:"center", width:blobSize, height:blobSize, borderRadius:BLOB_SHAPES[idx]??"50%", background:hovered?item.color:blobBg, color:hovered?"#fff":"#111", textDecoration:"none", fontSize:"clamp(14px,3.5vw,22px)", fontWeight:500, pointerEvents:"auto", cursor:"pointer", boxShadow:hovered?`0 8px 32px ${item.color}55`:"0 4px 20px rgba(0,0,0,0.18)", transition:"background 0.18s,color 0.18s,box-shadow 0.18s", willChange:"transform", flexShrink:0, touchAction:"manipulation", WebkitTapHighlightColor:"transparent", userSelect:"none", WebkitUserSelect:"none" } as CSSProperties}
-      onMouseEnter={()=>setHovered(true)} onMouseLeave={()=>setHovered(false)}
-      onTouchStart={()=>setHovered(true)} onTouchEnd={()=>{setHovered(false);onClose();}}
-      onClick={onClose}
-    >{item.label}</a>
-  );
-}
-
-function BlobMenu({ open, onClose, isDark }: { open: boolean; onClose: () => void; isDark: boolean }) {
-  const [shouldRender, setShouldRender] = useState(false);
-  const [isClosing,    setIsClosing]    = useState(false);
-  const closeTimer = useRef<ReturnType<typeof setTimeout>|null>(null);
-  useEffect(()=>{
-    if(open){if(closeTimer.current)clearTimeout(closeTimer.current);setIsClosing(false);setShouldRender(true);document.body.style.overflow="hidden";document.body.style.touchAction="none";}
-    else{if(shouldRender){setIsClosing(true);closeTimer.current=setTimeout(()=>{setShouldRender(false);setIsClosing(false);},300);}document.body.style.overflow="";document.body.style.touchAction="";}
-    return()=>{if(closeTimer.current)clearTimeout(closeTimer.current);};
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  },[open]);
-  useEffect(()=>{if(!open)return;const esc=(e:KeyboardEvent)=>{if(e.key==="Escape")onClose();};window.addEventListener("keydown",esc);return()=>window.removeEventListener("keydown",esc);},[open,onClose]);
-  if(!shouldRender)return null;
-  const blobBg=isDark?"rgba(255,255,255,0.93)":"#fff";
-  const animClass=isClosing?"blob-exit":"blob-enter";
-  return (
-    <>
-      <style suppressHydrationWarning>{`
-        @keyframes bIn{from{opacity:0;transform:scale(0.3);}60%{transform:scale(1.08);}to{opacity:1;transform:scale(1);}}
-        @keyframes bOut{from{opacity:1;transform:scale(1);}to{opacity:0;transform:scale(0.3);}}
-        @keyframes bdIn{from{opacity:0}to{opacity:1}} @keyframes bdOut{from{opacity:1}to{opacity:0}}
-        .blob-backdrop-enter{animation:bdIn .22s ease forwards;} .blob-backdrop-exit{animation:bdOut .22s ease forwards;}
-        .blob-enter .blob-item{animation:bIn .42s cubic-bezier(0.34,1.56,0.64,1) forwards;opacity:0;}
-        .blob-exit .blob-item{animation:bOut .22s ease-in forwards;opacity:1;}
-        .blob-enter .blob-item:nth-child(1){animation-delay:.00s} .blob-enter .blob-item:nth-child(2){animation-delay:.06s}
-        .blob-enter .blob-item:nth-child(3){animation-delay:.12s} .blob-enter .blob-item:nth-child(4){animation-delay:.18s}
-        .blob-enter .blob-item:nth-child(5){animation-delay:.22s} .blob-enter .blob-item:nth-child(6){animation-delay:.26s}
-        .blob-exit .blob-item:nth-child(1){animation-delay:.00s} .blob-exit .blob-item:nth-child(2){animation-delay:.02s}
-        .blob-exit .blob-item:nth-child(3){animation-delay:.04s} .blob-exit .blob-item:nth-child(4){animation-delay:.06s}
-        .blob-exit .blob-item:nth-child(5){animation-delay:.08s} .blob-exit .blob-item:nth-child(6){animation-delay:.10s}
-        .blob-item:hover{transform:scale(1.07)!important;transition:background .18s,color .18s,box-shadow .18s,transform .18s!important}
-        .blob-item:active{transform:scale(0.94)!important}
-      `}</style>
-      <div style={{position:"fixed",inset:0,zIndex:9999,pointerEvents:"auto"}}>
-        <div className={isClosing?"blob-backdrop-exit":"blob-backdrop-enter"} onClick={onClose} style={{position:"absolute",inset:0,background:isDark?"rgba(0,0,0,0.92)":"rgba(0,0,0,0.88)",backdropFilter:"blur(3px)",WebkitBackdropFilter:"blur(3px)"}} />
-        <div style={{position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center",pointerEvents:"none"}}>
-          <div className={animClass} style={{display:"flex",flexDirection:"column",alignItems:"center",gap:"clamp(12px,3vw,28px)",pointerEvents:"none"}}>
-            <div style={{display:"flex",gap:"clamp(10px,2.5vw,24px)",pointerEvents:"none"}}>
-              {NAV_LINKS_MOBILE.slice(0,3).map((item,idx)=><BlobItem key={item.href} item={item} idx={idx} blobBg={blobBg} onClose={onClose}/>)}
-            </div>
-            <div style={{display:"flex",gap:"clamp(10px,2.5vw,24px)",pointerEvents:"none"}}>
-              {NAV_LINKS_MOBILE.slice(3,6).map((item,idx)=><BlobItem key={item.href} item={item} idx={idx+3} blobBg={blobBg} onClose={onClose}/>)}
-            </div>
+            <Kbd><CornerDownLeftIcon /></Kbd>
           </div>
         </div>
       </div>
@@ -318,27 +463,205 @@ function BlobMenu({ open, onClose, isDark }: { open: boolean; onClose: () => voi
   );
 }
 
-/* ══════════════════════════════════════
+/* ─────────────────────────────────────────────
+   COMMAND MENU TRIGGER — exact chanhdai style
+   ghost button: icon + "Search…" text (hidden sm+) + KbdGroup (OS-aware)
+───────────────────────────────────────────── */
+function CommandMenuTrigger({ onClick }: { onClick: () => void }) {
+  return (
+    <button
+      onClick={onClick}
+      aria-label="Open command menu"
+      style={{
+        display: "inline-flex", alignItems: "center", gap: 6,
+        height: 32, padding: "0 6px",
+        borderRadius: 8, border: "none",
+        background: "transparent",
+        color: "var(--nav-link-color)",
+        cursor: "pointer", userSelect: "none",
+        fontSize: 14,
+        fontFamily: "inherit",
+        transition: "background 0.15s, color 0.15s",
+        WebkitTapHighlightColor: "transparent",
+      }}
+      className="cmdk-trigger"
+    >
+      <SearchIcon size={16} />
+      {/* "Search…" — show only on small screens (mobile) */}
+      <span className="cmdk-trigger-label" style={{ fontSize: 13.5, fontWeight: 500, fontFamily: "-apple-system,'SF Pro Display','Helvetica Neue',sans-serif", letterSpacing: "-0.01em" }}>Search…</span>
+      {/* Ctrl K — hidden on mobile (sm:flex), shown on non-mac desktop */}
+      <span className="cmdk-trigger-kbd" style={{ display: "flex", alignItems: "center", gap: 3 }}>
+        <Kbd>Ctrl</Kbd>
+        <Kbd style={{ minWidth: 20 }}>K</Kbd>
+      </span>
+    </button>
+  );
+}
+
+/* ─────────────────────────────────────────────
+   MOBILE NAV — chanhdai-style popover from bottom
+   (uses Radix Tooltip as simple popover fallback)
+───────────────────────────────────────────── */
+function MobileMenuTrigger({ onClick, open, className }: { onClick: () => void; open: boolean; className?: string }) {
+  return (
+    <button
+      onClick={onClick}
+      aria-label="Toggle menu"
+      aria-expanded={open}
+      className={className}
+      style={{
+        display: "inline-flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+        gap: 5, width: 32, height: 32,
+        borderRadius: 8, border: "none",
+        background: open ? "var(--nav-link-active-bg)" : "transparent",
+        color: "var(--nav-link-color)",
+        cursor: "pointer",
+        transition: "background 0.15s",
+        WebkitTapHighlightColor: "transparent",
+        touchAction: "manipulation",
+        position: "relative",
+      }}
+    >
+      <span style={{
+        display: "block", width: 16, height: 1.5,
+        borderRadius: 1,
+        background: "currentColor",
+        transition: "transform 0.2s ease",
+        transform: open ? "translateY(3.25px) rotate(45deg)" : "none",
+      }}/>
+      <span style={{
+        display: "block", width: 16, height: 1.5,
+        borderRadius: 1,
+        background: "currentColor",
+        transition: "transform 0.2s ease",
+        transform: open ? "translateY(-3.25px) rotate(-45deg)" : "none",
+      }}/>
+    </button>
+  );
+}
+
+function MobileMenu({ open, onClose, isDark }: { open: boolean; onClose: () => void; isDark: boolean }) {
+  const [render, setRender] = useState(false);
+  const [anim,   setAnim]   = useState(false);
+  const t = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    if (open) {
+      if (t.current) clearTimeout(t.current);
+      setRender(true);
+      setTimeout(() => setAnim(true), 10);
+      document.body.style.overflow = "hidden";
+    } else {
+      setAnim(false);
+      t.current = setTimeout(() => { setRender(false); }, 220);
+      document.body.style.overflow = "";
+    }
+    return () => { if (t.current) clearTimeout(t.current); };
+  }, [open]);
+
+  useEffect(() => {
+    if (!open) return;
+    const esc = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    window.addEventListener("keydown", esc);
+    return () => window.removeEventListener("keydown", esc);
+  }, [open, onClose]);
+
+  if (!render) return null;
+
+  // chanhdai mobile menu: popover from bottom, simple list
+  const bg     = isDark ? "hsl(0 0% 9%)"   : "hsl(0 0% 96.1%)";
+  const border = isDark ? "hsl(0 0% 15%)"  : "hsl(0 0% 89.8%)";
+  const fg     = isDark ? "hsl(0 0% 98%)"  : "hsl(0 0% 3.9%)";
+  const accent = isDark ? "hsl(0 0% 15%)"  : "hsl(0 0% 90%)";
+
+  return (
+    <>
+      <style suppressHydrationWarning>{`
+        @keyframes mob-in  { from { opacity:0; transform:translateY(8px) } to { opacity:1; transform:translateY(0) } }
+        @keyframes mob-out { from { opacity:1; transform:translateY(0)   } to { opacity:0; transform:translateY(8px) } }
+      `}</style>
+
+      {/* Backdrop */}
+      <div
+        onClick={onClose}
+        style={{
+          position: "fixed", inset: 0, zIndex: 9997,
+          opacity: anim ? 1 : 0,
+          transition: "opacity 0.18s ease",
+        }}
+      />
+
+      {/* Popover panel — fixed below nav */}
+      <div
+        style={{
+          position: "fixed",
+          bottom: 8, left: 8, right: 8,
+          zIndex: 9998,
+          background: bg,
+          border: `1px solid ${border}`,
+          borderRadius: 12,
+          padding: 4,
+          boxShadow: "0 20px 40px rgba(0,0,0,0.35)",
+          animation: anim ? "mob-in 0.22s cubic-bezier(0.22,1,0.36,1) forwards" : "mob-out 0.18s ease forwards",
+        }}
+      >
+        {PORTFOLIO_LINKS.map((item, idx) => (
+          <a
+            key={item.href}
+            href={item.href}
+            onClick={onClose}
+            style={{
+              display: "flex", alignItems: "center", gap: 10,
+              padding: "10px 12px", borderRadius: 8,
+              color: fg, textDecoration: "none",
+              fontSize: 15, fontWeight: 500,
+              fontFamily: "inherit",
+              transition: "background 0.1s",
+            }}
+            onMouseEnter={e => (e.currentTarget.style.background = accent)}
+            onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
+          >
+            <span style={{
+              width: 24, height: 24, borderRadius: 6,
+              background: "rgba(128,128,128,0.12)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              flexShrink: 0,
+            }}>
+              <MenuItemIcon type={item.icon} color={isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.4)"} />
+            </span>
+            {item.label}
+          </a>
+        ))}
+      </div>
+    </>
+  );
+}
+
+/* ─────────────────────────────────────────────
    MAIN NAVBAR
-══════════════════════════════════════ */
+───────────────────────────────────────────── */
 export function Navbar() {
-  const { theme, setTheme }                 = useTheme();
-  const [scrolled,       setScrolled]       = useState(false);
-  const [mounted,        setMounted]        = useState(false);
-  const [mobileOpen,     setMobileOpen]     = useState(false);
-  const [searchOpen,     setSearchOpen]     = useState(false);
-  const [showTooltip,    setShowTooltip]    = useState(false);
-  const tooltipTimer = useRef<ReturnType<typeof setTimeout>|null>(null);
+  const { theme, setTheme } = useTheme();
+  const [mounted,    setMounted]    = useState(false);
+  const [scrolled,   setScrolled]   = useState(false);
+  const [cmdOpen,    setCmdOpen]    = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   useEffect(() => { setMounted(true); }, []);
+
   useEffect(() => {
     const fn = () => setScrolled(window.scrollY > 40);
     window.addEventListener("scroll", fn, { passive: true });
     return () => window.removeEventListener("scroll", fn);
   }, []);
+
+  // Ctrl+K / Cmd+K
   useEffect(() => {
     const fn = (e: KeyboardEvent) => {
-      if ((e.ctrlKey || e.metaKey) && e.key === "k") { e.preventDefault(); setSearchOpen(v => !v); }
+      if ((e.ctrlKey || e.metaKey) && e.key === "k") {
+        e.preventDefault();
+        setCmdOpen(v => !v);
+      }
     };
     window.addEventListener("keydown", fn);
     return () => window.removeEventListener("keydown", fn);
@@ -355,165 +678,133 @@ export function Navbar() {
   return (
     <>
       <style suppressHydrationWarning>{`
-        .nav-lnk {
-          padding: 5px 10px; border-radius: 6px;
-          font-size: 12.5px; font-weight: 500;
-          color: var(--nav-link-color);
-          text-decoration: none; white-space: nowrap;
-          transition: color .15s, background .15s;
-          font-family: -apple-system,'SF Pro Display','Helvetica Neue',Arial,sans-serif;
-        }
-        .nav-lnk:hover { color: var(--nav-link-hover); background: var(--nav-link-active-bg); }
-        .nav-divider { width:1px; height:14px; background:var(--nav-border); margin:0 4px; flex-shrink:0; }
+        /* chanhdai ghost button style */
+        .cmdk-trigger:hover { color: var(--nav-link-hover) !important; background: var(--nav-link-active-bg) !important; }
 
-        /* Search trigger — exactly like reference: icon + text + kbd */
-        .nav-search-trigger {
-          display: flex; align-items: center; gap: 6px;
-          padding: 4px 8px; border-radius: 6px;
-          background: transparent;
-          border: 1px solid var(--nav-border);
-          color: var(--nav-link-color); cursor: pointer;
-          font-size: 12.5px; font-weight: 500;
-          font-family: -apple-system,'SF Pro Display','Helvetica Neue',Arial,sans-serif;
-          transition: background .15s, border-color .15s, color .15s;
-          white-space: nowrap;
+        /* hide "Search…" label on sm+ (show only icon + kbd) */
+        @media (min-width: 640px) { .cmdk-trigger-label { display: none !important; } }
+        /* hide kbd group on mobile */
+        @media (max-width: 639px) { .cmdk-trigger-kbd { display: none !important; } }
+
+        /* Desktop nav links */
+        .nav-desktop-link {
+          font-size: 14px; font-weight: 500; letter-spacing: -0.01em;
+          color: var(--nav-link-color);
+          text-decoration: none;
+          transition: color 0.15s;
+          padding: 0 2px;
+          font-family: -apple-system,'SF Pro Display','Helvetica Neue',sans-serif;
         }
-        .nav-search-trigger:hover { color: var(--nav-link-hover); background: var(--nav-link-active-bg); }
-        .nav-search-kbd {
-          display: flex; align-items: center; gap: 2px;
+        .nav-desktop-link:hover { color: var(--nav-link-hover); }
+
+        /* vertical separator */
+        .nav-sep {
+          width: 1px; height: 20px; align-self: center;
+          background: var(--nav-border);
+          flex-shrink: 0;
         }
-        .nav-search-kbd kbd {
+
+        /* icon-sm ghost button — chanhdai theme toggle style */
+        .icon-btn {
           display: inline-flex; align-items: center; justify-content: center;
-          min-width: 20px; height: 18px; padding: 0 4px;
-          border-radius: 4px;
-          background: var(--nav-link-active-bg);
-          border: 1px solid var(--nav-border);
-          font-size: 11px; font-weight: 500;
-          color: var(--nav-link-color);
-          font-family: 'Geist Mono','SF Mono',monospace;
-          line-height: 1;
+          width: 32px; height: 32px; border-radius: 8px; border: none;
+          background: transparent; color: var(--nav-link-color);
+          cursor: pointer; touch-action: manipulation;
+          transition: background 0.15s, color 0.15s;
+          -webkit-tap-highlight-color: transparent;
+          position: relative;
         }
+        .icon-btn:hover { background: var(--nav-link-active-bg); color: var(--nav-link-hover); }
+        .icon-btn:active { transform: scale(0.97); }
 
-        /* Theme btn */
-        .theme-btn {
-          width:30px; height:30px; border-radius:7px; border:none;
-          background:transparent; color:var(--nav-link-color);
-          display:flex; align-items:center; justify-content:center;
-          cursor:pointer; transform:translateZ(0);
-          transition:color .15s, background .15s, transform .18s cubic-bezier(0.34,1.56,0.64,1);
-          -webkit-tap-highlight-color:transparent; touch-action:manipulation;
+        /* hide mobile items on desktop, desktop items on mobile */
+        @media (min-width: 640px) {
+          .nav-mobile-only { display: none !important; }
         }
-        .theme-btn:hover { color:var(--nav-link-hover); background:var(--nav-link-active-bg); transform:translateZ(0) scale(1.12); }
-        .theme-btn:active { transform:translateZ(0) scale(0.88); }
-
-        .theme-tip {
-          position:absolute; bottom:calc(100% + 8px); left:50%; transform:translateX(-50%);
-          background:var(--bg-card); border:1px solid var(--border);
-          color:var(--text-secondary); font-size:11px; white-space:nowrap;
-          padding:4px 9px; border-radius:6px; pointer-events:none;
-          box-shadow:0 4px 12px rgba(0,0,0,0.18);
-          font-family:-apple-system,'SF Pro Display','Helvetica Neue',Arial,sans-serif;
+        @media (max-width: 639px) {
+          .nav-desktop-only { display: none !important; }
         }
-        .theme-tip::after {
-          content:''; position:absolute; top:100%; left:50%; transform:translateX(-50%);
-          border:5px solid transparent; border-top-color:var(--border);
-        }
-
-        @media (max-width: 768px) {
-          .desktop-nav { display: none !important; }
-          .mobile-menu-btn { display: flex !important; }
-        }
-        @media (min-width: 769px) { .mobile-menu-btn { display: none !important; } }
       `}</style>
 
       <header
         className={`nav-root${scrolled ? " scrolled" : ""}`}
-        style={{
-          background: isDark
-            ? scrolled ? "rgba(4,4,4,0.48)" : "rgba(4,4,4,0.12)"
-            : scrolled ? "rgba(252,252,250,0.18)" : "rgba(252,252,250,0.08)",
-          borderBottomColor: isDark
-            ? scrolled ? "rgba(255,255,255,0.14)" : "rgba(255,255,255,0.06)"
-            : scrolled ? "rgba(255,255,255,0.90)" : "rgba(255,255,255,0.82)",
-          backdropFilter: scrolled
-            ? "blur(60px) saturate(320%) brightness(1.12)"
-            : "blur(48px) saturate(280%) brightness(1.10)",
-          WebkitBackdropFilter: scrolled
-            ? "blur(60px) saturate(320%) brightness(1.12)"
-            : "blur(48px) saturate(280%) brightness(1.10)",
-        }}
       >
         <div className="nav-inner">
-          {/* Logo */}
-          <a href="#" style={{ display:"flex", alignItems:"center", textDecoration:"none" }}>
+          {/* ── Logo ── */}
+          <a href="#" aria-label="Home" style={{ display: "flex", alignItems: "center", textDecoration: "none" }}>
             <div className="logo-area">
-              <div className={`logo-i${scrolled?" hide":""}`}>&lt;I&gt;</div>
-              <div className={`logo-avatar${scrolled?" show":""}`}>
+              <div className={`logo-i${scrolled ? " hide" : ""}`}>&lt;I&gt;</div>
+              <div className={`logo-avatar${scrolled ? " show" : ""}`}>
                 <img
-                  src={isDark?"/avatar-dark.jpg":"/avatar-light.jpg"}
+                  src={isDark ? "/avatar-dark.jpg" : "/avatar-light.jpg"}
                   alt="IT"
-                  onError={e=>{(e.currentTarget as HTMLImageElement).style.display="none";const fb=(e.currentTarget as HTMLImageElement).nextElementSibling as HTMLElement;if(fb)fb.style.display="flex";}}
+                  onError={e => {
+                    (e.currentTarget as HTMLImageElement).style.display = "none";
+                    const fb = (e.currentTarget as HTMLImageElement).nextElementSibling as HTMLElement;
+                    if (fb) fb.style.display = "flex";
+                  }}
                 />
-                <div className="logo-avatar-fallback" style={{display:"none"}}>IT</div>
+                <div className="logo-avatar-fallback" style={{ display: "none" }}>IT</div>
               </div>
             </div>
           </a>
 
-          {/* Right */}
-          <div style={{ display:"flex", alignItems:"center", gap:0 }}>
-            <div className="desktop-nav" style={{ display:"flex", alignItems:"center", gap:0 }}>
-              <a href="#" className="nav-lnk">Home</a>
-              <a href="#projects" className="nav-lnk">Projects</a>
-              <a href="/resume.pdf" target="_blank" rel="noopener noreferrer" className="nav-lnk">Resume</a>
+          {/* ── Right side ── */}
+          <div style={{ display: "flex", alignItems: "center", gap: 2 }}>
 
-              <span className="nav-divider" style={{ margin:"0 6px" }} />
+            {/* Desktop nav links — hidden on mobile */}
+            <nav className="nav-desktop-only" style={{ display: "flex", alignItems: "center", gap: 16, marginRight: 4 }}>
+              <a href="#" className="nav-desktop-link">Home</a>
+              <a href="#projects" className="nav-desktop-link">Projects</a>
+              <a href="/resume.pdf" target="_blank" rel="noopener noreferrer" className="nav-desktop-link">Resume</a>
+            </nav>
 
-              {/* Search trigger — icon + text + Ctrl K */}
-              <button className="nav-search-trigger" onClick={() => setSearchOpen(true)} aria-label="Open search">
-                <SearchIcon />
-                <span>Search…</span>
-                <span className="nav-search-kbd">
-                  <kbd>Ctrl</kbd>
-                  <kbd>K</kbd>
-                </span>
-              </button>
+            {/* Separator — desktop only */}
+            <span className="nav-sep nav-desktop-only" style={{ margin: "0 6px" }}/>
 
-              <span className="nav-divider" style={{ margin:"0 6px" }} />
-            </div>
+            {/* Command menu trigger */}
+            <CommandMenuTrigger onClick={() => setCmdOpen(true)} />
 
-            {/* Theme toggle */}
-            <div style={{ position:"relative" }}>
+            {/* Separator — desktop only */}
+            <span className="nav-sep nav-desktop-only" style={{ margin: "0 6px" }}/>
+
+            {/* Theme toggle with chanhdai tooltip */}
+            <NavTooltip label="Toggle mode" kbd="D">
               <button
                 suppressHydrationWarning
-                className="theme-btn"
+                className="icon-btn"
                 onClick={handleTheme}
-                onMouseEnter={() => { if(tooltipTimer.current)clearTimeout(tooltipTimer.current); tooltipTimer.current=setTimeout(()=>setShowTooltip(true),400); }}
-                onMouseLeave={() => { if(tooltipTimer.current)clearTimeout(tooltipTimer.current); setShowTooltip(false); }}
-                aria-label={isDark?"Switch to light":"Switch to dark"}
-                style={{ marginLeft:4 }}
+                aria-label="Toggle theme"
               >
-                {mounted ? (isDark ? <SunIcon /> : <MoonIcon />) : <MoonIcon />}
+                {mounted
+                  ? isDark
+                    ? <MoonIconAnimated size={16} />
+                    : <SunIconAnimated size={16} />
+                  : <MoonIconAnimated size={16} />
+                }
               </button>
-              {showTooltip && mounted && (
-                <div className="theme-tip">{isDark?"Light mode":"Dark mode"}</div>
-              )}
-            </div>
+            </NavTooltip>
 
-            {/* Mobile hamburger */}
-            <button
-              className="mobile-menu-btn theme-btn"
-              style={{ display:"none", alignItems:"center", justifyContent:"center", marginLeft:8 }}
+            {/* Mobile hamburger — hidden on desktop */}
+            <span className="nav-sep nav-mobile-only" style={{ margin: "0 4px" }}/>
+            <MobileMenuTrigger
+              className="nav-mobile-only"
               onClick={() => setMobileOpen(v => !v)}
-              aria-label="Toggle menu"
-            >
-              {mobileOpen ? <CloseIcon /> : <MenuIcon />}
-            </button>
+              open={mobileOpen}
+            />
           </div>
         </div>
       </header>
 
-      {mounted && <CommandPalette open={searchOpen} onClose={() => setSearchOpen(false)} isDark={isDark} />}
-      {mounted && <BlobMenu open={mobileOpen} onClose={() => setMobileOpen(false)} isDark={isDark} />}
+      {/* Command palette */}
+      {mounted && (
+        <CommandMenu open={cmdOpen} onClose={() => setCmdOpen(false)} isDark={isDark} />
+      )}
+
+      {/* Mobile menu */}
+      {mounted && (
+        <MobileMenu open={mobileOpen} onClose={() => setMobileOpen(false)} isDark={isDark} />
+      )}
     </>
   );
 }
