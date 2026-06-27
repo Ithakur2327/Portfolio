@@ -188,7 +188,7 @@ a, button, [role="button"] {
    LAYOUT — page-wrapper
 ═══════════════════════════════════════════════════════════ */
 .page-wrapper {
-  max-width: 1060px;
+  max-width: 1000px;
   margin: 0 auto;
   padding: 0;
   min-height: 100vh;
@@ -268,7 +268,7 @@ html.light .nav-root.scrolled {
 }
 
 .nav-inner {
-  max-width: 1060px; margin: 0 auto;
+  max-width: 1000px; margin: 0 auto;
   padding: 0 16px; height: 52px;
   display: flex; align-items: center; justify-content: space-between;
 }
@@ -750,20 +750,11 @@ img {
 }
 .stat-card-3d:hover { transform: translateY(-5px) translateZ(0); }
 
-.skills-lamp-grid {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 12px;
-  align-items: stretch;
-}
-
-.proj-grid > *,
-.skills-lamp-grid > * {
+.proj-grid > * {
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
 }
-.proj-grid > *:hover,
-.skills-lamp-grid > *:hover {
+.proj-grid > *:hover {
   will-change: transform;
 }
 
@@ -796,53 +787,6 @@ html.light .stat-badge {
 
 .nav-root { isolation: isolate; }
 
-/* ═══════════════════════════════════════════════════════════
-   NAV — PROPER MIRROR GLASS (both themes)
-═══════════════════════════════════════════════════════════ */
-
-/* ── Dark theme ── */
-.nav-root {
-  backdrop-filter: blur(40px) saturate(260%) brightness(1.08) !important;
-  -webkit-backdrop-filter: blur(40px) saturate(260%) brightness(1.08) !important;
-  background: rgba(4,4,4,0.18) !important;
-  border-bottom: 0.5px solid rgba(255,255,255,0.07) !important;
-  box-shadow:
-    0 0.5px 0 rgba(255,255,255,0.08) inset,
-    0 1px 12px rgba(0,0,0,0.20);
-}
-.nav-root.scrolled {
-  backdrop-filter: blur(52px) saturate(300%) brightness(1.10) !important;
-  -webkit-backdrop-filter: blur(52px) saturate(300%) brightness(1.10) !important;
-  background: rgba(4,4,4,0.46) !important;
-  border-bottom: 0.5px solid rgba(255,255,255,0.14) !important;
-  box-shadow:
-    0 0.5px 0 rgba(255,255,255,0.12) inset,
-    0 0 0 0.5px rgba(255,255,255,0.04) inset,
-    0 8px 32px rgba(0,0,0,0.40);
-}
-
-/* ── Light theme — mirror glass ── */
-html.light .nav-root {
-  backdrop-filter: blur(48px) saturate(280%) brightness(1.08) !important;
-  -webkit-backdrop-filter: blur(48px) saturate(280%) brightness(1.08) !important;
-  background: rgba(252,252,250,0.22) !important;
-  border-bottom: 0.5px solid rgba(255,255,255,0.75) !important;
-  box-shadow:
-    0 0.5px 0 rgba(255,255,255,0.95) inset,
-    0 0 0 0.5px rgba(255,255,255,0.50) inset,
-    0 2px 12px rgba(0,0,0,0.05);
-}
-html.light .nav-root.scrolled {
-  backdrop-filter: blur(60px) saturate(320%) brightness(1.10) !important;
-  -webkit-backdrop-filter: blur(60px) saturate(320%) brightness(1.10) !important;
-  background: rgba(252,252,250,0.42) !important;
-  border-bottom: 0.5px solid rgba(255,255,255,0.90) !important;
-  box-shadow:
-    0 0.5px 0 rgba(255,255,255,1.0) inset,
-    0 0 0 0.5px rgba(255,255,255,0.70) inset,
-    0 6px 28px rgba(0,0,0,0.07),
-    0 1px 4px rgba(0,0,0,0.03);
-}
 
 /* Mobile nav height */
 @media (max-width: 760px) {
@@ -1023,11 +967,9 @@ html.light #scroll-arrow {
    RESPONSIVE
 ═══════════════════════════════════════════════════════════ */
 @media (max-width: 1100px) {
-  .skills-lamp-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 }
 
 @media (max-width: 760px) {
-  .skills-lamp-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
 @media (max-width: 860px) {
@@ -1089,7 +1031,6 @@ html.light #scroll-arrow {
   section, .section-inner { padding-left: 14px !important; padding-right: 14px !important; }
   section#about { padding-left: 0 !important; padding-right: 0 !important; }
   .skills-strip-offset { margin-left: -14px !important; margin-right: -14px !important; }
-  .skills-lamp-grid { grid-template-columns: 1fr; }
   .proj-tags { flex-wrap: wrap; }
   .bottom-grid { grid-template-columns: 1fr !important; }
   .contact-cols { flex-direction: column !important; }
@@ -1104,11 +1045,9 @@ html.light #scroll-arrow {
 }
 
 @media (max-width: 560px) {
-  .skills-lamp-grid { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 480px) {
-  .skills-lamp-grid { gap: 10px; }
 }
 
 @media (max-width: 400px) {
@@ -1128,7 +1067,7 @@ html.light #scroll-arrow {
 }
 
 @media (min-width: 1200px) {
-  .page-wrapper { max-width: 1060px; }
+  .page-wrapper { max-width: 1000px; }
 }
 
 /* ═══════════════════════════════════════════════════════════
