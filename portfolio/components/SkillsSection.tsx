@@ -9,8 +9,11 @@ import { playThemeToggleSound } from "@/lib/soundcn/sounds";
 const MONO = "'Geist Mono', 'SF Mono', monospace";
 const SF   = "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', sans-serif";
 
+/* Accent used for the single global lamp toggle (not tied to any one card's color) */
+const LAMP_ACCENT = "#FFB020";
+
 /* ─── Tech definitions ─── */
-const TECH: Record<string, { color: string; logo: string; bright?: boolean; invert?: boolean }> = {
+const TECH: Record<string, { color: string; logo: string; bright?: boolean; invert?: boolean; keepInLight?: boolean }> = {
   // Languages
   Python:         { color: "#3776AB", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg" },
   Java:           { color: "#ED8B00", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/java/java-original.svg" },
@@ -19,10 +22,12 @@ const TECH: Record<string, { color: string; logo: string; bright?: boolean; inve
   JavaScript:     { color: "#F7DF1E", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/javascript/javascript-original.svg" },
   // Frontend
   "React.js":     { color: "#61DAFB", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/react/react-original.svg" },
-  "Next.js":      { color: "#555555", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nextjs/nextjs-original.svg", bright: true },
+  "Next.js":      { color: "#555555", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nextjs/nextjs-original.svg", bright: true, keepInLight: true },
   "Tailwind CSS": { color: "#38BDF8", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/tailwindcss/tailwindcss-original.svg" },
   HTML5:          { color: "#E34F26", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/html5/html5-original.svg" },
   CSS3:           { color: "#1572B6", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/css3/css3-original.svg" },
+  "Framer Motion": { color: "#555555", logo: "https://cdn.jsdelivr.net/gh/tabler/tabler-icons@main/icons/outline/brand-framer-motion.svg", invert: true },
+  "shadcn/ui":    { color: "#555555", logo: "https://cdn.jsdelivr.net/gh/simple-icons/simple-icons@develop/icons/shadcnui.svg", invert: true },
   // Backend
   "Node.js":      { color: "#339933", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nodejs/nodejs-original.svg" },
   "Express.js":   { color: "#555555", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/express/express-original.svg", invert: true },
@@ -51,15 +56,11 @@ const TECH: Record<string, { color: string; logo: string; bright?: boolean; inve
   "VS Code":      { color: "#007ACC", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/vscode/vscode-original.svg" },
 };
 
-// ROW 1: 3 cards
-const LAMP_ROW1 = [
-  { title: "LANGUAGES", glowColor: "#3776AB", items: ["Python", "Java", "C++", "TypeScript", "JavaScript"] },
-  { title: "FRONTEND",  glowColor: "#61DAFB", items: ["React.js", "Next.js", "Tailwind CSS", "HTML5", "CSS3"] },
-  { title: "BACKEND",   glowColor: "#339933", items: ["Node.js", "Express.js", "REST APIs", "FastAPI", "GraphQL"] },
-];
-
-// ROW 2
-const LAMP_ROW2 = [
+/* All six skill groups now live in ONE flat list — they share a single grid */
+const LAMP_GROUPS = [
+  { title: "LANGUAGES",        glowColor: "#3776AB", items: ["Python", "Java", "C++", "TypeScript", "JavaScript"] },
+  { title: "FRONTEND",         glowColor: "#61DAFB", items: ["React.js", "Next.js", "Tailwind CSS", "HTML5", "CSS3", "Framer Motion", "shadcn/ui"] },
+  { title: "BACKEND",          glowColor: "#339933", items: ["Node.js", "Express.js", "REST APIs", "FastAPI", "GraphQL"] },
   { title: "CLOUD & DEVOPS",   glowColor: "#FF9900", items: ["AWS", "Kubernetes", "Docker", "CI/CD", "Vercel"] },
   { title: "GENAI / AI",       glowColor: "#10a37f", items: ["LLM APIs", "LangChain", "LangGraph", "RAG", "Vector DB"] },
   { title: "TOOLS & DATABASE", glowColor: "#47A248", items: ["MongoDB", "MySQL", "PostgreSQL", "Git", "GitHub", "Postman"] },
@@ -108,7 +109,10 @@ const SkillRow = memo(function SkillRow({
       if (tech.invert) return "invert(1) brightness(0.92)";
       if (tech.bright) return "brightness(1.8) contrast(1.1)";
     } else {
-      if (tech.bright) return "brightness(0.1) saturate(0)";
+      // keepInLight: logo already reads fine on a light background (e.g. a
+      // dark glyph with internal contrast) — darkening it further would
+      // crush that internal contrast and make it disappear.
+      if (tech.bright && !tech.keepInLight) return "brightness(0.1) saturate(0)";
     }
     return "none";
   };
@@ -172,7 +176,7 @@ const SkillRow = memo(function SkillRow({
   );
 });
 
-/* ─── LampBeam ─── */
+/* ─── LampBeam (intensity toned down slightly) ─── */
 const LampBeam = memo(function LampBeam({ glowColor, visible, lampOn }: { glowColor: string; visible: boolean; lampOn: boolean }) {
   const { theme } = useTheme();
   const isDark    = theme === "dark";
@@ -180,8 +184,8 @@ const LampBeam = memo(function LampBeam({ glowColor, visible, lampOn }: { glowCo
 
   // Dark mode: white lamp; Light mode: colored lamp
   const effectiveColor   = isDark ? "#ffffff" : glowColor;
-  const glowIntensity    = isDark ? "08" : "28";
-  const innerIntensity   = isDark ? "14" : "38";
+  const glowIntensity    = isDark ? "06" : "1e";
+  const innerIntensity   = isDark ? "0f" : "2c";
 
   return (
     <div aria-hidden style={{ position:"absolute", inset:0, overflow:"hidden", pointerEvents:"none", zIndex:0, transform:"translateZ(0)", willChange:"opacity" }}>
@@ -192,59 +196,60 @@ const LampBeam = memo(function LampBeam({ glowColor, visible, lampOn }: { glowCo
         background:`linear-gradient(90deg,transparent 0%,${effectiveColor} 18%,${effectiveColor} 82%,transparent 100%)`,
         boxShadow: active
           ? isDark
-            ? `0 0 6px ${effectiveColor}55,0 0 14px ${effectiveColor}33`
-            : `0 0 10px ${effectiveColor},0 0 24px ${effectiveColor}66`
+            ? `0 0 5px ${effectiveColor}45,0 0 11px ${effectiveColor}26`
+            : `0 0 8px ${effectiveColor},0 0 18px ${effectiveColor}50`
           : "0 0 0px transparent",
-        opacity: active ? (isDark ? 0.45 : 1) : 0,
+        opacity: active ? (isDark ? 0.36 : 0.85) : 0,
         transition:"opacity 0.72s cubic-bezier(0.22,1,0.36,1), box-shadow 0.72s ease",
       }} />
       {/* Wide glow cone */}
       <div style={{
         position:"absolute", left:"50%", top:0, transform:"translate3d(-50%,0,0)",
         width:"180%", height:"145%",
-        background:`radial-gradient(ellipse 60% 70% at 50% 0%,${effectiveColor}${glowIntensity} 0%,${effectiveColor}10 25%,${effectiveColor}08 45%,${effectiveColor}04 60%,transparent 82%)`,
-        opacity: active ? 1 : 0,
+        background:`radial-gradient(ellipse 60% 70% at 50% 0%,${effectiveColor}${glowIntensity} 0%,${effectiveColor}0a 25%,${effectiveColor}06 45%,${effectiveColor}03 60%,transparent 82%)`,
+        opacity: active ? 0.85 : 0,
         transition:"opacity 0.90s cubic-bezier(0.22,1,0.36,1)",
       }} />
       {/* Inner tight glow */}
       <div style={{
         position:"absolute", left:"50%", top:0, transform:"translateX(-50%)",
         width:"120%", height:"100%",
-        background:`radial-gradient(ellipse 42% 38% at 50% 0%,${effectiveColor}${innerIntensity} 0%,${effectiveColor}0e 35%,${effectiveColor}06 55%,transparent 78%)`,
-        opacity: active ? 1 : 0,
+        background:`radial-gradient(ellipse 42% 38% at 50% 0%,${effectiveColor}${innerIntensity} 0%,${effectiveColor}0a 35%,${effectiveColor}04 55%,transparent 78%)`,
+        opacity: active ? 0.85 : 0,
         transition:`opacity 0.78s cubic-bezier(0.22,1,0.36,1) ${active?"0.06s":"0s"}`,
       }} />
     </div>
   );
 });
 
-/* ─── Lamp toggle button ─── */
-function LampButton({ lampOn, onToggle, glowColor, isDark }: { lampOn: boolean; onToggle: () => void; glowColor: string; isDark: boolean }) {
+/* ─── Lamp toggle button — reused for the single global control ─── */
+function LampToggleButton({ lampOn, onToggle, color, isDark, size = 22 }: { lampOn: boolean; onToggle: () => void; color: string; isDark: boolean; size?: number }) {
   const [hov, setHov] = useState(false);
-  const lightColor = isDark ? "#ffffff" : glowColor;
+  // In light theme the lamp stays colored, never plain white/gray.
+  const lightColor = isDark ? "#ffffff" : color;
+  const iconSize = Math.round(size * 0.6);
 
   return (
     <button
       onClick={onToggle}
       onMouseEnter={() => setHov(true)}
       onMouseLeave={() => setHov(false)}
-      title={lampOn ? "Turn off lamp" : "Turn on lamp"}
+      title={lampOn ? "Turn off lamps" : "Turn on lamps"}
       style={{
-        width: 22, height: 22, borderRadius: 5, border: "none",
+        width: size, height: size, borderRadius: 6, border: "none",
         background: lampOn
-          ? isDark ? "rgba(255,255,255,0.12)" : `${glowColor}18`
+          ? isDark ? "rgba(255,255,255,0.12)" : `${color}18`
           : "transparent",
         cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center",
         transition: "background 0.18s ease, transform 0.18s cubic-bezier(0.34,1.56,0.64,1)",
-        transform: hov ? "scale(1.15)" : "scale(1)",
+        transform: hov ? "scale(1.12)" : "scale(1)",
         flexShrink: 0,
         padding: 0,
       }}
-      aria-label={lampOn ? "Turn off lamp" : "Turn on lamp"}
+      aria-label={lampOn ? "Turn off lamps" : "Turn on lamps"}
     >
-      {/* Lamp SVG bulb icon */}
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={lampOn ? lightColor : "var(--text-muted)"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-        style={{ transition: "stroke 0.22s ease", filter: lampOn ? (isDark ? `drop-shadow(0 0 3px rgba(255,255,255,0.7))` : `drop-shadow(0 0 3px ${glowColor}aa)`) : "none" }}>
+      <svg width={iconSize} height={iconSize} viewBox="0 0 24 24" fill="none" stroke={lampOn ? lightColor : "var(--text-muted)"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+        style={{ transition: "stroke 0.22s ease", filter: lampOn ? (isDark ? `drop-shadow(0 0 3px rgba(255,255,255,0.7))` : `drop-shadow(0 0 3px ${color}aa)`) : "none" }}>
         <path d="M9 21h6"/>
         <path d="M12 3a6 6 0 0 1 6 6c0 2.22-1.21 4.16-3 5.2V18a1 1 0 0 1-1 1H10a1 1 0 0 1-1-1v-3.8C7.21 13.16 6 11.22 6 9a6 6 0 0 1 6-6z"/>
       </svg>
@@ -252,20 +257,12 @@ function LampButton({ lampOn, onToggle, glowColor, isDark }: { lampOn: boolean; 
   );
 }
 
-/* ─── LampSkillBox: the main card ─── */
-function LampSkillBox({ title, glowColor, items }: { title: string; glowColor: string; items: string[] }) {
+/* ─── LampSkillBox: a single cell in the shared grid ─── */
+function LampSkillBox({ title, glowColor, items, lampOn }: { title: string; glowColor: string; items: string[]; lampOn: boolean }) {
   const lowPerf       = useLowPerf();
   const { ref, inView } = useBoxInView(lowPerf);
   const { theme }     = useTheme();
   const isDark        = theme === "dark";
-  const [lampOn, setLampOn] = useState(true);
-
-  const handleLampToggle = useCallback(() => {
-    const nextOn = !lampOn;
-    setLampOn(nextOn);
-    // Same sound as theme toggle but at different pitch
-    playThemeToggleSound(nextOn);
-  }, [lampOn]);
 
   // Split items into two columns
   const col1 = items.filter((_, i) => i % 2 === 0);
@@ -276,7 +273,7 @@ function LampSkillBox({ title, glowColor, items }: { title: string; glowColor: s
       ref={ref}
       className="lamp-skill-box"
       style={{
-        background: "transparent", overflow: "hidden",
+        overflow: "hidden",
         display: "flex", flexDirection: "column",
         position: "relative",
         transform: "translateZ(0)", backfaceVisibility: "hidden",
@@ -286,9 +283,10 @@ function LampSkillBox({ title, glowColor, items }: { title: string; glowColor: s
 
       <div style={{ position:"relative", zIndex:1, paddingTop:12, display:"flex", flexDirection:"column", height:"100%" }}>
 
-        {/* Title row with lamp button */}
-        <div style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:6, marginBottom:10, padding:"0 12px" }}>
+        {/* Title — single centered element, no per-card button to throw it off-center */}
+        <div style={{ padding:"0 12px", marginBottom:10 }}>
           <span style={{
+            display: "block", textAlign: "center",
             fontSize: 9.5, fontWeight: 700, letterSpacing: "0.12em",
             textTransform: "uppercase",
             color: inView && lampOn ? glowColor : "var(--text-muted)",
@@ -296,11 +294,9 @@ function LampSkillBox({ title, glowColor, items }: { title: string; glowColor: s
             opacity: inView ? 1 : 0.22,
             transform: inView ? "none" : "translateY(4px)",
             transition: "opacity 0.48s cubic-bezier(0.22,1,0.36,1), transform 0.48s cubic-bezier(0.22,1,0.36,1), color 0.42s ease",
-            flex: 1, textAlign: "center",
           }}>
             {title}
           </span>
-          <LampButton lampOn={lampOn} onToggle={handleLampToggle} glowColor={glowColor} isDark={isDark} />
         </div>
 
         {/* Separator */}
@@ -310,28 +306,28 @@ function LampSkillBox({ title, glowColor, items }: { title: string; glowColor: s
           transition: "background 0.5s ease",
         }} />
 
-        {/* Two-column skill rows */}
-        <div style={{ padding: "0 6px 12px", display: "flex", gap: 4, flex: 1 }}>
+        {/* Two-column skill rows — divider is absolutely centered, independent of column content */}
+        <div style={{ position: "relative", padding: "0 12px 12px", display: "flex", gap: 20, flex: 1 }}>
           {/* Column 1 */}
-          <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 2 }}>
+          <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 2 }}>
             {col1.map((name, i) => (
               <SkillRow key={name} name={name} visible={inView} delay={inView ? 0.06 + i * 0.05 : 0} />
             ))}
           </div>
 
-          {/* Partition line */}
-          <div style={{
-            width: 1, alignSelf: "stretch",
-            background: `linear-gradient(to bottom, transparent, ${isDark ? "rgba(255,255,255,0.10)" : glowColor + "28"}, transparent)`,
-            flexShrink: 0, margin: "4px 0",
-          }} />
-
           {/* Column 2 */}
-          <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 2 }}>
+          <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 2 }}>
             {col2.map((name, i) => (
               <SkillRow key={name} name={name} visible={inView} delay={inView ? 0.09 + i * 0.05 : 0} />
             ))}
           </div>
+
+          {/* Centered partition line — pinned to the true horizontal center */}
+          <div aria-hidden style={{
+            position: "absolute", left: "50%", top: 4, bottom: 4, width: 1,
+            transform: "translateX(-50%)",
+            background: `linear-gradient(to bottom, transparent, ${isDark ? "rgba(255,255,255,0.10)" : glowColor + "28"}, transparent)`,
+          }} />
         </div>
       </div>
     </div>
@@ -366,7 +362,7 @@ const MovingStrip = memo(function MovingStrip() {
           const tech = TECH[name] ?? { color:"#71717a", logo:"" };
           const stripFilter = isDark
             ? tech.invert ? "invert(1) brightness(0.92)" : tech.bright ? "brightness(1.8) contrast(1.1)" : "none"
-            : tech.bright  ? "brightness(0.1) saturate(0)" : "none";
+            : tech.bright && !tech.keepInLight ? "brightness(0.1) saturate(0)" : "none";
           return (
             <div key={idx} style={{
               display:"flex", alignItems:"center", gap:9,
@@ -401,36 +397,46 @@ const MovingStrip = memo(function MovingStrip() {
 /* ─── Main ─── */
 export function SkillsSection() {
   const { ref, revealClass } = useReveal();
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
+  const [lampOn, setLampOn] = useState(true);
+
+  const handleLampToggle = useCallback(() => {
+    setLampOn(prev => {
+      const next = !prev;
+      playThemeToggleSound(next);
+      return next;
+    });
+  }, []);
 
   return (
     <>
       <style suppressHydrationWarning>{`
         .skills-strip-outer:hover .skills-strip { animation-play-state: paused !important; }
 
-        .skills-grid-wrapper { display: flex; flex-direction: column; gap: 10px; }
-
-        .skills-grid-row {
+        /* One shared grid: the 1px gap (colored like a border) IS the grid line,
+           so every cell shares the same continuous lines — no separate "card" squares. */
+        .skills-grid {
           display: grid;
           grid-template-columns: repeat(3, 1fr);
-          gap: 10px;
-        }
-
-        .lamp-skill-box {
+          gap: 1px;
+          background: var(--border);
           border: 1px solid var(--border);
-          border-radius: 12px;
-          min-height: 180px;
+          border-radius: 14px;
           overflow: hidden;
         }
 
-        @media (max-width: 1024px) {
-          .skills-grid-row { grid-template-columns: repeat(2, 1fr); }
-          .skills-grid-row .lamp-skill-box:nth-child(3) { grid-column: span 2; }
-          .lamp-skill-box { min-height: 200px; }
+        .lamp-skill-box {
+          background: var(--bg-base);
+          min-height: 184px;
         }
 
-        @media (max-width: 580px) {
-          .skills-grid-row { grid-template-columns: 1fr; }
-          .skills-grid-row .lamp-skill-box:nth-child(3) { grid-column: span 1; }
+        @media (max-width: 1024px) {
+          .skills-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        @media (max-width: 640px) {
+          .skills-grid { grid-template-columns: 1fr; }
           .lamp-skill-box { min-height: auto; }
         }
       `}</style>
@@ -445,7 +451,7 @@ export function SkillsSection() {
           borderBottom:"1px solid var(--line)",
         }}>
           <div style={{ maxWidth: 1057, margin:"0 auto", padding:"0 20px 40px" }}>
-            <div style={{ paddingTop:28, marginBottom:4 }}>
+            <div style={{ paddingTop:28, marginBottom:4, display:"flex", alignItems:"center", gap:10 }}>
               <span style={{
                 fontSize:28, fontWeight:700,
                 letterSpacing:"-0.03em", lineHeight:1,
@@ -454,16 +460,12 @@ export function SkillsSection() {
               }}>
                 Skills
               </span>
+              <LampToggleButton lampOn={lampOn} onToggle={handleLampToggle} color={LAMP_ACCENT} isDark={isDark} />
             </div>
             <div style={{ height:1, background:"var(--border)", margin:"18px 0 24px" }} />
 
-            <div className="skills-grid-wrapper">
-              <div className="skills-grid-row">
-                {LAMP_ROW1.map(g => <LampSkillBox key={g.title} {...g} />)}
-              </div>
-              <div className="skills-grid-row">
-                {LAMP_ROW2.map(g => <LampSkillBox key={g.title} {...g} />)}
-              </div>
+            <div className="skills-grid">
+              {LAMP_GROUPS.map(g => <LampSkillBox key={g.title} {...g} lampOn={lampOn} />)}
             </div>
 
             <div style={{ marginTop:28, marginLeft:-20, marginRight:-20 }}>
