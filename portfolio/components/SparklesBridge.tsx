@@ -12,10 +12,6 @@ export function SparklesBridge() {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    // Check if iPad/tablet range
-    const vw = window.innerWidth;
-    const HEIGHT = (vw >= 600 && vw <= 1180) ? 100 : 48;
-
     const getHeight = () => {
       const vw = window.innerWidth;
       if (vw >= 1024 && vw <= 1180) return 120; // iPad Pro
@@ -48,7 +44,7 @@ export function SparklesBridge() {
       const maxLife = 100 + Math.random() * 140;
       return {
         x: Math.random() * canvasW,
-        y: Math.random() * HEIGHT,
+        y: Math.random() * getHeight(),
         vx: (Math.random() - 0.5) * 0.25,
         vy: (Math.random() - 0.5) * 0.25,
         r: 0.2 + Math.random() * 0.5,
