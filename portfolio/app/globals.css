@@ -14,14 +14,6 @@
 }
 
 /* ═══════════════════════════════════════════════════════════
-   LAYOUT — single source of truth for the site's content width.
-   Change this one value to resize every section's container at once.
-═══════════════════════════════════════════════════════════ */
-:root {
-  --content-width: 1059px;
-}
-
-/* ═══════════════════════════════════════════════════════════
    THEME TOKENS
 ═══════════════════════════════════════════════════════════ */
 :root, html.dark {
