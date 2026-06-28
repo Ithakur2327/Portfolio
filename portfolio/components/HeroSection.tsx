@@ -488,7 +488,7 @@ function HoverBorderGradient({ children }: { children: React.ReactNode }) {
 /* ═══════════════════════════════════════════════════════
    MAIN HERO
 ═══════════════════════════════════════════════════════ */
-const CW = 1057;
+const CW = 1060;
 
 export function HeroSection() {
   const [vis, setVis] = useState<"ssr" | "visible">("ssr");
@@ -591,6 +591,13 @@ export function HeroSection() {
           flex: 1;
           min-width: 0;
           display: flex;
+        }
+
+        /* ── Extended name line (absolute, spans full profile row) ── */
+        .h-name-line { bottom: 36px; }
+        @media (max-width: 600px) {
+          /* On mobile nameblock is shorter so flip area is still 36px */
+          .h-name-line { bottom: 36px; }
         }
 
         /* ── iPad / Tablet (768px–1180px) ── */
@@ -795,8 +802,9 @@ export function HeroSection() {
                   lineHeight:1.15, margin:0,
                   fontFamily:"'Geist',sans-serif", display:"inline-block",
                 }}>Indresh Thakur</h1>
-                <div style={{height:1, background:"var(--border)", marginTop:8, width:"100%"}}/>
               </div>
+              {/* Line at full nameblock width — connects left partition to right border */}
+              <div style={{height:1, background:"var(--border)", width:"100%"}}/>
               <div style={{padding:"8px 20px 12px", height:36, display:"flex", alignItems:"center", overflow:"hidden"}}>
                 <FlipSentences/>
               </div>
