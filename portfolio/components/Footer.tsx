@@ -6,59 +6,78 @@ import { motion, useMotionValue, useSpring, useTransform, animate } from "motion
 const MONO = "'Geist Mono', monospace";
 const SF = "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', sans-serif";
 
-const VW = 1920, VH = 234, FONT_SIZE = 193;
+const VW = 3840, VH = 520, FONT_SIZE = 386;
 
 function FluidGradientText({ text }: { text: string }) {
   const mouseXRaw = useMotionValue(VW / 2);
-  const mouseX    = useSpring(mouseXRaw, { stiffness: 180, damping: 28, mass: 0.4 });
+  const mouseX    = useSpring(mouseXRaw, { stiffness: 200, damping: 30, mass: 0.35 });
 
-  // Hollow <-> fill opacity
   const hollowOpacity = useMotionValue(1);
   const fillOpacity   = useMotionValue(0);
-  // Separate sweep opacity so it drains slightly faster (leading edge disappears first)
   const sweepOpacity  = useMotionValue(0);
 
   const { theme } = useTheme();
   const isDark = theme === "dark";
 
-  const handleMouseEnter = (event: React.MouseEvent<HTMLDivElement>) => {
-    const rect = event.currentTarget.getBoundingClientRect();
-    mouseXRaw.jump(((event.clientX - rect.left) / rect.width) * VW);
-    animate(hollowOpacity, 0,   { duration: 0.22, ease: "easeOut" });
-    animate(fillOpacity,   1,   { duration: 0.22, ease: "easeOut" });
-    animate(sweepOpacity,  1,   { duration: 0.22, ease: "easeOut" });
+  // ── shared fill logic ──
+  const triggerFill = (relX: number) => {
+    mouseXRaw.jump(relX * VW);
+    animate(hollowOpacity, 0, { duration: 0.22, ease: "easeOut" });
+    animate(fillOpacity,   1, { duration: 0.22, ease: "easeOut" });
+    animate(sweepOpacity,  1, { duration: 0.22, ease: "easeOut" });
   };
-  const handleMouseMove = (event: React.MouseEvent<HTMLDivElement>) => {
-    const rect = event.currentTarget.getBoundingClientRect();
-    mouseXRaw.set(((event.clientX - rect.left) / rect.width) * VW);
-  };
-  const handleMouseLeave = () => {
-    // Water draining: sweep (highlight) disappears first, then base fill drains out
-    // easeIn curve = starts slow, accelerates — like water draining faster as level drops
-    animate(sweepOpacity,  0, { duration: 0.28, ease: [0.4, 0, 1, 1] });
-    animate(fillOpacity,   0, { duration: 0.55, ease: [0.4, 0, 1, 1] });
-    animate(hollowOpacity, 1, { duration: 0.55, ease: "easeIn",  delay: 0.1 });
+  const triggerDrain = () => {
+    // water drain — sweep vanishes first, fill drains with accelerating easeIn
+    animate(sweepOpacity,  0, { duration: 0.30, ease: [0.4, 0, 1, 1] });
+    animate(fillOpacity,   0, { duration: 0.60, ease: [0.4, 0, 1, 1] });
+    animate(hollowOpacity, 1, { duration: 0.60, ease: "easeIn", delay: 0.12 });
   };
 
-  // Stroke color for hollow state
-  const strokeColor = isDark ? "#166534" : "#6d28d9";
+  // ── Mouse (desktop) ──
+  const handleMouseEnter = (e: React.MouseEvent<HTMLDivElement>) => {
+    const r = e.currentTarget.getBoundingClientRect();
+    triggerFill((e.clientX - r.left) / r.width);
+  };
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    const r = e.currentTarget.getBoundingClientRect();
+    mouseXRaw.set(((e.clientX - r.left) / r.width) * VW);
+  };
+  const handleMouseLeave = () => triggerDrain();
 
-  // Base fill gradient (bottom-to-top) — water fill, brighter at left edge
+  // ── Touch (mobile) — tap to fill, tap-off/touchend to drain ──
+  const handleTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
+    e.preventDefault(); // stops browser text-selection on long-press
+    const r = e.currentTarget.getBoundingClientRect();
+    const t = e.touches[0];
+    triggerFill((t.clientX - r.left) / r.width);
+  };
+  const handleTouchMove = (e: React.TouchEvent<HTMLDivElement>) => {
+    const r = e.currentTarget.getBoundingClientRect();
+    const t = e.touches[0];
+    mouseXRaw.set(((t.clientX - r.left) / r.width) * VW);
+  };
+  const handleTouchEnd = () => triggerDrain();
+
+  // ── Colors from reference image — teal palette ──
+  const strokeColor  = isDark ? "#005a4e" : "#6d28d9";
+
   const baseStops = isDark
-    ? [{ o: "0%", c: "#071f10" }, { o: "45%", c: "#14532d" }, { o: "100%", c: "#22c55e" }]
+    ? [
+        { o: "0%",   c: "#002e28" },   // deep dark teal (bottom)
+        { o: "40%",  c: "#00685a" },   // mid teal
+        { o: "100%", c: "#00967F" },   // bright teal top (from image)
+      ]
     : [{ o: "0%", c: "#1e0345" }, { o: "45%", c: "#5b21b6" }, { o: "100%", c: "#a855f7" }];
 
-  // Crystal shine: left-edge highlight (sharp bright) + moving sweep
-  const brightColor    = isDark ? "#86efac" : "#e879f9";   // brighter for crystal
-  const crystalEdge    = isDark ? "#dcfce7" : "#fae8ff";   // near-white crystal glint
-  const midColor       = isDark ? "#16a34a" : "#7c3aed";
-  const dimColor       = isDark ? "#071f10" : "#1e0345";
+  const brightColor  = isDark ? "#00c8a8" : "#e879f9";  // bright teal crystal
+  const crystalEdge  = isDark ? "#7fffd4" : "#fae8ff";  // aquamarine near-white glint
+  const midColor     = isDark ? "#00826e" : "#7c3aed";
+  const dimColor     = isDark ? "#001a16" : "#1e0345";
 
   const spread = VW * 0.26;
   const gx1 = useTransform(mouseX, v => v - spread);
   const gx2 = useTransform(mouseX, v => v + spread);
 
-  // Narrower text length for 2px less width
   const tl = VW * 0.945;
 
   return (
@@ -67,6 +86,10 @@ function FluidGradientText({ text }: { text: string }) {
       onMouseEnter={handleMouseEnter}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+      onTouchCancel={handleTouchEnd}
     >
       <svg
         className="fgt-svg"
@@ -77,9 +100,17 @@ function FluidGradientText({ text }: { text: string }) {
         aria-hidden="true"
       >
         <defs>
-          {/* Base fill — bottom bright → top dark */}
+          {/* Base fill — bottom bright → top dark (water fill) */}
           <linearGradient id="fgt_base" x1="0" y1={VH} x2="0" y2="0" gradientUnits="userSpaceOnUse">
             {baseStops.map((s, i) => <stop key={i} offset={s.o} stopColor={s.c} />)}
+          </linearGradient>
+
+          {/* Crystal left-edge shine — fixed, sharpest at x=0 fades rightward */}
+          <linearGradient id="fgt_crystal" x1="0" y1="0" x2={VW * 0.18} y2="0" gradientUnits="userSpaceOnUse">
+            <stop offset="0%"   stopColor={crystalEdge} stopOpacity="0.95" />
+            <stop offset="18%"  stopColor={brightColor}  stopOpacity="0.55" />
+            <stop offset="55%"  stopColor={midColor}     stopOpacity="0.15" />
+            <stop offset="100%" stopColor={dimColor}      stopOpacity="0" />
           </linearGradient>
 
           {/* Sweep highlight — centered on mouse, horizontal */}
@@ -89,11 +120,13 @@ function FluidGradientText({ text }: { text: string }) {
             x2={gx2} y2="0"
             gradientUnits="userSpaceOnUse"
           >
-            <stop offset="0%"   stopColor={dimColor}    stopOpacity="0" />
-            <stop offset="35%"  stopColor={midColor}    stopOpacity="0.6" />
-            <stop offset="50%"  stopColor={brightColor} stopOpacity="1" />
-            <stop offset="65%"  stopColor={midColor}    stopOpacity="0.6" />
-            <stop offset="100%" stopColor={dimColor}    stopOpacity="0" />
+            <stop offset="0%"   stopColor={dimColor}     stopOpacity="0" />
+            <stop offset="30%"  stopColor={midColor}     stopOpacity="0.5" />
+            <stop offset="48%"  stopColor={brightColor}  stopOpacity="0.85" />
+            <stop offset="50%"  stopColor={crystalEdge}  stopOpacity="1" />
+            <stop offset="52%"  stopColor={brightColor}  stopOpacity="0.85" />
+            <stop offset="70%"  stopColor={midColor}     stopOpacity="0.5" />
+            <stop offset="100%" stopColor={dimColor}      stopOpacity="0" />
           </motion.linearGradient>
         </defs>
 
@@ -112,7 +145,7 @@ function FluidGradientText({ text }: { text: string }) {
           {text}
         </motion.text>
 
-        {/* Layer 2 — base fill (hover) */}
+        {/* Layer 2 — base fill (hover) — water body */}
         <motion.text
           x="50%" y="50%"
           textAnchor="middle" dominantBaseline="central"
@@ -126,13 +159,27 @@ function FluidGradientText({ text }: { text: string }) {
           {text}
         </motion.text>
 
-        {/* Layer 3 — mouse sweep highlight (hover) */}
+        {/* Layer 3 — crystal left-edge shine (appears with fill, fixed position) */}
+        <motion.text
+          x="50%" y="50%"
+          textAnchor="middle" dominantBaseline="central"
+          fill="url(#fgt_crystal)"
+          stroke="none"
+          opacity={sweepOpacity}
+          textLength={tl}
+          lengthAdjust="spacingAndGlyphs"
+          className="fgt-text"
+        >
+          {text}
+        </motion.text>
+
+        {/* Layer 4 — mouse sweep highlight */}
         <motion.text
           x="50%" y="50%"
           textAnchor="middle" dominantBaseline="central"
           fill="url(#fgt_sweep)"
           stroke="none"
-          opacity={fillOpacity}
+          opacity={sweepOpacity}
           textLength={tl}
           lengthAdjust="spacingAndGlyphs"
           className="fgt-text"
@@ -269,19 +316,21 @@ export function Footer() {
           left: 50%;
           margin-left: -50vw;
           width: 100vw;
-          margin-top: clamp(24px, 3.5vw, 48px);
+          margin-top: clamp(20px, 3vw, 44px);
           cursor: crosshair;
           user-select: none;
-          /* line-height 0 + font-size 0 kills the inline-block gap below SVG */
+          -webkit-user-select: none;
+          touch-action: none;          /* prevents scroll hijack AND text selection on mobile */
+          -webkit-touch-callout: none; /* disables iOS long-press menu */
           font-size: 0;
           line-height: 0;
         }
         .fgt-svg {
           display: block;
           width: 100%;
-          height: auto;
+          height: clamp(80px, 14vw, 220px); /* responsive fixed height — fills screen better */
           vertical-align: bottom;
-          margin-bottom: clamp(-18px, -0.95vw, -6px);
+          margin-bottom: clamp(-14px, -0.8vw, -4px);
         }
         .fgt-text {
           font-family: 'Press Start 2P', 'Courier New', monospace;
