@@ -488,20 +488,14 @@ function HoverBorderGradient({ children }: { children: React.ReactNode }) {
 /* ═══════════════════════════════════════════════════════
    MAIN HERO
 ═══════════════════════════════════════════════════════ */
-const CW = 1060;
+const CW = 1057;
 
 export function HeroSection() {
   const [vis, setVis] = useState<"ssr" | "visible">("ssr");
   const { openPdf } = usePdfModal();
   const nameRef = useRef<HTMLHeadingElement>(null);
-  const [lineW, setLineW] = useState(180);
 
   useEffect(() => { setTimeout(() => setVis("visible"), 50); }, []);
-  useEffect(() => {
-    const upd = () => { if (nameRef.current) setLineW(nameRef.current.offsetWidth); };
-    upd(); window.addEventListener("resize", upd);
-    return () => window.removeEventListener("resize", upd);
-  }, []);
 
   const BG = "var(--bg-base)";
   const B  = "1px solid var(--border)";
@@ -801,7 +795,7 @@ export function HeroSection() {
                   lineHeight:1.15, margin:0,
                   fontFamily:"'Geist',sans-serif", display:"inline-block",
                 }}>Indresh Thakur</h1>
-                <div style={{height:1, background:"var(--border)", marginTop:8, width:lineW, maxWidth:"100%"}}/>
+                <div style={{height:1, background:"var(--border)", marginTop:8, width:"100%"}}/>
               </div>
               <div style={{padding:"8px 20px 12px", height:36, display:"flex", alignItems:"center", overflow:"hidden"}}>
                 <FlipSentences/>
