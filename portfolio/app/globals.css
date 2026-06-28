@@ -658,6 +658,22 @@ html.light .gold-word {
 /* ═══════════════════════════════════════════════════════════
    VIEW TRANSITION — theme wipe
 ═══════════════════════════════════════════════════════════ */
+
+/* Kill ALL CSS transitions during theme switch — exact next-themes
+   disableTransitionOnChange behaviour. Prevents elements from
+   tweening between old/new theme colours which causes the lag. */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 0s;
+}
+
+html.transitioning *,
+html.transitioning *::before,
+html.transitioning *::after {
+  transition-duration: 0s !important;
+  animation-duration: 0s !important;
+}
+
 ::view-transition-group(root) {
   animation-timing-function: var(--expo-out);
 }
@@ -779,7 +795,8 @@ html.light .stat-badge {
 .nav-root { isolation: isolate; }
 
 /* ═══════════════════════════════════════════════════════════
-   NAV — backdrop blur and transparency
+   NAV — SLEEK PORTFOLIO EXACT STYLE
+   backdrop-blur-sm (4px) + semi-transparent bg, no border
 ═══════════════════════════════════════════════════════════ */
 
 /* ── Dark theme ── */
