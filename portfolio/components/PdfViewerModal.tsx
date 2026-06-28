@@ -82,9 +82,9 @@ export function PdfModalProvider({ children }: { children: React.ReactNode }) {
             zIndex: 1000,
             background: "rgba(0,0,0,0.80)",
             display: "flex",
-            alignItems: "flex-start",
+            alignItems: isMobile ? "flex-start" : "center",
             justifyContent: "center",
-            padding: isMobile ? "0" : "48px 12px 12px",
+            padding: isMobile ? "0" : "24px 12px",
             overflowY: "auto",
           }}
         >
@@ -93,8 +93,8 @@ export function PdfModalProvider({ children }: { children: React.ReactNode }) {
             style={{
               position: "relative",
               width: "100%",
-              maxWidth: isMobile ? "100%" : 780,
-              height: isMobile ? "100dvh" : "auto",
+              maxWidth: isMobile ? "100%" : 760,
+              height: isMobile ? "100dvh" : "min(88vh, 860px)",
               background: "var(--bg-base)",
               border: isMobile ? "none" : "1px solid var(--border)",
               borderRadius: isMobile ? 0 : 12,
@@ -202,7 +202,7 @@ export function PdfModalProvider({ children }: { children: React.ReactNode }) {
                   flex: 1,
                   border: "none",
                   display: "block",
-                  minHeight: isMobile ? 0 : "82vh",
+                  minHeight: isMobile ? 0 : 0,
                 }}
               />
             )}
