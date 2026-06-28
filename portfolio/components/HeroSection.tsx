@@ -488,7 +488,9 @@ function HoverBorderGradient({ children }: { children: React.ReactNode }) {
 /* ═══════════════════════════════════════════════════════
    MAIN HERO
 ═══════════════════════════════════════════════════════ */
-const CW = 1060;
+// Nav-inner is max-width:1060px with padding:0 16px → content width = 1028px
+// Hero sections must match this so right border aligns with theme toggle
+const CW = 1028;
 
 export function HeroSection() {
   const [vis, setVis] = useState<"ssr" | "visible">("ssr");
@@ -545,7 +547,7 @@ export function HeroSection() {
 
         /* ── Info wrap (centering) ── */
         .h-info-wrap {
-          max-width: 1060px;
+          max-width: 1028px;
           margin-left: auto;
           margin-right: auto;
         }

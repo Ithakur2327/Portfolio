@@ -190,7 +190,7 @@ a, button, [role="button"] {
 .page-wrapper {
   max-width: 1060px;
   margin: 0 auto;
-  padding: 0;
+  padding: 0 16px;
   min-height: 100vh;
   position: relative;
   z-index: 1;
