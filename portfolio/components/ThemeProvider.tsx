@@ -37,7 +37,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       localStorage.setItem("theme", t);
     };
 
-    // Exact same pattern as chanhdai — simple, no flushSync
+  
     if (!document.startViewTransition) {
       switchTheme();
     } else {

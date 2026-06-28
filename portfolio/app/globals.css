@@ -779,8 +779,7 @@ html.light .stat-badge {
 .nav-root { isolation: isolate; }
 
 /* ═══════════════════════════════════════════════════════════
-   NAV — SLEEK PORTFOLIO EXACT STYLE
-   backdrop-blur-sm (4px) + semi-transparent bg, no border
+   NAV — backdrop blur and transparency
 ═══════════════════════════════════════════════════════════ */
 
 /* ── Dark theme ── */
