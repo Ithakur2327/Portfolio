@@ -5,6 +5,14 @@ import { useTheme } from "./ThemeProvider";
 export function SparklesBridge() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const { theme } = useTheme();
+  // Store theme in a ref so canvas draw loop can read latest value
+  // without needing to re-run the entire effect (which causes canvas rebuild)
+  const themeRef = useRef(theme);
+
+  // Sync ref whenever theme state changes — no canvas restart needed
+  useEffect(() => {
+    themeRef.current = theme;
+  }, [theme]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -74,14 +82,6 @@ export function SparklesBridge() {
     const onVisChange = () => { isVisible = !document.hidden; };
     document.addEventListener("visibilitychange", onVisChange, { passive: true });
 
-    // Read bg color from CSS variable at draw time — matches theme perfectly
-    function getBgColor() {
-  return getComputedStyle(document.documentElement)
-    .getPropertyValue("--bg-base").trim() ||
-    (theme === "dark" ? "#040404" : "#f5f5f3");
-}
-
-    const bgColor = getBgColor();
     function draw(ts: number) {
       raf = requestAnimationFrame(draw);
       if (!isVisible) return;
@@ -90,7 +90,12 @@ export function SparklesBridge() {
       if (!ctx || !canvas) return;
       const W = canvasW;
       const H = getHeight();
-      const isDark = theme === "dark";
+
+      // Read current theme from ref — no re-mount needed when theme changes
+      const isDark = themeRef.current === "dark";
+      const bgColor = getComputedStyle(document.documentElement)
+        .getPropertyValue("--bg-base").trim() ||
+        (isDark ? "#040404" : "#f5f5f3");
 
       ctx.clearRect(0, 0, W, H);
       ctx.fillStyle = bgColor;
@@ -130,7 +135,8 @@ export function SparklesBridge() {
       window.removeEventListener("resize", resize);
       document.removeEventListener("visibilitychange", onVisChange);
     };
-  }, [theme]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Mount once only — theme changes handled via themeRef
 
   return (
     <div style={{ background: "var(--bg-base)" }}>

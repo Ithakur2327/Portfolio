@@ -19,6 +19,18 @@ import { useTheme } from "./ThemeProvider";
  */
 function DotCanvas({ dotColor, activeDotColor }: { dotColor: string; activeDotColor: string }) {
   const ref = useRef<HTMLCanvasElement>(null);
+  // Keep color refs so theme changes update colors without canvas rebuild
+  const dotColorRef = useRef(dotColor);
+  const activeDotColorRef = useRef(activeDotColor);
+
+  // Sync color refs + repaint static layer on theme change
+  const repaintRef = useRef<(() => void) | null>(null);
+  useEffect(() => {
+    dotColorRef.current = dotColor;
+    activeDotColorRef.current = activeDotColor;
+    // Trigger a static layer repaint so dot colors update on next frame
+    repaintRef.current?.();
+  }, [dotColor, activeDotColor]);
 
   useEffect(() => {
     const canvas = ref.current;
@@ -66,7 +78,7 @@ function DotCanvas({ dotColor, activeDotColor }: { dotColor: string; activeDotCo
     const paintStatic = () => {
       if (!dotPositions || !staticCtx || !staticCanvas) return;
       staticCtx.clearRect(0, 0, w, h);
-      staticCtx.fillStyle = dotColor;
+      staticCtx.fillStyle = dotColorRef.current;
       staticCtx.beginPath();
       for (let i = 0; i < dotPositions.length; i += 2) {
         const x = dotPositions[i], y = dotPositions[i + 1];
@@ -74,6 +86,13 @@ function DotCanvas({ dotColor, activeDotColor }: { dotColor: string; activeDotCo
         staticCtx.arc(x, y, DOT_R, 0, Math.PI * 2);
       }
       staticCtx.fill();
+    };
+
+    // Expose repaint so theme changes can trigger it without full remount
+    repaintRef.current = () => {
+      paintStatic();
+      needsDraw = true;
+      schedule();
     };
 
     // ── Per-frame draw ─────────────────────────────────────────────────────
@@ -97,7 +116,7 @@ function DotCanvas({ dotColor, activeDotColor }: { dotColor: string; activeDotCo
         const ix1 = Math.min(w, bx0 + bw), iy1 = Math.min(h, by0 + bh);
 
         // Pass A: regular dots in bbox that are outside the highlight radius (batched)
-        ctx.fillStyle = dotColor;
+        ctx.fillStyle = dotColorRef.current;
         ctx.beginPath();
         for (let i = 0; i < dotPositions.length; i += 2) {
           const x = dotPositions[i], y = dotPositions[i + 1];
@@ -118,7 +137,7 @@ function DotCanvas({ dotColor, activeDotColor }: { dotColor: string; activeDotCo
           if (d2 >= RADIUS2) continue;
           const f = 1 - Math.sqrt(d2) / RADIUS;
           ctx.globalAlpha = 0.35 + 0.65 * f;
-          ctx.fillStyle = activeDotColor;
+          ctx.fillStyle = activeDotColorRef.current;
           ctx.beginPath();
           ctx.arc(x, y, DOT_R + f, 0, Math.PI * 2);
           ctx.fill();
@@ -189,6 +208,7 @@ function DotCanvas({ dotColor, activeDotColor }: { dotColor: string; activeDotCo
     document.addEventListener("visibilitychange", onVisibilityChange, { passive: true });
 
     return () => {
+      repaintRef.current = null;
       ro.disconnect();
       window.removeEventListener("mousemove",  onMove);
       window.removeEventListener("mouseleave", onLeave);
@@ -196,7 +216,9 @@ function DotCanvas({ dotColor, activeDotColor }: { dotColor: string; activeDotCo
       if (raf)       cancelAnimationFrame(raf);
       if (idleTimer) clearTimeout(idleTimer);
     };
-  }, [dotColor, activeDotColor]);
+  // Mount once — color changes handled via refs + repaintRef
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <canvas

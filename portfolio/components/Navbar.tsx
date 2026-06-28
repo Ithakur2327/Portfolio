@@ -100,7 +100,7 @@ function NavTooltip({ children, label, kbd }: { children: React.ReactNode; label
         <div className="nav-tooltip-box">
           <span className="nav-tooltip-arrow"/>
           {label}
-          {kbd && <kbd style={{ display:"inline-flex",alignItems:"center",justifyContent:"center",height:18,minWidth:20,padding:"0 4px",borderRadius:3,fontSize:11,fontWeight:400,background:"rgba(255,255,255,0.2)",boxShadow:"inset 0 0 1px rgba(255,255,255,0.2)",color:"inherit",userSelect:"none" }}>{kbd}</kbd>}
+          {kbd && <kbd style={{ display:"inline-flex",alignItems:"center",justifyContent:"center",height:18,minWidth:20,padding:"0 4px",borderRadius:3,fontSize:11,fontWeight:400,background:"rgba(128,128,128,0.25)",border:"1px solid rgba(128,128,128,0.35)",color:"inherit",userSelect:"none" }}>{kbd}</kbd>}
         </div>
       )}
     </div>

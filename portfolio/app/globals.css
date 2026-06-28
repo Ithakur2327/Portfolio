@@ -837,85 +837,6 @@ html.light .nav-root.scrolled {
   .theme-btn { width: 34px !important; height: 34px !important; border-radius: 8px !important; }
 }
 
-/* ═══════════════════════════════════════════════════════════
-   SCROLL BOTTOM BLUR FADE
-═══════════════════════════════════════════════════════════ */
-#scroll-bottom-fade {
-  position: fixed;
-  bottom: 0; left: 0; right: 0;
-  height: 56px;
-  pointer-events: none;
-  z-index: 90;
-  background: transparent;
-}
-
-#scroll-bottom-fade::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  backdrop-filter: blur(3px) saturate(.8);
--webkit-backdrop-filter: blur(3px) saturate(.8);
-  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 65%);
-  mask-image: linear-gradient(to bottom, transparent 0%, black 65%);
-}
-
-@media (min-width: 601px) and (max-width: 1024px) {
-  #scroll-bottom-fade { height: 42px; }
-  #scroll-bottom-fade::after {
-    backdrop-filter: blur(6px) saturate(1.15);
-    -webkit-backdrop-filter: blur(6px) saturate(1.15);
-  }
-}
-
-@media (max-width: 600px) {
-  #scroll-bottom-fade { height: 32px; }
-  #scroll-bottom-fade::after {
-    backdrop-filter: blur(5px) saturate(1.1);
-    -webkit-backdrop-filter: blur(5px) saturate(1.1);
-  }
-}
-
-@media (max-width: 480px) and (max-device-pixel-ratio: 2) {
-  #scroll-bottom-fade::after {
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
-  }
-}
-
-/* ═══════════════════════════════════════════════════════════
-   SCROLL DIRECTION ARROW
-═══════════════════════════════════════════════════════════ */
-#scroll-arrow {
-  position: fixed;
-  bottom: 22px;
-  right: 22px;
-  z-index: 95;
-  width: 38px;
-  height: 38px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  border: 1px solid rgba(255,255,255,0.14);
-  background: rgba(14,14,16,0.72);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  box-shadow: 0 2px 12px rgba(0,0,0,0.28);
-  transition: opacity 0.25s ease, transform 0.22s cubic-bezier(0.34,1.56,0.64,1);
-  opacity: 0.7;
-  color: rgba(255,255,255,0.7);
-}
-#scroll-arrow:hover { opacity: 1; transform: scale(1.1); }
-#scroll-arrow:active { transform: scale(0.92); }
-#scroll-arrow svg { transition: transform 0.25s cubic-bezier(0.34,1.56,0.64,1); }
-#scroll-arrow.pointing-up svg { transform: rotate(180deg); }
-
-html.light #scroll-arrow {
-  background: rgba(240,240,238,0.80);
-  border-color: rgba(0,0,0,0.12);
-  color: rgba(0,0,0,0.65);
-}
 
 /* ═══════════════════════════════════════════════════════════
    HERO LAYOUT — TABLET
@@ -1222,12 +1143,6 @@ html.light #scroll-arrow {
     transition: box-shadow 0.2s ease, background 0.2s ease !important;
   }
 
-  /* Reduce blur cost on the bottom fade */
-  #scroll-bottom-fade::after {
-    backdrop-filter: blur(2px) !important;
-    -webkit-backdrop-filter: blur(2px) !important;
-  }
-
   /* Touch momentum on all scroll containers */
   .contrib-wrap,
   .marquee-track,
@@ -1249,9 +1164,7 @@ html.light #scroll-arrow {
 
 @media (max-width: 480px) and (max-device-pixel-ratio: 1) {
   .nav-root,
-  .mobile-menu,
-  #scroll-bottom-fade::after,
-  #scroll-arrow {
+  .mobile-menu {
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
   }

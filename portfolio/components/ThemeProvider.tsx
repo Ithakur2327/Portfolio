@@ -34,19 +34,25 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       navigator.vibrate(t === "dark" ? [30, 10, 15] : [15, 8, 30]);
     }
 
-    if (
-      typeof document !== "undefined" &&
-      typeof (document as unknown as { startViewTransition?: (cb: () => void) => void }).startViewTransition === "function"
-    ) {
-      (document as unknown as { startViewTransition: (cb: () => void) => void }).startViewTransition(() => {
+    // Save & apply DOM immediately — before any transition starts
+    // This ensures CSS vars flip at frame 0 with NO React re-render delay
+    localStorage.setItem("theme", t);
+    applyTheme(t);
+
+    const vt = document as unknown as {
+      startViewTransition?: (cb: () => void) => { ready: Promise<void> };
+    };
+
+    if (typeof vt.startViewTransition === "function") {
+      // Kick off the wipe transition — DOM is already updated above,
+      // so the "new" snapshot is captured immediately at 60/120fps
+      vt.startViewTransition(() => {
+        // React state update happens inside the transition callback so React
+        // re-renders are batched with the transition paint — no double paint
         setThemeState(t);
-        applyTheme(t);
-        localStorage.setItem("theme", t);
       });
     } else {
       setThemeState(t);
-      applyTheme(t);
-      localStorage.setItem("theme", t);
     }
   };
 
