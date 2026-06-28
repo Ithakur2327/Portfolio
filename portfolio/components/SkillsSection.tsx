@@ -26,16 +26,16 @@ const TECH: Record<string, { color: string; logo: string; bright?: boolean; inve
   "Tailwind CSS": { color: "#38BDF8", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/tailwindcss/tailwindcss-original.svg" },
   HTML5:          { color: "#E34F26", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/html5/html5-original.svg" },
   CSS3:           { color: "#1572B6", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/css3/css3-original.svg" },
-  "Framer Motion": { color: "#555555", logo: "https://cdn.jsdelivr.net/gh/tabler/tabler-icons@main/icons/outline/brand-framer-motion.svg", invert: true },
-  "shadcn/ui":    { color: "#555555", logo: "https://cdn.jsdelivr.net/gh/simple-icons/simple-icons@develop/icons/shadcnui.svg", invert: true },
+  "Framer Motion": { color: "#0055FF", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/framermotion/framermotion-original.svg" },
+  "shadcn/ui":    { color: "#000000", logo: "https://avatars.githubusercontent.com/u/139895814?s=200&v=4", invert: false },
   // Backend
-  "Node.js":      { color: "#339933", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nodejs/nodejs-original.svg" },
+  "Node.js":      { color: "#339933", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/nodejs/nodejs-plain-wordmark.svg" },
   "Express.js":   { color: "#555555", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/express/express-original.svg", invert: true },
   "REST APIs":    { color: "#85EA2D", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/swagger/swagger-original.svg" },
   FastAPI:        { color: "#009688", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/fastapi/fastapi-original.svg" },
   GraphQL:        { color: "#E10098", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/graphql/graphql-plain.svg" },
   // GenAI / AI
-  "LLM APIs":     { color: "#74aa9c", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/openai/openai-original.svg", invert: true },
+  "AI":           { color: "#10a37f", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/openai/openai-original.svg", invert: true },
   LangChain:      { color: "#1C9E6E", logo: "https://registry.npmmirror.com/@lobehub/icons-static-png/latest/files/dark/langchain-color.png" },
   LangGraph:      { color: "#2ecc71", logo: "https://registry.npmmirror.com/@lobehub/icons-static-png/latest/files/dark/langgraph-color.png" },
   RAG:            { color: "#ee4c2c", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/pytorch/pytorch-original.svg" },
@@ -62,7 +62,7 @@ const LAMP_GROUPS = [
   { title: "FRONTEND",         glowColor: "#61DAFB", items: ["React.js", "Next.js", "Tailwind CSS", "HTML5", "CSS3", "Framer Motion", "shadcn/ui"] },
   { title: "BACKEND",          glowColor: "#339933", items: ["Node.js", "Express.js", "REST APIs", "FastAPI", "GraphQL"] },
   { title: "CLOUD & DEVOPS",   glowColor: "#FF9900", items: ["AWS", "Kubernetes", "Docker", "CI/CD", "Vercel"] },
-  { title: "GENAI / AI",       glowColor: "#10a37f", items: ["LLM APIs", "LangChain", "LangGraph", "RAG", "Vector DB"] },
+  { title: "GENAI / AI",       glowColor: "#10a37f", items: ["AI", "LangChain", "LangGraph", "RAG", "Vector DB"] },
   { title: "TOOLS & DATABASE", glowColor: "#47A248", items: ["MongoDB", "MySQL", "PostgreSQL", "Git", "GitHub", "Postman"] },
 ];
 
@@ -436,8 +436,12 @@ export function SkillsSection() {
         }
 
         @media (max-width: 640px) {
-          .skills-grid { grid-template-columns: 1fr; }
+          .skills-grid { grid-template-columns: repeat(2, 1fr); }
           .lamp-skill-box { min-height: auto; }
+        }
+
+        @media (max-width: 380px) {
+          .skills-grid { grid-template-columns: 1fr; }
         }
       `}</style>
 

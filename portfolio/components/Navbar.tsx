@@ -92,7 +92,7 @@ function NavTooltip({ children, label, kbd }: { children: React.ReactNode; label
   return (
     <div
       style={{ position: "relative", display: "inline-flex" }}
-      onMouseEnter={() => { timer.current = setTimeout(() => setShow(true), 400); }}
+      onMouseEnter={() => { timer.current = setTimeout(() => setShow(true), 0); }}
       onMouseLeave={() => { if (timer.current) clearTimeout(timer.current); setShow(false); }}
     >
       {children}
@@ -474,6 +474,11 @@ export function Navbar() {
           white-space:nowrap;pointer-events:none;z-index:1000;
           display:flex;align-items:center;gap:10px;
           box-shadow:0 4px 16px rgba(0,0,0,0.22);
+          animation: tooltip-pop 0.08s cubic-bezier(0.16,1,0.3,1) forwards;
+        }
+        @keyframes tooltip-pop {
+          from { opacity:0; transform:translateX(-50%) translateY(-4px) scale(0.96); }
+          to   { opacity:1; transform:translateX(-50%) translateY(0)     scale(1);    }
         }
         @media (max-width:639px)  { .nav-tooltip-box { display:none !important; } }
         @media (hover:none)       { .nav-tooltip-box { display:none !important; } }
