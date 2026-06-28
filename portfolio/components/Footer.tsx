@@ -6,7 +6,7 @@ import { motion, useMotionValue, useSpring, useTransform, animate } from "motion
 const MONO = "'Geist Mono', monospace";
 const SF = "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', sans-serif";
 
-const VW = 3840, VH = 520, FONT_SIZE = 386;
+const VW = 3840, VH = 600, FONT_SIZE = 386;
 
 function FluidGradientText({ text }: { text: string }) {
   const mouseXRaw = useMotionValue(VW / 2);
@@ -59,7 +59,7 @@ function FluidGradientText({ text }: { text: string }) {
   const handleTouchEnd = () => triggerDrain();
 
   // ── Colors from reference image — teal palette ──
-  const strokeColor  = isDark ? "#005a4e" : "#6d28d9";
+  const strokeColor  = isDark ? "#00b89c" : "#7c3aed";
 
   const baseStops = isDark
     ? [
@@ -136,7 +136,7 @@ function FluidGradientText({ text }: { text: string }) {
           textAnchor="middle" dominantBaseline="central"
           fill="none"
           stroke={strokeColor}
-          strokeWidth="1.5"
+          strokeWidth="2.5"
           opacity={hollowOpacity}
           textLength={tl}
           lengthAdjust="spacingAndGlyphs"
@@ -328,9 +328,9 @@ export function Footer() {
         .fgt-svg {
           display: block;
           width: 100%;
-          height: clamp(80px, 14vw, 220px); /* responsive fixed height — fills screen better */
+          height: clamp(90px, 16vw, 260px);
           vertical-align: bottom;
-          margin-bottom: clamp(-14px, -0.8vw, -4px);
+          margin-bottom: 0;
         }
         .fgt-text {
           font-family: 'Press Start 2P', 'Courier New', monospace;
@@ -343,7 +343,10 @@ export function Footer() {
           width: 100%;
           height: 1px;
           background: var(--border);
-          margin-bottom: clamp(12px, 2.5vw, 36px);
+          margin-bottom: 0;
+        }
+        .footer-root {
+          padding-bottom: clamp(18px, 3vw, 40px);
         }
 
         @media (max-width: 720px) {
