@@ -226,45 +226,32 @@ a, button, [role="button"] {
 .nav-root {
   position: fixed; top: 0; left: 0; right: 0; z-index: 100;
   height: 52px;
-  background: var(--nav-bg);
-  backdrop-filter: blur(40px) saturate(260%) brightness(1.08);
-  -webkit-backdrop-filter: blur(40px) saturate(260%) brightness(1.08);
-  border-bottom: 0.5px solid var(--nav-border);
-  box-shadow:
-    0 0.5px 0 rgba(255,255,255,0.08) inset,
-    0 1px 12px rgba(0,0,0,0.18);
-  transition:
-    background 0.35s ease,
-    border-color 0.35s ease,
-    backdrop-filter 0.35s ease,
-    box-shadow 0.35s ease;
+  background: rgba(4,4,4,0.82);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  border-bottom: none;
+  box-shadow: none;
+  transition: background 0.2s ease;
   will-change: transform;
   transform: translateZ(0);
 }
 
 .nav-root.scrolled {
-  background: var(--nav-bg-scrolled);
-  backdrop-filter: blur(52px) saturate(300%) brightness(1.10);
-  -webkit-backdrop-filter: blur(52px) saturate(300%) brightness(1.10);
-  border-bottom: 0.5px solid rgba(255,255,255,0.14);
-  box-shadow:
-    0 0.5px 0 rgba(255,255,255,0.12) inset,
-    0 0 0 0.5px rgba(255,255,255,0.04) inset,
-    0 8px 32px rgba(0,0,0,0.36),
-    0 1px 0 rgba(0,0,0,0.6);
+  background: rgba(4,4,4,0.88);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  border-bottom: none;
+  box-shadow: none;
 }
 html.light .nav-root {
-  border-bottom: 0.5px solid rgba(255,255,255,0.72);
-  box-shadow:
-    0 0.5px 0 rgba(255,255,255,0.95) inset,
-    0 1px 10px rgba(0,0,0,0.06);
+  background: rgba(245,245,243,0.82);
+  border-bottom: none;
+  box-shadow: none;
 }
 html.light .nav-root.scrolled {
-  border-bottom: 0.5px solid rgba(255,255,255,0.90);
-  box-shadow:
-    0 0.5px 0 rgba(255,255,255,1.0) inset,
-    0 0 0 0.5px rgba(255,255,255,0.65) inset,
-    0 6px 24px rgba(0,0,0,0.07);
+  background: rgba(245,245,243,0.88);
+  border-bottom: none;
+  box-shadow: none;
 }
 
 .nav-inner {
@@ -797,51 +784,40 @@ html.light .stat-badge {
 .nav-root { isolation: isolate; }
 
 /* ═══════════════════════════════════════════════════════════
-   NAV — PROPER MIRROR GLASS (both themes)
+   NAV — SLEEK PORTFOLIO EXACT STYLE
+   backdrop-blur-sm (4px) + semi-transparent bg, no border
 ═══════════════════════════════════════════════════════════ */
 
 /* ── Dark theme ── */
 .nav-root {
-  backdrop-filter: blur(40px) saturate(260%) brightness(1.08) !important;
-  -webkit-backdrop-filter: blur(40px) saturate(260%) brightness(1.08) !important;
-  background: rgba(4,4,4,0.18) !important;
-  border-bottom: 0.5px solid rgba(255,255,255,0.07) !important;
-  box-shadow:
-    0 0.5px 0 rgba(255,255,255,0.08) inset,
-    0 1px 12px rgba(0,0,0,0.20);
+  backdrop-filter: blur(4px) !important;
+  -webkit-backdrop-filter: blur(4px) !important;
+  background: rgba(4,4,4,0.82) !important;
+  border-bottom: none !important;
+  box-shadow: none !important;
 }
 .nav-root.scrolled {
-  backdrop-filter: blur(52px) saturate(300%) brightness(1.10) !important;
-  -webkit-backdrop-filter: blur(52px) saturate(300%) brightness(1.10) !important;
-  background: rgba(4,4,4,0.46) !important;
-  border-bottom: 0.5px solid rgba(255,255,255,0.14) !important;
-  box-shadow:
-    0 0.5px 0 rgba(255,255,255,0.12) inset,
-    0 0 0 0.5px rgba(255,255,255,0.04) inset,
-    0 8px 32px rgba(0,0,0,0.40);
+  backdrop-filter: blur(4px) !important;
+  -webkit-backdrop-filter: blur(4px) !important;
+  background: rgba(4,4,4,0.88) !important;
+  border-bottom: none !important;
+  box-shadow: none !important;
 }
 
-/* ── Light theme — mirror glass ── */
+/* ── Light theme ── */
 html.light .nav-root {
-  backdrop-filter: blur(48px) saturate(280%) brightness(1.08) !important;
-  -webkit-backdrop-filter: blur(48px) saturate(280%) brightness(1.08) !important;
-  background: rgba(252,252,250,0.22) !important;
-  border-bottom: 0.5px solid rgba(255,255,255,0.75) !important;
-  box-shadow:
-    0 0.5px 0 rgba(255,255,255,0.95) inset,
-    0 0 0 0.5px rgba(255,255,255,0.50) inset,
-    0 2px 12px rgba(0,0,0,0.05);
+  backdrop-filter: blur(4px) !important;
+  -webkit-backdrop-filter: blur(4px) !important;
+  background: rgba(245,245,243,0.82) !important;
+  border-bottom: none !important;
+  box-shadow: none !important;
 }
 html.light .nav-root.scrolled {
-  backdrop-filter: blur(60px) saturate(320%) brightness(1.10) !important;
-  -webkit-backdrop-filter: blur(60px) saturate(320%) brightness(1.10) !important;
-  background: rgba(252,252,250,0.42) !important;
-  border-bottom: 0.5px solid rgba(255,255,255,0.90) !important;
-  box-shadow:
-    0 0.5px 0 rgba(255,255,255,1.0) inset,
-    0 0 0 0.5px rgba(255,255,255,0.70) inset,
-    0 6px 28px rgba(0,0,0,0.07),
-    0 1px 4px rgba(0,0,0,0.03);
+  backdrop-filter: blur(4px) !important;
+  -webkit-backdrop-filter: blur(4px) !important;
+  background: rgba(245,245,243,0.88) !important;
+  border-bottom: none !important;
+  box-shadow: none !important;
 }
 
 /* Mobile nav height */
