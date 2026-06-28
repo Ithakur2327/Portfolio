@@ -272,7 +272,7 @@ function CommandMenu({
           <span style={{ color: muted, display: "flex", flexShrink: 0 }}><SearchIcon size={18} /></span>
           <input
             ref={inputRef} value={query} onChange={e => setQuery(e.target.value)}
-            placeholder="Type a command or search…" enterKeyHint="search"
+            placeholder="Search…" enterKeyHint="search"
             style={{
               flex: 1, background: "transparent", border: "none", outline: "none",
               color: fg, fontSize: 15, fontWeight: 500,
