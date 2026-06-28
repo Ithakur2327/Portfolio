@@ -38,21 +38,7 @@ function SendIcon() {
   );
 }
 
-/*
-  WHY ALL PREVIOUS APPROACHES LAGGED
-  ───────────────────────────────────
-  grid-template-rows  → layout recalc every frame  ✗
-  max-height          → layout recalc every frame  ✗
-  Framer layout prop  → useLayoutEffect sync DOM read + LightRays RAF = jank  ✗
-  scrollHeight ref    → forced layout reflow on click  ✗
 
-  THE ONLY LAG-FREE APPROACH
-  ──────────────────────────
-  Height changes INSTANTLY (zero animation = zero layout recalc).
-  Content reveals with CSS keyframe on opacity + translateY only.
-  Both are compositor-only properties → runs on GPU thread.
-  LightRays WebGL never competes with layout work.
-*/
 const ContactCard = memo(function ContactCard() {
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({ name: "", email: "", message: "" });
@@ -95,11 +81,7 @@ const ContactCard = memo(function ContactCard() {
         </svg>
       </div>
 
-      {/*
-        Zero height animation — height changes in ONE frame (imperceptible).
-        CSS keyframe handles only opacity + translateY (compositor-only).
-        No JS, no RAF, no layout recalc → absolutely no lag.
-      */}
+
       {open && (
         <div className="contact-form-panel">
           <div className="contact-card-sep" />
@@ -339,7 +321,7 @@ export function ContactSection() {
                 Have an idea? Let&apos;s talk.
               </p>
               <p style={{ fontSize: 14, color: "var(--text-secondary)", lineHeight: 1.7, fontFamily: SF, maxWidth: 480, margin: "0 0 28px" }}>
-                Open to freelance projects, collaborations, and full-time roles. Drop me a message and I&apos;ll get back to you within 24 hours.
+                Open to freelance projects, collaborations, and full-time roles.
               </p>
             </motion.div>
 
