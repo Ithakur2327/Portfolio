@@ -107,9 +107,9 @@ function FluidGradientText({ text }: { text: string }) {
 
           {/* Crystal left-edge shine — fixed, sharpest at x=0 fades rightward */}
           <linearGradient id="fgt_crystal" x1="0" y1="0" x2={VW * 0.18} y2="0" gradientUnits="userSpaceOnUse">
-            <stop offset="0%"   stopColor={crystalEdge} stopOpacity="0.95" />
-            <stop offset="18%"  stopColor={brightColor}  stopOpacity="0.55" />
-            <stop offset="55%"  stopColor={midColor}     stopOpacity="0.15" />
+            <stop offset="0%"   stopColor={crystalEdge} stopOpacity="0.55" />
+            <stop offset="18%"  stopColor={brightColor}  stopOpacity="0.28" />
+            <stop offset="55%"  stopColor={midColor}     stopOpacity="0.08" />
             <stop offset="100%" stopColor={dimColor}      stopOpacity="0" />
           </linearGradient>
 
@@ -121,19 +121,19 @@ function FluidGradientText({ text }: { text: string }) {
             gradientUnits="userSpaceOnUse"
           >
             <stop offset="0%"   stopColor={dimColor}     stopOpacity="0" />
-            <stop offset="30%"  stopColor={midColor}     stopOpacity="0.5" />
-            <stop offset="48%"  stopColor={brightColor}  stopOpacity="0.85" />
-            <stop offset="50%"  stopColor={crystalEdge}  stopOpacity="1" />
-            <stop offset="52%"  stopColor={brightColor}  stopOpacity="0.85" />
-            <stop offset="70%"  stopColor={midColor}     stopOpacity="0.5" />
+            <stop offset="30%"  stopColor={midColor}     stopOpacity="0.3" />
+            <stop offset="48%"  stopColor={brightColor}  stopOpacity="0.55" />
+            <stop offset="50%"  stopColor={crystalEdge}  stopOpacity="0.65" />
+            <stop offset="52%"  stopColor={brightColor}  stopOpacity="0.55" />
+            <stop offset="70%"  stopColor={midColor}     stopOpacity="0.3" />
             <stop offset="100%" stopColor={dimColor}      stopOpacity="0" />
           </motion.linearGradient>
         </defs>
 
         {/* Layer 1 — hollow outline (resting) */}
         <motion.text
-          x="50%" y="50%"
-          textAnchor="middle" dominantBaseline="central"
+          x="50%" y={VH}
+          textAnchor="middle" dominantBaseline="auto"
           fill="none"
           stroke={strokeColor}
           strokeWidth="2.5"
@@ -147,8 +147,8 @@ function FluidGradientText({ text }: { text: string }) {
 
         {/* Layer 2 — base fill (hover) — water body */}
         <motion.text
-          x="50%" y="50%"
-          textAnchor="middle" dominantBaseline="central"
+          x="50%" y={VH}
+          textAnchor="middle" dominantBaseline="auto"
           fill="url(#fgt_base)"
           stroke="none"
           opacity={fillOpacity}
@@ -159,10 +159,10 @@ function FluidGradientText({ text }: { text: string }) {
           {text}
         </motion.text>
 
-        {/* Layer 3 — crystal left-edge shine (appears with fill, fixed position) */}
+        {/* Layer 3 — crystal left-edge shine */}
         <motion.text
-          x="50%" y="50%"
-          textAnchor="middle" dominantBaseline="central"
+          x="50%" y={VH}
+          textAnchor="middle" dominantBaseline="auto"
           fill="url(#fgt_crystal)"
           stroke="none"
           opacity={sweepOpacity}
@@ -175,8 +175,8 @@ function FluidGradientText({ text }: { text: string }) {
 
         {/* Layer 4 — mouse sweep highlight */}
         <motion.text
-          x="50%" y="50%"
-          textAnchor="middle" dominantBaseline="central"
+          x="50%" y={VH}
+          textAnchor="middle" dominantBaseline="auto"
           fill="url(#fgt_sweep)"
           stroke="none"
           opacity={sweepOpacity}
