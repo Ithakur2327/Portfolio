@@ -88,12 +88,22 @@ function SunIconAnimated({ size = 16 }: { size?: number }) {
 /* ── Tooltip — desktop/mouse only ── */
 function NavTooltip({ children, label, kbd }: { children: React.ReactNode; label: string; kbd?: string }) {
   const [show, setShow] = useState(false);
-  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const timer    = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const hasShown = useRef(false); // show only once per hover, not repeatedly
+
   return (
     <div
-      style={{ position: "relative", display: "inline-flex" }}
-      onMouseEnter={() => { timer.current = setTimeout(() => setShow(true), 0); }}
-      onMouseLeave={() => { if (timer.current) clearTimeout(timer.current); setShow(false); }}
+      style={{ position: "relative", display: "inline-flex", alignItems: "center", justifyContent: "center" }}
+      onMouseEnter={() => {
+        if (hasShown.current) return; // already shown this hover session — skip
+        hasShown.current = true;
+        timer.current = setTimeout(() => setShow(true), 0);
+      }}
+      onMouseLeave={() => {
+        if (timer.current) clearTimeout(timer.current);
+        setShow(false);
+        hasShown.current = false; // reset so next hover shows it
+      }}
     >
       {children}
       {show && (
@@ -460,6 +470,10 @@ export function Navbar() {
           cursor:pointer;touch-action:manipulation;
           transition:background 0.15s,color 0.15s;
           -webkit-tap-highlight-color:transparent;
+          flex-shrink:0;
+          padding:0;
+          line-height:1;
+          vertical-align:middle;
         }
         .icon-btn:hover  { background:var(--nav-link-active-bg);color:var(--nav-link-hover); }
         .icon-btn:active { transform:scale(0.95); }
