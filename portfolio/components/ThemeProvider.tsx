@@ -13,7 +13,6 @@ function applyTheme(t: Theme) {
   root.classList.remove("dark", "light");
   root.classList.add(t);
   root.setAttribute("data-theme", t);
-  // color-scheme: tells browser to use native dark/light scrollbars + form elements
   root.style.colorScheme = t;
 }
 
@@ -21,7 +20,6 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setThemeState] = useState<Theme>("dark");
 
   useEffect(() => {
-    // Read persisted preference immediately on mount
     const stored = localStorage.getItem("theme") as Theme | null;
     const resolved: Theme = stored === "light" ? "light" : "dark";
     setThemeState(resolved);
@@ -29,24 +27,21 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const setTheme = (t: Theme) => {
-    // Haptic vibration feedback
     if (typeof navigator !== "undefined" && navigator.vibrate) {
       navigator.vibrate(t === "dark" ? [30, 10, 15] : [15, 8, 30]);
     }
 
-    if (
-      typeof document !== "undefined" &&
-      typeof (document as unknown as { startViewTransition?: (cb: () => void) => void }).startViewTransition === "function"
-    ) {
-      (document as unknown as { startViewTransition: (cb: () => void) => void }).startViewTransition(() => {
-        setThemeState(t);
-        applyTheme(t);
-        localStorage.setItem("theme", t);
-      });
-    } else {
+    const switchTheme = () => {
       setThemeState(t);
       applyTheme(t);
       localStorage.setItem("theme", t);
+    };
+
+    // Exact same pattern as chanhdai — simple, no flushSync
+    if (!document.startViewTransition) {
+      switchTheme();
+    } else {
+      document.startViewTransition(switchTheme);
     }
   };
 

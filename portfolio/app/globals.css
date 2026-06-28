@@ -676,7 +676,7 @@ html.light .gold-word {
   transform-origin: top left;
 }
 @keyframes scale {
-  to { mask-size: 200vmax; }
+  to { mask-size: 201vmax; }
 }
 
 
