@@ -6,7 +6,7 @@ import { motion, useMotionValue, useSpring, useTransform, animate } from "motion
 const MONO = "'Geist Mono', monospace";
 const SF = "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', sans-serif";
 
-const VW = 1920, VH = 230, FONT_SIZE = 193;
+const VW = 1920, VH = 234, FONT_SIZE = 193;
 
 function FluidGradientText({ text }: { text: string }) {
   const mouseXRaw = useMotionValue(VW / 2);
@@ -15,6 +15,8 @@ function FluidGradientText({ text }: { text: string }) {
   // Hollow <-> fill opacity
   const hollowOpacity = useMotionValue(1);
   const fillOpacity   = useMotionValue(0);
+  // Separate sweep opacity so it drains slightly faster (leading edge disappears first)
+  const sweepOpacity  = useMotionValue(0);
 
   const { theme } = useTheme();
   const isDark = theme === "dark";
@@ -22,38 +24,42 @@ function FluidGradientText({ text }: { text: string }) {
   const handleMouseEnter = (event: React.MouseEvent<HTMLDivElement>) => {
     const rect = event.currentTarget.getBoundingClientRect();
     mouseXRaw.jump(((event.clientX - rect.left) / rect.width) * VW);
-    animate(hollowOpacity, 0, { duration: 0.25, ease: "easeOut" });
-    animate(fillOpacity,   1, { duration: 0.25, ease: "easeOut" });
+    animate(hollowOpacity, 0,   { duration: 0.22, ease: "easeOut" });
+    animate(fillOpacity,   1,   { duration: 0.22, ease: "easeOut" });
+    animate(sweepOpacity,  1,   { duration: 0.22, ease: "easeOut" });
   };
   const handleMouseMove = (event: React.MouseEvent<HTMLDivElement>) => {
     const rect = event.currentTarget.getBoundingClientRect();
     mouseXRaw.set(((event.clientX - rect.left) / rect.width) * VW);
   };
   const handleMouseLeave = () => {
-    animate(hollowOpacity, 1, { duration: 0.35, ease: "easeOut" });
-    animate(fillOpacity,   0, { duration: 0.35, ease: "easeOut" });
+    // Water draining: sweep (highlight) disappears first, then base fill drains out
+    // easeIn curve = starts slow, accelerates — like water draining faster as level drops
+    animate(sweepOpacity,  0, { duration: 0.28, ease: [0.4, 0, 1, 1] });
+    animate(fillOpacity,   0, { duration: 0.55, ease: [0.4, 0, 1, 1] });
+    animate(hollowOpacity, 1, { duration: 0.55, ease: "easeIn",  delay: 0.1 });
   };
 
   // Stroke color for hollow state
   const strokeColor = isDark ? "#166534" : "#6d28d9";
 
-  // Base fill gradient (bottom-to-top)
+  // Base fill gradient (bottom-to-top) — water fill, brighter at left edge
   const baseStops = isDark
     ? [{ o: "0%", c: "#071f10" }, { o: "45%", c: "#14532d" }, { o: "100%", c: "#22c55e" }]
     : [{ o: "0%", c: "#1e0345" }, { o: "45%", c: "#5b21b6" }, { o: "100%", c: "#a855f7" }];
 
-  // Bright highlight color that follows mouse
-  const brightColor = isDark ? "#4ade80" : "#c084fc";
-  const midColor    = isDark ? "#16a34a" : "#7c3aed";
-  const dimColor    = isDark ? "#071f10" : "#1e0345";
+  // Crystal shine: left-edge highlight (sharp bright) + moving sweep
+  const brightColor    = isDark ? "#86efac" : "#e879f9";   // brighter for crystal
+  const crystalEdge    = isDark ? "#dcfce7" : "#fae8ff";   // near-white crystal glint
+  const midColor       = isDark ? "#16a34a" : "#7c3aed";
+  const dimColor       = isDark ? "#071f10" : "#1e0345";
 
-  // The sweep gradient: bright at mouseX, fades out on both sides
-  // x1 = mouseX - spread, x2 = mouseX + spread — centered on cursor
-  const spread = VW * 0.28;
+  const spread = VW * 0.26;
   const gx1 = useTransform(mouseX, v => v - spread);
   const gx2 = useTransform(mouseX, v => v + spread);
 
-  const tl = VW * 0.965;
+  // Narrower text length for 2px less width
+  const tl = VW * 0.945;
 
   return (
     <div
