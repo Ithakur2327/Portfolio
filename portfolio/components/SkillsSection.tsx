@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef, memo, useEffect, useState, useCallback } from "react";
+import { useRef, memo, useEffect, useState, useCallback } from "react";
 import { useLowPerf } from "./PerfMode";
 import { useReveal } from "./useReveal";
 import { useTheme } from "./ThemeProvider";

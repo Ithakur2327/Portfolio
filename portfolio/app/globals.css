@@ -741,20 +741,11 @@ img {
 }
 .stat-card-3d:hover { transform: translateY(-5px) translateZ(0); }
 
-.skills-lamp-grid {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 12px;
-  align-items: stretch;
-}
-
-.proj-grid > *,
-.skills-lamp-grid > * {
+.proj-grid > * {
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
 }
-.proj-grid > *:hover,
-.skills-lamp-grid > *:hover {
+.proj-grid > *:hover {
   will-change: transform;
 }
 
@@ -867,23 +858,6 @@ html.light .nav-root.scrolled {
   .h-grid { gap: 14px 48px !important; }
 }
 
-/* ═══════════════════════════════════════════════════════════
-   MOBILE BUBBLE MENU OVERLAY
-═══════════════════════════════════════════════════════════ */
-.bubble-menu-overlay {
-  display: none;
-}
-@media (max-width: 760px) {
-  .bubble-menu-overlay { display: block; }
-}
-@media (min-width: 761px) and (max-width: 1024px) {
-  .bubble-menu-overlay { display: block; }
-}
-
-/* ═══════════════════════════════════════════════════════════
-   VIBRATION HELPER
-═══════════════════════════════════════════════════════════ */
-.theme-btn-vibe { /* marker class for the JS to find */ }
 
 /* ═══════════════════════════════════════════════════════════
    LOW-END DEVICE PERFORMANCE
@@ -895,15 +869,6 @@ html.light .nav-root.scrolled {
   }
 }
 
-@media (max-width: 600px) {
-  .hbg-glow {
-    animation-duration: 16s !important;
-  }
-}
-
-@media (max-width: 480px) and (max-device-pixel-ratio: 1) {
-  .hbg-glow { animation: none !important; }
-}
 
 /* Reduce will-change on small screens */
 @media (max-width: 600px) {
@@ -923,14 +888,6 @@ html.light .nav-root.scrolled {
 /* ═══════════════════════════════════════════════════════════
    RESPONSIVE
 ═══════════════════════════════════════════════════════════ */
-@media (max-width: 1100px) {
-  .skills-lamp-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
-}
-
-@media (max-width: 760px) {
-  .skills-lamp-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-}
-
 @media (max-width: 860px) {
   .desktop-nav { display: none !important; }
   .page-wrapper { padding: 0; }
@@ -990,7 +947,6 @@ html.light .nav-root.scrolled {
   section, .section-inner { padding-left: 14px !important; padding-right: 14px !important; }
   section#about { padding-left: 0 !important; padding-right: 0 !important; }
   .skills-strip-offset { margin-left: -14px !important; margin-right: -14px !important; }
-  .skills-lamp-grid { grid-template-columns: 1fr; }
   .proj-tags { flex-wrap: wrap; }
   .bottom-grid { grid-template-columns: 1fr !important; }
   .contact-cols { flex-direction: column !important; }
@@ -1002,14 +958,6 @@ html.light .nav-root.scrolled {
   .overview-cols { flex-direction: column !important; }
   .about-para { text-align: left !important; }
   .about-content { padding-left: 14px !important; padding-right: 14px !important; }
-}
-
-@media (max-width: 560px) {
-  .skills-lamp-grid { grid-template-columns: 1fr; }
-}
-
-@media (max-width: 480px) {
-  .skills-lamp-grid { gap: 10px; }
 }
 
 @media (max-width: 400px) {
@@ -1113,11 +1061,6 @@ html.light .nav-root.scrolled {
 
 /* Force GPU layers only on elements that need it — avoid layer explosion */
 @media (max-width: 860px) {
-  /* Kill heavy animations that cause jank */
-  .hbg-glow {
-    display: none !important;
-  }
-
   /* Remove will-change from everything except the cat */
   .marquee-inner,
   .reveal,
@@ -1179,13 +1122,6 @@ html.light .nav-root.scrolled {
   html.light .nav-root {
     background: rgba(245,245,243,0.96) !important;
   }
-}
-/* ── Performance: isolate expensive blur/animation elements ── */
-.skills-lamp-glow-wide,
-.skills-lamp-glow-inner {
-  will-change: opacity;
-  transform: translateZ(0);
-  backface-visibility: hidden;
 }
 
 .skills-strip-outer {
