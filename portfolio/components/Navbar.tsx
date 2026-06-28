@@ -8,28 +8,36 @@ import { playThemeToggleSound } from "@/lib/soundcn/sounds";
 import { usePdfModal } from "./PdfViewerModal";
 
 const PORTFOLIO_LINKS = [
-  { label: "Home",           href: "#",               icon: "home"   },
-  { label: "About",          href: "#about",          icon: "about"  },
-  { label: "Stats",          href: "#stats",          icon: "chart"  },
-  { label: "Skills",         href: "#skills",         icon: "layers" },
-  { label: "Projects",       href: "#projects",       icon: "box"    },
-  { label: "Certifications", href: "#certifications", icon: "badge"  },
-  { label: "Education",      href: "#education",      icon: "book"   },
-  { label: "Contact",        href: "#contact",        icon: "mail"   },
+  { label: "Home",           href: "#",                                       icon: "home",     external: false, type: "section" },
+  { label: "About",          href: "#about",                                  icon: "about",    external: false, type: "section" },
+  { label: "Stats",          href: "#stats",                                  icon: "chart",    external: false, type: "section" },
+  { label: "Skills",         href: "#skills",                                 icon: "layers",   external: false, type: "section" },
+  { label: "Projects",       href: "#projects",                               icon: "box",      external: false, type: "section" },
+  { label: "Certifications", href: "#certifications",                         icon: "badge",    external: false, type: "section" },
+  { label: "Education",      href: "#education",                              icon: "book",     external: false, type: "section" },
+  { label: "Contact",        href: "#contact",                                icon: "mail",     external: false, type: "section" },
+  { label: "Resume",         href: "/resume.pdf",                             icon: "resume",   external: false, type: "pdf"     },
+  { label: "GitHub",         href: "https://github.com/Ithakur2327",          icon: "github",   external: true,  type: "link"    },
+  { label: "LeetCode",       href: "https://leetcode.com/u/indreshthakur/",  icon: "leetcode", external: true,  type: "link"    },
+  { label: "Website",        href: "https://indreshthakur.dev",              icon: "website",  external: true,  type: "link"    },
 ];
 
 function MenuItemIcon({ type, color }: { type: string; color: string }) {
   const p = { width: 14, height: 14, viewBox: "0 0 24 24", fill: "none", stroke: color, strokeWidth: 2, strokeLinecap: "round" as const, strokeLinejoin: "round" as const };
   switch (type) {
-    case "home":   return <svg {...p}><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>;
-    case "about":  return <svg {...p}><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>;
-    case "chart":  return <svg {...p}><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>;
-    case "layers": return <svg {...p}><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>;
-    case "box":    return <svg {...p}><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>;
-    case "badge":  return <svg {...p}><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/></svg>;
-    case "book":   return <svg {...p}><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>;
-    case "mail":   return <svg {...p}><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>;
-    default:       return <svg {...p}><rect x="3" y="3" width="18" height="18" rx="3"/></svg>;
+    case "home":    return <svg {...p}><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>;
+    case "about":   return <svg {...p}><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>;
+    case "chart":   return <svg {...p}><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>;
+    case "layers":  return <svg {...p}><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>;
+    case "box":     return <svg {...p}><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>;
+    case "badge":   return <svg {...p}><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/></svg>;
+    case "book":    return <svg {...p}><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>;
+    case "mail":    return <svg {...p}><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>;
+    case "resume":  return <svg {...p}><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>;
+    case "github":  return <svg width="14" height="14" viewBox="0 0 24 24" fill={color}><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>;
+    case "leetcode":return <svg width="14" height="14" viewBox="0 0 24 24" fill={color}><path d="M13.483 0a1.374 1.374 0 0 0-.961.438L7.116 6.226l-3.854 4.126a5.266 5.266 0 0 0-1.209 2.104 5.35 5.35 0 0 0-.125.513 5.527 5.527 0 0 0 .062 2.362 5.83 5.83 0 0 0 .349 1.017 5.938 5.938 0 0 0 1.271 1.818l4.277 4.193.039.038c2.248 2.165 5.852 2.133 8.063-.074l2.396-2.392c.54-.54.54-1.414.003-1.955a1.378 1.378 0 0 0-1.951-.003l-2.396 2.392a3.021 3.021 0 0 1-4.205.038l-.02-.019-4.276-4.193c-.652-.64-.972-1.469-.948-2.263a2.68 2.68 0 0 1 .066-.523 2.545 2.545 0 0 1 .619-1.164L9.13 8.114c1.058-1.134 3.204-1.27 4.43-.278l3.501 2.831c.593.48 1.461.387 1.94-.207a1.384 1.384 0 0 0-.207-1.943l-3.5-2.831c-.8-.647-1.766-1.045-2.774-1.202l2.015-2.158A1.384 1.384 0 0 0 13.483 0zm-2.866 12.815a1.38 1.38 0 0 0-1.38 1.382 1.38 1.38 0 0 0 1.38 1.382H20.79a1.38 1.38 0 0 0 1.38-1.382 1.38 1.38 0 0 0-1.38-1.382z"/></svg>;
+    case "website": return <svg {...p}><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>;
+    default:        return <svg {...p}><rect x="3" y="3" width="18" height="18" rx="3"/></svg>;
   }
 }
 
@@ -103,10 +111,11 @@ function NavTooltip({ children, label, kbd }: { children: React.ReactNode; label
    COMMAND MENU
 ────────────────────────────────────────────── */
 function CommandMenu({
-  open, onClose, isDark, triggerRef,
+  open, onClose, isDark, triggerRef, openPdf,
 }: {
   open: boolean; onClose: () => void; isDark: boolean;
   triggerRef: React.RefObject<HTMLButtonElement | null>;
+  openPdf: (src: string, title: string, dl?: string) => void;
 }) {
   const [query,    setQuery]    = useState("");
   const [selected, setSelected] = useState(0);
@@ -177,53 +186,93 @@ function CommandMenu({
   const muted  = isDark ? "hsl(0 0% 45%)"   : "hsl(0 0% 45%)";
   const accent = isDark ? "hsl(0 0% 14.9%)" : "hsl(0 0% 92%)";
   const iconBg = isDark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.06)";
-  // Row bg = same as panel bg → seamless black in dark
   const rowBg  = isDark ? "hsl(0 0% 4%)"    : "hsl(0 0% 96.1%)";
-
   const panelW = typeof window !== "undefined" ? Math.min(480, window.innerWidth - 32) : 480;
+
+  const sectionItems = filtered.filter(i => i.type === "section");
+  const linkItems    = filtered.filter(i => i.type !== "section");
+
+  // flat list for keyboard nav (sections first, then links)
+  const flatFiltered = [...sectionItems, ...linkItems];
+
+  const handleItemClick = (item: typeof PORTFOLIO_LINKS[0]) => {
+    if (item.type === "pdf") {
+      openPdf(item.href, item.label, item.href);
+    } else if (item.external) {
+      window.open(item.href, "_blank", "noopener,noreferrer");
+    } else {
+      if (item.href === "#") window.scrollTo({ top: 0, behavior: "smooth" });
+      else document.querySelector(item.href)?.scrollIntoView({ behavior: "smooth" });
+    }
+    onClose();
+  };
+
+  const renderItem = (item: typeof PORTFOLIO_LINKS[0], flatIdx: number) => {
+    const isActive = flatIdx === selected;
+    return (
+      <div
+        key={item.href + item.label}
+        data-cmd-item
+        onClick={() => handleItemClick(item)}
+        onMouseEnter={() => setSelected(flatIdx)}
+        style={{
+          display: "flex", alignItems: "center", gap: 8,
+          padding: "7px 10px", margin: "0 4px", borderRadius: 7,
+          background: isActive ? accent : "transparent",
+          color: fg, cursor: "pointer",
+          transition: "background 0.1s",
+        }}
+      >
+        <div style={{
+          width: 26, height: 26, borderRadius: 6,
+          background: iconBg, border: `1px solid ${border}`,
+          display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+        }}>
+          <MenuItemIcon type={item.icon} color={isActive ? fg : muted} />
+        </div>
+        <span style={{
+          flex: 1, fontSize: 14, fontWeight: 500,
+          whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
+          fontFamily: "-apple-system,'SF Pro Display','Helvetica Neue',sans-serif",
+          letterSpacing: "-0.01em",
+        }}>
+          {item.label}
+        </span>
+        {item.external && (
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke={muted} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
+          </svg>
+        )}
+      </div>
+    );
+  };
 
   return (
     <>
-      {/* Overlay — blur on mobile, plain dark on desktop */}
-      <div
-        className={`cmdk-overlay${!open ? " closing" : ""}`}
-        onClick={onClose}
+      <div className={`cmdk-overlay${!open ? " closing" : ""}`} onClick={onClose}
         style={{ position: "fixed", inset: 0, zIndex: 9998, background: "rgba(0,0,0,0.55)" }}
       />
-
-      {/* Panel */}
       <div
         className={`cmdk-panel${!open ? " closing" : ""}`}
         style={{
-          position: "fixed",
-          top: 58,
+          position: "fixed", top: 58,
           left: panelLeft !== null ? panelLeft : "50%",
           transform: panelLeft !== null ? "none" : "translateX(-50%)",
-          zIndex: 9999,
-          width: panelW,
-          maxHeight: "min(480px, calc(100vh - 80px))",
-          background: bg,
-          borderRadius: 14,
-          border: `1px solid ${border}`,
+          zIndex: 9999, width: panelW,
+          maxHeight: "min(520px, calc(100vh - 80px))",
+          background: bg, borderRadius: 14, border: `1px solid ${border}`,
           boxShadow: "0 20px 50px -8px rgba(0,0,0,0.6)",
-          overflow: "hidden",
-          display: "flex",
-          flexDirection: "column",
-          padding: 4,
-          outline: "none",
+          overflow: "hidden", display: "flex", flexDirection: "column",
+          padding: 4, outline: "none",
         }}
-        role="dialog"
-        aria-label="Command palette"
+        role="dialog" aria-label="Command palette"
       >
         {/* Search input */}
         <div style={{ display: "flex", alignItems: "center", gap: 8, height: 48, padding: "0 12px", flexShrink: 0 }}>
           <span style={{ color: muted, display: "flex", flexShrink: 0 }}><SearchIcon size={18} /></span>
           <input
-            ref={inputRef}
-            value={query}
-            onChange={e => setQuery(e.target.value)}
-            placeholder="Type a command or search…"
-            enterKeyHint="search"
+            ref={inputRef} value={query} onChange={e => setQuery(e.target.value)}
+            placeholder="Type a command or search…" enterKeyHint="search"
             style={{
               flex: 1, background: "transparent", border: "none", outline: "none",
               color: fg, fontSize: 15, fontWeight: 500,
@@ -233,71 +282,57 @@ function CommandMenu({
           />
         </div>
 
-        {/* Results list — background matches panel (black in dark) */}
+        {/* Results */}
         <div ref={listRef} style={{
-          borderRadius: 10,
-          background: rowBg,
-          border: `1px solid ${border}`,
-          overflow: "hidden",
-          display: "flex",
-          flexDirection: "column",
+          borderRadius: 10, background: rowBg, border: `1px solid ${border}`,
+          overflow: "hidden", display: "flex", flexDirection: "column",
         }}>
-          <div className="scroll-fade" style={{ maxHeight: 300, overflowY: "auto", padding: "6px 0" }}>
-            <div style={{
-              padding: "4px 10px 6px",
-              fontSize: 10.5, fontWeight: 700, color: muted,
-              letterSpacing: "0.06em", textTransform: "uppercase",
-              fontFamily: "-apple-system,'SF Pro Display','Helvetica Neue',sans-serif",
-            }}>
-              {query ? "Results" : "Portfolio"}
-            </div>
-
-            {filtered.length === 0 ? (
-              <div style={{ padding: "20px 12px", textAlign: "center", color: muted, fontSize: 13 }}>
-                No results found.
-              </div>
-            ) : filtered.map((item, idx) => {
-              const isActive = idx === selected;
-              return (
-                <a
-                  key={item.href}
-                  data-cmd-item
-                  href={item.href}
-                  onClick={onClose}
-                  onMouseEnter={() => setSelected(idx)}
-                  style={{
-                    display: "flex", alignItems: "center", gap: 8,
-                    padding: "7px 10px", margin: "0 4px", borderRadius: 7,
-                    background: isActive ? accent : "transparent",
-                    color: fg, textDecoration: "none", cursor: "pointer",
-                    transition: "background 0.1s", outline: "none",
-                  }}
-                >
-                  <div style={{
-                    width: 26, height: 26, borderRadius: 6,
-                    background: iconBg, border: `1px solid ${border}`,
-                    display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
-                  }}>
-                    <MenuItemIcon type={item.icon} color={isActive ? fg : muted} />
-                  </div>
-                  <span style={{
-                    flex: 1, fontSize: 14, fontWeight: 500,
-                    whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
-                    fontFamily: "-apple-system,'SF Pro Display','Helvetica Neue',sans-serif",
-                    letterSpacing: "-0.01em",
-                  }}>
-                    {item.label}
-                  </span>
-                </a>
-              );
-            })}
+          <div className="scroll-fade" style={{ maxHeight: 340, overflowY: "auto", padding: "6px 0" }}>
+            {flatFiltered.length === 0 ? (
+              <div style={{ padding: "20px 12px", textAlign: "center", color: muted, fontSize: 13 }}>No results found.</div>
+            ) : (
+              <>
+                {/* Sections group */}
+                {sectionItems.filter(i => filtered.includes(i)).length > 0 && (
+                  <>
+                    <div style={{ padding: "4px 14px 5px", fontSize: 10.5, fontWeight: 700, color: muted, letterSpacing: "0.06em", textTransform: "uppercase", fontFamily: "-apple-system,sans-serif" }}>
+                      {query ? "Sections" : "Navigation"}
+                    </div>
+                    {sectionItems.filter(i => filtered.includes(i)).map(item => renderItem(item, flatFiltered.indexOf(item)))}
+                  </>
+                )}
+                {/* Links group */}
+                {linkItems.filter(i => filtered.includes(i)).length > 0 && (
+                  <>
+                    <div style={{ padding: "8px 14px 5px", fontSize: 10.5, fontWeight: 700, color: muted, letterSpacing: "0.06em", textTransform: "uppercase", fontFamily: "-apple-system,sans-serif" }}>
+                      Links
+                    </div>
+                    {linkItems.filter(i => filtered.includes(i)).map(item => renderItem(item, flatFiltered.indexOf(item)))}
+                  </>
+                )}
+              </>
+            )}
           </div>
         </div>
-        {/* "Go to page" footer REMOVED */}
+
+        {/* Footer — <I> left, arrow only right */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", height: 38, padding: "0 8px 0 6px", flexShrink: 0 }}>
+          {/* <I> brand mark */}
+          <span style={{ fontSize: 13, fontWeight: 700, color: muted, fontFamily: "-apple-system,'SF Pro Display',sans-serif", letterSpacing: "-0.02em", userSelect: "none" }}>
+            &lt;I&gt;
+          </span>
+          {/* Arrow only */}
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={muted} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="9 10 4 15 9 20"/><path d="M20 4v7a4 4 0 0 1-4 4H4"/>
+          </svg>
+        </div>
       </div>
     </>
   );
 }
+
+
+
 
 /* ── Command trigger ── */
 function CommandMenuTrigger({ onClick, btnRef }: { onClick: () => void; btnRef: React.RefObject<HTMLButtonElement | null> }) {
@@ -373,18 +408,18 @@ export function Navbar() {
         /* KBD */
         .nav-kbd {
           display:inline-flex;align-items:center;justify-content:center;
-          height:20px;min-width:24px;width:fit-content;gap:4px;
-          border-radius:4px;padding:0 5px;
-          font-family:inherit;font-size:12px;font-weight:500;line-height:1;
+          height:18px;min-width:20px;width:fit-content;gap:3px;
+          border-radius:3px;padding:0 4px;
+          font-family:inherit;font-size:11px;font-weight:400;line-height:1;
           color:var(--text-muted);user-select:none;pointer-events:none;
-          background:rgba(0,0,0,0.07);
-          border:1px solid rgba(0,0,0,0.15);
-          box-shadow:0 1px 0 rgba(0,0,0,0.12),inset 0 -1px 0 rgba(0,0,0,0.08);
+          background:rgba(0,0,0,0.04);
+          border:1px solid rgba(0,0,0,0.09);
+          box-shadow:none;
         }
         html.dark .nav-kbd {
-          background:rgba(255,255,255,0.13);
-          border:1px solid rgba(255,255,255,0.25);
-          box-shadow:0 1px 0 rgba(255,255,255,0.07),inset 0 -1px 0 rgba(255,255,255,0.07);
+          background:rgba(255,255,255,0.07);
+          border:1px solid rgba(255,255,255,0.13);
+          box-shadow:none;
           color:var(--text-muted);
         }
 
@@ -514,6 +549,7 @@ export function Navbar() {
           onClose={() => setCmdOpen(false)}
           isDark={isDark}
           triggerRef={triggerRef}
+          openPdf={openPdf}
         />
       )}
     </>
