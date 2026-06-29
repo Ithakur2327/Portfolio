@@ -59,20 +59,20 @@ function FluidGradientText({ text }: { text: string }) {
   const handleTouchEnd = () => triggerDrain();
 
   // ── Colors from reference image — teal palette ──
-  const strokeColor  = isDark ? "#00b89c" : "#7c3aed";
+  const strokeColor  = isDark ? "#00d4b0" : "#7c3aed";
 
   const baseStops = isDark
     ? [
-        { o: "0%",   c: "#002e28" },   // deep dark teal (bottom)
-        { o: "40%",  c: "#00685a" },   // mid teal
-        { o: "100%", c: "#00967F" },   // bright teal top (from image)
+        { o: "0%",   c: "#003d35" },   // deeper dark teal bottom
+        { o: "40%",  c: "#00a88e" },   // vivid mid teal
+        { o: "100%", c: "#00e8c6" },   // bright electric teal top
       ]
     : [{ o: "0%", c: "#1e0345" }, { o: "45%", c: "#5b21b6" }, { o: "100%", c: "#a855f7" }];
 
-  const brightColor  = isDark ? "#00c8a8" : "#e879f9";  // bright teal crystal
-  const crystalEdge  = isDark ? "#7fffd4" : "#fae8ff";  // aquamarine near-white glint
-  const midColor     = isDark ? "#00826e" : "#7c3aed";
-  const dimColor     = isDark ? "#001a16" : "#1e0345";
+  const brightColor  = isDark ? "#00ffda" : "#e879f9";  // electric teal — matches purple brightness
+  const crystalEdge  = isDark ? "#afffef" : "#fae8ff";  // near-white teal glint
+  const midColor     = isDark ? "#00c4a7" : "#7c3aed";
+  const dimColor     = isDark ? "#001f1a" : "#1e0345";
 
   const spread = VW * 0.26;
   const gx1 = useTransform(mouseX, v => v - spread);
@@ -136,7 +136,7 @@ function FluidGradientText({ text }: { text: string }) {
           textAnchor="middle" dominantBaseline="auto"
           fill="none"
           stroke={strokeColor}
-          strokeWidth="2.5"
+          strokeWidth="3"
           opacity={hollowOpacity}
           textLength={tl}
           lengthAdjust="spacingAndGlyphs"
@@ -328,7 +328,7 @@ export function Footer() {
         .fgt-svg {
           display: block;
           width: 100%;
-          height: clamp(90px, 16vw, 260px);
+          height: clamp(56px, 18vw, 300px);
           vertical-align: bottom;
           margin-bottom: 0;
         }
