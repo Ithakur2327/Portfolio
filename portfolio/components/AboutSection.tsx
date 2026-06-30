@@ -202,7 +202,7 @@ function DonutChart({ easy, medium, hard, totalSolved, totalProblems, totalEasy,
   );
 }
 
-// ── Portal tooltip — renders directly into document.body, escapes ALL stacking contexts ──
+// ── Portal tooltip — matches the navbar's theme-toggle tooltip style exactly ──
 function PortalTooltip({ hovered, accentColor, label, isDark }: {
   hovered: HoveredCell | null;
   accentColor: string;
@@ -213,10 +213,6 @@ function PortalTooltip({ hovered, accentColor, label, isDark }: {
   useEffect(() => { setMounted(true); }, []);
   if (!mounted || !hovered) return null;
 
-  const bg     = isDark ? "rgba(8,8,10,0.95)"      : "rgba(255,255,255,0.98)";
-  const fg     = isDark ? "rgba(255,255,255,0.5)"  : "rgba(0,0,0,0.5)";
-  const shadow = isDark ? "0 6px 18px rgba(0,0,0,0.65)" : "0 4px 14px rgba(0,0,0,0.16)";
-
   return createPortal(
     <div
       style={{
@@ -225,26 +221,23 @@ function PortalTooltip({ hovered, accentColor, label, isDark }: {
         top: hovered.y,
         transform: "translate(-50%, calc(-100% - 10px))",
         pointerEvents: "none",
-        // Highest possible z-index — above stat-card-3d (z-index unset), nav (z:100), scroll-arrow (z:95)
         zIndex: 2147483647,
-        padding: "4px 9px",
-        borderRadius: 7,
-        background: bg,
-        border: `1px solid ${accentColor}60`,
-        backdropFilter: "blur(10px)",
-        WebkitBackdropFilter: "blur(10px)",
-        boxShadow: `0 0 0 1px ${accentColor}18, ${shadow}`,
-        textAlign: "center",
+        background: "var(--text-primary)",
+        color: "var(--bg-base)",
+        padding: "6px 10px",
+        borderRadius: 8,
         whiteSpace: "nowrap",
         width: "max-content",
-        maxWidth: 160,
-        animation: "tooltipPop 0.18s cubic-bezier(0.34, 1.56, 0.64, 1) forwards",
+        boxShadow: "0 4px 16px rgba(0,0,0,0.22)",
+        animation: "statTooltipPop 0.08s cubic-bezier(0.16,1,0.3,1) forwards",
+        textAlign: "center",
       }}
     >
-      <div style={{ fontSize: 13, fontWeight: 800, color: accentColor, fontFamily: MONO, letterSpacing: "-0.03em", lineHeight: 1.2 }}>
+      <span className="stat-tooltip-arrow" />
+      <div style={{ fontSize: 12.5, fontWeight: 700, fontFamily: MONO, letterSpacing: "-0.02em", lineHeight: 1.25, color: accentColor }}>
         {hovered.count}
       </div>
-      <div style={{ fontSize: 8.5, color: fg, fontFamily: MONO, marginTop: 1, whiteSpace: "nowrap" }}>
+      <div style={{ fontSize: 10, fontWeight: 500, fontFamily: "-apple-system,'SF Pro Display','Helvetica Neue',sans-serif", opacity: 0.7, marginTop: 1 }}>
         {label} · {hovered.date}
       </div>
     </div>,
@@ -707,9 +700,15 @@ export function AboutSection() {
     <>
       <style suppressHydrationWarning>{`
         @keyframes spin { to { transform: rotate(360deg); } }
-        @keyframes tooltipPop {
-          from { opacity: 0; transform: translate(-50%, calc(-100% - 4px)) scale(0.80); }
+        @keyframes statTooltipPop {
+          from { opacity: 0; transform: translate(-50%, calc(-100% - 6px)) scale(0.94); }
           to   { opacity: 1; transform: translate(-50%, calc(-100% - 10px)) scale(1); }
+        }
+        .stat-tooltip-arrow {
+          position: absolute; top: 100%; left: 50%; transform: translateX(-50%);
+          width: 0; height: 0;
+          border-left: 5px solid transparent; border-right: 5px solid transparent;
+          border-top: 5px solid var(--text-primary);
         }
         @keyframes lcPulse { 0%,100%{opacity:1} 50%{opacity:0.7} }
         .lc-logo-outer { animation: lcPulse 2.4s ease-in-out infinite; }
