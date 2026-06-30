@@ -749,39 +749,30 @@ export function AboutSection() {
         html.light .lc-cell-3 { background: #984b10; }
         html.light .lc-cell-4 { background: #1f2328; }
 
-        /* 3D cards */
+        /* Stats panels — no box, content sits directly on black background */
         .stat-card-3d {
-          padding: 14px;
-          background: #080809;
-          border: 1px solid rgba(255,255,255,0.08);
-          border-radius: 12px;
+          padding: 0;
+          background: transparent;
+          border: none;
+          border-radius: 0;
           position: relative;
-          transition: transform 0.28s cubic-bezier(0.16,1,0.3,1), box-shadow 0.28s cubic-bezier(0.16,1,0.3,1);
-          box-shadow:
-            0 0 0 1px rgba(255,255,255,0.04) inset,
-            0 2px 4px rgba(0,0,0,0.60),
-            0 8px 20px rgba(0,0,0,0.50),
-            0 20px 40px rgba(0,0,0,0.35);
           display: flex;
           flex-direction: column;
-          /* CRITICAL: do NOT set overflow:hidden — it clips portal tooltips on some browsers */
           overflow: visible;
+          box-shadow: none;
+          transition: none;
         }
         .stat-card-3d:hover {
-          transform: translateY(-4px);
-          box-shadow:
-            0 0 0 1px rgba(255,255,255,0.07) inset,
-            0 4px 8px rgba(0,0,0,0.65),
-            0 14px 30px rgba(0,0,0,0.55),
-            0 28px 56px rgba(0,0,0,0.40);
+          transform: none;
+          box-shadow: none;
         }
         html.light .stat-card-3d {
-          background: #ffffff;
-          border-color: rgba(0,0,0,0.09);
-          box-shadow: 0 1px 2px rgba(0,0,0,0.07), 0 4px 10px rgba(0,0,0,0.05);
+          background: transparent;
+          border: none;
+          box-shadow: none;
         }
         html.light .stat-card-3d:hover {
-          box-shadow: 0 6px 14px rgba(0,0,0,0.09), 0 12px 28px rgba(0,0,0,0.07);
+          box-shadow: none;
         }
 
         .about-panels {
@@ -789,17 +780,47 @@ export function AboutSection() {
           gap: 14px;
           align-items: stretch;
           grid-template-columns: 1fr 1fr;
+          position: relative;
         }
+        /* Vertical partition line between GitHub and LeetCode panels */
+        .about-panels::after {
+          content: "";
+          position: absolute;
+          top: 0; bottom: 0;
+          left: 50%;
+          width: 1px;
+          background: var(--border);
+          transform: translateX(-50%);
+        }
+        .about-panels > .stat-card-3d:first-child { padding-right: 24px; }
+        .about-panels > .stat-card-3d:last-child  { padding-left: 24px; }
 
         @media (min-width: 601px) and (max-width: 1024px) {
           .about-panels { grid-template-columns: 1fr !important; }
+          .about-panels::after { display: none; }
+          .about-panels > .stat-card-3d:first-child,
+          .about-panels > .stat-card-3d:last-child { padding: 0; }
           .stat-card-3d { width: 100% !important; min-width: 0 !important; min-height: 220px; }
+          /* Horizontal divider between stacked panels on tablet */
+          .about-panels > .stat-card-3d:first-child {
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 24px !important;
+            margin-bottom: 4px;
+          }
           /* Graph cells scale up so graph fills card width */
           .gh-cell { width: 14px !important; height: 14px !important; border-radius: 3px !important; }
           .lc-cell { width: 14px !important; height: 14px !important; border-radius: 3px !important; }
         }
         @media (max-width: 639px) {
           .about-panels { grid-template-columns: 1fr; }
+          .about-panels::after { display: none; }
+          .about-panels > .stat-card-3d:first-child,
+          .about-panels > .stat-card-3d:last-child { padding: 0; }
+          .about-panels > .stat-card-3d:first-child {
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 20px !important;
+            margin-bottom: 4px;
+          }
         }
 
         .about-content {
@@ -809,7 +830,7 @@ export function AboutSection() {
         @media (max-width: 639px) {
           .about-content  { padding: 0 14px 28px; }
           .about-para     { font-size: 14px !important; line-height: 1.8 !important; }
-          .stat-card-3d   { width: 100% !important; min-width: 0 !important; padding: 12px !important; }
+          .stat-card-3d   { width: 100% !important; min-width: 0 !important; }
         }
         @media (max-width: 1024px) {
           .lc-body-desktop { display: none !important; }
