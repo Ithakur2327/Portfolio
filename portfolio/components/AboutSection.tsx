@@ -416,7 +416,7 @@ function LeetCodeStats({ username = "IThakur09" }: { username?: string }) {
       {/* Header */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10, flexWrap: "wrap", gap: 8 }}>
         <a href={`https://leetcode.com/${username}`} target="_blank" rel="noreferrer" style={{ display: "flex", alignItems: "center", gap: 8, textDecoration: "none" }}>
-          <LeetCodeLogo size={30} />
+          <span className="stat-logo-pop"><LeetCodeLogo size={30} /></span>
           <div>
             <div style={{ fontSize: 12, fontWeight: 700, color: "var(--text-primary)", fontFamily: SF }}>LeetCode</div>
             <div style={{ fontSize: 9, color: "var(--text-muted)", fontFamily: MONO }}>@{username}</div>
@@ -609,7 +609,7 @@ function GitHubGraph({ username = "Ithakur2327" }: { username?: string }) {
       {/* Header */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10, flexWrap: "wrap", gap: 8 }}>
         <a href={`https://github.com/${username}`} target="_blank" rel="noreferrer" style={{ display: "flex", alignItems: "center", gap: 8, textDecoration: "none" }}>
-          <GitHubLogo size={30} isDark={isDark} />
+          <span className="stat-logo-pop"><GitHubLogo size={30} isDark={isDark} /></span>
           <div>
             <div style={{ fontSize: 12, fontWeight: 700, color: "var(--text-primary)", fontFamily: SF }}>GitHub</div>
             <div style={{ fontSize: 9, color: "var(--text-muted)", fontFamily: MONO }}>@{username} ↗</div>
@@ -692,6 +692,7 @@ function GitHubGraph({ username = "Ithakur2327" }: { username?: string }) {
 ───────────────────────────────────────────────────── */
 export function AboutSection() {
   const { ref, revealClass } = useReveal();
+  const { ref: statsRef, visible: statsVisible } = useReveal(0.15);
 
   return (
     <>
@@ -837,6 +838,51 @@ export function AboutSection() {
           .lc-body-mobile  { display: flex !important; }
         }
 
+        /* ── Stats section entrance animation ── */
+        .stat-logo-pop {
+          display: inline-flex;
+          transform: scale(0.4);
+          opacity: 0;
+        }
+        .stats-pop-in .stat-logo-pop {
+          animation: stat-logo-pop-anim 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+        @keyframes stat-logo-pop-anim {
+          0%   { transform: scale(0.4); opacity: 0; }
+          60%  { transform: scale(1.12); opacity: 1; }
+          100% { transform: scale(1); opacity: 1; }
+        }
+
+        /* Heatmap cells — pop in with stagger using nth-child delay */
+        .gh-cell, .lc-cell {
+          transform: scale(0);
+          opacity: 0;
+        }
+        .stats-pop-in .gh-cell,
+        .stats-pop-in .lc-cell {
+          animation: stat-cell-pop-anim 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+        @keyframes stat-cell-pop-anim {
+          0%   { transform: scale(0); opacity: 0; }
+          70%  { transform: scale(1.18); opacity: 1; }
+          100% { transform: scale(1); opacity: 1; }
+        }
+        /* Stagger delay — cycle through small offsets per column using nth-child */
+        .stats-pop-in .gh-cell:nth-child(7n+1),
+        .stats-pop-in .lc-cell:nth-child(7n+1) { animation-delay: 0.02s; }
+        .stats-pop-in .gh-cell:nth-child(7n+2),
+        .stats-pop-in .lc-cell:nth-child(7n+2) { animation-delay: 0.05s; }
+        .stats-pop-in .gh-cell:nth-child(7n+3),
+        .stats-pop-in .lc-cell:nth-child(7n+3) { animation-delay: 0.08s; }
+        .stats-pop-in .gh-cell:nth-child(7n+4),
+        .stats-pop-in .lc-cell:nth-child(7n+4) { animation-delay: 0.11s; }
+        .stats-pop-in .gh-cell:nth-child(7n+5),
+        .stats-pop-in .lc-cell:nth-child(7n+5) { animation-delay: 0.14s; }
+        .stats-pop-in .gh-cell:nth-child(7n+6),
+        .stats-pop-in .lc-cell:nth-child(7n+6) { animation-delay: 0.17s; }
+        .stats-pop-in .gh-cell:nth-child(7n+7),
+        .stats-pop-in .lc-cell:nth-child(7n+7) { animation-delay: 0.20s; }
+
         .stat-card-3d ::-webkit-scrollbar { height: 4px; }
         .stat-card-3d ::-webkit-scrollbar-track { background: transparent; }
         .stat-card-3d ::-webkit-scrollbar-thumb { border-radius: 2px; background: rgba(128,128,128,0.25); }
@@ -856,14 +902,14 @@ export function AboutSection() {
         </div>
       </section>
 
-      <section className={revealClass}>
+      <section ref={statsRef} className={revealClass}>
         <div style={{ position: "relative", left: "50%", marginLeft: "-50vw", width: "100vw", background: "var(--bg-base)", borderTop: "1px solid var(--line)", borderBottom: "1px solid var(--line)" }}>
           <div className="about-content">
             <div style={{ paddingTop: 28 }}>
               <span style={{ fontSize: 28, fontWeight: 700, letterSpacing: "-0.03em", lineHeight: 1, fontFamily: SF, color: "var(--text-primary)" }}>Stats</span>
             </div>
             <div style={{ height: 1, background: "var(--border)", margin: "18px 0 28px" }} />
-            <div className="about-panels" style={{ paddingBottom: 32 }}>
+            <div className={`about-panels${statsVisible ? " stats-pop-in" : ""}`} style={{ paddingBottom: 32 }}>
               <div className="stat-card-3d">
                 <GitHubGraph username="Ithakur2327" />
               </div>
