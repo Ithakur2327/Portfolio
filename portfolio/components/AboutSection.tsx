@@ -203,14 +203,19 @@ function DonutChart({ easy, medium, hard, totalSolved, totalProblems, totalEasy,
 }
 
 // ── Portal tooltip — renders directly into document.body, escapes ALL stacking contexts ──
-function PortalTooltip({ hovered, accentColor, label }: {
+function PortalTooltip({ hovered, accentColor, label, isDark }: {
   hovered: HoveredCell | null;
   accentColor: string;
   label: string;
+  isDark: boolean;
 }) {
   const [mounted, setMounted] = useState(false);
   useEffect(() => { setMounted(true); }, []);
   if (!mounted || !hovered) return null;
+
+  const bg     = isDark ? "rgba(8,8,10,0.95)"      : "rgba(255,255,255,0.98)";
+  const fg     = isDark ? "rgba(255,255,255,0.5)"  : "rgba(0,0,0,0.5)";
+  const shadow = isDark ? "0 6px 18px rgba(0,0,0,0.65)" : "0 4px 14px rgba(0,0,0,0.16)";
 
   return createPortal(
     <div
@@ -222,22 +227,24 @@ function PortalTooltip({ hovered, accentColor, label }: {
         pointerEvents: "none",
         // Highest possible z-index — above stat-card-3d (z-index unset), nav (z:100), scroll-arrow (z:95)
         zIndex: 2147483647,
-        padding: "5px 10px",
-        borderRadius: 8,
-        background: "rgba(8,8,10,0.95)",
+        padding: "4px 9px",
+        borderRadius: 7,
+        background: bg,
         border: `1px solid ${accentColor}60`,
         backdropFilter: "blur(10px)",
         WebkitBackdropFilter: "blur(10px)",
-        boxShadow: `0 0 0 1px ${accentColor}18, 0 6px 18px rgba(0,0,0,0.65)`,
+        boxShadow: `0 0 0 1px ${accentColor}18, ${shadow}`,
         textAlign: "center",
         whiteSpace: "nowrap",
+        width: "max-content",
+        maxWidth: 160,
         animation: "tooltipPop 0.18s cubic-bezier(0.34, 1.56, 0.64, 1) forwards",
       }}
     >
-      <div style={{ fontSize: 14, fontWeight: 800, color: accentColor, fontFamily: MONO, letterSpacing: "-0.04em", lineHeight: 1.2 }}>
+      <div style={{ fontSize: 13, fontWeight: 800, color: accentColor, fontFamily: MONO, letterSpacing: "-0.03em", lineHeight: 1.2 }}>
         {hovered.count}
       </div>
-      <div style={{ fontSize: 9, color: "rgba(255,255,255,0.5)", fontFamily: MONO, marginTop: 2 }}>
+      <div style={{ fontSize: 8.5, color: fg, fontFamily: MONO, marginTop: 1, whiteSpace: "nowrap" }}>
         {label} · {hovered.date}
       </div>
     </div>,
@@ -254,6 +261,8 @@ const MON_SHORT = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","
 const DAY_LABELS_LC = ["","Mon","","Wed","","Fri",""];
 
 function LeetCodeStats({ username = "IThakur09" }: { username?: string }) {
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
   const [data, setData] = useState<LC | null>(null);
   const [loading, setLoading] = useState(true);
   const [calData, setCalData] = useState<LCCalDay[]>([]);
@@ -411,7 +420,7 @@ function LeetCodeStats({ username = "IThakur09" }: { username?: string }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
       {/* Portal tooltip — renders into body, no stacking context issues */}
-      <PortalTooltip hovered={hovered} accentColor="#FFA116" label="submissions" />
+      <PortalTooltip hovered={hovered} accentColor={isDark ? "#FFA116" : "#C77600"} label="submissions" isDark={isDark} />
 
       {/* Header */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10, flexWrap: "wrap", gap: 8 }}>
@@ -604,7 +613,7 @@ function GitHubGraph({ username = "Ithakur2327" }: { username?: string }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
       {/* Portal tooltip — renders into body */}
-      <PortalTooltip hovered={hovered} accentColor="#4ade80" label="contributions" />
+      <PortalTooltip hovered={hovered} accentColor={isDark ? "#4ade80" : "#1a7f37"} label="contributions" isDark={isDark} />
 
       {/* Header */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10, flexWrap: "wrap", gap: 8 }}>
