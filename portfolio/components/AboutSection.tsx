@@ -2,6 +2,7 @@
 
 import React, { useRef, useState, useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
+import * as TooltipPrimitive from "@radix-ui/react-tooltip";
 import {
   motion,
   useScroll,
@@ -218,28 +219,48 @@ function PortalTooltip({ hovered, accentColor, label, isDark }: {
       style={{
         position: "fixed",
         left: hovered.x,
-        top: hovered.y,
-        transform: "translate(-50%, calc(-100% - 10px))",
+        top: hovered.y - 10,
+        transform: "translate(-50%, -100%)",
         pointerEvents: "none",
         zIndex: 2147483647,
+        /* chanhdai: bg-foreground px-3 py-1.5 text-xs rounded-md */
         background: "var(--text-primary)",
         color: "var(--bg-base)",
-        padding: "6px 10px",
-        borderRadius: 8,
+        padding: "6px 12px",
+        borderRadius: 6,
+        fontSize: 12,
+        fontFamily: "-apple-system,'SF Pro Display','Helvetica Neue',sans-serif",
+        fontWeight: 500,
         whiteSpace: "nowrap",
         width: "max-content",
-        boxShadow: "0 4px 16px rgba(0,0,0,0.22)",
-        animation: "statTooltipPop 0.08s cubic-bezier(0.16,1,0.3,1) forwards",
-        textAlign: "center",
+        display: "inline-flex",
+        flexDirection: "column",
+        alignItems: "center",
+        gap: 1,
+        boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -2px rgba(0,0,0,0.1)",
+        animation: "chanhdaiTooltipIn 0.15s cubic-bezier(0.16,1,0.3,1) forwards",
+        transformOrigin: "bottom center",
       }}
     >
-      <span className="stat-tooltip-arrow" />
-      <div style={{ fontSize: 12.5, fontWeight: 700, fontFamily: MONO, letterSpacing: "-0.02em", lineHeight: 1.25, color: accentColor }}>
+      {/* count in accent, label+date muted — same structure as chanhdai */}
+      <span style={{ fontWeight: 700, color: accentColor, letterSpacing: "-0.02em", fontSize: 13 }}>
         {hovered.count}
-      </div>
-      <div style={{ fontSize: 10, fontWeight: 500, fontFamily: "-apple-system,'SF Pro Display','Helvetica Neue',sans-serif", opacity: 0.7, marginTop: 1 }}>
+      </span>
+      <span style={{ opacity: 0.72, fontSize: 10.5, letterSpacing: "0" }}>
         {label} · {hovered.date}
-      </div>
+      </span>
+      {/* chanhdai arrow: rotated 45° square, bg-foreground, translate-y to half-overlap border */}
+      <span style={{
+        position: "absolute",
+        top: "100%",
+        left: "50%",
+        transform: "translate(-50%, calc(-50% + 2px)) rotate(45deg)",
+        width: 10,
+        height: 10,
+        borderRadius: 2,
+        background: "var(--text-primary)",
+        zIndex: -1,
+      }} />
     </div>,
     document.body
   );
@@ -700,15 +721,10 @@ export function AboutSection() {
     <>
       <style suppressHydrationWarning>{`
         @keyframes spin { to { transform: rotate(360deg); } }
-        @keyframes statTooltipPop {
-          from { opacity: 0; transform: translate(-50%, calc(-100% - 6px)) scale(0.94); }
-          to   { opacity: 1; transform: translate(-50%, calc(-100% - 10px)) scale(1); }
-        }
-        .stat-tooltip-arrow {
-          position: absolute; top: 100%; left: 50%; transform: translateX(-50%);
-          width: 0; height: 0;
-          border-left: 5px solid transparent; border-right: 5px solid transparent;
-          border-top: 5px solid var(--text-primary);
+        /* chanhdai tooltip: data-[state=delayed-open]:animate-in fade-in-0 zoom-in-95 */
+        @keyframes chanhdaiTooltipIn {
+          from { opacity: 0; transform: translate(-50%, -100%) scale(0.95); }
+          to   { opacity: 1; transform: translate(-50%, -100%) scale(1); }
         }
         @keyframes lcPulse { 0%,100%{opacity:1} 50%{opacity:0.7} }
         .lc-logo-outer { animation: lcPulse 2.4s ease-in-out infinite; }
