@@ -2,23 +2,10 @@
 import { useState, useCallback, memo } from "react";
 import { motion } from "motion/react";
 import { useReveal } from "./useReveal";
-import dynamic from "next/dynamic";
-
-const LightRays = dynamic(() => import("./LightRays"), { ssr: false });
 
 const SF   = "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', sans-serif";
 const MONO = "'Geist Mono', monospace";
 const TO_EMAIL = "ithakur2327@gmail.com";
-
-const QUOTES = [
-  { text: "A man who is master of patience is master of everything else.", author: "George Savile" },
-  
-];
-
-function getQuoteForNow() {
-  const slot = Math.floor(Date.now() / (1000 * 60 * 60 * 6));
-  return QUOTES[slot % QUOTES.length];
-}
 
 function MailIcon() {
   return (
@@ -148,7 +135,6 @@ const ContactCard = memo(function ContactCard() {
 
 export function ContactSection() {
   const { ref, revealClass, visible } = useReveal();
-  const quote = getQuoteForNow();
 
   return (
     <>
@@ -221,74 +207,10 @@ export function ContactSection() {
           margin-top: 20px; gap: 10px;
         }
 
-        .quote-box {
-          position: relative;
-          background: var(--bg-card);
-          border: 1px solid var(--border);
-          border-radius: 16px;
-          padding: 36px 40px;
-          margin-top: 0;
-          overflow: hidden;
-          isolation: isolate;
-          min-height: 120px;
-          display: flex;
-          flex-direction: column;
-          justify-content: center;
-          transform: translateZ(0);
-        }
-        .quote-section-divider {
-          display: flex;
-          align-items: center;
-          gap: 14px;
-          margin: 32px 0;
-        }
-        .quote-section-divider::before,
-        .quote-section-divider::after {
-          content: '';
-          flex: 1;
-          height: 1px;
-          background: var(--border);
-        }
-        .quote-section-divider span {
-          font-size: 10px;
-          font-family: ${MONO};
-          color: var(--text-muted);
-          letter-spacing: 0.1em;
-          text-transform: uppercase;
-          white-space: nowrap;
-          user-select: none;
-        }
-        .quote-rays-wrap {
-          position: absolute; inset: 0; z-index: 0;
-          pointer-events: none; border-radius: 16px; overflow: hidden;
-        }
-        .quote-mark {
-          position: absolute; left: 24px; top: 10px; z-index: 1;
-          font-size: 200px; line-height: 1; font-family: Georgia, serif;
-          color: var(--text-secondary); opacity: 0.10;
-          pointer-events: none; user-select: none; font-style: normal;
-        }
-        .quote-content { position: relative; z-index: 2; }
-        .quote-text {
-          font-size: clamp(15px, 1.55vw, 20px);
-          font-style: italic; color: var(--text-secondary);
-          font-family: Georgia, 'Times New Roman', serif;
-          line-height: 1.65; letter-spacing: 0.01em;
-          margin: 0 0 12px; word-break: break-word;
-        }
-        .quote-author {
-          text-align: right; font-size: 13px;
-          font-family: ${MONO}; color: var(--text-muted);
-          margin: 0; letter-spacing: 0.04em;
-        }
-
         @media (max-width: 860px) { .contact-inner { padding: 0 22px 44px; } }
         @media (max-width: 640px) {
           .contact-inner { padding: 0 16px 36px; }
           .contact-form-grid { grid-template-columns: 1fr; }
-          .quote-box { padding: 28px 22px; }
-          .quote-mark { font-size: 140px; left: 16px; top: 6px; }
-          .quote-text { font-size: 14px; }
         }
       `}</style>
 
@@ -332,40 +254,6 @@ export function ContactSection() {
               transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1], delay: 0.14 }}
             >
               <ContactCard />
-            </motion.div>
-
-            {/* Quote */}
-            <motion.div
-              initial={false}
-              animate={visible ? { opacity: 1, y: 0 } : { opacity: 0, y: 16 }}
-              transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1], delay: 0.22 }}
-            >
-              {/* Divider between form and quote */}
-              <div className="quote-section-divider">
-                <span>✦ &nbsp;&nbsp; ✦</span>
-              </div>
-
-              <div className="quote-box">
-                <div className="quote-rays-wrap">
-                  <LightRays
-                    raysOrigin="top-center"
-                    raysColor="#a78bfa"
-                    raysSpeed={0.5}
-                    lightSpread={2.8}
-                    rayLength={2.5}
-                    fadeDistance={1.2}
-                    saturation={0.7}
-                    followMouse={false}
-                    mouseInfluence={0}
-                    pulsating={true}
-                  />
-                </div>
-                <span className="quote-mark" aria-hidden="true">&ldquo;</span>
-                <div className="quote-content">
-                  <p className="quote-text">&ldquo;{quote.text}&rdquo;</p>
-                  <p className="quote-author">— {quote.author}</p>
-                </div>
-              </div>
             </motion.div>
 
           </div>
