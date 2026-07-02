@@ -120,310 +120,6 @@ function SocialIconTile({href,label,icon,iconBg,iconBorder,iconColor}:{href:stri
   );
 }
 
-/* ─── Spotify-style Player ───────────────────────────── */
-function SpotifyPlayer() {
-  // ── ADD YOUR YOUTUBE LINKS HERE ──────────────────────
-  const PLAYLIST = [
-    "https://www.youtube.com/watch?v=jVVwYXV22zg&list=RDjVVwYXV22zg&start_radio=1",
-    "https://www.youtube.com/watch?v=cl0a3i2wFcc&list=RDcl0a3i2wFcc&start_radio=1",
-    
-    "https://www.youtube.com/watch?v=tlkb3cLfaOQ&list=RDtlkb3cLfaOQ&start_radio=1",
-    // "https://www.youtube.com/watch?v=ANOTHER_ID",
-  ];
-  // ─────────────────────────────────────────────────────
-
-  const [trackIdx, setTrackIdx] = useState(0);
-  const [playing, setPlaying] = useState(false);
-  const [hovered, setHovered] = useState(false);
-  const [songTitle, setSongTitle] = useState("Loading...");
-  const [artistName, setArtistName] = useState("");
-  const iframeRef = useRef<HTMLIFrameElement>(null);
-
-  const currentUrl = PLAYLIST[trackIdx] ?? "";
-  const currentId = (() => {
-    const m = currentUrl.match(/(?:v=|youtu\.be\/|embed\/)([a-zA-Z0-9_-]{11})/);
-    return m ? m[1] : "";
-  })();
-  const isMulti = PLAYLIST.length > 1;
-
-  // Cache fetched song metadata per URL to avoid repeated network calls
-  const titleCacheRef = useRef<Map<string, { title: string; artist: string }>>(new Map());
-
-  useEffect(() => {
-    if (!currentUrl) return;
-
-    // Check cache first
-    const cached = titleCacheRef.current.get(currentUrl);
-    if (cached) {
-      setSongTitle(cached.title);
-      setArtistName(cached.artist);
-      return;
-    }
-
-    setSongTitle("Loading..."); setArtistName("");
-    fetch(`https://www.youtube.com/oembed?url=${encodeURIComponent(currentUrl)}&format=json`)
-      .then(r => r.json())
-      .then(d => {
-        const rawTitle:  string = d.title      ?? "";
-        const rawAuthor: string = (d.author_name ?? "")
-          .replace(/\s*-\s*Topic$/i, "").trim();
-
-        // Strip noise from title
-        const cleaned = rawTitle
-          .replace(/\s*[|•·]\s*.*/g, "")
-          .replace(/\(.*?\)/g, "").replace(/\[.*?\]/g, "")
-          .replace(/\s*(ft\.|feat\.|official|video|audio|lyric|lyrics|full|hd|4k|new|latest|song|songs|punjabi|hindi|music)\b.*/gi, "")
-          .replace(/\b(19|20)\d{2}\b/g, "")
-          .replace(/\s{2,}/g, " ").trim();
-
-        let finalTitle = "";
-        let finalArtist = "";
-
-        // 1️⃣ Dash in title → most reliable split
-        const dashParts = cleaned.split(/\s*-\s+/);
-        if (dashParts.length >= 2) {
-          finalArtist = dashParts[0].trim();
-          finalTitle = dashParts.slice(1).join(" - ").trim();
-        } else {
-          // 2️⃣ author_name looks like a real artist (not a label/channel)?
-          const isLabel = /records|music|entertainment|productions|studios|worldwide|official|media|films|vevo|channel|tv\b/i
-            .test(rawAuthor);
-          if (rawAuthor && !isLabel) {
-            finalArtist = rawAuthor;
-            finalTitle = cleaned || rawTitle;
-          } else {
-            // 3️⃣ Fallback: last 2 words of title = artist, rest = song
-            const words = cleaned.split(/\s+/).filter(Boolean);
-            if (words.length >= 3) {
-              finalArtist = words.slice(-2).join(" ");
-              finalTitle = words.slice(0, -2).join(" ");
-            } else {
-              finalArtist = "";
-              finalTitle = cleaned || rawTitle;
-            }
-          }
-        }
-
-        // Store in cache
-        titleCacheRef.current.set(currentUrl, { title: finalTitle, artist: finalArtist });
-        setArtistName(finalArtist);
-        setSongTitle(finalTitle);
-      })
-      .catch(() => {
-        const fallback = { title: "Unknown", artist: "" };
-        titleCacheRef.current.set(currentUrl, fallback);
-        setSongTitle(fallback.title);
-      });
-  }, [currentUrl]);
-
-  const ytMsg = (cmd: object) => {
-    iframeRef.current?.contentWindow?.postMessage(JSON.stringify(cmd), "*");
-  };
-
-  const handlePlay = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (playing) {
-      ytMsg({ event: "command", func: "pauseVideo" });
-      setPlaying(false);
-    } else {
-      ytMsg({ event: "command", func: "playVideo" });
-      setPlaying(true);
-    }
-  };
-
-  const handleSkip = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setTrackIdx(i => (i + 1) % PLAYLIST.length);
-    setPlaying(true);
-  };
-
-  // Resume playback when tab becomes visible again
-  useEffect(() => {
-    const onVisibility = () => {
-      if (document.visibilityState === "visible" && playing) {
-        setTimeout(() => ytMsg({ event: "command", func: "playVideo" }), 300);
-      }
-    };
-    document.addEventListener("visibilitychange", onVisibility);
-    return () => document.removeEventListener("visibilitychange", onVisibility);
-  }, [playing]);
-
-  useEffect(() => {
-    const onMsg = (e: MessageEvent) => {
-      try {
-        const data = typeof e.data === "string" ? JSON.parse(e.data) : e.data;
-        if (data?.info?.playerState === 0) {
-          if (isMulti) {
-            setTrackIdx(i => (i + 1) % PLAYLIST.length);
-            setPlaying(true);
-          } else {
-            setTimeout(() => {
-              ytMsg({ event: "command", func: "seekTo", args: [0, true] });
-              ytMsg({ event: "command", func: "playVideo" });
-            }, 300);
-          }
-        }
-      } catch {}
-    };
-    window.addEventListener("message", onMsg);
-    return () => window.removeEventListener("message", onMsg);
-  }, [trackIdx, isMulti, PLAYLIST.length]);
-
-  useEffect(() => {
-    if (playing) {
-      const t = setTimeout(() => ytMsg({ event: "command", func: "playVideo" }), 800);
-      return () => clearTimeout(t);
-    }
-    // Intentionally only reacts to track changes — reads the current
-    // `playing` flag without re-running every time playback is paused/resumed.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [trackIdx]);
-
-  return (
-    <div
-      className="spotify-tile"
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      style={{
-        flex:1, display:"flex", alignItems:"center", gap:10,
-        padding:"0 14px",
-        background: hovered ? "var(--bg-secondary)" : "var(--bg-base)",
-        position:"relative",
-        transition:"background 0.18s",
-        minWidth:0, overflow:"hidden",
-        cursor:"default",
-        height:"100%",
-      }}
-    >
-      {/* Hidden YouTube iframe */}
-      {currentId && (
-        <iframe
-          ref={iframeRef}
-          key={currentId}
-          src={`https://www.youtube.com/embed/${currentId}?enablejsapi=1&autoplay=0&controls=0`}
-          allow="autoplay"
-          style={{ display:"none", width:0, height:0, border:"none", position:"absolute" }}
-          title="yt-audio"
-        />
-      )}
-
-      {/* Spotify glass logo */}
-      <div style={{
-        width:34, height:34, borderRadius:10, flexShrink:0,
-        background:"linear-gradient(135deg,rgba(30,215,96,0.22) 0%,rgba(30,215,96,0.06) 100%)",
-        border:"1px solid rgba(30,215,96,0.32)",
-        backdropFilter:"blur(8px)",
-        display:"flex", alignItems:"center", justifyContent:"center",
-        boxShadow:"0 2px 10px rgba(30,215,96,0.12)",
-      }}>
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="#1ED760">
-          <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/>
-        </svg>
-      </div>
-
-      {/* Text block + play/pause inline */}
-      <div style={{display:"flex", alignItems:"center", gap:8, minWidth:0, overflow:"hidden"}}>
-
-        {/* Text column — no flex:1 so button sits right after text */}
-        <div style={{minWidth:0, overflow:"hidden"}}>
-          {/* Top: EQ bars + song name only */}
-          <div style={{display:"flex", alignItems:"center", gap:5}}>
-            {playing && (
-              <span style={{
-                display:"inline-flex", alignItems:"flex-end", gap:1.5,
-                height:10, flexShrink:0,
-              }}>
-                {[0, 0.2, 0.1].map((delay, i) => (
-                  <span key={i} style={{
-                    display:"inline-block", width:2.5, borderRadius:1,
-                    background:"#1ED760",
-                    animation:`eq-bar 0.8s ease-in-out ${delay}s infinite alternate`,
-                    height:"100%",
-                  }}/>
-                ))}
-              </span>
-            )}
-            <span style={{
-              fontFamily:"'Geist',sans-serif",
-              fontSize:12.5, fontWeight:600,
-              color:"var(--text-primary)",
-              whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis",
-              display:"block",
-            }}>
-              {songTitle}
-            </span>
-          </div>
-
-          {/* Bottom: Singer name left · Recently Played right */}
-          <div style={{
-            display:"flex", alignItems:"center", gap:6,
-            marginTop:3,
-          }}>
-            {artistName && (
-              <span style={{
-                fontSize:10, fontFamily:"'Geist Mono',monospace",
-                color:"var(--text-primary)", opacity:0.5,
-                fontWeight:500, whiteSpace:"nowrap",
-              }}>
-                {artistName}
-              </span>
-            )}
-            <span style={{
-              fontSize:10, fontFamily:"'Geist Mono',monospace",
-              color:"var(--text-primary)", opacity:0.28,
-              fontWeight:500, whiteSpace:"nowrap",
-            }}>
-              Recently Played
-            </span>
-          </div>
-        </div>
-
-        {/* Play / Pause — immediately after text */}
-        <button onClick={handlePlay} style={{
-          width:24, height:24, flexShrink:0,
-          background:"none", border:"none", padding:0,
-          display:"flex", alignItems:"center", justifyContent:"center",
-          color:"#1ED760", cursor:"pointer",
-          transition:"transform 0.15s cubic-bezier(0.16,1,0.3,1), opacity 0.15s",
-          transform: hovered ? "scale(1.15)" : "scale(1)",
-          opacity: hovered ? 1 : 0.85,
-        }} aria-label={playing ? "Pause" : "Play"}>
-          {playing ? (
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor">
-              <rect x="6" y="4" width="4" height="16" rx="1"/>
-              <rect x="14" y="4" width="4" height="16" rx="1"/>
-            </svg>
-          ) : (
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor">
-              <polygon points="5,3 19,12 5,21"/>
-            </svg>
-          )}
-        </button>
-
-      </div>
-
-      {/* Skip — only when playlist > 1 */}
-      {isMulti && (
-        <button onClick={handleSkip} style={{
-          width:26, height:26, borderRadius:"50%",
-          background:"transparent", border:"1px solid var(--border)",
-          display:"flex", alignItems:"center", justifyContent:"center",
-          color:"var(--text-muted)", flexShrink:0, cursor:"pointer",
-          transition:"border-color 0.15s, color 0.15s",
-        }} aria-label="Next track">
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor">
-            <polygon points="5,3 15,12 5,21"/>
-            <rect x="17" y="3" width="3" height="18" rx="1"/>
-          </svg>
-        </button>
-      )}
-
-    </div>
-  );
-}
-
 /* ─── HoverBorderGradient ─────────────────────────────── */
 function HoverBorderGradient({ children }: { children: React.ReactNode }) {
   const { theme } = useTheme();
@@ -510,10 +206,6 @@ export function HeroSection() {
         .fs-in  { animation: fsIn  0.28s cubic-bezier(0.16,1,0.3,1) forwards }
         .fs-out { animation: fsOut 0.22s ease-in forwards }
 
-        @keyframes eq-bar {
-          from { transform: scaleY(0.2); }
-          to   { transform: scaleY(1);   }
-        }
         @keyframes pulse-dot {
           0%,100% { opacity:1; transform:scale(1); }
           50% { opacity:0.5; transform:scale(1.4); }
@@ -568,31 +260,11 @@ export function HeroSection() {
         }
         .s-icon-tile:last-child { border-right: none !important; }
 
-        /* Spotify tile */
-        .spotify-tile {
-          border-left: 1px solid var(--border);
-        }
-
         /* Social left group */
         .s-social-group {
           display: flex;
           flex-direction: row;
           flex: 0 0 auto;
-        }
-
-        /* Social partition */
-        .s-partition {
-          width: 1px;
-          background: var(--border);
-          flex-shrink: 0;
-          align-self: stretch;
-        }
-
-        /* Spotify wrapper */
-        .s-spotify-wrap {
-          flex: 1;
-          min-width: 0;
-          display: flex;
         }
 
         /* ── Extended name line (absolute, spans full profile row) ── */
@@ -649,10 +321,6 @@ export function HeroSection() {
             font-size: 15px !important;
             gap: 16px !important;
           }
-          /* Spotify + social bigger */
-          .spotify-tile {
-            padding: 0 24px !important;
-          }
           .s-icon-tile {
             padding: 18px 24px !important;
           }
@@ -707,9 +375,6 @@ export function HeroSection() {
           .h-info-pad .h-grid > div > a {
             font-size: 13.5px !important;
           }
-          .spotify-tile {
-            padding: 0 16px !important;
-          }
           .s-icon-tile {
             padding: 14px 18px !important;
           }
@@ -742,24 +407,12 @@ export function HeroSection() {
             border-bottom: none !important;
             flex-direction: row !important;
           }
-          .s-partition { display: none !important; }
           .s-icon-tile {
             flex: 1 !important;
             border-right: 1px solid var(--border) !important;
             justify-content: center !important;
           }
           .s-icon-tile:last-child { border-right: none !important; }
-          .s-spotify-wrap {
-            border-top: 1px solid var(--border) !important;
-            display: flex !important;
-          }
-          .spotify-tile {
-            border-left: none !important;
-            border-top: none !important;
-            justify-content: flex-start !important;
-            padding-left: calc(33.333vw / 2 - 22px) !important;
-            padding-right: 12px !important;
-          }
           .h-info-wrap {
             border-left: none !important;
             border-right: none !important;
@@ -863,8 +516,6 @@ export function HeroSection() {
 
               {/* ── Social row ── */}
               <div className="h-social" style={{borderTop:B}}>
-
-                {/* Left: 3 social icon tiles */}
                 <div className="s-social-group">
                   <SocialIconTile href="https://github.com/Ithakur2327" label="GitHub"
                     iconBg="var(--bg-secondary)" iconBorder="1px solid var(--border)" iconColor="var(--text-primary)"
@@ -872,22 +523,13 @@ export function HeroSection() {
                   />
                   <SocialIconTile href="https://www.linkedin.com/in/indresh-thakur" label="LinkedIn"
                     iconBg="#0A66C2" iconBorder="none" iconColor="#fff"
-                    icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>}
+                    icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 23.2 0 22.222 0h.003z"/></svg>}
                   />
                   <SocialIconTile href="" label="X / Twitter"
                     iconBg="var(--bg-secondary)" iconBorder="1px solid var(--border)" iconColor="var(--text-primary)"
                     icon={<svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.255 5.623zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>}
                   />
                 </div>
-
-                {/* Partition */}
-                <div className="s-partition"/>
-
-                {/* Right: Spotify player */}
-                <div className="s-spotify-wrap">
-                  <SpotifyPlayer/>
-                </div>
-
               </div>
             </div>
           </HoverBorderGradient>
