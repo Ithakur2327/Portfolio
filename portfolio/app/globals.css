@@ -1044,10 +1044,6 @@ html.light .nav-root.scrolled {
   .reveal { opacity: 1; transform: none; transition: none; }
 }
 
-/* ═══════════════════════════════════════════════════════════
-   MOBILE SCROLL PERFORMANCE — aggressive optimizations
-   Target: smooth 60fps scroll on mid/low-end phones
-═══════════════════════════════════════════════════════════ */
 
 /* Force GPU layers only on elements that need it — avoid layer explosion */
 @media (max-width: 860px) {
