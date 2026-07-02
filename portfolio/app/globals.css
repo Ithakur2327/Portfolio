@@ -655,9 +655,6 @@ html.light .gold-word {
   background: rgba(217,119,6,0.11); border-radius: 3px; padding: 1px 3px;
 }
 
-/* ═══════════════════════════════════════════════════════════
-   VIEW TRANSITION — exact chanhdai polygon-gradient
-═══════════════════════════════════════════════════════════ */
 ::view-transition-group(root) {
   animation-timing-function: var(--expo-out);
 }
@@ -762,11 +759,7 @@ html.light .stat-badge {
   scroll-behavior: smooth;
 }
 
-/* ═══════════════════════════════════════════════════════════
-   PERFORMANCE ENHANCEMENTS — only safe targeted GPU hints
-═══════════════════════════════════════════════════════════ */
 
-/* GPU layers for nav only — no wildcard selectors */
 .nav-root,
 .theme-btn,
 .logo-area,
@@ -778,10 +771,7 @@ html.light .stat-badge {
 
 .nav-root { isolation: isolate; }
 
-/* ═══════════════════════════════════════════════════════════
-   NAV — SLEEK PORTFOLIO EXACT STYLE
-   backdrop-blur-sm (4px) + semi-transparent bg, no border
-═══════════════════════════════════════════════════════════ */
+
 
 /* ── Dark theme ── */
 .nav-root {
