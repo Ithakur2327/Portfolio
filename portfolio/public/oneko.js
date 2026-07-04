@@ -19,22 +19,7 @@
   let idleAnimationFrame = 0;
   const nekoSpeed = 10;
 
-  // ── 10 Calico Themed Variants (CSS filter only – no extra image files) ──
-  // All use the same oneko_calico.gif/png; colour is shifted via CSS filter.
-  // Themes follow the 24-hour clock: skin = hour % 10
-  //
-  //  Hour  Skin#  Theme
-  //   0     0     🐱 Original Calico   (warm orange/cream/brown)
-  //   1     1     🌸 Pink Sakura        (soft pink)
-  //   2     2     💜 Purple Mystic      (deep purple)
-  //   3     3     🩵 Cyan Arctic        (icy blue-cyan)
-  //   4     4     💚 Green Forest       (leafy green)
-  //   5     5     💛 Golden Yellow      (bright gold)
-  //   6     6     ❤️  Ruby Red           (deep red)
-  //   7     7     🌙 Midnight Blue      (dark navy)
-  //   8     8     🪻 Lavender           (soft purple-pink)
-  //   9     9     🌅 Sunset Orange      (warm amber-orange)
-  //  10     0     (cycle repeats)
+  
   const catSkins = [
     {
       label: 'Original Calico',
