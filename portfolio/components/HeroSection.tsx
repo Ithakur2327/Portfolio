@@ -232,6 +232,8 @@ export function HeroSection() {
           display: flex;
           align-items: stretch;
           justify-content: stretch;
+          border-radius: 14px;
+          background: var(--bg-base);
         }
         .h-nameblock {
           flex: 1; display: flex; flex-direction: column;
@@ -293,6 +295,7 @@ export function HeroSection() {
             min-width: clamp(220px, 32vw, 300px) !important;
             height: clamp(220px, 32vw, 300px) !important;
             min-height: clamp(220px, 32vw, 300px) !important;
+            border-radius: 18px !important;
           }
           /* Name bigger */
           .h-nameblock h1 {
@@ -368,6 +371,7 @@ export function HeroSection() {
             min-width: clamp(160px, 26vw, 200px) !important;
             height: clamp(160px, 26vw, 200px) !important;
             min-height: clamp(160px, 26vw, 200px) !important;
+            border-radius: 14px !important;
           }
           .h-nameblock h1 {
             font-size: clamp(13px, 2vw, 18px) !important;
@@ -406,6 +410,7 @@ export function HeroSection() {
             border-bottom: none !important;
             overflow: hidden !important;
             padding: 0 !important;
+            border-radius: 12px !important;
           }
           .h-nameblock {
             flex: 1 !important;
@@ -463,6 +468,7 @@ export function HeroSection() {
             min-width: clamp(105px, 30vw, 135px) !important;
             height: clamp(105px, 30vw, 135px) !important;
             min-height: clamp(105px, 30vw, 135px) !important;
+            border-radius: 10px !important;
           }
           .h-nameblock h1 {
             font-size: clamp(10.5px, 3.8vw, 12.5px) !important;

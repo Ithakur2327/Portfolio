@@ -17,8 +17,8 @@
    THEME TOKENS
 ═══════════════════════════════════════════════════════════ */
 :root, html.dark {
-  --bg-base:        #040404;
-  --bg-base-edge:   #121214;
+  --bg-base:        #000000;
+  --bg-base-edge:   #0a0a0a;
   --bg-secondary:   rgba(10,10,12,0.55);
   --bg-hover:       rgba(22,22,25,0.80);
   --bg-card:        #0d0d0f;
