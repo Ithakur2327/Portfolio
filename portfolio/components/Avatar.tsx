@@ -111,11 +111,6 @@ export function Avatar() {
       }
 
       void main(){
-        /* circular clip */
-        vec2 c = uv * 2.0 - 1.0;
-        float d = length(c);
-        if(d > 1.0){ gl_FragColor = vec4(0.0); return; }
-
         /* ── Step 1: geometric zone gate ──
            Hair is ONLY in the top 33% of the image.
            Transition zone 0.28→0.34 softens the cutoff. */
@@ -153,7 +148,6 @@ export function Avatar() {
         vec2 finalUV   = mix(uv, warpedUV, mask);
 
         vec4 col = texture2D(tex, finalUV);
-        col.a *= smoothstep(1.0, 0.96, d);
         gl_FragColor = col;
       }`;
 
@@ -335,14 +329,14 @@ export function Avatar() {
     <div style={{
       width: "100%", height: "100%",
       maxWidth: "100%", maxHeight: "100%",
-      borderRadius: "50%", display: "block",
+      borderRadius: "0", display: "block",
     }}>
       <canvas
         ref={canvasRef}
         style={{
           width: "100%", height: "100%",
           maxWidth: "100%", maxHeight: "100%",
-          borderRadius: "50%", display: "block",
+          borderRadius: "0", display: "block",
         }}
       />
     </div>

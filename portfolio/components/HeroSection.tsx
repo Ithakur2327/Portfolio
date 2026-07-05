@@ -224,6 +224,7 @@ export function HeroSection() {
           min-width: 198px;
           height: 198px;
           min-height: 198px;
+          aspect-ratio: 1 / 1;
           flex-shrink: 0;
           border-right: 1px solid var(--border);
           overflow: hidden;
@@ -413,20 +414,20 @@ export function HeroSection() {
 
           /* Name — forced to a single line, crisp sizing */
           .h-nameblock > div:nth-child(2) {
-            padding: 8px 12px 0 !important;
+            padding: clamp(6px, 2.2vw, 10px) clamp(10px, 3.5vw, 16px) 0 !important;
           }
           .h-nameblock h1 {
-            font-size: clamp(11px, 3.6vw, 14px) !important;
-            letter-spacing: 0 !important;
-            line-height: 1.4 !important;
+            font-size: clamp(12px, 4vw, 15.5px) !important;
+            letter-spacing: 0.01em !important;
+            line-height: 1.3 !important;
             white-space: nowrap !important;
           }
           .h-nameblock > div:nth-child(4) {
-            padding: 6px 12px 10px !important;
+            padding: clamp(5px, 1.8vw, 8px) clamp(10px, 3.5vw, 16px) clamp(8px, 2.6vw, 12px) !important;
           }
           .h-nameblock .fs-in,
           .h-nameblock .fs-out {
-            font-size: 11.5px !important;
+            font-size: clamp(10.5px, 3vw, 12.5px) !important;
           }
 
           .h-grid {
@@ -463,7 +464,8 @@ export function HeroSection() {
             min-height: clamp(105px, 30vw, 135px) !important;
           }
           .h-nameblock h1 {
-            font-size: clamp(10px, 3.4vw, 12.5px) !important;
+            font-size: clamp(10.5px, 3.8vw, 12.5px) !important;
+            line-height: 1.25 !important;
           }
         }
       `}</style>
@@ -491,7 +493,7 @@ export function HeroSection() {
                 <h1 ref={nameRef} style={{
                   fontSize:"clamp(16px,2.5vw,23px)", fontWeight:400,
                   letterSpacing:"0.03em", color:"var(--text-primary)",
-                  lineHeight:1.8, margin:0,
+                  lineHeight:1.35, margin:0,
                   fontFamily:"'Press Start 2P',monospace", display:"inline-block",
                 }}>Indresh Thakur</h1>
               </div>
