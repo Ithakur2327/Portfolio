@@ -292,6 +292,9 @@ export function HeroSection() {
           .h-nameblock {
             padding: 0 8px !important;
           }
+          .h-nameblock > div:nth-child(2) {
+            padding-top: 26px !important;
+          }
           /* Flip sentence bigger */
           .h-nameblock .fs-in,
           .h-nameblock .fs-out {
@@ -408,7 +411,7 @@ export function HeroSection() {
 
           /* Name — forced to a single line, same size, extra top room for height */
           .h-nameblock > div:nth-child(2) {
-            padding: clamp(10px, 3.2vw, 16px) clamp(10px, 3.5vw, 16px) 0 !important;
+            padding: clamp(18px, 5.5vw, 26px) clamp(10px, 3.5vw, 16px) 0 !important;
           }
           .h-nameblock h1 {
             font-size: clamp(12px, 4vw, 15.5px) !important;
@@ -487,7 +490,7 @@ export function HeroSection() {
             {/* Name + flip */}
             <div className="h-nameblock">
               <div style={{flex:1}}/>
-              <div style={{padding:"18px 20px 0"}}>
+              <div style={{padding:"28px 20px 0"}}>
                 <h1 style={{
                   fontSize:"clamp(16px,2.5vw,23px)", fontWeight:400,
                   letterSpacing:"0.03em", color:"var(--text-primary)",
