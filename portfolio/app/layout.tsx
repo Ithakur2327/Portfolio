@@ -57,6 +57,19 @@ export default function RootLayout({
         <link rel="dns-prefetch" href="https://upload.wikimedia.org" />
         {/* Preconnect for the actual project card photos — bigger payload than the logo icons */}
         <link rel="preconnect" href="https://images.unsplash.com" crossOrigin="anonymous" />
+
+        {/* Fonts — the site references 'Geist', 'Geist Mono' and 'Press Start 2P'
+            by name throughout its components, but none of them were ever
+            actually loaded, so every browser silently fell back to a generic
+            system font. That mismatch is what made text look fuzzy/inconsistent
+            (especially the pixel-style name heading). Loading the real
+            families here fixes it everywhere without touching each component. */}
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&family=Press+Start+2P&display=swap"
+          rel="stylesheet"
+        />
       </head>
 
       <body>

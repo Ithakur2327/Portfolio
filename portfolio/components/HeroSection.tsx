@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { Avatar } from "./Avatar";
 import { useTheme } from "./ThemeProvider";
 import { usePdfModal } from "./PdfViewerModal";
@@ -191,7 +191,6 @@ const CW = 1028;
 export function HeroSection() {
   const [vis, setVis] = useState<"ssr" | "visible">("ssr");
   const { openPdf } = usePdfModal();
-  const nameRef = useRef<HTMLHeadingElement>(null);
 
   useEffect(() => { setTimeout(() => setVis("visible"), 50); }, []);
 
@@ -206,11 +205,6 @@ export function HeroSection() {
         .fs-in  { animation: fsIn  0.28s cubic-bezier(0.16,1,0.3,1) forwards }
         .fs-out { animation: fsOut 0.22s ease-in forwards }
 
-        @keyframes pulse-dot {
-          0%,100% { opacity:1; transform:scale(1); }
-          50% { opacity:0.5; transform:scale(1.4); }
-        }
-
         /* ── Profile row ── */
         .h-profile {
           display: flex;
@@ -222,15 +216,14 @@ export function HeroSection() {
         .h-avatar {
           width: 198px;
           min-width: 198px;
-          height: 198px;
-          min-height: 198px;
-          aspect-ratio: 1 / 1;
+          height: 168px;
+          min-height: 168px;
           flex-shrink: 0;
           border-right: 1px solid var(--border);
           overflow: hidden;
           padding: 0;
           display: flex;
-          align-items: stretch;
+          align-items: flex-start;
           justify-content: stretch;
           border-radius: 14px;
           background: var(--bg-base);
@@ -280,21 +273,14 @@ export function HeroSection() {
           flex: 0 0 auto;
         }
 
-        /* ── Extended name line (absolute, spans full profile row) ── */
-        .h-name-line { bottom: 36px; }
-        @media (max-width: 600px) {
-          /* On mobile nameblock is shorter so flip area is still 36px */
-          .h-name-line { bottom: 36px; }
-        }
-
         /* ── iPad / Tablet (768px–1180px) ── */
         @media (min-width: 768px) and (max-width: 1180px) {
           /* Avatar — much bigger on tablets */
           .h-avatar {
             width: clamp(220px, 32vw, 300px) !important;
             min-width: clamp(220px, 32vw, 300px) !important;
-            height: clamp(220px, 32vw, 300px) !important;
-            min-height: clamp(220px, 32vw, 300px) !important;
+            height: calc(clamp(220px, 32vw, 300px) - 40px) !important;
+            min-height: calc(clamp(220px, 32vw, 300px) - 40px) !important;
             border-radius: 18px !important;
           }
           /* Name bigger */
@@ -353,8 +339,8 @@ export function HeroSection() {
           .h-avatar {
             width: clamp(260px, 28vw, 300px) !important;
             min-width: clamp(260px, 28vw, 300px) !important;
-            height: clamp(260px, 28vw, 300px) !important;
-            min-height: clamp(260px, 28vw, 300px) !important;
+            height: calc(clamp(260px, 28vw, 300px) - 40px) !important;
+            min-height: calc(clamp(260px, 28vw, 300px) - 40px) !important;
           }
           .h-nameblock h1 {
             font-size: clamp(20px, 2.6vw, 26px) !important;
@@ -369,8 +355,8 @@ export function HeroSection() {
           .h-avatar {
             width: clamp(160px, 26vw, 200px) !important;
             min-width: clamp(160px, 26vw, 200px) !important;
-            height: clamp(160px, 26vw, 200px) !important;
-            min-height: clamp(160px, 26vw, 200px) !important;
+            height: calc(clamp(160px, 26vw, 200px) - 28px) !important;
+            min-height: calc(clamp(160px, 26vw, 200px) - 28px) !important;
             border-radius: 14px !important;
           }
           .h-nameblock h1 {
@@ -404,8 +390,8 @@ export function HeroSection() {
           .h-avatar {
             width: clamp(125px, 34vw, 165px) !important;
             min-width: clamp(125px, 34vw, 165px) !important;
-            height: clamp(125px, 34vw, 165px) !important;
-            min-height: clamp(125px, 34vw, 165px) !important;
+            height: calc(clamp(125px, 34vw, 165px) - 22px) !important;
+            min-height: calc(clamp(125px, 34vw, 165px) - 22px) !important;
             border-right: 1px solid var(--border) !important;
             border-bottom: none !important;
             overflow: hidden !important;
@@ -466,8 +452,8 @@ export function HeroSection() {
           .h-avatar {
             width: clamp(105px, 30vw, 135px) !important;
             min-width: clamp(105px, 30vw, 135px) !important;
-            height: clamp(105px, 30vw, 135px) !important;
-            min-height: clamp(105px, 30vw, 135px) !important;
+            height: calc(clamp(105px, 30vw, 135px) - 16px) !important;
+            min-height: calc(clamp(105px, 30vw, 135px) - 16px) !important;
             border-radius: 10px !important;
           }
           .h-nameblock h1 {
@@ -490,30 +476,23 @@ export function HeroSection() {
           <div className="h-profile" style={{maxWidth:CW, margin:"0 auto", borderLeft:B, borderRight:B}}>
 
             {/* Avatar */}
-            <div className="h-avatar" style={{position:"relative"}}>
-              <Avatar />
-              <div aria-hidden style={{
-                position:"absolute", inset:0, pointerEvents:"none",
-                background:"radial-gradient(circle at center, transparent 58%, var(--bg-base) 100%)",
-                opacity:0.55,
-                mixBlendMode: "normal",
-              }}/>
-              <div aria-hidden style={{
-                position:"absolute", inset:0, pointerEvents:"none",
-                boxShadow:"inset 0 0 22px 6px var(--bg-base)",
-                opacity:0.35,
-              }}/>
+            <div className="h-avatar">
+              <div style={{width:"100%", aspectRatio:"1 / 1", flexShrink:0}}>
+                <Avatar />
+              </div>
             </div>
 
             {/* Name + flip */}
             <div className="h-nameblock">
               <div style={{flex:1}}/>
               <div style={{padding:"10px 20px 0"}}>
-                <h1 ref={nameRef} style={{
+                <h1 style={{
                   fontSize:"clamp(16px,2.5vw,23px)", fontWeight:400,
                   letterSpacing:"0.03em", color:"var(--text-primary)",
                   lineHeight:1.35, margin:0,
                   fontFamily:"'Press Start 2P',monospace", display:"inline-block",
+                  WebkitFontSmoothing:"antialiased", MozOsxFontSmoothing:"grayscale",
+                  textRendering:"optimizeLegibility",
                 }}>Indresh Thakur</h1>
               </div>
               {/* Line at full nameblock width — connects left partition to right border */}
