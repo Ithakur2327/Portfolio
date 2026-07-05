@@ -285,7 +285,7 @@ export function HeroSection() {
           }
           /* Same text size, just more vertical room so it sits on the partition line */
           .h-nameblock h1 {
-            font-size: clamp(18px, 2.8vw, 26px) !important;
+            font-size: clamp(19px, 3vw, 28px) !important;
             line-height: 1 !important;
             letter-spacing: 0.03em !important;
           }
@@ -294,6 +294,7 @@ export function HeroSection() {
           }
           .h-nameblock > div:nth-child(2) {
             padding-top: 26px !important;
+            margin-bottom: -4px !important;
           }
           /* Flip sentence bigger */
           .h-nameblock .fs-in,
@@ -347,8 +348,11 @@ export function HeroSection() {
             min-height: calc(clamp(260px, 28vw, 300px) - 14px) !important;
           }
           .h-nameblock h1 {
-            font-size: clamp(20px, 2.6vw, 26px) !important;
+            font-size: clamp(21px, 2.8vw, 28px) !important;
             line-height: 1 !important;
+          }
+          .h-nameblock > div:nth-child(2) {
+            margin-bottom: -4px !important;
           }
           .h-info-pad {
             padding: 32px 44px 28px !important;
@@ -365,8 +369,11 @@ export function HeroSection() {
             border-radius: 14px !important;
           }
           .h-nameblock h1 {
-            font-size: clamp(13px, 2vw, 18px) !important;
+            font-size: clamp(14px, 2.2vw, 19px) !important;
             line-height: 1 !important;
+          }
+          .h-nameblock > div:nth-child(2) {
+            margin-bottom: -3px !important;
           }
           .h-info-wrap {
             margin-left: 20px !important;
@@ -409,12 +416,13 @@ export function HeroSection() {
             overflow: hidden !important;
           }
 
-          /* Name — forced to a single line, same size, extra top room for height */
+          /* Name — forced to a single line, slightly bigger, touching the line below */
           .h-nameblock > div:nth-child(2) {
             padding: clamp(18px, 5.5vw, 26px) clamp(10px, 3.5vw, 16px) 0 !important;
+            margin-bottom: -2px !important;
           }
           .h-nameblock h1 {
-            font-size: clamp(12px, 4vw, 15.5px) !important;
+            font-size: clamp(13px, 4.2vw, 16.5px) !important;
             letter-spacing: 0.04em !important;
             line-height: 1 !important;
             white-space: nowrap !important;
@@ -462,9 +470,12 @@ export function HeroSection() {
             border-radius: 10px !important;
           }
           .h-nameblock h1 {
-            font-size: clamp(10.5px, 3.8vw, 12.5px) !important;
+            font-size: clamp(11px, 4vw, 13.5px) !important;
             letter-spacing: 0.03em !important;
             line-height: 1 !important;
+          }
+          .h-nameblock > div:nth-child(2) {
+            margin-bottom: -2px !important;
           }
         }
       `}</style>
@@ -490,9 +501,9 @@ export function HeroSection() {
             {/* Name + flip */}
             <div className="h-nameblock">
               <div style={{flex:1}}/>
-              <div style={{padding:"28px 20px 0"}}>
+              <div style={{padding:"28px 20px 0", marginBottom:"-3px"}}>
                 <h1 style={{
-                  fontSize:"clamp(16px,2.5vw,23px)", fontWeight:400,
+                  fontSize:"clamp(17px,2.7vw,25px)", fontWeight:400,
                   letterSpacing:"0.03em", color:"var(--text-primary)",
                   lineHeight:1, margin:0,
                   fontFamily:"'Press Start 2P',monospace", display:"inline-block",
