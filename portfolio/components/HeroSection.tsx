@@ -216,8 +216,8 @@ export function HeroSection() {
         .h-avatar {
           width: 198px;
           min-width: 198px;
-          height: 168px;
-          min-height: 168px;
+          height: 188px;
+          min-height: 188px;
           flex-shrink: 0;
           border-right: 1px solid var(--border);
           overflow: hidden;
@@ -279,8 +279,8 @@ export function HeroSection() {
           .h-avatar {
             width: clamp(220px, 32vw, 300px) !important;
             min-width: clamp(220px, 32vw, 300px) !important;
-            height: calc(clamp(220px, 32vw, 300px) - 40px) !important;
-            min-height: calc(clamp(220px, 32vw, 300px) - 40px) !important;
+            height: calc(clamp(220px, 32vw, 300px) - 14px) !important;
+            min-height: calc(clamp(220px, 32vw, 300px) - 14px) !important;
             border-radius: 18px !important;
           }
           /* Name bigger */
@@ -339,8 +339,8 @@ export function HeroSection() {
           .h-avatar {
             width: clamp(260px, 28vw, 300px) !important;
             min-width: clamp(260px, 28vw, 300px) !important;
-            height: calc(clamp(260px, 28vw, 300px) - 40px) !important;
-            min-height: calc(clamp(260px, 28vw, 300px) - 40px) !important;
+            height: calc(clamp(260px, 28vw, 300px) - 14px) !important;
+            min-height: calc(clamp(260px, 28vw, 300px) - 14px) !important;
           }
           .h-nameblock h1 {
             font-size: clamp(20px, 2.6vw, 26px) !important;
@@ -355,8 +355,8 @@ export function HeroSection() {
           .h-avatar {
             width: clamp(160px, 26vw, 200px) !important;
             min-width: clamp(160px, 26vw, 200px) !important;
-            height: calc(clamp(160px, 26vw, 200px) - 28px) !important;
-            min-height: calc(clamp(160px, 26vw, 200px) - 28px) !important;
+            height: calc(clamp(160px, 26vw, 200px) - 10px) !important;
+            min-height: calc(clamp(160px, 26vw, 200px) - 10px) !important;
             border-radius: 14px !important;
           }
           .h-nameblock h1 {
@@ -390,8 +390,8 @@ export function HeroSection() {
           .h-avatar {
             width: clamp(125px, 34vw, 165px) !important;
             min-width: clamp(125px, 34vw, 165px) !important;
-            height: calc(clamp(125px, 34vw, 165px) - 22px) !important;
-            min-height: calc(clamp(125px, 34vw, 165px) - 22px) !important;
+            height: calc(clamp(125px, 34vw, 165px) - 8px) !important;
+            min-height: calc(clamp(125px, 34vw, 165px) - 8px) !important;
             border-right: 1px solid var(--border) !important;
             border-bottom: none !important;
             overflow: hidden !important;
@@ -452,8 +452,8 @@ export function HeroSection() {
           .h-avatar {
             width: clamp(105px, 30vw, 135px) !important;
             min-width: clamp(105px, 30vw, 135px) !important;
-            height: calc(clamp(105px, 30vw, 135px) - 16px) !important;
-            min-height: calc(clamp(105px, 30vw, 135px) - 16px) !important;
+            height: calc(clamp(105px, 30vw, 135px) - 6px) !important;
+            min-height: calc(clamp(105px, 30vw, 135px) - 6px) !important;
             border-radius: 10px !important;
           }
           .h-nameblock h1 {
