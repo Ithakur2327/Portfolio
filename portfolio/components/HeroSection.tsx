@@ -390,13 +390,16 @@ export function HeroSection() {
           }
         }
 
+        /* ── Mobile (< 600px) ── */
         @media (max-width: 600px) {
           .h-profile { flex-direction: row !important; }
+
+          /* Bigger avatar than before */
           .h-avatar {
-            width: clamp(100px, 28vw, 148px) !important;
-            min-width: clamp(100px, 28vw, 148px) !important;
-            height: clamp(100px, 28vw, 148px) !important;
-            min-height: clamp(100px, 28vw, 148px) !important;
+            width: clamp(125px, 34vw, 165px) !important;
+            min-width: clamp(125px, 34vw, 165px) !important;
+            height: clamp(125px, 34vw, 165px) !important;
+            min-height: clamp(125px, 34vw, 165px) !important;
             border-right: 1px solid var(--border) !important;
             border-bottom: none !important;
             overflow: hidden !important;
@@ -407,6 +410,25 @@ export function HeroSection() {
             min-width: 0 !important;
             overflow: hidden !important;
           }
+
+          /* Name — forced to a single line, crisp sizing */
+          .h-nameblock > div:nth-child(2) {
+            padding: 8px 12px 0 !important;
+          }
+          .h-nameblock h1 {
+            font-size: clamp(11px, 3.6vw, 14px) !important;
+            letter-spacing: 0 !important;
+            line-height: 1.4 !important;
+            white-space: nowrap !important;
+          }
+          .h-nameblock > div:nth-child(4) {
+            padding: 6px 12px 10px !important;
+          }
+          .h-nameblock .fs-in,
+          .h-nameblock .fs-out {
+            font-size: 11.5px !important;
+          }
+
           .h-grid {
             grid-template-columns: 1fr !important;
             gap: 11px 0 !important;
@@ -432,12 +454,16 @@ export function HeroSection() {
           }
         }
 
+        /* ── Small mobile (< 380px) ── */
         @media (max-width: 380px) {
           .h-avatar {
-            width: clamp(88px, 26vw, 110px) !important;
-            min-width: clamp(88px, 26vw, 110px) !important;
-            height: clamp(88px, 26vw, 110px) !important;
-            min-height: clamp(88px, 26vw, 110px) !important;
+            width: clamp(105px, 30vw, 135px) !important;
+            min-width: clamp(105px, 30vw, 135px) !important;
+            height: clamp(105px, 30vw, 135px) !important;
+            min-height: clamp(105px, 30vw, 135px) !important;
+          }
+          .h-nameblock h1 {
+            font-size: clamp(10px, 3.4vw, 12.5px) !important;
           }
         }
       `}</style>
