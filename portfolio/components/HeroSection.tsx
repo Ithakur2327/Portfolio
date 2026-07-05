@@ -506,7 +506,7 @@ export function HeroSection() {
                   fontSize:"clamp(17px,2.7vw,25px)", fontWeight:400,
                   letterSpacing:"0.03em", color:"var(--text-primary)",
                   lineHeight:1, margin:0,
-                  fontFamily:"'Press Start 2P',monospace", display:"inline-block",
+                  fontFamily:"'Geist',sans-serif", display:"inline-block",
                   WebkitFontSmoothing:"antialiased", MozOsxFontSmoothing:"grayscale",
                   textRendering:"optimizeLegibility",
                 }}>Indresh Thakur</h1>
