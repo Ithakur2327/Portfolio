@@ -371,6 +371,7 @@ export function HeroSection() {
           }
           .h-nameblock h1 {
             font-size: clamp(13px, 2vw, 18px) !important;
+            line-height: 1.5 !important;
           }
           .h-info-wrap {
             margin-left: 20px !important;
@@ -418,8 +419,8 @@ export function HeroSection() {
           }
           .h-nameblock h1 {
             font-size: clamp(12px, 4vw, 15.5px) !important;
-            letter-spacing: 0.01em !important;
-            line-height: 1.3 !important;
+            letter-spacing: 0.04em !important;
+            line-height: 1.6 !important;
             white-space: nowrap !important;
           }
           .h-nameblock > div:nth-child(4) {
@@ -465,7 +466,8 @@ export function HeroSection() {
           }
           .h-nameblock h1 {
             font-size: clamp(10.5px, 3.8vw, 12.5px) !important;
-            line-height: 1.25 !important;
+            letter-spacing: 0.03em !important;
+            line-height: 1.5 !important;
           }
         }
       `}</style>
@@ -482,8 +484,19 @@ export function HeroSection() {
           <div className="h-profile" style={{maxWidth:CW, margin:"0 auto", borderLeft:B, borderRight:B}}>
 
             {/* Avatar */}
-            <div className="h-avatar">
+            <div className="h-avatar" style={{position:"relative"}}>
               <Avatar />
+              <div aria-hidden style={{
+                position:"absolute", inset:0, pointerEvents:"none",
+                background:"radial-gradient(circle at center, transparent 58%, var(--bg-base) 100%)",
+                opacity:0.55,
+                mixBlendMode: "normal",
+              }}/>
+              <div aria-hidden style={{
+                position:"absolute", inset:0, pointerEvents:"none",
+                boxShadow:"inset 0 0 22px 6px var(--bg-base)",
+                opacity:0.35,
+              }}/>
             </div>
 
             {/* Name + flip */}
