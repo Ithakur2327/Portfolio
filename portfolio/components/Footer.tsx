@@ -362,7 +362,7 @@ export function Footer() {
       <footer className="footer-root">
         <div className="footer-profile-band">
           <div className="footer-avatar">
-            <img key={avatarSrc} src={avatarSrc} alt="Indresh Thakur" />
+            <img key={avatarSrc} src={avatarSrc} alt="Indresh Thakur" loading="lazy" decoding="async" />
           </div>
           <div className="footer-profile-info">
             <p className="footer-profile-name">Indresh Thakur</p>

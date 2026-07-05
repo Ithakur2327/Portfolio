@@ -405,7 +405,7 @@ function ProjectModal({ proj, onClose }: { proj: typeof PROJECTS[0]; onClose: ()
 
             {/* Left: Image + Links */}
             <div className="pm-img-col">
-              <img src={proj.img} alt={proj.name} />
+              <img src={proj.img} alt={proj.name} loading="lazy" decoding="async" />
               {/* GitHub & Live Demo below image */}
               <div className="pm-img-links">
                 <a href={proj.github} target="_blank" rel="noreferrer"

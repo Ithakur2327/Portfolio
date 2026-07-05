@@ -66,10 +66,34 @@ export default function RootLayout({
             families here fixes it everywhere without touching each component. */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        {/* Loaded as non-blocking: preload the stylesheet, then swap its
+            media to "all" once it's fetched. This removes the render-blocking
+            round trip to Google Fonts that was stalling first paint — the
+            fonts, weights, and fallback behavior are identical, just applied
+            a beat sooner instead of holding up the page. */}
         <link
+          rel="preload"
+          as="style"
           href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&family=Press+Start+2P&display=swap"
-          rel="stylesheet"
         />
+        <link
+          id="gfonts-stylesheet"
+          rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&family=Press+Start+2P&display=swap"
+          media="print"
+        />
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              "document.getElementById('gfonts-stylesheet').addEventListener('load',function(){this.media='all';});",
+          }}
+        />
+        <noscript>
+          <link
+            rel="stylesheet"
+            href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&family=Press+Start+2P&display=swap"
+          />
+        </noscript>
       </head>
 
       <body>
