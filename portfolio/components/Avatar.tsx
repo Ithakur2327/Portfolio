@@ -40,8 +40,8 @@ export function Avatar() {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const DPR  = Math.min(window.devicePixelRatio || 1, 2);
-    const SIZE = 512;
+    const DPR  = Math.min(window.devicePixelRatio || 1, 3);
+    const SIZE = 768;
     canvas.width  = SIZE * DPR;
     canvas.height = SIZE * DPR;
 

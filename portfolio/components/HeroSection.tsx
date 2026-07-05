@@ -220,10 +220,10 @@ export function HeroSection() {
 
         /* Avatar box */
         .h-avatar {
-          width: 162px;
-          min-width: 162px;
-          height: 162px;
-          min-height: 162px;
+          width: 200px;
+          min-width: 200px;
+          height: 200px;
+          min-height: 200px;
           flex-shrink: 0;
           border-right: 1px solid var(--border);
           overflow: hidden;
@@ -249,6 +249,16 @@ export function HeroSection() {
           display: grid;
           grid-template-columns: 1fr 1fr;
           gap: 11px 48px;
+          position: relative;
+        }
+        /* Dashed vertical partition down the middle — purely decorative, never intercepts clicks */
+        .h-grid::before {
+          content: "";
+          position: absolute;
+          top: 0; bottom: 0; left: 50%;
+          transform: translateX(-50%);
+          border-left: 1px dashed var(--border);
+          pointer-events: none;
         }
 
         /* ── Social row ── */
@@ -285,8 +295,8 @@ export function HeroSection() {
           }
           /* Name bigger */
           .h-nameblock h1 {
-            font-size: clamp(32px, 5.5vw, 52px) !important;
-            letter-spacing: -0.05em !important;
+            font-size: clamp(18px, 2.8vw, 26px) !important;
+            letter-spacing: 0.03em !important;
           }
           .h-nameblock {
             padding: 0 8px !important;
@@ -343,7 +353,7 @@ export function HeroSection() {
             min-height: clamp(260px, 28vw, 300px) !important;
           }
           .h-nameblock h1 {
-            font-size: clamp(38px, 5vw, 52px) !important;
+            font-size: clamp(20px, 2.6vw, 26px) !important;
           }
           .h-info-pad {
             padding: 32px 44px 28px !important;
@@ -359,7 +369,7 @@ export function HeroSection() {
             min-height: clamp(160px, 26vw, 200px) !important;
           }
           .h-nameblock h1 {
-            font-size: clamp(24px, 4vw, 32px) !important;
+            font-size: clamp(13px, 2vw, 18px) !important;
           }
           .h-info-wrap {
             margin-left: 20px !important;
@@ -401,6 +411,7 @@ export function HeroSection() {
             grid-template-columns: 1fr !important;
             gap: 11px 0 !important;
           }
+          .h-grid::before { display: none !important; }
           .h-spacer { display: none !important; }
           .h-social { flex-direction: column !important; }
           .s-social-group {
@@ -452,10 +463,10 @@ export function HeroSection() {
               <div style={{flex:1}}/>
               <div style={{padding:"10px 20px 0"}}>
                 <h1 ref={nameRef} style={{
-                  fontSize:"clamp(20px,3.5vw,32px)", fontWeight:700,
-                  letterSpacing:"-0.04em", color:"var(--text-primary)",
-                  lineHeight:1.15, margin:0,
-                  fontFamily:"'Geist',sans-serif", display:"inline-block",
+                  fontSize:"clamp(16px,2.5vw,23px)", fontWeight:400,
+                  letterSpacing:"0.03em", color:"var(--text-primary)",
+                  lineHeight:1.8, margin:0,
+                  fontFamily:"'Press Start 2P',monospace", display:"inline-block",
                 }}>Indresh Thakur</h1>
               </div>
               {/* Line at full nameblock width — connects left partition to right border */}
@@ -517,7 +528,7 @@ export function HeroSection() {
               <div className="h-social" style={{borderTop:B}}>
                 <div className="s-social-group">
                   <SocialIconTile href="mailto:ithakur2327@gmail.com" label="Mail"
-                    iconBg="#EA4335" iconBorder="none" iconColor="#fff"
+                    iconBg="var(--bg-secondary)" iconBorder="1px solid var(--border)" iconColor="var(--text-primary)"
                     icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>}
                   />
                   <SocialIconTile href="https://github.com/Ithakur2327" label="GitHub"
