@@ -78,7 +78,7 @@ const nextConfig: NextConfig = {
   },
 
   experimental: {
-    optimizePackageImports: ["motion", "framer-motion", "lucide-react"],
+    optimizePackageImports: ["motion"],
     // Turbo for faster local development
   },
 
