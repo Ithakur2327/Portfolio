@@ -220,10 +220,10 @@ export function HeroSection() {
 
         /* Avatar box */
         .h-avatar {
-          width: 200px;
-          min-width: 200px;
-          height: 200px;
-          min-height: 200px;
+          width: 198px;
+          min-width: 198px;
+          height: 198px;
+          min-height: 198px;
           flex-shrink: 0;
           border-right: 1px solid var(--border);
           overflow: hidden;
