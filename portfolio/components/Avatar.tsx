@@ -40,8 +40,14 @@ export function Avatar() {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const DPR  = Math.min(window.devicePixelRatio || 1, 3);
-    const SIZE = 768;
+    // Size the actual WebGL framebuffer to match how big the avatar is
+    // rendered on screen (capped DPR of 2), instead of a fixed 768px buffer.
+    // The avatar only ever displays at ~100-300px, so rendering a huge fixed
+    // canvas was wasted GPU work on every single frame — a real contributor
+    // to jank/battery drain, especially on mobile where this was 3x more
+    // pixels than the display could even show.
+    const DPR = Math.min(window.devicePixelRatio || 1, 2);
+    let SIZE = Math.max(Math.round(canvas.clientWidth || canvas.clientHeight || 200), 64);
     canvas.width  = SIZE * DPR;
     canvas.height = SIZE * DPR;
 
