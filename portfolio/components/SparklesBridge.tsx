@@ -19,10 +19,10 @@ export function SparklesBridge() {
 
     const getHeight = () => {
       const vw = window.innerWidth;
-      if (vw >= 1024 && vw <= 1180) return 120;
-      if (vw >= 768  && vw <= 1023) return 100;
-      if (vw >= 600  && vw <= 767)  return 80;
-      return 48;
+      if (vw >= 1024 && vw <= 1180) return 144;
+      if (vw >= 768  && vw <= 1023) return 120;
+      if (vw >= 600  && vw <= 767)  return 96;
+      return 60;
     };
 
     let canvasW = window.innerWidth;
@@ -130,18 +130,18 @@ export function SparklesBridge() {
     <div style={{ background: "var(--bg-base)" }}>
       <canvas
         ref={canvasRef}
-        style={{ display: "block", width: "100%", height: 48 }}
+        style={{ display: "block", width: "100%", height: 60 }}
         className="sparkles-bridge-canvas"
       />
       <style suppressHydrationWarning>{`
         @media (min-width: 600px) and (max-width: 767px) {
-          .sparkles-bridge-canvas { height: 80px !important; }
+          .sparkles-bridge-canvas { height: 96px !important; }
         }
         @media (min-width: 768px) and (max-width: 1023px) {
-          .sparkles-bridge-canvas { height: 100px !important; }
+          .sparkles-bridge-canvas { height: 120px !important; }
         }
         @media (min-width: 1024px) and (max-width: 1180px) {
-          .sparkles-bridge-canvas { height: 120px !important; }
+          .sparkles-bridge-canvas { height: 144px !important; }
         }
       `}</style>
     </div>
