@@ -561,7 +561,9 @@ export function ProjectsSection() {
           <div style={{ maxWidth: 1060, margin: "0 auto", padding: "0 20px 32px" }}>
             <div style={{ paddingTop: 24, marginBottom: 4 }}>
               <span style={{ display: "inline-flex", alignItems: "center", gap: 10, fontSize: 28, fontWeight: 700, letterSpacing: "-0.03em", lineHeight: 1, fontFamily: SF, color: "var(--text-primary)" }}>
-                <SectionIcon type="box" size={24} strokeWidth={2.2} />
+                <span style={{ width: 34, height: 34, borderRadius: 9, background: "var(--bg-hover)", border: "1px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--text-secondary)", flexShrink: 0 }}>
+                  <SectionIcon type="box" size={15} strokeWidth={2} />
+                </span>
                 Projects
               </span>
             </div>

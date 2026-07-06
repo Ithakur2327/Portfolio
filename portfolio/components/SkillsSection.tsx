@@ -463,7 +463,9 @@ export function SkillsSection() {
                 fontFamily:SF, color:"var(--text-primary)",
                 display:"inline-flex", alignItems:"center", gap:10,
               }}>
-                <SectionIcon type="layers" size={24} strokeWidth={2.2} />
+                <span style={{ width: 34, height: 34, borderRadius: 9, background: "var(--bg-hover)", border: "1px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--text-secondary)", flexShrink: 0 }}>
+                  <SectionIcon type="layers" size={15} strokeWidth={2} />
+                </span>
                 Skills
               </span>
               <LampToggleButton lampOn={lampOn} onToggle={handleLampToggle} color={LAMP_ACCENT} isDark={isDark} />

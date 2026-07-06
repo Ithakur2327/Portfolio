@@ -226,7 +226,7 @@ export function HeroSection() {
           display: flex;
           align-items: flex-start;
           justify-content: stretch;
-          border-radius: 14px;
+          border-radius: 20px;
           background: var(--bg-base);
         }
         .h-nameblock {
@@ -282,7 +282,7 @@ export function HeroSection() {
             min-width: clamp(220px, 32vw, 300px) !important;
             height: calc(clamp(220px, 32vw, 300px) - 14px) !important;
             min-height: calc(clamp(220px, 32vw, 300px) - 14px) !important;
-            border-radius: 18px !important;
+            border-radius: 24px !important;
           }
           /* Same text size, just more vertical room so it sits on the partition line */
           .h-nameblock h1 {
@@ -367,7 +367,7 @@ export function HeroSection() {
             min-width: clamp(160px, 26vw, 200px) !important;
             height: calc(clamp(160px, 26vw, 200px) - 10px) !important;
             min-height: calc(clamp(160px, 26vw, 200px) - 10px) !important;
-            border-radius: 14px !important;
+            border-radius: 18px !important;
           }
           .h-nameblock h1 {
             font-size: clamp(14px, 2.2vw, 19px) !important;
@@ -409,7 +409,7 @@ export function HeroSection() {
             border-bottom: none !important;
             overflow: hidden !important;
             padding: 0 !important;
-            border-radius: 12px !important;
+            border-radius: 16px !important;
           }
           .h-nameblock {
             flex: 1 !important;
@@ -468,7 +468,7 @@ export function HeroSection() {
             min-width: clamp(105px, 30vw, 135px) !important;
             height: calc(clamp(105px, 30vw, 135px) - 6px) !important;
             min-height: calc(clamp(105px, 30vw, 135px) - 6px) !important;
-            border-radius: 10px !important;
+            border-radius: 14px !important;
           }
           .h-nameblock h1 {
             font-size: clamp(11px, 4vw, 13.5px) !important;
@@ -484,10 +484,12 @@ export function HeroSection() {
       <section id="home"
         className={vis === "ssr" ? "" : "reveal visible"}
       >
-        <div style={{ position: "relative" }}>
+        <div style={{ position: "relative", left: "50%", marginLeft: "-50vw", width: "100vw" }}>
           {/* Dot-grid backdrop — connects the avatar down through to where
               the About section begins. This is a partition indicator, not
-              a page-covering background: it lives only behind the Hero. */}
+              a page-covering background: it lives only behind the Hero.
+              Full-bleed (100vw) so it's never clipped by the content
+              max-width and shows completely around the info card. */}
           <div style={{ position: "absolute", inset: 0, zIndex: 0 }}>
             <DotField />
           </div>
@@ -512,7 +514,7 @@ export function HeroSection() {
               <div style={{flex:1}}/>
               <div style={{padding:"28px 20px 0", marginBottom:"-3px"}}>
                 <h1 style={{
-                  fontSize:"clamp(17px,2.7vw,25px)", fontWeight:400,
+                  fontSize:"clamp(19px,3vw,28px)", fontWeight:700,
                   letterSpacing:"0.03em", color:"var(--text-primary)",
                   lineHeight:1, margin:0,
                   fontFamily:"'Geist Pixel Square','Geist Mono',monospace", display:"inline-block",

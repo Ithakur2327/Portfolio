@@ -44,7 +44,7 @@ function DotCanvas({ dotColor, activeDotColor, interactive }: {
     const ctx = canvas.getContext("2d", { willReadFrequently: false, colorSpace: "srgb" });
     if (!ctx) return;
 
-    const SPACING = 6;
+    const SPACING = 4.5;
     const RADIUS  = 110;
     const RADIUS2 = RADIUS * RADIUS;
     const DOT_R   = 1;
@@ -256,24 +256,18 @@ export function DotField({ interactive = true }: { interactive?: boolean }) {
  * indicator* between two sections (same convention as SparklesBridge):
  * a bounded-height band, not a page-covering background.
  */
-export function DotDivider({ height = 56 }: { height?: number }) {
+export function DotDivider({ height = 38 }: { height?: number }) {
   return (
     <div
       aria-hidden="true"
       style={{
         position: "relative", left: "50%", marginLeft: "-50vw",
         width: "100vw", height,
-        background: "var(--bg-base)",
         overflow: "hidden",
       }}
       className="dot-divider"
     >
       <DotField interactive />
-      <style suppressHydrationWarning>{`
-        @media (min-width: 600px)  and (max-width: 767px)  { .dot-divider { height: 72px !important; } }
-        @media (min-width: 768px)  and (max-width: 1023px) { .dot-divider { height: 88px !important; } }
-        @media (min-width: 1024px) and (max-width: 1180px) { .dot-divider { height: 96px !important; } }
-      `}</style>
     </div>
   );
 }
