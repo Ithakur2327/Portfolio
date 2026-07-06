@@ -3,6 +3,8 @@ import { ScrollEnhancements } from "@/components/ScrollEnhancements";
 import { HeroSection }     from "@/components/HeroSection";
 import { SparklesBridge }  from "@/components/SparklesBridge";
 import { AboutSection }    from "@/components/AboutSection";
+import { StatsSection }    from "@/components/StatsSection";
+import { DotDivider }      from "@/components/DotBackground";
 import { SkillsSection }   from "@/components/SkillsSection";
 import { ProjectsSection } from "@/components/ProjectsSection";
 import { EducationSection} from "@/components/EducationSection";
@@ -19,9 +21,15 @@ export default function Home() {
         <div className="page-wrapper">
           <HeroSection />
           <AboutSection />
+          <DotDivider />
+          <StatsSection />
+          <DotDivider />
           <SkillsSection />
+          <DotDivider />
           <ProjectsSection />
+          <DotDivider />
           <EducationSection />
+          <DotDivider />
           <ContactSection />
           <Footer />
         </div>

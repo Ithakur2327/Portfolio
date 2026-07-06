@@ -5,6 +5,7 @@ import { useLowPerf } from "./PerfMode";
 import { useReveal } from "./useReveal";
 import { useTheme } from "./ThemeProvider";
 import { playThemeToggleSound } from "@/lib/soundcn/sounds";
+import { SectionIcon } from "./SectionIcon";
 
 const MONO = "'Geist Mono', 'SF Mono', monospace";
 const SF   = "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', sans-serif";
@@ -460,8 +461,9 @@ export function SkillsSection() {
                 fontSize:28, fontWeight:700,
                 letterSpacing:"-0.03em", lineHeight:1,
                 fontFamily:SF, color:"var(--text-primary)",
-                display:"inline-block",
+                display:"inline-flex", alignItems:"center", gap:10,
               }}>
+                <SectionIcon type="layers" size={24} strokeWidth={2.2} />
                 Skills
               </span>
               <LampToggleButton lampOn={lampOn} onToggle={handleLampToggle} color={LAMP_ACCENT} isDark={isDark} />

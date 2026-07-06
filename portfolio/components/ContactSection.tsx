@@ -2,19 +2,11 @@
 import { useState, useCallback, memo } from "react";
 import { motion } from "motion/react";
 import { useReveal } from "./useReveal";
+import { SectionIcon } from "./SectionIcon";
 
 const SF   = "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', sans-serif";
 const MONO = "'Geist Mono', monospace";
 const TO_EMAIL = "ithakur2327@gmail.com";
-
-function MailIcon() {
-  return (
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
-      <polyline points="22,6 12,13 2,6"/>
-    </svg>
-  );
-}
 
 function SendIcon() {
   return (
@@ -222,7 +214,7 @@ export function ContactSection() {
             <div style={{ paddingTop: 28, marginBottom: 20 }}>
               <h2 style={{ fontSize: 28, fontWeight: 700, letterSpacing: "-0.03em", lineHeight: 1, fontFamily: SF, color: "var(--text-primary)", display: "flex", alignItems: "center", gap: 10, margin: 0 }}>
                 <span style={{ width: 34, height: 34, borderRadius: 9, background: "var(--bg-hover)", border: "1px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--text-secondary)", flexShrink: 0 }}>
-                  <MailIcon />
+                  <SectionIcon type="mail" size={15} strokeWidth={2} />
                 </span>
                 Contact
               </h2>

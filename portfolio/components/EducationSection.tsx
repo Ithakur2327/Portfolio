@@ -2,6 +2,7 @@
 import { useRef } from "react";
 import { motion, useInView } from "motion/react";
 import { useReveal } from "./useReveal";
+import { SectionIcon } from "./SectionIcon";
 import { usePdfModal } from "./PdfViewerModal";
 import { slugify } from "@/lib/utils";
 
@@ -66,23 +67,7 @@ const CERTIFICATIONS = [
   },
 ];
 
-function EduIcon() {
-  return (
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
-      <path d="M6 12v5c3 3 9 3 12 0v-5"/>
-    </svg>
-  );
-}
 
-function CertIcon() {
-  return (
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="12" cy="8" r="6"/>
-      <path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/>
-    </svg>
-  );
-}
 
 function ArrowIcon() {
   return (
@@ -125,7 +110,7 @@ function EduCard({ school, degree, short, period, index, sectionVisible }: {
     >
       {/* left graduation icon */}
       <div className="edu-card-icon">
-        <EduIcon />
+        <SectionIcon type="book" size={15} strokeWidth={2} />
       </div>
       {/* vertical connecting line (hidden for last) */}
       {index < EDUCATION.length - 1 && <div className="edu-card-line" />}
@@ -446,7 +431,7 @@ export function EducationSection() {
             {/* Title row – exactly like Projects/Skills */}
             <div className="edu-sec-titlerow">
               <h2 className="edu-sec-title">
-                <span className="edu-sec-icon"><EduIcon /></span>
+                <span className="edu-sec-icon"><SectionIcon type="book" size={15} strokeWidth={2} /></span>
                 Education
               </h2>
             </div>
@@ -488,7 +473,7 @@ export function EducationSection() {
             {/* Title row */}
             <div className="edu-sec-titlerow">
               <h2 className="edu-sec-title">
-                <span className="edu-sec-icon"><CertIcon /></span>
+                <span className="edu-sec-icon"><SectionIcon type="badge" size={15} strokeWidth={2} /></span>
                 Certifications
                 <span className="cert-count-badge">{CERTIFICATIONS.length}</span>
               </h2>
@@ -516,7 +501,7 @@ export function EducationSection() {
                   animate={vis2 ? { opacity: 1, y: 0, rotateX: 0 } : { opacity: 0, y: 14, rotateX: 6 }}
                   transition={{ duration: 0.46, ease: [0.22, 1, 0.36, 1], delay: vis2 ? i * 0.08 : 0 }}
                 >
-                  <div className="cert-icon-box"><CertIcon /></div>
+                  <div className="cert-icon-box"><SectionIcon type="badge" size={15} strokeWidth={2} /></div>
                   <div style={{ flex: 1 }}>
                     <p className="cert-title-txt">{cert.title}</p>
                     <p className="cert-meta-txt">@ {cert.issuer} · {cert.date}</p>

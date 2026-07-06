@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { Avatar } from "./Avatar";
+import { DotField } from "./DotBackground";
 import { useTheme } from "./ThemeProvider";
 import { usePdfModal } from "./PdfViewerModal";
 
@@ -480,9 +481,17 @@ export function HeroSection() {
         }
       `}</style>
 
-      <section id="about"
+      <section id="home"
         className={vis === "ssr" ? "" : "reveal visible"}
       >
+        <div style={{ position: "relative" }}>
+          {/* Dot-grid backdrop — connects the avatar down through to where
+              the About section begins. This is a partition indicator, not
+              a page-covering background: it lives only behind the Hero. */}
+          <div style={{ position: "absolute", inset: 0, zIndex: 0 }}>
+            <DotField />
+          </div>
+          <div style={{ position: "relative", zIndex: 1 }}>
 
         {/* ── PROFILE ROW ── */}
         <div style={{
@@ -506,7 +515,7 @@ export function HeroSection() {
                   fontSize:"clamp(17px,2.7vw,25px)", fontWeight:400,
                   letterSpacing:"0.03em", color:"var(--text-primary)",
                   lineHeight:1, margin:0,
-                  fontFamily:"'Press Start 2P',monospace", display:"inline-block",
+                  fontFamily:"'Geist Pixel Square','Geist Mono',monospace", display:"inline-block",
                   WebkitFontSmoothing:"antialiased", MozOsxFontSmoothing:"grayscale",
                   textRendering:"optimizeLegibility",
                 }}>Indresh Thakur</h1>
@@ -591,6 +600,8 @@ export function HeroSection() {
           </HoverBorderGradient>
         </div>
 
+          </div>
+        </div>
       </section>
     </>
   );

@@ -1,4 +1,15 @@
 /* ═══════════════════════════════════════════════════════════
+   FONTS — self-hosted (no external request, never 404s)
+═══════════════════════════════════════════════════════════ */
+@font-face {
+  font-family: 'Geist Pixel Square';
+  src: url('/fonts/GeistPixel-Square.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* ═══════════════════════════════════════════════════════════
    @property — GPU-interpolated custom properties
    Registered FIRST so they apply globally from load.
 ═══════════════════════════════════════════════════════════ */

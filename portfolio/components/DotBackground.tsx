@@ -3,49 +3,51 @@ import { useEffect, useRef } from "react";
 import { useTheme } from "./ThemeProvider";
 
 /**
+ * DotField — a container-scoped dot-grid canvas used as a subtle
+ * *partition indicator* between/behind content, never as a full-page
+ * background layer. It fills whatever positioned parent wraps it
+ * (absolute, inset:0) instead of the whole viewport.
+ *
  * Two-layer canvas strategy for dense 4.5px spacing without lag:
  *
  * Static layer (OffscreenCanvas, painted ONCE on resize):
- *   - All ~100k dots drawn as one big batched path → single GPU texture
+ *   - All dots drawn as one big batched path → single GPU texture
  *
  * Per mouse-move frame:
- *   1. drawImage(staticCanvas) — one GPU blit, O(1), paints all 100k dots
- *   2. clearRect — erases only the small cursor bbox (~260×260px)
- *   3. Iterate only dots inside that bbox (~3,000 dots max) and redraw:
+ *   1. drawImage(staticCanvas) — one GPU blit, paints all dots
+ *   2. clearRect — erases only the small cursor bbox
+ *   3. Iterate only dots inside that bbox and redraw:
  *      a. regular dots outside radius (batched path)
  *      b. highlighted dots inside radius (per-dot for alpha gradient)
- *
- * Result: constant ~3k iterations per frame regardless of total dot count.
  */
-function DotCanvas({ dotColor, activeDotColor }: { dotColor: string; activeDotColor: string }) {
+function DotCanvas({ dotColor, activeDotColor, interactive }: {
+  dotColor: string; activeDotColor: string; interactive: boolean;
+}) {
   const ref = useRef<HTMLCanvasElement>(null);
-  // Keep color refs so theme changes update colors without canvas rebuild
   const dotColorRef = useRef(dotColor);
   const activeDotColorRef = useRef(activeDotColor);
 
-  // Sync color refs + repaint static layer on theme change
   const repaintRef = useRef<(() => void) | null>(null);
   useEffect(() => {
     dotColorRef.current = dotColor;
     activeDotColorRef.current = activeDotColor;
-    // Trigger a static layer repaint so dot colors update on next frame
     repaintRef.current?.();
   }, [dotColor, activeDotColor]);
 
   useEffect(() => {
     const canvas = ref.current;
-    if (!canvas) return;
+    const container = canvas?.parentElement;
+    if (!canvas || !container) return;
 
-    // Respect user's motion preference — skip heavy canvas animation if reduced motion requested
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
     const ctx = canvas.getContext("2d", { willReadFrequently: false, colorSpace: "srgb" });
     if (!ctx) return;
 
-    const SPACING = 4.5;
-    const RADIUS  = 130;
+    const SPACING = 6;
+    const RADIUS  = 110;
     const RADIUS2 = RADIUS * RADIUS;
-    const DOT_R   = 1; // dot radius in CSS px
+    const DOT_R   = 1;
 
     let w = 0, h = 0, dpr = 1;
     let dotPositions: Float32Array | null = null;
@@ -57,7 +59,6 @@ function DotCanvas({ dotColor, activeDotColor }: { dotColor: string; activeDotCo
     let idleTimer: ReturnType<typeof setTimeout> | null = null;
     const mouse = { x: -9999, y: -9999, active: false };
 
-    // ── Bake dot grid positions (CSS/logical px) ──────────────────────────
     const bakeDots = () => {
       const ox = (w % SPACING) / 2;
       const oy = (h % SPACING) / 2;
@@ -74,7 +75,6 @@ function DotCanvas({ dotColor, activeDotColor }: { dotColor: string; activeDotCo
       dotPositions = arr.subarray(0, i);
     };
 
-    // ── Paint ALL dots onto the offscreen canvas once ─────────────────────
     const paintStatic = () => {
       if (!dotPositions || !staticCtx || !staticCanvas) return;
       staticCtx.clearRect(0, 0, w, h);
@@ -88,34 +88,27 @@ function DotCanvas({ dotColor, activeDotColor }: { dotColor: string; activeDotCo
       staticCtx.fill();
     };
 
-    // Expose repaint so theme changes can trigger it without full remount
     repaintRef.current = () => {
       paintStatic();
       needsDraw = true;
       schedule();
     };
 
-    // ── Per-frame draw ─────────────────────────────────────────────────────
     const draw = () => {
       if (!dotPositions || !staticCanvas) return;
 
       ctx.clearRect(0, 0, w, h);
-
-      // Always start with the full static layer — one GPU blit
       ctx.drawImage(staticCanvas, 0, 0, w, h);
 
-      if (mouse.active) {
-        // Clear only the cursor region (tiny rectangle)
+      if (interactive && mouse.active) {
         const pad = RADIUS + 2;
         const bx0 = mouse.x - pad, by0 = mouse.y - pad;
         const bw  = pad * 2,       bh  = pad * 2;
         ctx.clearRect(bx0, by0, bw, bh);
 
-        // Clamp bbox to canvas bounds for the iteration below
         const ix0 = Math.max(0, bx0), iy0 = Math.max(0, by0);
         const ix1 = Math.min(w, bx0 + bw), iy1 = Math.min(h, by0 + bh);
 
-        // Pass A: regular dots in bbox that are outside the highlight radius (batched)
         ctx.fillStyle = dotColorRef.current;
         ctx.beginPath();
         for (let i = 0; i < dotPositions.length; i += 2) {
@@ -128,7 +121,6 @@ function DotCanvas({ dotColor, activeDotColor }: { dotColor: string; activeDotCo
         }
         ctx.fill();
 
-        // Pass B: highlighted dots inside radius (per-dot alpha, ~few hundred dots)
         for (let i = 0; i < dotPositions.length; i += 2) {
           const x = dotPositions[i], y = dotPositions[i + 1];
           if (x < ix0 || x > ix1 || y < iy0 || y > iy1) continue;
@@ -155,7 +147,11 @@ function DotCanvas({ dotColor, activeDotColor }: { dotColor: string; activeDotCo
     };
 
     const onMove = (e: MouseEvent) => {
-      mouse.x = e.clientX; mouse.y = e.clientY; mouse.active = true;
+      if (!interactive) return;
+      const rect = canvas.getBoundingClientRect();
+      mouse.x = e.clientX - rect.left;
+      mouse.y = e.clientY - rect.top;
+      mouse.active = mouse.x >= -50 && mouse.x <= w + 50 && mouse.y >= -50 && mouse.y <= h + 50;
       needsDraw = true;
       schedule();
       if (idleTimer) clearTimeout(idleTimer);
@@ -176,10 +172,10 @@ function DotCanvas({ dotColor, activeDotColor }: { dotColor: string; activeDotCo
 
     const setup = () => {
       dpr = Math.min(window.devicePixelRatio || 1, 2);
-      w = window.innerWidth;
-      h = window.innerHeight;
+      const rect = container.getBoundingClientRect();
+      w = Math.max(1, Math.round(rect.width));
+      h = Math.max(1, Math.round(rect.height));
 
-      // Main canvas — physical pixels
       canvas.width  = Math.round(w * dpr);
       canvas.height = Math.round(h * dpr);
       canvas.style.width  = `${w}px`;
@@ -187,7 +183,6 @@ function DotCanvas({ dotColor, activeDotColor }: { dotColor: string; activeDotCo
       ctx.resetTransform();
       ctx.scale(dpr, dpr);
 
-      // Offscreen static canvas — same physical size, same dpr scale
       staticCanvas = new OffscreenCanvas(Math.round(w * dpr), Math.round(h * dpr));
       staticCtx = staticCanvas.getContext("2d") as OffscreenCanvasRenderingContext2D;
       staticCtx.scale(dpr, dpr);
@@ -201,10 +196,12 @@ function DotCanvas({ dotColor, activeDotColor }: { dotColor: string; activeDotCo
     };
 
     const ro = new ResizeObserver(setup);
-    ro.observe(document.documentElement);
+    ro.observe(container);
 
-    window.addEventListener("mousemove",  onMove,  { passive: true });
-    window.addEventListener("mouseleave", onLeave, { passive: true });
+    if (interactive) {
+      window.addEventListener("mousemove",  onMove,  { passive: true });
+      window.addEventListener("mouseleave", onLeave, { passive: true });
+    }
     document.addEventListener("visibilitychange", onVisibilityChange, { passive: true });
 
     return () => {
@@ -216,33 +213,67 @@ function DotCanvas({ dotColor, activeDotColor }: { dotColor: string; activeDotCo
       if (raf)       cancelAnimationFrame(raf);
       if (idleTimer) clearTimeout(idleTimer);
     };
-  // Mount once — color changes handled via refs + repaintRef
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [interactive]);
 
   return (
     <canvas
       ref={ref}
       aria-hidden="true"
       style={{
-        position: "fixed", top: 0, left: 0,
-        width: "100vw", height: "100vh",
-        pointerEvents: "none", zIndex: 0,
+        position: "absolute", inset: 0,
+        width: "100%", height: "100%",
+        pointerEvents: "none",
         opacity: 0, transition: "opacity 0.5s ease",
         willChange: "transform",
+        display: "block",
       }}
     />
   );
 }
 
-export function DotBackground() {
+/**
+ * DotField — drop this inside any `position: relative` (or absolute/fixed)
+ * container and it fills that container edge-to-edge with the dot grid.
+ * Used (a) behind the hero — from the avatar down to where About begins —
+ * and (b) inside `DotDivider` as a thin partition strip between sections.
+ */
+export function DotField({ interactive = true }: { interactive?: boolean }) {
   const { theme } = useTheme();
   const isDark = theme === "dark";
 
   return (
     <DotCanvas
-      dotColor={isDark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.10)"}
-      activeDotColor={isDark ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.20)"}
+      interactive={interactive}
+      dotColor={isDark ? "rgba(255,255,255,0.09)" : "rgba(0,0,0,0.12)"}
+      activeDotColor={isDark ? "rgba(255,255,255,0.18)" : "rgba(0,0,0,0.24)"}
     />
+  );
+}
+
+/**
+ * DotDivider — a thin, full-bleed horizontal strip used as a *partition
+ * indicator* between two sections (same convention as SparklesBridge):
+ * a bounded-height band, not a page-covering background.
+ */
+export function DotDivider({ height = 56 }: { height?: number }) {
+  return (
+    <div
+      aria-hidden="true"
+      style={{
+        position: "relative", left: "50%", marginLeft: "-50vw",
+        width: "100vw", height,
+        background: "var(--bg-base)",
+        overflow: "hidden",
+      }}
+      className="dot-divider"
+    >
+      <DotField interactive />
+      <style suppressHydrationWarning>{`
+        @media (min-width: 600px)  and (max-width: 767px)  { .dot-divider { height: 72px !important; } }
+        @media (min-width: 768px)  and (max-width: 1023px) { .dot-divider { height: 88px !important; } }
+        @media (min-width: 1024px) and (max-width: 1180px) { .dot-divider { height: 96px !important; } }
+      `}</style>
+    </div>
   );
 }
