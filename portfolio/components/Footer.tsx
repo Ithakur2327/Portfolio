@@ -203,10 +203,7 @@ function SocialIcon({
 }
 
 export function Footer() {
-  const { theme } = useTheme();
-  const isDark = theme === "dark";
   const year = new Date().getFullYear();
-  const avatarSrc = isDark ? "/avatar-dark.jpg" : "/avatar-light.jpg";
 
   return (
     <>
@@ -224,53 +221,10 @@ export function Footer() {
           overflow: hidden;
         }
 
-        .footer-profile-band {
-          max-width: 1060px;
-          margin: 0 auto;
-          padding: 44px 32px 36px;
-          display: flex;
-          align-items: center;
-          gap: 18px;
-          border-bottom: 1px solid var(--border);
-        }
-        .footer-avatar {
-          width: 54px; height: 54px;
-          border-radius: 50%;
-          overflow: hidden;
-          border: 2px solid var(--border);
-          flex-shrink: 0;
-          box-shadow: 0 2px 10px rgba(0,0,0,0.22);
-          transition: box-shadow 0.2s, border-color 0.2s;
-        }
-        .footer-avatar:hover {
-          box-shadow: 0 4px 18px rgba(0,0,0,0.32);
-          border-color: var(--text-muted);
-        }
-        .footer-avatar img {
-          width: 100%; height: 100%;
-          object-fit: cover; border-radius: 50%;
-        }
-        .footer-profile-info { flex: 1; min-width: 0; }
-        .footer-profile-name {
-          font-family: ${SF};
-          font-weight: 700;
-          font-size: 15px;
-          color: var(--text-primary);
-          letter-spacing: -0.02em;
-          margin-bottom: 3px;
-        }
-        .footer-profile-desc {
-          font-size: 12px;
-          color: var(--text-muted);
-          font-family: ${SF};
-          line-height: 1.5;
-          max-width: 260px;
-        }
-
         .footer-bottom-band {
           max-width: 1060px;
           margin: 0 auto;
-          padding: 18px 32px;
+          padding: 24px 32px;
           display: flex;
           align-items: center;
           justify-content: center;
@@ -311,10 +265,10 @@ export function Footer() {
         /* ── Big pixel text ── */
         .fgt-outer {
           position: relative;
-          left: 50%;
-          margin-left: -50vw;
-          width: 100vw;
-          margin-top: clamp(20px, 3vw, 44px);
+          max-width: 1060px;
+          margin: clamp(20px, 3vw, 44px) auto 0;
+          padding: 0 32px;
+          box-sizing: border-box;
           cursor: crosshair;
           user-select: none;
           -webkit-user-select: none;
@@ -331,7 +285,7 @@ export function Footer() {
           margin-bottom: 0;
         }
         .fgt-text {
-          font-family: 'Press Start 2P', 'Courier New', monospace;
+          font-family: 'Geist Pixel Square', 'Geist Mono', 'Courier New', monospace;
           font-size: ${FONT_SIZE}px;
           font-weight: 400;
         }
@@ -360,18 +314,6 @@ export function Footer() {
       `}</style>
 
       <footer className="footer-root">
-        <div className="footer-profile-band">
-          <div className="footer-avatar">
-            <img key={avatarSrc} src={avatarSrc} alt="Indresh Thakur" loading="lazy" decoding="async" />
-          </div>
-          <div className="footer-profile-info">
-            <p className="footer-profile-name">Indresh Thakur</p>
-            <p className="footer-profile-desc">
-              Full-Stack &amp; AI Developer building modern, scalable digital experiences.
-            </p>
-          </div>
-        </div>
-
         <div className="footer-bottom-band">
           <span className="footer-copy">© {year} Indresh Thakur. All rights reserved.</span>
 
