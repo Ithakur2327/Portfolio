@@ -209,7 +209,7 @@ export function ContactSection() {
           <div className="contact-inner">
 
             {/* Section Title */}
-            <div style={{ paddingTop: 28, marginBottom: 20 }}>
+            <div style={{ paddingTop: 34, marginBottom: 20 }}>
               <h2 style={{ fontSize: 28, fontWeight: 700, letterSpacing: "-0.03em", lineHeight: 1, fontFamily: SF, color: "var(--text-primary)", display: "flex", alignItems: "center", gap: 10, margin: 0 }}>
                 <SectionTitleIcon type="mail" />
                 Contact

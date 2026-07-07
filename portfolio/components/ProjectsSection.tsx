@@ -558,8 +558,8 @@ export function ProjectsSection() {
     <>
       <div id="projects" ref={setRefs} className={revealClass}>
         <div style={{ position: "relative", left: "50%", marginLeft: "-50vw", width: "100vw", background: "var(--bg-base)" }}>
-          <div style={{ maxWidth: 1060, margin: "0 auto", padding: "0 20px 32px" }}>
-            <div style={{ paddingTop: 24, marginBottom: 4 }}>
+          <div style={{ maxWidth: 1060, margin: "0 auto", padding: "0 20px 38px" }}>
+            <div style={{ paddingTop: 30, marginBottom: 4 }}>
               <span style={{ display: "inline-flex", alignItems: "center", gap: 10, fontSize: 28, fontWeight: 700, letterSpacing: "-0.03em", lineHeight: 1, fontFamily: SF, color: "var(--text-primary)" }}>
                 <SectionTitleIcon type="box" />
                 Projects

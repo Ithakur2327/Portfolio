@@ -702,7 +702,8 @@ export function StatsSection() {
           grid-template-columns: 1fr 1fr;
           position: relative;
         }
-        /* Vertical partition line between GitHub and LeetCode panels */
+        /* Vertical partition line between GitHub and LeetCode panels — spans the
+           full height of the row so it reads as one continuous connected line. */
         .about-panels::after {
           content: "";
           position: absolute;
@@ -711,9 +712,10 @@ export function StatsSection() {
           width: 1px;
           background: var(--border);
           transform: translateX(-50%);
+          z-index: 1;
         }
         .about-panels > .stat-card-3d:first-child { padding-right: 24px; }
-        .about-panels > .stat-card-3d:last-child  { padding-left: 24px; }
+        .about-panels > .stat-card-3d:last-child  { padding-left: 32px; }
 
         @media (min-width: 601px) and (max-width: 1024px) {
           .about-panels { grid-template-columns: 1fr !important; }
@@ -744,7 +746,7 @@ export function StatsSection() {
         }
 
         .about-content {
-          max-width: 1060px; margin: 0 auto; padding: 0 20px 40px;
+          max-width: 1060px; margin: 0 auto; padding: 0 20px 46px;
         }
         @media (max-width: 860px) { .about-content { padding: 0 22px 34px; } }
         @media (max-width: 639px) {
@@ -764,7 +766,7 @@ export function StatsSection() {
       <section id="stats" ref={statsRef} className={revealClass}>
         <div style={{ position: "relative", left: "50%", marginLeft: "-50vw", width: "100vw", background: "var(--bg-base)" }}>
           <div className="about-content">
-            <div style={{ paddingTop: 28 }}>
+            <div style={{ paddingTop: 34 }}>
               <span style={{ display: "inline-flex", alignItems: "center", gap: 10, fontSize: 28, fontWeight: 700, letterSpacing: "-0.03em", lineHeight: 1, fontFamily: SF, color: "var(--text-primary)" }}>
                 <SectionTitleIcon type="chart" />
                 Stats

@@ -16,9 +16,9 @@ const SF = "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 
 
 const ABOUT_TEXT = `Hi, I'm [[Indresh Thakur]], currently pursuing [[B.Tech]] in [[Computer Science & Engineering (AI)]] at [[NIET Greater Noida]]. I'm a [[motivated]] and [[growth oriented]] [[Full-Stack & AI Developer]] passionate about building [[modern]], [[scalable]], and [[user-focused]] digital experiences.
 
-My work focuses on developing [[intelligent web applications]] and [[AI-powered systems]] while continuously improving my [[problem-solving]] abilities through active [[Data Structures and Algorithms]] practice and real-world project development. I enjoy exploring [[emerging technologies]], learning new tech stacks, and turning ideas into [[impactful solutions]].
+My work focuses on developing [[intelligent web applications]] and [[AI-powered systems]] while continuously improving my [[problem-solving]] abilities through active [[Data Structures and Algorithms]] practice and real-world project development. I enjoy exploring [[emerging]] [[technologies]], learning new tech stacks, and turning ideas into [[impactful solutions]].
 
-I bring a unique blend of [[technical expertise]], [[adaptability]], [[creativity]], and a genuine enthusiasm for building software that creates [[real impact]].`;
+I bring a unique blend of [[technical expertise]], [[adaptability]], [[creativity]], and a genuine enthusiasm for building software that creates [[real]] [[impact]].`;
 
 interface Token { text: string; hl: boolean; idx: number; isName: boolean; }
 
@@ -107,26 +107,41 @@ export function AboutSection() {
         html.light .gold-box-word { color: #d97706 !important; background: rgba(245,158,11,0.13) !important; border-color: rgba(217,119,6,0.45) !important; }
 
         .about-content {
-          max-width: 1060px; margin: 0 auto; padding: 0 20px 40px;
+          max-width: 1060px; margin: 0 auto; padding: 0 20px 46px;
         }
         @media (max-width: 860px) { .about-content { padding: 0 22px 34px; } }
         @media (max-width: 639px) {
           .about-content { padding: 0 14px 28px; }
           .about-para    { font-size: 14px !important; line-height: 1.8 !important; }
         }
+
+        .about-box {
+          width: 100%;
+          box-sizing: border-box;
+          border: 1px solid var(--border);
+          border-radius: 14px;
+          background: var(--bg-base);
+          padding: 28px 32px;
+        }
+        @media (max-width: 860px) {
+          .about-box { padding: 24px 24px; }
+        }
+        @media (max-width: 639px) {
+          .about-box { padding: 20px 18px; border-radius: 12px; }
+        }
       `}</style>
 
       <section id="about" ref={ref} className={revealClass}>
         <div style={{ position: "relative", left: "50%", marginLeft: "-50vw", width: "100vw", background: "var(--bg-base)" }}>
           <div className="about-content">
-            <div style={{ paddingTop: 28 }}>
+            <div style={{ paddingTop: 34 }}>
               <span style={{ display: "inline-flex", alignItems: "center", gap: 10, fontSize: 28, fontWeight: 700, letterSpacing: "-0.03em", lineHeight: 1, fontFamily: SF, color: "var(--text-primary)" }}>
                 <SectionTitleIcon type="about" />
                 About
               </span>
             </div>
             <div style={{ height: 1, background: "var(--border)", margin: "18px 0 28px" }} />
-            <div style={{ marginBottom: 40 }}>
+            <div className="about-box">
               <ScrollRevealText />
             </div>
           </div>

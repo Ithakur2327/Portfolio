@@ -1,17 +1,12 @@
 "use client";
 
-import { useRef, memo, useEffect, useState, useCallback } from "react";
-import { useLowPerf } from "./PerfMode";
+import { useRef, memo, useEffect, useState } from "react";
 import { useReveal } from "./useReveal";
 import { useTheme } from "./ThemeProvider";
-import { playThemeToggleSound } from "@/lib/soundcn/sounds";
 import { SectionTitleIcon } from "./SectionIcon";
 
 const MONO = "'Geist Mono', 'SF Mono', monospace";
 const SF   = "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', sans-serif";
-
-/* Accent used for the single global lamp toggle (not tied to any one card's color) */
-const LAMP_ACCENT = "#FFB020";
 
 /* ─── Tech definitions ─── */
 const TECH: Record<string, { color: string; logo: string; bright?: boolean; invert?: boolean; keepInLight?: boolean }> = {
@@ -73,25 +68,21 @@ const STRIP_NAMES = [
   "AWS", "Kubernetes", "Git", "VS Code", "Postman",
 ];
 
-/* ─── useBoxInView ─── */
-function useBoxInView(lowPerf: boolean) {
+/* ─── useBoxInView — re-fires every time the box scrolls into view, so the
+   lamp relights on every pass, not just once ─── */
+function useBoxInView() {
   const ref = useRef<HTMLDivElement>(null);
   const [inView, setInView] = useState(false);
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
     const obs = new IntersectionObserver(
-      ([entry]) => {
-        const isIn = entry.isIntersecting;
-        setInView(isIn);
-        if (isIn && lowPerf) obs.disconnect();
-      },
+      ([entry]) => setInView(entry.isIntersecting),
       { rootMargin: "-60px 0px -60px 0px", threshold: 0 }
     );
     obs.observe(el);
     return () => obs.disconnect();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [lowPerf]);
+  }, []);
   return { ref, inView };
 }
 
@@ -223,45 +214,11 @@ const LampBeam = memo(function LampBeam({ glowColor, visible, lampOn }: { glowCo
   );
 });
 
-/* ─── Lamp toggle button — reused for the single global control ─── */
-function LampToggleButton({ lampOn, onToggle, color, isDark, size = 22 }: { lampOn: boolean; onToggle: () => void; color: string; isDark: boolean; size?: number }) {
-  const [hov, setHov] = useState(false);
-  // In light theme the lamp stays colored, never plain white/gray.
-  const lightColor = isDark ? "#ffffff" : color;
-  const iconSize = Math.round(size * 0.6);
-
-  return (
-    <button
-      onClick={onToggle}
-      onMouseEnter={() => setHov(true)}
-      onMouseLeave={() => setHov(false)}
-      title={lampOn ? "Turn off lamps" : "Turn on lamps"}
-      style={{
-        width: size, height: size, borderRadius: 6, border: "none",
-        background: lampOn
-          ? isDark ? "rgba(255,255,255,0.12)" : `${color}18`
-          : "transparent",
-        cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center",
-        transition: "background 0.18s ease, transform 0.18s cubic-bezier(0.34,1.56,0.64,1)",
-        transform: hov ? "scale(1.12)" : "scale(1)",
-        flexShrink: 0,
-        padding: 0,
-      }}
-      aria-label={lampOn ? "Turn off lamps" : "Turn on lamps"}
-    >
-      <svg width={iconSize} height={iconSize} viewBox="0 0 24 24" fill="none" stroke={lampOn ? lightColor : "var(--text-muted)"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-        style={{ transition: "stroke 0.22s ease", filter: lampOn ? (isDark ? `drop-shadow(0 0 3px rgba(255,255,255,0.7))` : `drop-shadow(0 0 3px ${color}aa)`) : "none" }}>
-        <path d="M9 21h6"/>
-        <path d="M12 3a6 6 0 0 1 6 6c0 2.22-1.21 4.16-3 5.2V18a1 1 0 0 1-1 1H10a1 1 0 0 1-1-1v-3.8C7.21 13.16 6 11.22 6 9a6 6 0 0 1 6-6z"/>
-      </svg>
-    </button>
-  );
-}
-
-/* ─── LampSkillBox: a single cell in the shared grid ─── */
-function LampSkillBox({ title, glowColor, items, lampOn }: { title: string; glowColor: string; items: string[]; lampOn: boolean }) {
-  const lowPerf       = useLowPerf();
-  const { ref, inView } = useBoxInView(lowPerf);
+/* ─── LampSkillBox: a single cell in the shared grid — lamp always relights
+   automatically every time the box scrolls into view ─── */
+function LampSkillBox({ title, glowColor, items }: { title: string; glowColor: string; items: string[] }) {
+  const lampOn = true;
+  const { ref, inView } = useBoxInView();
   const { theme }     = useTheme();
   const isDark        = theme === "dark";
 
@@ -398,17 +355,6 @@ const MovingStrip = memo(function MovingStrip() {
 /* ─── Main ─── */
 export function SkillsSection() {
   const { ref, revealClass } = useReveal();
-  const { theme } = useTheme();
-  const isDark = theme === "dark";
-  const [lampOn, setLampOn] = useState(true);
-
-  const handleLampToggle = useCallback(() => {
-    setLampOn(prev => {
-      const next = !prev;
-      playThemeToggleSound(next);
-      return next;
-    });
-  }, []);
 
   return (
     <>
@@ -453,8 +399,8 @@ export function SkillsSection() {
           width:"100vw",
           background:"var(--bg-base)",
         }}>
-          <div style={{ maxWidth: 1057, margin:"0 auto", padding:"0 20px 40px" }}>
-            <div style={{ paddingTop:28, marginBottom:4, display:"flex", alignItems:"center", gap:10 }}>
+          <div style={{ maxWidth: 1057, margin:"0 auto", padding:"0 20px 46px" }}>
+            <div style={{ paddingTop:34, marginBottom:4, display:"flex", alignItems:"center", gap:10 }}>
               <span style={{
                 fontSize:28, fontWeight:700,
                 letterSpacing:"-0.03em", lineHeight:1,
@@ -464,12 +410,11 @@ export function SkillsSection() {
                 <SectionTitleIcon type="layers" />
                 Skills
               </span>
-              <LampToggleButton lampOn={lampOn} onToggle={handleLampToggle} color={LAMP_ACCENT} isDark={isDark} />
             </div>
             <div style={{ height:1, background:"var(--border)", margin:"18px 0 24px" }} />
 
             <div className="skills-grid">
-              {LAMP_GROUPS.map(g => <LampSkillBox key={g.title} {...g} lampOn={lampOn} />)}
+              {LAMP_GROUPS.map(g => <LampSkillBox key={g.title} {...g} />)}
             </div>
 
             <div style={{ marginTop:28, marginLeft:-20, marginRight:-20 }}>

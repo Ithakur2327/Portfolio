@@ -203,10 +203,7 @@ function SocialIcon({
 }
 
 export function Footer() {
-  const { theme } = useTheme();
-  const isDark = theme === "dark";
   const year = new Date().getFullYear();
-  const avatarSrc = isDark ? "/avatar-dark.jpg" : "/avatar-light.jpg";
 
   return (
     <>
@@ -232,23 +229,6 @@ export function Footer() {
           align-items: center;
           gap: 18px;
           border-bottom: 1px solid var(--border);
-        }
-        .footer-avatar {
-          width: 54px; height: 54px;
-          border-radius: 50%;
-          overflow: hidden;
-          border: 2px solid var(--border);
-          flex-shrink: 0;
-          box-shadow: 0 2px 10px rgba(0,0,0,0.22);
-          transition: box-shadow 0.2s, border-color 0.2s;
-        }
-        .footer-avatar:hover {
-          box-shadow: 0 4px 18px rgba(0,0,0,0.32);
-          border-color: var(--text-muted);
-        }
-        .footer-avatar img {
-          width: 100%; height: 100%;
-          object-fit: cover; border-radius: 50%;
         }
         .footer-profile-info { flex: 1; min-width: 0; }
         .footer-profile-name {
@@ -326,7 +306,7 @@ export function Footer() {
         .fgt-svg {
           display: block;
           width: 100%;
-          height: clamp(56px, 18vw, 300px);
+          height: clamp(42px, 13vw, 220px);
           vertical-align: bottom;
           margin-bottom: 0;
         }
@@ -361,14 +341,8 @@ export function Footer() {
 
       <footer className="footer-root">
         <div className="footer-profile-band">
-          <div className="footer-avatar">
-            <img key={avatarSrc} src={avatarSrc} alt="Indresh Thakur" loading="lazy" decoding="async" />
-          </div>
           <div className="footer-profile-info">
             <p className="footer-profile-name">Indresh Thakur</p>
-            <p className="footer-profile-desc">
-              Full-Stack &amp; AI Developer building modern, scalable digital experiences.
-            </p>
           </div>
         </div>
 

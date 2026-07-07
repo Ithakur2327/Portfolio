@@ -423,7 +423,7 @@ export function HeroSection() {
             margin-bottom: -2px !important;
           }
           .h-nameblock h1 {
-            font-size: clamp(13px, 4.2vw, 16.5px) !important;
+            font-size: clamp(16px, 5.2vw, 20px) !important;
             letter-spacing: 0.04em !important;
             line-height: 1 !important;
             white-space: nowrap !important;
@@ -471,7 +471,7 @@ export function HeroSection() {
             border-radius: 14px !important;
           }
           .h-nameblock h1 {
-            font-size: clamp(11px, 4vw, 13.5px) !important;
+            font-size: clamp(14px, 4.8vw, 16px) !important;
             letter-spacing: 0.03em !important;
             line-height: 1 !important;
           }

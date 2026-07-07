@@ -17,7 +17,6 @@ const PORTFOLIO_LINKS = [
   { label: "Certifications", href: "#certifications",                         icon: "badge",    external: false, type: "section" },
   { label: "Education",      href: "#education",                              icon: "book",     external: false, type: "section" },
   { label: "Contact",        href: "#contact",                                icon: "mail",     external: false, type: "section" },
-  { label: "Resume",         href: "/resume.pdf",                             icon: "resume",   external: false, type: "pdf"     },
   { label: "GitHub",         href: "https://github.com/Ithakur2327",          icon: "github",   external: true,  type: "link"    },
   { label: "LeetCode",       href: "https://leetcode.com/u/indreshthakur/",  icon: "leetcode", external: true,  type: "link"    },
   { label: "Website",        href: "https://indreshthakur.dev",              icon: "website",  external: true,  type: "link"    },
@@ -523,13 +522,6 @@ export function Navbar() {
             <nav className="nav-desktop-only" style={{ display: "flex", alignItems: "center", gap: 16, marginRight: 4 }}>
               <a href="#" className="nav-desktop-link">Home</a>
               <a href="#projects" className="nav-desktop-link">Projects</a>
-              {/* Resume: open in-app PDF viewer like HeroSection */}
-              <button
-                className="nav-desktop-link"
-                onClick={() => openPdf("/resume.pdf", "Resume", "/resume.pdf")}
-              >
-                Resume
-              </button>
             </nav>
 
             <span className="nav-sep nav-desktop-only" style={{ margin: "0 6px" }}/>

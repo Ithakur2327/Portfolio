@@ -108,9 +108,9 @@ function EduCard({ school, degree, short, period, index, sectionVisible }: {
       animate={sectionVisible ? { opacity: 1, y: 0, rotateX: 0 } : { opacity: 0, y: 22, rotateX: 8 }}
       transition={{ duration: 0.52, ease: [0.22, 1, 0.36, 1], delay: sectionVisible ? index * 0.1 : 0 }}
     >
-      {/* left graduation icon */}
+      {/* left graduation-cap icon — used for both college and school entries */}
       <div className="edu-card-icon">
-        <SectionIcon type="book" size={15} strokeWidth={2} />
+        <SectionIcon type="cap" size={15} strokeWidth={2} />
       </div>
       {/* vertical connecting line (hidden for last) */}
       {index < EDUCATION.length - 1 && <div className="edu-card-line" />}
@@ -147,12 +147,12 @@ export function EducationSection() {
         .edu-inner {
           max-width: 1060px;
           margin: 0 auto;
-          padding: 0 32px 40px;
+          padding: 0 32px 46px;
         }
 
         /* ── section head – bold label + icon exactly like Projects/Skills ── */
         .edu-sec-titlerow {
-          padding-top: 28px;
+          padding-top: 34px;
           margin-bottom: 20px;
         }
         .edu-sec-title {

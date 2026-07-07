@@ -8,7 +8,7 @@
 export type SectionIconType =
   | "home" | "about" | "chart" | "layers" | "box"
   | "badge" | "book" | "mail" | "resume" | "github"
-  | "leetcode" | "website" | "institution";
+  | "leetcode" | "website" | "institution" | "cap";
 
 export function SectionIcon({
   type,
@@ -53,22 +53,23 @@ export function SectionIcon({
       return <svg {...p}><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>;
     case "institution":
       return <svg {...p}><line x1="3" y1="21" x2="21" y2="21"/><line x1="4" y1="10" x2="20" y2="10"/><polygon points="12 3 21 8 3 8"/><line x1="6" y1="10" x2="6" y2="21"/><line x1="10" y1="10" x2="10" y2="21"/><line x1="14" y1="10" x2="14" y2="21"/><line x1="18" y1="10" x2="18" y2="21"/></svg>;
+    case "cap":
+      return <svg {...p}><path d="M22 10L12 5 2 10l10 5 10-5z"/><path d="M6 12v5c0 1.66 2.69 3 6 3s6-1.34 6-3v-5"/><path d="M22 10v6"/></svg>;
     default:
       return <svg {...p}><rect x="3" y="3" width="18" height="18" rx="3"/></svg>;
   }
 }
 
-/** Shared "3D" icon box used next to every section title — same size,
- * background treatment and shadow everywhere so all sections match. */
+/** Shared flat icon box used next to every section title — same size and
+ * background treatment everywhere so all sections match (no 3D/embossed effect). */
 export function SectionTitleIcon({ type }: { type: SectionIconType }) {
   return (
     <span
       className="section-title-icon-3d"
       style={{
         width: 34, height: 34, borderRadius: 9,
-        background: "linear-gradient(145deg, var(--bg-hover), var(--bg-secondary))",
+        background: "var(--bg-secondary)",
         border: "1px solid var(--border)",
-        boxShadow: "0 3px 8px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.07)",
         display: "flex", alignItems: "center", justifyContent: "center",
         color: "var(--text-secondary)", flexShrink: 0,
       }}
