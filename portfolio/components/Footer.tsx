@@ -267,7 +267,7 @@ export function Footer() {
           left: 50%;
           margin-left: -50vw;
           width: 100vw;
-          margin-top: clamp(8px, 1.4vw, 18px);
+          margin-top: clamp(20px, 3vw, 44px);
           cursor: crosshair;
           user-select: none;
           -webkit-user-select: none;
@@ -282,10 +282,6 @@ export function Footer() {
           height: clamp(42px, 13vw, 220px);
           vertical-align: bottom;
           margin-bottom: 0;
-        }
-        /* Desktop/PC only — mobile keeps the clamp above untouched */
-        @media (min-width: 861px) {
-          .fgt-svg { height: clamp(100px, 8vw, 140px) !important; }
         }
         .fgt-text {
           font-family: 'Press Start 2P', 'Courier New', monospace;
