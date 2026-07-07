@@ -216,6 +216,15 @@ a, button, [role="button"] {
   margin-top: 0 !important;
 }
 
+/* Dot dividers ARE the partition — no extra margin above/below them,
+   so sections sit flush against the dot strip with no solid gap. */
+.page-wrapper > .dot-divider {
+  margin-top: 0 !important;
+}
+.page-wrapper > .dot-divider + * {
+  margin-top: 0 !important;
+}
+
 .screen-line-top    { position: relative; }
 .screen-line-top::before {
   content: ''; position: absolute;

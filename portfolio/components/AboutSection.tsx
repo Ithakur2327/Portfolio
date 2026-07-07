@@ -10,7 +10,7 @@ import {
 } from "motion/react";
 
 import { useReveal } from "./useReveal";
-import { SectionIcon } from "./SectionIcon";
+import { SectionTitleIcon } from "./SectionIcon";
 
 const SF = "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', sans-serif";
 
@@ -117,13 +117,11 @@ export function AboutSection() {
       `}</style>
 
       <section id="about" ref={ref} className={revealClass}>
-        <div style={{ position: "relative", left: "50%", marginLeft: "-50vw", width: "100vw", background: "var(--bg-base)", borderTop: "1px solid var(--line)", borderBottom: "1px solid var(--line)" }}>
+        <div style={{ position: "relative", left: "50%", marginLeft: "-50vw", width: "100vw", background: "var(--bg-base)" }}>
           <div className="about-content">
             <div style={{ paddingTop: 28 }}>
               <span style={{ display: "inline-flex", alignItems: "center", gap: 10, fontSize: 28, fontWeight: 700, letterSpacing: "-0.03em", lineHeight: 1, fontFamily: SF, color: "var(--text-primary)" }}>
-                <span style={{ width: 34, height: 34, borderRadius: 9, background: "var(--bg-hover)", border: "1px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--text-secondary)", flexShrink: 0 }}>
-                  <SectionIcon type="about" size={15} strokeWidth={2} />
-                </span>
+                <SectionTitleIcon type="about" />
                 About
               </span>
             </div>

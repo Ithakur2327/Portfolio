@@ -2,7 +2,7 @@
 import { useState, useCallback, memo } from "react";
 import { motion } from "motion/react";
 import { useReveal } from "./useReveal";
-import { SectionTitleIcon, GoldDot } from "./SectionIcon";
+import { SectionTitleIcon } from "./SectionIcon";
 
 const SF   = "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', sans-serif";
 const MONO = "'Geist Mono', monospace";
@@ -134,8 +134,6 @@ export function ContactSection() {
         .contact-outer {
           position: relative; left: 50%; margin-left: -50vw;
           width: 100vw; background: var(--bg-base);
-          border-top: 1px solid var(--line);
-          border-bottom: 1px solid var(--line);
         }
         .contact-inner { max-width: 1060px; margin: 0 auto; padding: 0 32px 52px; }
         .contact-divider { height: 1px; background: var(--border); margin-bottom: 28px; }
@@ -215,7 +213,6 @@ export function ContactSection() {
               <h2 style={{ fontSize: 28, fontWeight: 700, letterSpacing: "-0.03em", lineHeight: 1, fontFamily: SF, color: "var(--text-primary)", display: "flex", alignItems: "center", gap: 10, margin: 0 }}>
                 <SectionTitleIcon type="mail" />
                 Contact
-                <GoldDot />
               </h2>
             </div>
 

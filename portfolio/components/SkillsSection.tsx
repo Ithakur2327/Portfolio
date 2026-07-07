@@ -5,7 +5,7 @@ import { useLowPerf } from "./PerfMode";
 import { useReveal } from "./useReveal";
 import { useTheme } from "./ThemeProvider";
 import { playThemeToggleSound } from "@/lib/soundcn/sounds";
-import { SectionTitleIcon, GoldDot } from "./SectionIcon";
+import { SectionTitleIcon } from "./SectionIcon";
 
 const MONO = "'Geist Mono', 'SF Mono', monospace";
 const SF   = "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', sans-serif";
@@ -452,8 +452,6 @@ export function SkillsSection() {
           left:"50%", marginLeft:"-50vw",
           width:"100vw",
           background:"var(--bg-base)",
-          borderTop:"1px solid var(--line)",
-          borderBottom:"1px solid var(--line)",
         }}>
           <div style={{ maxWidth: 1057, margin:"0 auto", padding:"0 20px 40px" }}>
             <div style={{ paddingTop:28, marginBottom:4, display:"flex", alignItems:"center", gap:10 }}>
@@ -465,7 +463,6 @@ export function SkillsSection() {
               }}>
                 <SectionTitleIcon type="layers" />
                 Skills
-                <GoldDot />
               </span>
               <LampToggleButton lampOn={lampOn} onToggle={handleLampToggle} color={LAMP_ACCENT} isDark={isDark} />
             </div>
