@@ -2,7 +2,7 @@
 import { useRef } from "react";
 import { motion, useInView } from "motion/react";
 import { useReveal } from "./useReveal";
-import { SectionIcon } from "./SectionIcon";
+import { SectionIcon, SectionTitleIcon, GoldDot } from "./SectionIcon";
 import { usePdfModal } from "./PdfViewerModal";
 import { slugify } from "@/lib/utils";
 
@@ -431,8 +431,9 @@ export function EducationSection() {
             {/* Title row – exactly like Projects/Skills */}
             <div className="edu-sec-titlerow">
               <h2 className="edu-sec-title">
-                <span className="edu-sec-icon"><SectionIcon type="book" size={15} strokeWidth={2} /></span>
+                <SectionTitleIcon type="institution" />
                 Education
+                <GoldDot />
               </h2>
             </div>
 
@@ -473,8 +474,9 @@ export function EducationSection() {
             {/* Title row */}
             <div className="edu-sec-titlerow">
               <h2 className="edu-sec-title">
-                <span className="edu-sec-icon"><SectionIcon type="badge" size={15} strokeWidth={2} /></span>
+                <SectionTitleIcon type="badge" />
                 Certifications
+                <GoldDot />
                 <span className="cert-count-badge">{CERTIFICATIONS.length}</span>
               </h2>
             </div>

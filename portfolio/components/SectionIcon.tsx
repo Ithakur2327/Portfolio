@@ -8,7 +8,7 @@
 export type SectionIconType =
   | "home" | "about" | "chart" | "layers" | "box"
   | "badge" | "book" | "mail" | "resume" | "github"
-  | "leetcode" | "website";
+  | "leetcode" | "website" | "institution";
 
 export function SectionIcon({
   type,
@@ -51,12 +51,48 @@ export function SectionIcon({
       return <svg width={size} height={size} viewBox="0 0 24 24" fill={color}><path d="M13.483 0a1.374 1.374 0 0 0-.961.438L7.116 6.226l-3.854 4.126a5.266 5.266 0 0 0-1.209 2.104 5.35 5.35 0 0 0-.125.513 5.527 5.527 0 0 0 .062 2.362 5.83 5.83 0 0 0 .349 1.017 5.938 5.938 0 0 0 1.271 1.818l4.277 4.193.039.038c2.248 2.165 5.852 2.133 8.063-.074l2.396-2.392c.54-.54.54-1.414.003-1.955a1.378 1.378 0 0 0-1.951-.003l-2.396 2.392a3.021 3.021 0 0 1-4.205.038l-.02-.019-4.276-4.193c-.652-.64-.972-1.469-.948-2.263a2.68 2.68 0 0 1 .066-.523 2.545 2.545 0 0 1 .619-1.164L9.13 8.114c1.058-1.134 3.204-1.27 4.43-.278l3.501 2.831c.593.48 1.461.387 1.94-.207a1.384 1.384 0 0 0-.207-1.943l-3.5-2.831c-.8-.647-1.766-1.045-2.774-1.202l2.015-2.158A1.384 1.384 0 0 0 13.483 0zm-2.866 12.815a1.38 1.38 0 0 0-1.38 1.382 1.38 1.38 0 0 0 1.38 1.382H20.79a1.38 1.38 0 0 0 1.38-1.382 1.38 1.38 0 0 0-1.38-1.382z"/></svg>;
     case "website":
       return <svg {...p}><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>;
+    case "institution":
+      return <svg {...p}><line x1="3" y1="21" x2="21" y2="21"/><line x1="4" y1="10" x2="20" y2="10"/><polygon points="12 3 21 8 3 8"/><line x1="6" y1="10" x2="6" y2="21"/><line x1="10" y1="10" x2="10" y2="21"/><line x1="14" y1="10" x2="14" y2="21"/><line x1="18" y1="10" x2="18" y2="21"/></svg>;
     default:
       return <svg {...p}><rect x="3" y="3" width="18" height="18" rx="3"/></svg>;
   }
 }
 
-/** Small wrapper matching the section-title look: icon + text, same baseline. */
+/** Shared "3D" icon box used next to every section title — same size,
+ * background treatment and shadow everywhere so all sections match. */
+export function SectionTitleIcon({ type }: { type: SectionIconType }) {
+  return (
+    <span
+      className="section-title-icon-3d"
+      style={{
+        width: 34, height: 34, borderRadius: 9,
+        background: "linear-gradient(145deg, var(--bg-hover), var(--bg-secondary))",
+        border: "1px solid var(--border)",
+        boxShadow: "0 3px 8px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.07)",
+        display: "flex", alignItems: "center", justifyContent: "center",
+        color: "var(--text-secondary)", flexShrink: 0,
+      }}
+    >
+      <SectionIcon type={type} size={15} strokeWidth={2} />
+    </span>
+  );
+}
+
+/** Small static gold dot placed to the right of a section title. No animation. */
+export function GoldDot() {
+  return (
+    <span
+      aria-hidden="true"
+      style={{
+        width: 6, height: 6, borderRadius: "50%",
+        background: "#d4a017", flexShrink: 0,
+        marginLeft: 2,
+      }}
+    />
+  );
+}
+
+
 export function SectionTitle({
   icon, children, style,
 }: { icon: SectionIconType; children: React.ReactNode; style?: React.CSSProperties }) {

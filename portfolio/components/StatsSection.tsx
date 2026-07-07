@@ -5,7 +5,7 @@ import { createPortal } from "react-dom";
 
 import { useReveal } from "./useReveal";
 import { useTheme } from "./ThemeProvider";
-import { SectionIcon } from "./SectionIcon";
+import { SectionTitleIcon, GoldDot } from "./SectionIcon";
 
 const SF = "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', sans-serif";
 const MONO = "'SF Mono', 'Geist Mono', monospace";
@@ -766,10 +766,9 @@ export function StatsSection() {
           <div className="about-content">
             <div style={{ paddingTop: 28 }}>
               <span style={{ display: "inline-flex", alignItems: "center", gap: 10, fontSize: 28, fontWeight: 700, letterSpacing: "-0.03em", lineHeight: 1, fontFamily: SF, color: "var(--text-primary)" }}>
-                <span style={{ width: 34, height: 34, borderRadius: 9, background: "var(--bg-hover)", border: "1px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--text-secondary)", flexShrink: 0 }}>
-                  <SectionIcon type="chart" size={15} strokeWidth={2} />
-                </span>
+                <SectionTitleIcon type="chart" />
                 Stats
+                <GoldDot />
               </span>
             </div>
             <div style={{ height: 1, background: "var(--border)", margin: "18px 0 28px" }} />
