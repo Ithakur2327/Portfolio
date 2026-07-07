@@ -413,6 +413,10 @@ export function SkillsSection() {
           .skills-grid { grid-template-columns: 1fr; }
           .lamp-skill-box { min-height: 178px; }
         }
+
+        @media (max-width: 639px) {
+          .skills-inner { padding: 0 16px 28px !important; }
+        }
       `}</style>
 
       <section ref={ref} id="skills" className={revealClass}>
@@ -422,7 +426,7 @@ export function SkillsSection() {
           width:"100vw",
           background:"var(--bg-base)",
         }}>
-          <div style={{ maxWidth: 1057, margin:"0 auto", padding:"0 20px 64px" }}>
+          <div className="skills-inner" style={{ maxWidth: 1057, margin:"0 auto", padding:"0 20px 64px" }}>
             <div style={{ paddingTop:50, marginBottom:4, display:"flex", alignItems:"center", gap:10 }}>
               <span style={{
                 fontSize:28, fontWeight:700,

@@ -125,13 +125,14 @@ function CommandMenu({
     ? PORTFOLIO_LINKS.filter(i => i.label.toLowerCase().includes(query.toLowerCase()))
     : PORTFOLIO_LINKS;
 
-  /* Position panel below the search trigger */
+  /* Position panel below the search trigger, nudged slightly left on desktop */
   useEffect(() => {
     if (!open || !triggerRef.current) return;
     const rect = triggerRef.current.getBoundingClientRect();
     // Center of trigger, clamped so panel doesn't go off-screen
     const panelW = Math.min(480, window.innerWidth - 32);
-    let left = rect.left + rect.width / 2 - panelW / 2;
+    const desktopShift = window.innerWidth >= 640 ? 56 : 0;
+    let left = rect.left + rect.width / 2 - panelW / 2 - desktopShift;
     left = Math.max(16, Math.min(left, window.innerWidth - panelW - 16));
     setPanelLeft(left);
   }, [open, triggerRef]);
