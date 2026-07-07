@@ -121,10 +121,10 @@ const SkillRow = memo(function SkillRow({
           ? isDark ? `${tech.color}14` : `${tech.color}10`
           : "transparent",
         opacity: visible ? 1 : 0,
-        transform: visible ? "translateX(0)" : "translateX(-8px)",
+        transform: visible ? "scale(1)" : "scale(0.6)",
         transition: visible
-          ? `opacity 0.42s cubic-bezier(0.22,1,0.36,1) ${delay}s, transform 0.42s cubic-bezier(0.22,1,0.36,1) ${delay}s, background 0.18s ease`
-          : "opacity 0.25s ease, transform 0.25s ease, background 0.18s ease",
+          ? `opacity 0.36s cubic-bezier(0.34,1.56,0.64,1) ${delay}s, transform 0.36s cubic-bezier(0.34,1.56,0.64,1) ${delay}s, background 0.18s ease`
+          : "opacity 0.2s ease, transform 0.2s ease, background 0.18s ease",
         cursor: "default",
       }}
     >
@@ -180,7 +180,11 @@ const LampBeam = memo(function LampBeam({ glowColor, visible, lampOn }: { glowCo
   const innerIntensity   = isDark ? "0f" : "2c";
 
   return (
-    <div aria-hidden style={{ position:"absolute", inset:0, overflow:"hidden", pointerEvents:"none", zIndex:0, transform:"translateZ(0)", willChange:"opacity" }}>
+    <div
+      aria-hidden
+      className={active ? "lamp-beam-blink" : undefined}
+      style={{ position:"absolute", inset:0, overflow:"hidden", pointerEvents:"none", zIndex:0, transform:"translateZ(0)", willChange:"opacity" }}
+    >
       {/* Top line beam */}
       <div style={{
         position:"absolute", top:0, left:"50%", transform:"translateX(-50%)",
@@ -221,6 +225,13 @@ function LampSkillBox({ title, glowColor, items }: { title: string; glowColor: s
   const { ref, inView } = useBoxInView();
   const { theme }     = useTheme();
   const isDark        = theme === "dark";
+
+  // Icons pop in once on first scroll into view; the lamp itself (inView)
+  // keeps relighting on every subsequent scroll pass.
+  const [hasAppeared, setHasAppeared] = useState(false);
+  useEffect(() => {
+    if (inView) setHasAppeared(true);
+  }, [inView]);
 
   // Split items into two columns
   const col1 = items.filter((_, i) => i % 2 === 0);
@@ -269,14 +280,14 @@ function LampSkillBox({ title, glowColor, items }: { title: string; glowColor: s
           {/* Column 1 */}
           <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 2 }}>
             {col1.map((name, i) => (
-              <SkillRow key={name} name={name} visible={inView} delay={inView ? 0.06 + i * 0.05 : 0} />
+              <SkillRow key={name} name={name} visible={hasAppeared} delay={hasAppeared ? 0.06 + i * 0.05 : 0} />
             ))}
           </div>
 
           {/* Column 2 */}
           <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 2 }}>
             {col2.map((name, i) => (
-              <SkillRow key={name} name={name} visible={inView} delay={inView ? 0.09 + i * 0.05 : 0} />
+              <SkillRow key={name} name={name} visible={hasAppeared} delay={hasAppeared ? 0.09 + i * 0.05 : 0} />
             ))}
           </div>
 
@@ -361,6 +372,17 @@ export function SkillsSection() {
       <style suppressHydrationWarning>{`
         .skills-strip-outer:hover .skills-strip { animation-play-state: paused !important; }
 
+        /* Subtle occasional flicker on the lit lamp beam — mostly steady,
+           dips briefly a couple of times per cycle like a real tube light. */
+        @keyframes lampBeamBlink {
+          0%, 89%, 94%, 100% { opacity: 1; }
+          91%                { opacity: 0.55; }
+          96%                { opacity: 0.75; }
+        }
+        .lamp-beam-blink {
+          animation: lampBeamBlink 6.5s ease-in-out infinite;
+        }
+
         /* One shared grid: the 1px gap (colored like a border) IS the grid line,
            so every cell shares the same continuous lines — no separate "card" squares. */
         .skills-grid {
@@ -369,7 +391,7 @@ export function SkillsSection() {
           gap: 1px;
           background: var(--border);
           border: 1px solid var(--border);
-          border-radius: 14px;
+          border-radius: 10px;
           overflow: hidden;
         }
 
@@ -383,12 +405,13 @@ export function SkillsSection() {
         }
 
         @media (max-width: 640px) {
-          .skills-grid { grid-template-columns: repeat(2, 1fr); }
-          .lamp-skill-box { min-height: auto; }
+          .skills-grid { grid-template-columns: repeat(2, 1fr); border-radius: 8px; }
+          .lamp-skill-box { min-height: 168px; }
         }
 
         @media (max-width: 380px) {
           .skills-grid { grid-template-columns: 1fr; }
+          .lamp-skill-box { min-height: 178px; }
         }
       `}</style>
 
@@ -399,8 +422,8 @@ export function SkillsSection() {
           width:"100vw",
           background:"var(--bg-base)",
         }}>
-          <div style={{ maxWidth: 1057, margin:"0 auto", padding:"0 20px 46px" }}>
-            <div style={{ paddingTop:34, marginBottom:4, display:"flex", alignItems:"center", gap:10 }}>
+          <div style={{ maxWidth: 1057, margin:"0 auto", padding:"0 20px 64px" }}>
+            <div style={{ paddingTop:50, marginBottom:4, display:"flex", alignItems:"center", gap:10 }}>
               <span style={{
                 fontSize:28, fontWeight:700,
                 letterSpacing:"-0.03em", lineHeight:1,
@@ -411,7 +434,7 @@ export function SkillsSection() {
                 Skills
               </span>
             </div>
-            <div style={{ height:1, background:"var(--border)", margin:"18px 0 24px" }} />
+            <div style={{ height:1, background:"var(--border)", margin:"18px 0 18px" }} />
 
             <div className="skills-grid">
               {LAMP_GROUPS.map(g => <LampSkillBox key={g.title} {...g} />)}

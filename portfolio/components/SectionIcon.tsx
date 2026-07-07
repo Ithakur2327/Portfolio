@@ -1,3 +1,7 @@
+"use client";
+
+import { useEffect, useRef, useState } from "react";
+
 /**
  * SectionIcon — the exact icon set used in the navbar's command-menu
  * (search) list, extracted into one shared component so every section
@@ -61,17 +65,46 @@ export function SectionIcon({
 }
 
 /** Shared flat icon box used next to every section title — same size and
- * background treatment everywhere so all sections match (no 3D/embossed effect). */
+ * background treatment everywhere so all sections match (no 3D/embossed effect).
+ * Pops in once the first time it scrolls into view, and pops again on hover. */
 export function SectionTitleIcon({ type }: { type: SectionIconType }) {
+  const ref = useRef<HTMLSpanElement>(null);
+  const [popped, setPopped] = useState(false);
+  const [hovered, setHovered] = useState(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setPopped(true);
+          obs.disconnect();
+        }
+      },
+      { threshold: 0.4, rootMargin: "0px 0px -40px 0px" }
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
+
   return (
     <span
+      ref={ref}
       className="section-title-icon-3d"
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
       style={{
         width: 34, height: 34, borderRadius: 9,
         background: "var(--bg-secondary)",
         border: "1px solid var(--border)",
         display: "flex", alignItems: "center", justifyContent: "center",
         color: "var(--text-secondary)", flexShrink: 0,
+        opacity: popped ? 1 : 0,
+        transform: !popped ? "scale(0.4)" : hovered ? "scale(1.14)" : "scale(1)",
+        transition: popped
+          ? "transform 0.28s cubic-bezier(0.34,1.56,0.64,1), opacity 0.3s ease"
+          : "opacity 0.3s ease, transform 0.4s cubic-bezier(0.34,1.56,0.64,1)",
       }}
     >
       <SectionIcon type={type} size={15} strokeWidth={2} />

@@ -227,8 +227,8 @@ export function DotField({ interactive = true }: { interactive?: boolean }) {
   return (
     <DotCanvas
       interactive={interactive}
-      dotColor={isDark ? "rgba(255,255,255,0.09)" : "rgba(0,0,0,0.12)"}
-      activeDotColor={isDark ? "rgba(255,255,255,0.18)" : "rgba(0,0,0,0.24)"}
+      dotColor={isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.10)"}
+      activeDotColor={isDark ? "rgba(255,255,255,0.14)" : "rgba(0,0,0,0.20)"}
     />
   );
 }

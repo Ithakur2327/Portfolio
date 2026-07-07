@@ -135,7 +135,7 @@ export function ContactSection() {
           position: relative; left: 50%; margin-left: -50vw;
           width: 100vw; background: var(--bg-base);
         }
-        .contact-inner { max-width: 1060px; margin: 0 auto; padding: 0 32px 52px; }
+        .contact-inner { max-width: 1060px; margin: 0 auto; padding: 0 32px 68px; }
         .contact-divider { height: 1px; background: var(--border); margin-bottom: 28px; }
 
         /* ── Card ── */
@@ -209,7 +209,7 @@ export function ContactSection() {
           <div className="contact-inner">
 
             {/* Section Title */}
-            <div style={{ paddingTop: 34, marginBottom: 20 }}>
+            <div style={{ paddingTop: 50, marginBottom: 20 }}>
               <h2 style={{ fontSize: 28, fontWeight: 700, letterSpacing: "-0.03em", lineHeight: 1, fontFamily: SF, color: "var(--text-primary)", display: "flex", alignItems: "center", gap: 10, margin: 0 }}>
                 <SectionTitleIcon type="mail" />
                 Contact

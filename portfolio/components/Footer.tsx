@@ -4,7 +4,6 @@ import { useTheme } from "./ThemeProvider";
 import { motion, useMotionValue, useSpring, useTransform, animate } from "motion/react";
 
 const MONO = "'Geist Mono', monospace";
-const SF = "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', sans-serif";
 
 const VW = 3840, VH = 600, FONT_SIZE = 386;
 
@@ -221,32 +220,6 @@ export function Footer() {
           overflow: hidden;
         }
 
-        .footer-profile-band {
-          max-width: 1060px;
-          margin: 0 auto;
-          padding: 44px 32px 36px;
-          display: flex;
-          align-items: center;
-          gap: 18px;
-          border-bottom: 1px solid var(--border);
-        }
-        .footer-profile-info { flex: 1; min-width: 0; }
-        .footer-profile-name {
-          font-family: ${SF};
-          font-weight: 700;
-          font-size: 15px;
-          color: var(--text-primary);
-          letter-spacing: -0.02em;
-          margin-bottom: 3px;
-        }
-        .footer-profile-desc {
-          font-size: 12px;
-          color: var(--text-muted);
-          font-family: ${SF};
-          line-height: 1.5;
-          max-width: 260px;
-        }
-
         .footer-bottom-band {
           max-width: 1060px;
           margin: 0 auto;
@@ -294,7 +267,7 @@ export function Footer() {
           left: 50%;
           margin-left: -50vw;
           width: 100vw;
-          margin-top: clamp(20px, 3vw, 44px);
+          margin-top: clamp(8px, 1.4vw, 18px);
           cursor: crosshair;
           user-select: none;
           -webkit-user-select: none;
@@ -309,6 +282,10 @@ export function Footer() {
           height: clamp(42px, 13vw, 220px);
           vertical-align: bottom;
           margin-bottom: 0;
+        }
+        /* Desktop/PC only — mobile keeps the clamp above untouched */
+        @media (min-width: 861px) {
+          .fgt-svg { height: clamp(100px, 8vw, 140px) !important; }
         }
         .fgt-text {
           font-family: 'Press Start 2P', 'Courier New', monospace;
@@ -328,11 +305,9 @@ export function Footer() {
         }
 
         @media (max-width: 720px) {
-          .footer-profile-band { padding: 32px 22px 28px; }
           .footer-bottom-band  { padding: 14px 22px; gap: 14px; }
         }
         @media (max-width: 480px) {
-          .footer-profile-band { padding: 24px 16px 22px; flex-direction: column; align-items: flex-start; }
           .footer-bottom-band  { padding: 12px 16px; flex-direction: column; gap: 10px; }
           .footer-socials-row  { gap: 8px; }
           .footer-social-btn   { width: 38px; height: 38px; }
@@ -340,12 +315,6 @@ export function Footer() {
       `}</style>
 
       <footer className="footer-root">
-        <div className="footer-profile-band">
-          <div className="footer-profile-info">
-            <p className="footer-profile-name">Indresh Thakur</p>
-          </div>
-        </div>
-
         <div className="footer-bottom-band">
           <span className="footer-copy">© {year} Indresh Thakur. All rights reserved.</span>
 

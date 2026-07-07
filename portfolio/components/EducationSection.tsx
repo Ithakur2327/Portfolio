@@ -2,6 +2,7 @@
 import { useRef } from "react";
 import { motion, useInView } from "motion/react";
 import { useReveal } from "./useReveal";
+import { DotDivider } from "./DotBackground";
 import { SectionIcon, SectionTitleIcon } from "./SectionIcon";
 import { usePdfModal } from "./PdfViewerModal";
 import { slugify } from "@/lib/utils";
@@ -147,12 +148,12 @@ export function EducationSection() {
         .edu-inner {
           max-width: 1060px;
           margin: 0 auto;
-          padding: 0 32px 46px;
+          padding: 0 32px 64px;
         }
 
         /* ── section head – bold label + icon exactly like Projects/Skills ── */
         .edu-sec-titlerow {
-          padding-top: 34px;
+          padding-top: 50px;
           margin-bottom: 20px;
         }
         .edu-sec-title {
@@ -354,17 +355,15 @@ export function EducationSection() {
         .cert-item {
           display: flex;
           align-items: center;
-          gap: 13px;
-          padding: 13px 8px;
+          gap: 0;
+          padding: 4px 8px;
           margin: 0 -8px;
-          border-radius: 8px;
-          border-bottom: 1px solid var(--border);
+          border-radius: 10px;
           text-decoration: none;
           color: var(--text-primary);
           transition: background 0.14s;
           cursor: pointer;
         }
-        .cert-item:last-child { border-bottom: none; }
         .cert-item:hover { background: var(--bg-hover); }
         .cert-item:hover .cert-arrow-icon {
           opacity: 1;
@@ -378,12 +377,18 @@ export function EducationSection() {
           display: flex; align-items: center; justify-content: center;
           color: var(--text-secondary);
           flex-shrink: 0;
-          box-shadow: 0 1px 3px rgba(0,0,0,0.14);
+          margin-right: 14px;
           transition: box-shadow 0.2s, transform 0.2s;
         }
         .cert-item:hover .cert-icon-box {
           box-shadow: 0 3px 10px rgba(0,0,0,0.22);
           transform: translateY(-1px);
+        }
+        .cert-content {
+          flex: 1;
+          min-width: 0;
+          border-left: 1px dashed var(--border);
+          padding: 10px 0 10px 14px;
         }
         .cert-title-txt {
           font-size: 13.5px;
@@ -397,13 +402,21 @@ export function EducationSection() {
           color: var(--text-muted);
           margin-top: 2px;
           font-family: ${MONO};
+          display: flex;
+          align-items: center;
+          gap: 6px;
+        }
+        .cert-meta-sep {
+          width: 1px; height: 11px;
+          background: var(--border);
+          display: inline-block;
         }
         .cert-arrow-icon {
           color: var(--text-muted);
           flex-shrink: 0;
           opacity: 0.4;
           transition: opacity 0.15s, transform 0.2s cubic-bezier(0.22,1,0.36,1);
-          margin-left: auto;
+          margin-left: 8px;
         }
 
         /* ── responsive ── */
@@ -460,6 +473,8 @@ export function EducationSection() {
         </div>
       </section>
 
+      <DotDivider />
+
       {/* ═══ CERTIFICATIONS ═══ */}
       <section
         id="certifications"
@@ -500,9 +515,13 @@ export function EducationSection() {
                   transition={{ duration: 0.46, ease: [0.22, 1, 0.36, 1], delay: vis2 ? i * 0.08 : 0 }}
                 >
                   <div className="cert-icon-box"><SectionIcon type="badge" size={15} strokeWidth={2} /></div>
-                  <div style={{ flex: 1 }}>
+                  <div className="cert-content">
                     <p className="cert-title-txt">{cert.title}</p>
-                    <p className="cert-meta-txt">@ {cert.issuer} · {cert.date}</p>
+                    <p className="cert-meta-txt">
+                      <span>@{cert.issuer}</span>
+                      <span className="cert-meta-sep" aria-hidden />
+                      <span>{cert.date}</span>
+                    </p>
                   </div>
                   <span className="cert-arrow-icon"><ArrowIcon /></span>
                 </motion.div>
