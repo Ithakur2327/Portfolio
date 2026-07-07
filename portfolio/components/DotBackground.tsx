@@ -2,24 +2,6 @@
 import { useEffect, useRef } from "react";
 import { useTheme } from "./ThemeProvider";
 
-/**
- * DotField — a container-scoped dot-grid canvas used as a subtle
- * *partition indicator* between/behind content, never as a full-page
- * background layer. It fills whatever positioned parent wraps it
- * (absolute, inset:0) instead of the whole viewport.
- *
- * Two-layer canvas strategy for dense 4.5px spacing without lag:
- *
- * Static layer (OffscreenCanvas, painted ONCE on resize):
- *   - All dots drawn as one big batched path → single GPU texture
- *
- * Per mouse-move frame:
- *   1. drawImage(staticCanvas) — one GPU blit, paints all dots
- *   2. clearRect — erases only the small cursor bbox
- *   3. Iterate only dots inside that bbox and redraw:
- *      a. regular dots outside radius (batched path)
- *      b. highlighted dots inside radius (per-dot for alpha gradient)
- */
 function DotCanvas({ dotColor, activeDotColor, interactive }: {
   dotColor: string; activeDotColor: string; interactive: boolean;
 }) {
@@ -260,12 +242,12 @@ export function DotDivider({ height = 38 }: { height?: number }) {
   return (
     <div
       aria-hidden="true"
+      className="dot-divider"
       style={{
         position: "relative", left: "50%", marginLeft: "-50vw",
         width: "100vw", height,
         overflow: "hidden",
       }}
-      className="dot-divider"
     >
       <DotField interactive />
     </div>

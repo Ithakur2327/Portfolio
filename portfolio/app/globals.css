@@ -216,12 +216,19 @@ a, button, [role="button"] {
   margin-top: 0 !important;
 }
 
-/* Dot dividers ARE the partition — no extra margin above/below them,
-   so sections sit flush against the dot strip with no solid gap. */
+/* Dot dividers ARE the partition — no default 38px margin above/below
+   them (the divider itself provides its own consistent padding below),
+   so sections don't get a stray solid-black gap. Each section's own
+   top-level element is a Fragment whose FIRST child is a <style> tag,
+   so the actual section markup is the sibling *after* that style tag —
+   both rules are needed to reach it. */
 .page-wrapper > .dot-divider {
   margin-top: 0 !important;
 }
 .page-wrapper > .dot-divider + * {
+  margin-top: 0 !important;
+}
+.page-wrapper > .dot-divider + style + * {
   margin-top: 0 !important;
 }
 
