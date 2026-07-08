@@ -700,25 +700,8 @@ html.light .gold-word {
   transform-origin: top left;
 }
 
-/* While the theme-switch view-transition snapshot is being taken/played,
-   pause every other running CSS animation (marquees, glow flicker, etc.) —
-   that competition for paint time was what made the toggle feel laggy. */
-.theme-transitioning,
-.theme-transitioning * {
-  animation-play-state: paused !important;
-}
 @keyframes scale {
   to { mask-size: 200vmax; }
-}
-
-/* Mobile-only: compositing a fixed-layer backdrop-blur at the same time as
-   the browser captures/plays the full-page view-transition snapshot is the
-   single most expensive combination on mobile GPUs. Drop just the blur for
-   the transition's short duration — the gradient/mask fade still renders,
-   it's just not blurred for that moment, which is imperceptible. */
-.theme-transitioning-mobile .scroll-bottom-fade {
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
 }
 
 
