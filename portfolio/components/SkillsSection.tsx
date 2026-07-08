@@ -234,10 +234,6 @@ function LampSkillBox({ title, glowColor, items }: { title: string; glowColor: s
     if (inView) setHasAppeared(true);
   }, [inView]);
 
-  // Split items into two columns
-  const col1 = items.filter((_, i) => i % 2 === 0);
-  const col2 = items.filter((_, i) => i % 2 === 1);
-
   return (
     <div
       ref={ref}
@@ -276,24 +272,16 @@ function LampSkillBox({ title, glowColor, items }: { title: string; glowColor: s
           transition: "background 0.5s ease",
         }} />
 
-        {/* Two-column skill rows — divider is absolutely centered, independent of column content */}
-        <div className="skill-cols-wrap" style={{ position: "relative", padding: "0 12px 12px", display: "flex", gap: 20, flex: 1 }}>
-          {/* Column 1 */}
-          <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 2 }}>
-            {col1.map((name, i) => (
+        {/* Skill rows — CSS grid so column count can respond per breakpoint */}
+        <div className="skill-cols-wrap" style={{ position: "relative", padding: "0 12px 12px", flex: 1 }}>
+          <div className="skill-item-grid">
+            {items.map((name, i) => (
               <SkillRow key={name} name={name} visible={hasAppeared} delay={hasAppeared ? 0.06 + i * 0.05 : 0} />
             ))}
           </div>
 
-          {/* Column 2 */}
-          <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 2 }}>
-            {col2.map((name, i) => (
-              <SkillRow key={name} name={name} visible={hasAppeared} delay={hasAppeared ? 0.09 + i * 0.05 : 0} />
-            ))}
-          </div>
-
           {/* Centered partition line — pinned to the true horizontal center */}
-          <div aria-hidden style={{
+          <div aria-hidden className="skill-cols-sep" style={{
             position: "absolute", left: "50%", top: 4, bottom: 4, width: 1,
             transform: "translateX(-50%)",
             background: `linear-gradient(to bottom, transparent, ${isDark ? "rgba(255,255,255,0.10)" : glowColor + "28"}, transparent)`,
@@ -411,11 +399,18 @@ export function SkillsSection() {
           text-overflow: ellipsis;
         }
 
+        .skill-item-grid {
+          display: grid;
+          grid-template-columns: repeat(2, 1fr);
+          column-gap: 20px;
+          row-gap: 2px;
+        }
+
         /* Permanent mobile/tablet fix: box stays 2-per-row and its content
            (icon + name) shrinks gracefully instead of overflowing/clipping,
            regardless of device width. */
         @media (max-width: 640px) {
-          .skills-grid { border-radius: 8px; }
+          .skills-grid { border-radius: 8px; grid-template-columns: 1fr; }
           .lamp-skill-box { min-height: 168px; }
           .skill-cols-wrap { gap: 10px !important; padding: 0 10px 10px !important; }
         }

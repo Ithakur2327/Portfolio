@@ -62,18 +62,23 @@ export function ScrollFadeAndTop() {
   return (
     <>
       {/* Bottom fade/blur — fades from transparent into the page background,
-          stops appearing before the footer (which has its own background). */}
+          stops appearing before the footer (which has its own background).
+          Uses chanhdai's technique: a background gradient combined with a
+          mask gradient (not a single flat linear-gradient strip) so the
+          blend curve is smooth instead of a hard-edged band. */}
       <div
         aria-hidden="true"
         style={{
           position: "fixed",
           left: 0, right: 0, bottom: 0,
-          height: 22,
+          height: 40,
           pointerEvents: "none",
           zIndex: 40,
-          background: "linear-gradient(to top, var(--bg-base) 0%, var(--bg-base) 8%, transparent 100%)",
-          backdropFilter: "blur(1.5px)",
-          WebkitBackdropFilter: "blur(1.5px)",
+          background: "linear-gradient(to bottom, transparent 0%, var(--bg-base) 100%)",
+          WebkitMaskImage: "linear-gradient(to top, var(--bg-base) 25%, transparent 100%)",
+          maskImage: "linear-gradient(to top, var(--bg-base) 25%, transparent 100%)",
+          backdropFilter: "blur(1px)",
+          WebkitBackdropFilter: "blur(1px)",
           opacity: footerVisible ? 0 : 1,
           transition: "opacity 0.35s ease",
         }}
