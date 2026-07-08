@@ -46,30 +46,35 @@ const CERTIFICATIONS = [
     issuer: "Coursera",
     date: "2024",
     logo: "https://cdn.simpleicons.org/coursera/2A73CC",
+    stack: ["React", "Node.js", "MongoDB", "Express.js"],
   },
   {
     title: "Data Structures & Algorithms",
     issuer: "GeeksforGeeks",
     date: "2024",
     logo: "https://cdn.simpleicons.org/geeksforgeeks/2F8D46",
+    stack: ["DSA"],
   },
   {
     title: "Principles of Generative AI",
     issuer: "Coursera",
     date: "2025",
     logo: "https://cdn.simpleicons.org/coursera/2A73CC",
+    stack: [],
   },
   {
     title: "Cloud Computing Fundamentals",
     issuer: "Google Cloud",
     date: "2025",
     logo: "https://cdn.simpleicons.org/googlecloud/4285F4",
+    stack: [],
   },
   {
     title: "Networking",
     issuer: "Cisco",
     date: "2026",
     logo: "https://cdn.simpleicons.org/cisco/1BA0D7",
+    stack: [],
   },
 ];
 
@@ -402,6 +407,28 @@ export function EducationSection() {
           font-family: ${MONO};
           white-space: nowrap;
         }
+        .cert-tags-row {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 7px;
+          margin-top: 10px;
+        }
+        .cert-tag-pill {
+          font-family: ${MONO};
+          font-size: 11px;
+          font-weight: 500;
+          color: var(--text-secondary);
+          background: var(--tag-bg);
+          border: 1px solid var(--tag-border);
+          padding: 3px 9px;
+          border-radius: 6px;
+          white-space: nowrap;
+          transition: color 0.15s, border-color 0.15s;
+        }
+        .cert-item-2:hover .cert-tag-pill {
+          color: var(--text-primary);
+          border-color: var(--text-muted);
+        }
 
         /* ── responsive ── */
         @media (max-width: 860px) {
@@ -517,6 +544,13 @@ export function EducationSection() {
                       </div>
                       <span className="cert-item-2-date">{cert.date}</span>
                     </div>
+                    {cert.stack.length > 0 && (
+                      <div className="cert-tags-row">
+                        {cert.stack.map((tag, ti) => (
+                          <span key={ti} className="cert-tag-pill">{tag}</span>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </motion.div>
               );
