@@ -361,7 +361,7 @@ export function EducationSection() {
           display: flex;
           align-items: flex-start;
           gap: 14px;
-          padding: 20px 0;
+          padding: 28px 0;
         }
         .cert-item-2:hover .edu-card-icon {
           box-shadow: 0 3px 10px rgba(0,0,0,0.22);
@@ -370,8 +370,8 @@ export function EducationSection() {
         .cert-item-2-line {
           position: absolute;
           left: 16px;
-          top: 50px;
-          bottom: -16px;
+          top: 62px;
+          bottom: -20px;
           width: 2px;
           background: linear-gradient(to bottom, var(--border), transparent);
           z-index: 0;
