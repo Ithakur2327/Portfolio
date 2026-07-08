@@ -294,7 +294,7 @@ export function Footer() {
         .fgt-svg {
           display: block;
           width: 100%;
-          height: clamp(42px, 13vw, 220px);
+          height: clamp(56px, 16vw, 220px);
           vertical-align: bottom;
           margin-bottom: 0;
         }
