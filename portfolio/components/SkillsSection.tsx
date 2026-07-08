@@ -122,9 +122,9 @@ const SkillRow = memo(function SkillRow({
           ? isDark ? `${tech.color}14` : `${tech.color}10`
           : "transparent",
         opacity: visible ? 1 : 0,
-        transform: visible ? "scale(1)" : "scale(0.6)",
+        transform: visible ? "scale(1)" : "scale(0.9)",
         transition: visible
-          ? `opacity 0.36s cubic-bezier(0.34,1.56,0.64,1) ${delay}s, transform 0.36s cubic-bezier(0.34,1.56,0.64,1) ${delay}s, background 0.18s ease`
+          ? `opacity 0.3s ease-out ${delay}s, transform 0.3s ease-out ${delay}s, background 0.18s ease`
           : "opacity 0.2s ease, transform 0.2s ease, background 0.18s ease",
         cursor: "default",
       }}
