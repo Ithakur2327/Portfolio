@@ -75,6 +75,14 @@ function FluidGradientText({ text }: { text: string }) {
   const gx1 = useTransform(mouseX, v => v - spread);
   const gx2 = useTransform(mouseX, v => v + spread);
 
+  const tl = VW * 0.945;
+
+  // On narrow screens the container's aspect ratio is wider than the SVG
+  // viewBox's (3840:600 ≈ 6.4:1) — with the default "meet" scaling that
+  // leaves empty letterbox gaps on left/right instead of filling the
+  // width, which is exactly the "not full width on mobile" bug. Only on
+  // mobile we switch to "none" so the art stretches to fill the box
+  // completely; desktop keeps its normal aspect-preserving behavior.
   const [isMobile, setIsMobile] = React.useState(false);
   React.useEffect(() => {
     const mq = window.matchMedia("(max-width: 640px)");
@@ -83,8 +91,6 @@ function FluidGradientText({ text }: { text: string }) {
     mq.addEventListener("change", update);
     return () => mq.removeEventListener("change", update);
   }, []);
-
-  const tl = VW * (isMobile ? 0.995 : 0.945);
 
   return (
     <div
@@ -102,7 +108,7 @@ function FluidGradientText({ text }: { text: string }) {
         viewBox={`0 0 ${VW} ${VH}`}
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
-        preserveAspectRatio="xMidYMid meet"
+        preserveAspectRatio={isMobile ? "none" : "xMidYMid meet"}
         aria-hidden="true"
       >
         <defs>
