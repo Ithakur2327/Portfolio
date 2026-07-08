@@ -46,14 +46,14 @@ const CERTIFICATIONS = [
     issuer: "Coursera",
     date: "2024",
     logo: "https://cdn.simpleicons.org/coursera/2A73CC",
-    stack: ["React", "Node.js", "MongoDB", "Express.js"],
+    stack: [],
   },
   {
     title: "Data Structures & Algorithms",
     issuer: "GeeksforGeeks",
     date: "2024",
     logo: "https://cdn.simpleicons.org/geeksforgeeks/2F8D46",
-    stack: ["DSA"],
+    stack: [],
   },
   {
     title: "Principles of Generative AI",
@@ -363,10 +363,6 @@ export function EducationSection() {
           gap: 14px;
           padding: 20px 0;
         }
-        .cert-item-2 + .cert-item-2 {
-          margin-top: 4px;
-          border-top: 1px dashed var(--border);
-        }
         .cert-item-2:hover .edu-card-icon {
           box-shadow: 0 3px 10px rgba(0,0,0,0.22);
           transform: translateY(-1px);
@@ -406,6 +402,8 @@ export function EducationSection() {
           color: var(--text-muted);
           font-family: ${MONO};
           white-space: nowrap;
+          margin-left: 10px;
+          font-weight: 400;
         }
         .cert-tags-row {
           display: flex;
@@ -539,10 +537,12 @@ export function EducationSection() {
                   <div className="cert-item-2-body">
                     <div className="cert-item-2-top">
                       <div>
-                        <p className="cert-item-2-title">{cert.title}</p>
+                        <p className="cert-item-2-title">
+                          {cert.title}
+                          <span className="cert-item-2-date">{cert.date}</span>
+                        </p>
                         <p className="cert-item-2-issuer">{cert.issuer}</p>
                       </div>
-                      <span className="cert-item-2-date">{cert.date}</span>
                     </div>
                     {cert.stack.length > 0 && (
                       <div className="cert-tags-row">
