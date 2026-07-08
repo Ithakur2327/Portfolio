@@ -45,39 +45,33 @@ const CERTIFICATIONS = [
     title: "MERN Stack Development",
     issuer: "Coursera",
     date: "2024",
-  },
-  {
-    title: "Principles of Generative AI",
-    issuer: "Coursera",
-    date: "2024",
-  },
-  {
-    title: "Web Development Bootcamp",
-    issuer: "Udemy",
-    date: "2023",
+    logo: "https://cdn.simpleicons.org/coursera/2A73CC",
+    stack: ["React", "Node.js", "MongoDB", "Express.js"],
   },
   {
     title: "Data Structures & Algorithms",
     issuer: "GeeksforGeeks",
-    date: "2023",
+    date: "2024",
+    logo: "https://cdn.simpleicons.org/geeksforgeeks/2F8D46",
+    stack: ["DSA"],
+  },
+  {
+    title: "Principles of Generative AI",
+    issuer: "Coursera",
+    date: "2025",
+    logo: "https://cdn.simpleicons.org/coursera/2A73CC",
+    stack: ["RAG", "LangChain", "Vector DB"],
   },
   {
     title: "Cloud Computing Fundamentals",
     issuer: "Google Cloud",
-    date: "2024",
+    date: "2025",
+    logo: "https://cdn.simpleicons.org/googlecloud/4285F4",
+    stack: ["AWS", "Docker", "Kubernetes"],
   },
 ];
 
 
-
-function ArrowIcon() {
-  return (
-    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-      <line x1="7" y1="17" x2="17" y2="7"/>
-      <polyline points="7 7 17 7 17 17"/>
-    </svg>
-  );
-}
 
 /* ── Language pill with skill-section-style highlight animation ── */
 function LangPill({ name, delay }: { name: string; delay: number }) {
@@ -352,71 +346,77 @@ export function EducationSection() {
           margin-left: 8px;
           vertical-align: middle;
         }
-        .cert-item {
+        .cert-logo-img {
+          width: 17px; height: 17px; object-fit: contain;
+        }
+        .cert-item-2 {
+          position: relative;
           display: flex;
-          align-items: center;
-          gap: 0;
-          padding: 4px 8px;
-          margin: 0 -8px;
-          border-radius: 10px;
-          text-decoration: none;
-          color: var(--text-primary);
-          transition: background 0.14s;
-          cursor: pointer;
+          align-items: flex-start;
+          gap: 14px;
+          padding: 16px 0 16px;
         }
-        .cert-item:hover { background: var(--bg-hover); }
-        .cert-item:hover .cert-arrow-icon {
-          opacity: 1;
-          transform: translate(2px, -2px);
-        }
-        .cert-icon-box {
-          width: 34px; height: 34px;
-          border-radius: 9px;
-          background: var(--bg-hover);
-          border: 1px solid var(--border);
-          display: flex; align-items: center; justify-content: center;
-          color: var(--text-secondary);
-          flex-shrink: 0;
-          margin-right: 14px;
-          transition: box-shadow 0.2s, transform 0.2s;
-        }
-        .cert-item:hover .cert-icon-box {
+        .cert-item-2:hover .edu-card-icon {
           box-shadow: 0 3px 10px rgba(0,0,0,0.22);
           transform: translateY(-1px);
         }
-        .cert-content {
-          flex: 1;
-          min-width: 0;
-          border-left: 1px dashed var(--border);
-          padding: 10px 0 10px 14px;
+        .cert-item-2-line {
+          position: absolute;
+          left: 16px;
+          top: 50px;
+          bottom: -16px;
+          width: 2px;
+          background: linear-gradient(to bottom, var(--border), transparent);
+          z-index: 0;
         }
-        .cert-title-txt {
-          font-size: 13.5px;
+        .cert-item-2-body { flex: 1; min-width: 0; }
+        .cert-item-2-top {
+          display: flex;
+          align-items: flex-start;
+          justify-content: space-between;
+          gap: 12px;
+        }
+        .cert-item-2-title {
+          font-size: 14.5px;
           font-weight: 700;
           color: var(--text-primary);
-          letter-spacing: -0.015em;
+          letter-spacing: -0.025em;
+          font-family: ${SF};
+          line-height: 1.2;
+        }
+        .cert-item-2-issuer {
+          font-size: 12.5px;
+          color: var(--text-secondary);
+          margin-top: 3px;
           font-family: ${SF};
         }
-        .cert-meta-txt {
-          font-size: 11.5px;
+        .cert-item-2-date {
+          font-size: 11px;
           color: var(--text-muted);
-          margin-top: 2px;
           font-family: ${MONO};
+          white-space: nowrap;
+        }
+        .cert-tags-row {
           display: flex;
-          align-items: center;
-          gap: 6px;
+          flex-wrap: wrap;
+          gap: 7px;
+          margin-top: 10px;
         }
-        .cert-meta-sep {
-          width: 1px; height: 11px;
-          background: var(--border);
-          display: inline-block;
+        .cert-tag-pill {
+          font-family: ${MONO};
+          font-size: 11px;
+          font-weight: 500;
+          color: var(--text-secondary);
+          background: var(--tag-bg);
+          border: 1px solid var(--tag-border);
+          padding: 3px 9px;
+          border-radius: 6px;
+          white-space: nowrap;
+          transition: color 0.15s, border-color 0.15s;
         }
-        .cert-arrow-icon {
-          color: var(--text-muted);
-          flex-shrink: 0;
-          opacity: 0.4;
-          transition: opacity 0.15s, transform 0.2s cubic-bezier(0.22,1,0.36,1);
-          margin-left: 8px;
+        .cert-item-2:hover .cert-tag-pill {
+          color: var(--text-primary);
+          border-color: var(--text-muted);
         }
 
         /* ── responsive ── */
@@ -494,7 +494,8 @@ export function EducationSection() {
 
             <div className="edu-sec-divider" />
 
-            {/* Cert items */}
+            {/* Cert items — education-card layout: company icon, title,
+                issuer/date, and the skill stack learned in that cert */}
             {CERTIFICATIONS.map((cert, i) => {
               const pdfSrc = `/certificates/${slugify(cert.title)}.pdf`;
               return (
@@ -509,21 +510,36 @@ export function EducationSection() {
                       openPdf(pdfSrc, cert.title);
                     }
                   }}
-                  className="cert-item"
+                  className="cert-item-2"
                   initial={false}
                   animate={vis2 ? { opacity: 1, y: 0, rotateX: 0 } : { opacity: 0, y: 14, rotateX: 6 }}
                   transition={{ duration: 0.46, ease: [0.22, 1, 0.36, 1], delay: vis2 ? i * 0.08 : 0 }}
+                  style={{ cursor: "pointer" }}
                 >
-                  <div className="cert-icon-box"><SectionIcon type="badge" size={15} strokeWidth={2} /></div>
-                  <div className="cert-content">
-                    <p className="cert-title-txt">{cert.title}</p>
-                    <p className="cert-meta-txt">
-                      <span>@{cert.issuer}</span>
-                      <span className="cert-meta-sep" aria-hidden />
-                      <span>{cert.date}</span>
-                    </p>
+                  <div className="edu-card-icon">
+                    <img
+                      className="cert-logo-img"
+                      src={cert.logo}
+                      alt={cert.issuer}
+                      loading="lazy"
+                      onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+                    />
                   </div>
-                  <span className="cert-arrow-icon"><ArrowIcon /></span>
+                  {i < CERTIFICATIONS.length - 1 && <div className="cert-item-2-line" />}
+                  <div className="cert-item-2-body">
+                    <div className="cert-item-2-top">
+                      <div>
+                        <p className="cert-item-2-title">{cert.title}</p>
+                        <p className="cert-item-2-issuer">{cert.issuer}</p>
+                      </div>
+                      <span className="cert-item-2-date">{cert.date}</span>
+                    </div>
+                    <div className="cert-tags-row">
+                      {cert.stack.map((tag, ti) => (
+                        <span key={ti} className="cert-tag-pill">{tag}</span>
+                      ))}
+                    </div>
+                  </div>
                 </motion.div>
               );
             })}

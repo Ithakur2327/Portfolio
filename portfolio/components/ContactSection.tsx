@@ -138,12 +138,27 @@ export function ContactSection() {
         .contact-inner { max-width: 1060px; margin: 0 auto; padding: 0 32px 68px; }
         .contact-divider { height: 1px; background: var(--border); margin-bottom: 28px; }
 
-        /* ── Card ── */
+        /* ── Card — always black, regardless of site theme ── */
         .contact-card {
-          background: var(--bg-card);
-          border: 1px solid var(--border);
+          background: #0a0a0a;
+          border: 1px solid rgba(255,255,255,0.10);
           border-radius: 16px;
           overflow: hidden;
+        }
+        .contact-card-header:hover { background: rgba(255,255,255,0.05); }
+        .contact-card-title { color: #f5f5f5; }
+        .contact-card-chevron { color: rgba(255,255,255,0.55); }
+        .contact-card-sep { background: rgba(255,255,255,0.10); }
+        .contact-card .contact-form-label { color: rgba(255,255,255,0.5); }
+        .contact-card .field-input {
+          background: rgba(255,255,255,0.05);
+          border: 1px solid rgba(255,255,255,0.12);
+          color: #f5f5f5;
+        }
+        .contact-card .field-input::placeholder { color: rgba(255,255,255,0.32); }
+        .contact-card .field-input:focus {
+          border-color: rgba(255,255,255,0.35);
+          box-shadow: 0 0 0 3px rgba(255,255,255,0.08);
         }
         .contact-card-header {
           display: flex; align-items: center; gap: 12px;

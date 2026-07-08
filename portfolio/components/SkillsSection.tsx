@@ -22,7 +22,7 @@ const TECH: Record<string, { color: string; logo: string; bright?: boolean; inve
   "Tailwind CSS": { color: "#38BDF8", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/tailwindcss/tailwindcss-original.svg" },
   HTML5:          { color: "#E34F26", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/html5/html5-original.svg" },
   CSS3:           { color: "#1572B6", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/css3/css3-original.svg" },
-  "Framer Motion": { color: "#0055FF", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/framermotion/framermotion-original.svg" },
+  "Framer Motion": { color: "#0055FF", logo: "https://cdn.simpleicons.org/framer/0055FF" },
   "shadcn/ui":    { color: "#000000", logo: "https://avatars.githubusercontent.com/u/139895814?s=200&v=4", invert: false },
   // Backend
   "Node.js":      { color: "#339933", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/nodejs/nodejs-plain-wordmark.svg" },
@@ -111,6 +111,7 @@ const SkillRow = memo(function SkillRow({
 
   return (
     <div
+      className="skill-row-item"
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
@@ -129,7 +130,7 @@ const SkillRow = memo(function SkillRow({
       }}
     >
       {/* Icon box */}
-      <div style={{
+      <div className="skill-row-icon" style={{
         width: 26, height: 26, borderRadius: 6, flexShrink: 0,
         background: `${tech.color}18`,
         border: `1px solid ${tech.color}${visible ? "40" : "18"}`,
@@ -152,8 +153,8 @@ const SkillRow = memo(function SkillRow({
         )}
       </div>
       {/* Name */}
-      <span style={{
-        fontSize: 12, fontWeight: 500,
+      <span className="skill-name-txt" style={{
+        fontWeight: 500,
         color: visible
           ? hovered ? "var(--text-primary)" : "var(--text-secondary)"
           : "var(--text-muted)",
@@ -256,7 +257,7 @@ function LampSkillBox({ title, glowColor, items }: { title: string; glowColor: s
         <div style={{ padding:"0 12px", marginBottom:10 }}>
           <span style={{
             display: "block", textAlign: "center",
-            fontSize: 9.5, fontWeight: 700, letterSpacing: "0.12em",
+            fontSize: 9.5, fontWeight: 800, letterSpacing: "0.13em",
             textTransform: "uppercase",
             color: inView && lampOn ? glowColor : "var(--text-muted)",
             fontFamily: MONO,
@@ -276,7 +277,7 @@ function LampSkillBox({ title, glowColor, items }: { title: string; glowColor: s
         }} />
 
         {/* Two-column skill rows — divider is absolutely centered, independent of column content */}
-        <div style={{ position: "relative", padding: "0 12px 12px", display: "flex", gap: 20, flex: 1 }}>
+        <div className="skill-cols-wrap" style={{ position: "relative", padding: "0 12px 12px", display: "flex", gap: 20, flex: 1 }}>
           {/* Column 1 */}
           <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 2 }}>
             {col1.map((name, i) => (
@@ -383,14 +384,16 @@ export function SkillsSection() {
           animation: lampBeamBlink 6.5s ease-in-out infinite;
         }
 
-        /* One shared grid: the 1px gap (colored like a border) IS the grid line,
-           so every cell shares the same continuous lines — no separate "card" squares. */
+        /* One shared grid: the 1px gap (colored like a border, but a thinner/
+           fainter tone than the rest of the site) IS the grid line, so every
+           cell shares the same continuous, subtle lines — no separate
+           "card" squares. Always 2 columns, on every screen size. */
         .skills-grid {
           display: grid;
-          grid-template-columns: repeat(3, 1fr);
+          grid-template-columns: repeat(2, 1fr);
           gap: 1px;
-          background: var(--border);
-          border: 1px solid var(--border);
+          background: color-mix(in oklab, var(--border) 55%, transparent);
+          border: 1px solid color-mix(in oklab, var(--border) 55%, transparent);
           border-radius: 10px;
           overflow: hidden;
         }
@@ -398,20 +401,37 @@ export function SkillsSection() {
         .lamp-skill-box {
           background: var(--bg-base);
           min-height: 184px;
+          min-width: 0;
+          overflow: hidden;
         }
 
-        @media (max-width: 1024px) {
-          .skills-grid { grid-template-columns: repeat(2, 1fr); }
+        .skill-name-txt {
+          font-size: 12px;
+          overflow: hidden;
+          text-overflow: ellipsis;
         }
 
+        /* Permanent mobile/tablet fix: box stays 2-per-row and its content
+           (icon + name) shrinks gracefully instead of overflowing/clipping,
+           regardless of device width. */
         @media (max-width: 640px) {
-          .skills-grid { grid-template-columns: repeat(2, 1fr); border-radius: 8px; }
+          .skills-grid { border-radius: 8px; }
           .lamp-skill-box { min-height: 168px; }
+          .skill-cols-wrap { gap: 10px !important; padding: 0 10px 10px !important; }
         }
 
-        @media (max-width: 380px) {
-          .skills-grid { grid-template-columns: 1fr; }
-          .lamp-skill-box { min-height: 178px; }
+        @media (max-width: 420px) {
+          .lamp-skill-box { min-height: 158px; }
+          .skill-name-txt { font-size: 10.5px !important; }
+          .skill-row-item { gap: 6px !important; padding: 5px 6px !important; }
+          .skill-row-icon { width: 22px !important; height: 22px !important; }
+        }
+
+        @media (max-width: 340px) {
+          .lamp-skill-box { min-height: 150px; }
+          .skill-name-txt { font-size: 9.5px !important; }
+          .skill-row-item { gap: 5px !important; padding: 4px 5px !important; }
+          .skill-row-icon { width: 20px !important; height: 20px !important; }
         }
 
         @media (max-width: 639px) {

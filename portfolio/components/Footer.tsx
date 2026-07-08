@@ -310,7 +310,7 @@ export function Footer() {
         }
       `}</style>
 
-      <footer className="footer-root">
+      <footer id="site-footer-root" className="footer-root">
         <div className="footer-bottom-band">
           <span className="footer-copy">© {year} Indresh Thakur. All rights reserved.</span>
 

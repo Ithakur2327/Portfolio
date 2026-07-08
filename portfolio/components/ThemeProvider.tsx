@@ -24,9 +24,12 @@ export function useTheme() {
       if (typeof navigator !== "undefined" && navigator.vibrate) {
         navigator.vibrate(t === "dark" ? [30, 10, 15] : [15, 8, 30]);
       }
-      const switchTheme = () => setTheme(t);
-      if (!document.startViewTransition) switchTheme();
-      else document.startViewTransition(switchTheme);
+      // Directly swap the theme instead of routing through
+      // document.startViewTransition(). The View Transition API snapshots
+      // the entire page (canvases, blurs, animations included), which is
+      // expensive on a page this visually heavy and was the main cause of
+      // the stutter on every theme toggle.
+      setTheme(t);
     },
   };
 }

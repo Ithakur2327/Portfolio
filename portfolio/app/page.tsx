@@ -9,6 +9,7 @@ import { ProjectsSection } from "@/components/ProjectsSection";
 import { EducationSection} from "@/components/EducationSection";
 import { ContactSection }  from "@/components/ContactSection";
 import { Footer }          from "@/components/Footer";
+import { ScrollFadeAndTop } from "@/components/ScrollFadeAndTop";
 
 export default function Home() {
   return (
@@ -33,6 +34,7 @@ export default function Home() {
           <Footer />
         </div>
       </main>
+      <ScrollFadeAndTop />
     </>
   );
 }
