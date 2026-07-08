@@ -61,17 +61,14 @@ export function ScrollFadeAndTop() {
 
   return (
     <>
-      {/* Bottom fade/blur — fades from transparent into the page background,
-          stops appearing before the footer (which has its own background).
-          Uses chanhdai's technique: a background gradient combined with a
-          mask gradient (not a single flat linear-gradient strip) so the
-          blend curve is smooth instead of a hard-edged band. */}
+ 
       <div
         aria-hidden="true"
+        className="scroll-bottom-fade"
         style={{
           position: "fixed",
           left: 0, right: 0, bottom: 0,
-          height: 40,
+          height: 45,
           pointerEvents: "none",
           zIndex: 40,
           background: "linear-gradient(to bottom, transparent 0%, var(--bg-base) 100%)",
@@ -81,6 +78,8 @@ export function ScrollFadeAndTop() {
           WebkitBackdropFilter: "blur(1px)",
           opacity: footerVisible ? 0 : 1,
           transition: "opacity 0.35s ease",
+          transform: "translateZ(0)",
+          willChange: "opacity",
         }}
       />
 
@@ -104,9 +103,10 @@ export function ScrollFadeAndTop() {
           display: "flex", alignItems: "center", justifyContent: "center",
           cursor: "pointer",
           opacity: show ? (dimmed && !hovered ? 0.3 : 1) : 0,
-          transform: show ? "translateY(0)" : "translateY(8px)",
+          transform: show ? "translateY(0) translateZ(0)" : "translateY(8px) translateZ(0)",
           pointerEvents: show ? "auto" : "none",
           transition: "opacity 0.3s ease, transform 0.3s ease, background 0.15s ease, color 0.15s ease, border-color 0.15s ease",
+          willChange: "opacity, transform",
         }}
       >
         <ArrowUpIcon />

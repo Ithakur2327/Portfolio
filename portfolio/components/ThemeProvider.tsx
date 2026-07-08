@@ -25,7 +25,19 @@ export function useTheme() {
         navigator.vibrate(t === "dark" ? [30, 10, 15] : [15, 8, 30]);
       }
       const switchTheme = () => setTheme(t);
-      if (typeof document === "undefined" || !document.startViewTransition) {
+      const isMobile =
+        typeof window !== "undefined" &&
+        (window.matchMedia("(max-width: 860px)").matches ||
+          window.matchMedia("(pointer: coarse)").matches);
+      // The full-page snapshot View Transition (mask + 1.5s scale animation)
+      // is expensive to composite on mobile GPUs, which is what caused the
+      // visible lag on theme toggle. On mobile we just switch instantly and
+      // let the existing CSS color transitions handle the blend.
+      if (
+        isMobile ||
+        typeof document === "undefined" ||
+        !document.startViewTransition
+      ) {
         switchTheme();
         return;
       }
