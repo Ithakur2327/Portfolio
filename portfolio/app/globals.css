@@ -711,6 +711,16 @@ html.light .gold-word {
   to { mask-size: 200vmax; }
 }
 
+/* Mobile-only: compositing a fixed-layer backdrop-blur at the same time as
+   the browser captures/plays the full-page view-transition snapshot is the
+   single most expensive combination on mobile GPUs. Drop just the blur for
+   the transition's short duration — the gradient/mask fade still renders,
+   it's just not blurred for that moment, which is imperceptible. */
+.theme-transitioning-mobile .scroll-bottom-fade {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
 
 
   body { -webkit-font-smoothing: subpixel-antialiased; }
@@ -1120,13 +1130,8 @@ html.light .nav-root.scrolled {
     scroll-behavior: smooth;
   }
 
-  /* backdrop-filter on a fixed layer forces a re-composite of everything
-     under it on every scroll frame — the single biggest jank source on
-     mobile. Drop it there and rely on the gradient/mask alone. */
-  .scroll-bottom-fade {
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
-  }
+  /* (blur intentionally kept — see ScrollFadeAndTop; it's the key visual
+     ingredient that matches chanhdai's fade and 1px is cheap to composite) */
 
   /* Prevent paint on every scroll — contain:paint where safe */
   .proj-card,
