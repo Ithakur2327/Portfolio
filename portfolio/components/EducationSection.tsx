@@ -46,28 +46,30 @@ const CERTIFICATIONS = [
     issuer: "Coursera",
     date: "2024",
     logo: "https://cdn.simpleicons.org/coursera/2A73CC",
-    stack: ["React", "Node.js", "MongoDB", "Express.js"],
   },
   {
     title: "Data Structures & Algorithms",
     issuer: "GeeksforGeeks",
     date: "2024",
     logo: "https://cdn.simpleicons.org/geeksforgeeks/2F8D46",
-    stack: ["DSA"],
   },
   {
     title: "Principles of Generative AI",
     issuer: "Coursera",
     date: "2025",
     logo: "https://cdn.simpleicons.org/coursera/2A73CC",
-    stack: ["RAG", "LangChain", "Vector DB"],
   },
   {
     title: "Cloud Computing Fundamentals",
     issuer: "Google Cloud",
     date: "2025",
     logo: "https://cdn.simpleicons.org/googlecloud/4285F4",
-    stack: ["AWS", "Docker", "Kubernetes"],
+  },
+  {
+    title: "Networking",
+    issuer: "Cisco",
+    date: "2026",
+    logo: "https://cdn.simpleicons.org/cisco/1BA0D7",
   },
 ];
 
@@ -354,7 +356,11 @@ export function EducationSection() {
           display: flex;
           align-items: flex-start;
           gap: 14px;
-          padding: 16px 0 16px;
+          padding: 20px 0;
+        }
+        .cert-item-2 + .cert-item-2 {
+          margin-top: 4px;
+          border-top: 1px dashed var(--border);
         }
         .cert-item-2:hover .edu-card-icon {
           box-shadow: 0 3px 10px rgba(0,0,0,0.22);
@@ -395,28 +401,6 @@ export function EducationSection() {
           color: var(--text-muted);
           font-family: ${MONO};
           white-space: nowrap;
-        }
-        .cert-tags-row {
-          display: flex;
-          flex-wrap: wrap;
-          gap: 7px;
-          margin-top: 10px;
-        }
-        .cert-tag-pill {
-          font-family: ${MONO};
-          font-size: 11px;
-          font-weight: 500;
-          color: var(--text-secondary);
-          background: var(--tag-bg);
-          border: 1px solid var(--tag-border);
-          padding: 3px 9px;
-          border-radius: 6px;
-          white-space: nowrap;
-          transition: color 0.15s, border-color 0.15s;
-        }
-        .cert-item-2:hover .cert-tag-pill {
-          color: var(--text-primary);
-          border-color: var(--text-muted);
         }
 
         /* ── responsive ── */
@@ -494,8 +478,7 @@ export function EducationSection() {
 
             <div className="edu-sec-divider" />
 
-            {/* Cert items — education-card layout: company icon, title,
-                issuer/date, and the skill stack learned in that cert */}
+            {/* Cert items — education-card layout: company icon, title, issuer/date */}
             {CERTIFICATIONS.map((cert, i) => {
               const pdfSrc = `/certificates/${slugify(cert.title)}.pdf`;
               return (
@@ -533,11 +516,6 @@ export function EducationSection() {
                         <p className="cert-item-2-issuer">{cert.issuer}</p>
                       </div>
                       <span className="cert-item-2-date">{cert.date}</span>
-                    </div>
-                    <div className="cert-tags-row">
-                      {cert.stack.map((tag, ti) => (
-                        <span key={ti} className="cert-tag-pill">{tag}</span>
-                      ))}
                     </div>
                   </div>
                 </motion.div>

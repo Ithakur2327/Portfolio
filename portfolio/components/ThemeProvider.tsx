@@ -24,12 +24,23 @@ export function useTheme() {
       if (typeof navigator !== "undefined" && navigator.vibrate) {
         navigator.vibrate(t === "dark" ? [30, 10, 15] : [15, 8, 30]);
       }
-      // Directly swap the theme instead of routing through
-      // document.startViewTransition(). The View Transition API snapshots
-      // the entire page (canvases, blurs, animations included), which is
-      // expensive on a page this visually heavy and was the main cause of
-      // the stutter on every theme toggle.
-      setTheme(t);
+      const switchTheme = () => setTheme(t);
+      if (typeof document === "undefined" || !document.startViewTransition) {
+        switchTheme();
+        return;
+      }
+      // Pause every other running CSS animation on the page for the
+      // duration of the transition (infinite marquees, lamp-beam flicker,
+      // etc.) — that's what made the original transition feel heavy. The
+      // view-transition animation itself is untouched, so it looks exactly
+      // the same, it's just no longer competing with a dozen other
+      // animations for paint time.
+      const root = document.documentElement;
+      root.classList.add("theme-transitioning");
+      const transition = document.startViewTransition(switchTheme);
+      transition.finished.finally(() => {
+        root.classList.remove("theme-transitioning");
+      });
     },
   };
 }

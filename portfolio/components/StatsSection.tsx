@@ -36,17 +36,27 @@ const LEETCODE_ICON_DATA_URI = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAH
 function LeetCodeLogo({ size = 30, isDark = true }: { size?: number; isDark?: boolean }) {
   // bg adapts: dark theme = #1a1a1a, light theme = #fff8f0 — logo itself is
   // rendered black & white (like the GitHub mark) instead of LeetCode's
-  // brand orange, so the two stat cards read consistently.
+  // brand orange, so the two stat cards read consistently. Using the
+  // simple-icons SVG (instead of the old baked-in PNG) so it's a clean,
+  // properly centered glyph at any size.
   const bg     = isDark ? "#1a1a1a" : "#fff8f0";
   const border = isDark ? "1px solid rgba(255,255,255,0.10)" : "1px solid rgba(0,0,0,0.12)";
+  const iconColor = isDark ? "ffffff" : "000000";
   return (
     <div style={{ width: size, height: size, borderRadius: Math.round(size * 0.26), background: bg, border, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, overflow: "hidden" }}>
       <img
-        src={LEETCODE_ICON_DATA_URI}
+        src={`https://cdn.simpleicons.org/leetcode/${iconColor}`}
         alt="LeetCode"
-        width={size * 0.68}
-        height={size * 0.68}
-        style={{ objectFit: "contain", flexShrink: 0, filter: isDark ? "grayscale(1) brightness(2.1) contrast(1.05)" : "grayscale(1) brightness(0.25)" }}
+        width={size * 0.56}
+        height={size * 0.56}
+        style={{ display: "block", objectFit: "contain", flexShrink: 0 }}
+        onError={(e) => {
+          // Fallback to the bundled data URI if the CDN is unreachable.
+          (e.target as HTMLImageElement).src = LEETCODE_ICON_DATA_URI;
+          (e.target as HTMLImageElement).style.filter = isDark
+            ? "grayscale(1) brightness(2.1) contrast(1.05)"
+            : "grayscale(1) brightness(0.25)";
+        }}
       />
     </div>
   );
