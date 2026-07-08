@@ -68,7 +68,7 @@ export function ScrollFadeAndTop() {
         style={{
           position: "fixed",
           left: 0, right: 0, bottom: 0,
-          height: 45,
+          height: 60,
           pointerEvents: "none",
           zIndex: 40,
           background: "linear-gradient(to bottom, transparent 0%, var(--bg-base) 100%)",
