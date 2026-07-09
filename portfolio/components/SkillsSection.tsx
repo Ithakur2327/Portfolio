@@ -86,7 +86,8 @@ function useBoxInView() {
   return { ref, inView };
 }
 
-/* ─── SkillRow: icon left + name right, horizontal layout ─── */
+/* ─── SkillRow: icon left + name right, horizontal layout, centered as a
+   group within its grid cell ─── */
 const SkillRow = memo(function SkillRow({
   name, visible, delay = 0,
 }: { name: string; visible: boolean; delay?: number }) {
@@ -115,7 +116,7 @@ const SkillRow = memo(function SkillRow({
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
-        display: "flex", alignItems: "center", gap: 9,
+        display: "flex", alignItems: "center", justifyContent: "center", gap: 9,
         padding: "6px 10px",
         borderRadius: 7,
         background: hovered
@@ -404,6 +405,7 @@ export function SkillsSection() {
           grid-template-columns: repeat(2, 1fr);
           column-gap: 20px;
           row-gap: 2px;
+          justify-items: center;
         }
 
         /* Permanent mobile/tablet fix: box stays 2-per-row and its content
