@@ -95,10 +95,12 @@ function SocialIconTile({href,label,icon,iconBg,iconBorder,iconColor}:{href:stri
         padding: hovered ? "16px 20px" : "16px 18px",
         background: hovered ? "var(--bg-secondary)" : "var(--bg-base)",
         color:"var(--text-primary)",
+        minHeight: 56,
         textDecoration:"none", position:"relative",
         transition:"background 0.18s, padding 0.2s cubic-bezier(0.16,1,0.3,1), gap 0.2s cubic-bezier(0.16,1,0.3,1)",
         overflow:"hidden", minWidth: hovered ? 0 : "auto",
         cursor:"pointer",
+        lineHeight: 0,
       }}
     >
       <div style={{
@@ -173,10 +175,7 @@ function HoverBorderGradient({ children, radius = 10 }: { children: React.ReactN
       {/* Static hairline border on top and bottom */}
       <div aria-hidden style={{
         position: "absolute", inset: 0, zIndex: 0, pointerEvents: "none", borderRadius: radius,
-        borderTop: isDark ? "1px solid rgba(255,255,255,0.10)" : "1px solid rgba(0,0,0,0.08)",
-        borderBottom: isDark ? "1px solid rgba(255,255,255,0.10)" : "1px solid rgba(0,0,0,0.08)",
-        borderLeft: "none",
-        borderRight: "none",
+        border: "none",
       }} />
 
       <div style={{ position: "relative", zIndex: 1 }}>
@@ -279,6 +278,7 @@ export function HeroSection() {
         .s-social-group {
           display: flex;
           flex-direction: row;
+          align-items: center;
           flex: 0 0 auto;
         }
 
@@ -552,7 +552,7 @@ export function HeroSection() {
         {/* ── INFO + SOCIAL ── */}
         <div className="h-info-wrap">
           <HoverBorderGradient>
-            <div className="h-info-box" style={{background:BG, border:B, borderRadius:8.5, overflow:"hidden"}}>
+            <div className="h-info-box" style={{background:BG, borderLeft:B, borderRight:B, borderBottom:B, borderRadius:8.5, overflow:"hidden"}}>
 
               <div className="h-info-pad" style={{padding:"24px 28px 22px"}}>
                 <div className="h-grid">
