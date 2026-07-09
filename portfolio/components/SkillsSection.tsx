@@ -115,25 +115,28 @@ const SkillRow = memo(function SkillRow({
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
-        display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 5,
-        padding: "6px 4px",
-        textAlign: "center",
+        display: "flex", alignItems: "center", gap: 9,
+        padding: "6px 10px",
+        borderRadius: 7,
+        background: hovered
+          ? isDark ? `${tech.color}14` : `${tech.color}10`
+          : "transparent",
         opacity: visible ? 1 : 0,
-        transform: visible ? "translateY(0) scale(1)" : "translateY(-16px) scale(0.85)",
+        transform: visible ? "scale(1)" : "scale(0.9)",
         transition: visible
-          ? `opacity 0.45s cubic-bezier(0.34,1.56,0.64,1) ${delay}s, transform 0.55s cubic-bezier(0.34,1.56,0.64,1) ${delay}s`
-          : "opacity 0.2s ease, transform 0.2s ease",
+          ? `opacity 0.3s ease-out ${delay}s, transform 0.3s ease-out ${delay}s, background 0.18s ease`
+          : "opacity 0.2s ease, transform 0.2s ease, background 0.18s ease",
         cursor: "default",
       }}
     >
-      {/* Icon box — only the icon pops up on hover, no background block */}
+      {/* Icon box */}
       <div className="skill-row-icon" style={{
-        width: 24, height: 24, borderRadius: 6, flexShrink: 0,
+        width: 26, height: 26, borderRadius: 6, flexShrink: 0,
         background: `${tech.color}18`,
         border: `1px solid ${tech.color}${visible ? "40" : "18"}`,
         display: "flex", alignItems: "center", justifyContent: "center",
         transition: "border-color 0.35s ease, transform 0.22s cubic-bezier(0.34,1.56,0.64,1)",
-        transform: hovered ? "translateY(-3px) scale(1.08)" : "translateY(0) scale(1)",
+        transform: hovered ? "scale(1.08)" : "scale(1)",
       }}>
         {tech.logo && (
           <img
@@ -221,6 +224,8 @@ const LampBeam = memo(function LampBeam({ glowColor, visible, lampOn }: { glowCo
 function LampSkillBox({ title, glowColor, items }: { title: string; glowColor: string; items: string[] }) {
   const lampOn = true;
   const { ref, inView } = useBoxInView();
+  const { theme }     = useTheme();
+  const isDark        = theme === "dark";
 
   // Icons pop in once on first scroll into view; the lamp itself (inView)
   // keeps relighting on every subsequent scroll pass.
@@ -242,10 +247,10 @@ function LampSkillBox({ title, glowColor, items }: { title: string; glowColor: s
     >
       <LampBeam glowColor={glowColor} visible={inView} lampOn={lampOn} />
 
-      <div style={{ position:"relative", zIndex:1, paddingTop:10, display:"flex", flexDirection:"column", height:"100%" }}>
+      <div style={{ position:"relative", zIndex:1, paddingTop:12, display:"flex", flexDirection:"column", height:"100%" }}>
 
         {/* Title — single centered element, no per-card button to throw it off-center */}
-        <div style={{ padding:"0 12px", marginBottom:8 }}>
+        <div style={{ padding:"0 12px", marginBottom:10 }}>
           <span style={{
             display: "block", textAlign: "center",
             fontSize: 9.5, fontWeight: 800, letterSpacing: "0.13em",
@@ -262,20 +267,25 @@ function LampSkillBox({ title, glowColor, items }: { title: string; glowColor: s
 
         {/* Separator */}
         <div style={{
-          height: 1, margin: "0 12px 8px",
+          height: 1, margin: "0 12px 10px",
           background: `linear-gradient(to right,transparent,${glowColor}${inView && lampOn ? "35" : "08"},transparent)`,
           transition: "background 0.5s ease",
         }} />
 
-        {/* Skill rows — flows naturally like text: fills each row left to
-            right and wraps, so a 5-item group reads as 3 icons then 2,
-            not two rigid columns split by a divider. */}
-        <div className="skill-cols-wrap" style={{ position: "relative", padding: "0 10px 10px", flex: 1 }}>
+        {/* Skill rows — CSS grid so column count can respond per breakpoint */}
+        <div className="skill-cols-wrap" style={{ position: "relative", padding: "0 12px 12px", flex: 1 }}>
           <div className="skill-item-grid">
             {items.map((name, i) => (
               <SkillRow key={name} name={name} visible={hasAppeared} delay={hasAppeared ? 0.06 + i * 0.05 : 0} />
             ))}
           </div>
+
+          {/* Centered partition line — pinned to the true horizontal center */}
+          <div aria-hidden className="skill-cols-sep" style={{
+            position: "absolute", left: "50%", top: 4, bottom: 4, width: 1,
+            transform: "translateX(-50%)",
+            background: `linear-gradient(to bottom, transparent, ${isDark ? "rgba(255,255,255,0.10)" : glowColor + "28"}, transparent)`,
+          }} />
         </div>
       </div>
     </div>
@@ -368,7 +378,7 @@ export function SkillsSection() {
            "card" squares. Always 2 columns, on every screen size. */
         .skills-grid {
           display: grid;
-          grid-template-columns: repeat(2, 1fr) !important;
+          grid-template-columns: repeat(2, 1fr);
           gap: 1px;
           background: color-mix(in oklab, var(--border) 55%, transparent);
           border: 1px solid color-mix(in oklab, var(--border) 55%, transparent);
@@ -378,7 +388,7 @@ export function SkillsSection() {
 
         .lamp-skill-box {
           background: var(--bg-base);
-          min-height: 112px;
+          min-height: 184px;
           min-width: 0;
           overflow: hidden;
         }
@@ -390,51 +400,32 @@ export function SkillsSection() {
         }
 
         .skill-item-grid {
-          display: flex;
-          flex-wrap: wrap;
-          justify-content: center;
-          column-gap: 14px;
-          row-gap: 8px;
-          width: 100%;
-        }
-        .skill-row-item {
-          flex: 0 0 auto;
-          width: 56px;
-        }
-        .skill-name-txt {
-          max-width: 100%;
-          display: block;
+          display: grid;
+          grid-template-columns: repeat(2, 1fr);
+          column-gap: 20px;
+          row-gap: 2px;
         }
 
         /* Permanent mobile/tablet fix: box stays 2-per-row and its content
            (icon + name) shrinks gracefully instead of overflowing/clipping,
            regardless of device width. */
-        /* iPad / tablet range — force a stable 2-per-row grid; some iPad
-           viewports were falling back to a single box per row because the
-           box content could overflow its min-height and wrap the grid. */
-        @media (min-width: 641px) and (max-width: 1180px) {
-          .skills-grid { grid-template-columns: repeat(2, 1fr) !important; }
-          .lamp-skill-box { min-height: 120px; }
-          .skill-item-grid { column-gap: 14px; row-gap: 8px; }
-        }
-
         @media (max-width: 640px) {
-          .skills-grid { border-radius: 8px; grid-template-columns: 1fr !important; }
-          .lamp-skill-box { min-height: 100px; }
+          .skills-grid { border-radius: 8px; grid-template-columns: 1fr; }
+          .lamp-skill-box { min-height: 168px; }
           .skill-cols-wrap { gap: 10px !important; padding: 0 10px 10px !important; }
         }
 
         @media (max-width: 420px) {
-          .lamp-skill-box { min-height: 92px; }
+          .lamp-skill-box { min-height: 158px; }
           .skill-name-txt { font-size: 10.5px !important; }
-          .skill-row-item { gap: 6px !important; padding: 5px 6px !important; width: 48px !important; }
+          .skill-row-item { gap: 6px !important; padding: 5px 6px !important; }
           .skill-row-icon { width: 22px !important; height: 22px !important; }
         }
 
         @media (max-width: 340px) {
-          .lamp-skill-box { min-height: 84px; }
+          .lamp-skill-box { min-height: 150px; }
           .skill-name-txt { font-size: 9.5px !important; }
-          .skill-row-item { gap: 5px !important; padding: 4px 5px !important; width: 44px !important; }
+          .skill-row-item { gap: 5px !important; padding: 4px 5px !important; }
           .skill-row-icon { width: 20px !important; height: 20px !important; }
         }
 
