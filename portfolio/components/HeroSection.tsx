@@ -95,12 +95,10 @@ function SocialIconTile({href,label,icon,iconBg,iconBorder,iconColor}:{href:stri
         padding: hovered ? "16px 20px" : "16px 18px",
         background: hovered ? "var(--bg-secondary)" : "var(--bg-base)",
         color:"var(--text-primary)",
-        minHeight: 56,
         textDecoration:"none", position:"relative",
         transition:"background 0.18s, padding 0.2s cubic-bezier(0.16,1,0.3,1), gap 0.2s cubic-bezier(0.16,1,0.3,1)",
         overflow:"hidden", minWidth: hovered ? 0 : "auto",
         cursor:"pointer",
-        lineHeight: 0,
       }}
     >
       <div style={{
@@ -172,10 +170,10 @@ function HoverBorderGradient({ children, radius = 10 }: { children: React.ReactN
         <div className="hbg-rotor" />
       </div>
 
-      {/* Static hairline border on top and bottom */}
+      {/* Static hairline border on top */}
       <div aria-hidden style={{
         position: "absolute", inset: 0, zIndex: 0, pointerEvents: "none", borderRadius: radius,
-        border: "none",
+        border: isDark ? "1px solid rgba(255,255,255,0.10)" : "1px solid rgba(0,0,0,0.08)",
       }} />
 
       <div style={{ position: "relative", zIndex: 1 }}>
@@ -245,18 +243,14 @@ export function HeroSection() {
         }
 
         /* ── Info grid ── */
-        .h-info-box {
-          position: relative;
-        }
-
         .h-grid {
           display: grid;
           grid-template-columns: 1fr 1fr;
           gap: 16px 56px;
+          position: relative;
         }
-
-        /* Dashed vertical partition down the middle — spans the full info box */
-        .h-info-box::before {
+        /* Dashed vertical partition down the middle — purely decorative, never intercepts clicks */
+        .h-grid::before {
           content: "";
           position: absolute;
           top: 0; bottom: 0; left: 50%;
@@ -278,7 +272,6 @@ export function HeroSection() {
         .s-social-group {
           display: flex;
           flex-direction: row;
-          align-items: center;
           flex: 0 0 auto;
         }
 
@@ -514,7 +507,7 @@ export function HeroSection() {
         {/* ── PROFILE ROW ── */}
         <div style={{
           position:"relative", left:"50%", marginLeft:"-50vw", width:"100vw",
-          background:BG, borderTop:B,
+          background:BG, borderTop:B, borderBottom:B,
         }}>
           <div className="h-profile" style={{maxWidth:CW, margin:"0 auto", borderLeft:B, borderRight:B}}>
 
@@ -552,7 +545,7 @@ export function HeroSection() {
         {/* ── INFO + SOCIAL ── */}
         <div className="h-info-wrap">
           <HoverBorderGradient>
-            <div className="h-info-box" style={{background:BG, borderLeft:B, borderRight:B, borderBottom:B, borderRadius:8.5, overflow:"hidden"}}>
+            <div className="h-info-box" style={{background:BG, border:B, borderRadius:8.5, overflow:"hidden"}}>
 
               <div className="h-info-pad" style={{padding:"24px 28px 22px"}}>
                 <div className="h-grid">
@@ -577,7 +570,7 @@ export function HeroSection() {
                   </div>
 
                   {/* RIGHT */}
-                  <div style={{display:"flex",flexDirection:"column",gap:14,paddingLeft:10}}>
+                  <div style={{display:"flex",flexDirection:"column",gap:14}}>
                     <div className="h-spacer" style={{height:32,flexShrink:0}}/>
                     <Row icon={<IBox color="#fbbf24"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></IBox>}>
                       <LiveClock/>
