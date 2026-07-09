@@ -49,7 +49,7 @@ function LiveClock() {
 function IBox({color, children}:{color?:string; children:React.ReactNode}) {
   return (
     <div style={{
-      width:28, height:28, borderRadius:7,
+      width:32, height:32, borderRadius:8,
       background: color ? `${color}18` : "var(--bg-secondary)",
       border:`1px solid ${color ? `${color}40` : "var(--border)"}`,
       display:"flex", alignItems:"center", justifyContent:"center",
@@ -61,8 +61,8 @@ function IBox({color, children}:{color?:string; children:React.ReactNode}) {
 /* ─── Row ────────────────────────────────────────────── */
 function Row({icon, href, newTab, onClick, children}:{icon:React.ReactNode; href?:string; newTab?:boolean; onClick?:()=>void; children:React.ReactNode}) {
   const s:React.CSSProperties = {
-    display:"flex", alignItems:"center", gap:13,
-    fontFamily:"'Geist Mono',monospace", fontSize:13,
+    display:"flex", alignItems:"center", gap:14,
+    fontFamily:"'Geist Mono',monospace", fontSize:14,
     color:"var(--text-primary)", textDecoration:"none",
   };
   if (onClick) return (
@@ -92,7 +92,7 @@ function SocialIconTile({href,label,icon,iconBg,iconBorder,iconColor}:{href:stri
       style={{
         display:"flex", alignItems:"center", justifyContent:"center",
         gap: hovered ? 8 : 0,
-        padding: hovered ? "14px 18px" : "14px 16px",
+        padding: hovered ? "16px 20px" : "16px 18px",
         background: hovered ? "var(--bg-secondary)" : "var(--bg-base)",
         color:"var(--text-primary)",
         textDecoration:"none", position:"relative",
@@ -122,15 +122,30 @@ function SocialIconTile({href,label,icon,iconBg,iconBorder,iconColor}:{href:stri
 }
 
 /* ─── HoverBorderGradient ─────────────────────────────── */
+/* A spinning conic-gradient sits UNDER the content, and the wrapper's own
+   1.5px padding is the only place that background is allowed to peek
+   through — that thin ring is what reads as the "moving border". The
+   content box itself must NOT draw its own border, or it paints straight
+   over the ring and the animation disappears (this is what broke it). */
 function HoverBorderGradient({ children, radius = 10 }: { children: React.ReactNode; radius?: number }) {
   const { theme } = useTheme();
   const isDark = theme === "dark";
 
-  const bright = isDark ? "rgba(255,255,255,0.40)" : "rgba(0,0,0,0.32)";
-  const dim    = isDark ? "rgba(255,255,255,0.10)" : "rgba(0,0,0,0.07)";
+  const bright = isDark ? "rgba(255,255,255,0.55)" : "rgba(0,0,0,0.40)";
+  const dim    = isDark ? "rgba(255,255,255,0.14)" : "rgba(0,0,0,0.10)";
+  const base   = isDark ? "rgba(255,255,255,0.10)" : "rgba(0,0,0,0.08)";
 
   return (
-    <div className="hbg-wrap" style={{ position: "relative", borderRadius: radius, overflow: "hidden" }}>
+    <div
+      className="hbg-wrap"
+      style={{
+        position: "relative",
+        borderRadius: radius,
+        padding: 1.5,
+        background: base,
+        overflow: "hidden",
+      }}
+    >
       <style suppressHydrationWarning>{`
         @keyframes hbg-spin {
           from { transform: translate(-50%,-50%) rotate(0deg); }
@@ -138,7 +153,7 @@ function HoverBorderGradient({ children, radius = 10 }: { children: React.ReactN
         }
         .hbg-outer {
           position: absolute;
-          inset: -1px;
+          inset: 0;
           overflow: hidden;
           z-index: 0;
           pointer-events: none;
@@ -147,16 +162,16 @@ function HoverBorderGradient({ children, radius = 10 }: { children: React.ReactN
         .hbg-rotor {
           position: absolute;
           top: 50%; left: 50%;
-          width: 250%; height: 250%;
-          animation: hbg-spin 10s linear infinite;
+          width: 260%; height: 260%;
+          animation: hbg-spin 6s linear infinite;
           background: conic-gradient(
             from 0deg,
             transparent    0deg,
-            transparent    55deg,
-            ${dim}         85deg,
-            ${bright}      110deg,
-            ${dim}         140deg,
-            transparent    170deg,
+            transparent    45deg,
+            ${dim}         80deg,
+            ${bright}      105deg,
+            ${dim}         130deg,
+            transparent    165deg,
             transparent    360deg
           );
         }
@@ -165,18 +180,13 @@ function HoverBorderGradient({ children, radius = 10 }: { children: React.ReactN
         }
       `}</style>
 
-      {/* Clipping wrapper + spinning gradient */}
+      {/* Spinning gradient, clipped to the wrapper */}
       <div className="hbg-outer">
         <div className="hbg-rotor" />
       </div>
 
-      {/* Static hairline border on top */}
-      <div aria-hidden style={{
-        position: "absolute", inset: 0, zIndex: 0, pointerEvents: "none", borderRadius: radius,
-        border: isDark ? "1px solid rgba(255,255,255,0.10)" : "1px solid rgba(0,0,0,0.08)",
-      }} />
-
-      <div style={{ position: "relative", zIndex: 1 }}>
+      {/* Content sits 1.5px inset from the wrapper — that inset is the border */}
+      <div style={{ position: "relative", zIndex: 1, borderRadius: Math.max(radius - 1.5, 0), overflow: "hidden" }}>
         {children}
       </div>
     </div>
@@ -246,7 +256,7 @@ export function HeroSection() {
         .h-grid {
           display: grid;
           grid-template-columns: 1fr 1fr;
-          gap: 11px 48px;
+          gap: 16px 56px;
           position: relative;
         }
         /* Dashed vertical partition down the middle — purely decorative, never intercepts clicks */
@@ -545,13 +555,13 @@ export function HeroSection() {
         {/* ── INFO + SOCIAL ── */}
         <div className="h-info-wrap">
           <HoverBorderGradient>
-            <div className="h-info-box" style={{background:BG, border:B, borderRadius:10, overflow:"hidden"}}>
+            <div className="h-info-box" style={{background:BG, borderRadius:8.5, overflow:"hidden"}}>
 
-              <div className="h-info-pad" style={{padding:"16px 18px 14px"}}>
+              <div className="h-info-pad" style={{padding:"24px 28px 22px"}}>
                 <div className="h-grid">
 
                   {/* LEFT */}
-                  <div style={{display:"flex",flexDirection:"column",gap:11}}>
+                  <div style={{display:"flex",flexDirection:"column",gap:14}}>
                     <Row icon={<IBox color="#38bdf8"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><polyline points="18 16 22 12 18 8"/><polyline points="6 8 2 12 6 16"/><line x1="14" y1="4" x2="10" y2="20"/></svg></IBox>}>
                       AI Software Engineer
                     </Row>
@@ -570,8 +580,8 @@ export function HeroSection() {
                   </div>
 
                   {/* RIGHT */}
-                  <div style={{display:"flex",flexDirection:"column",gap:11}}>
-                    <div className="h-spacer" style={{height:28,flexShrink:0}}/>
+                  <div style={{display:"flex",flexDirection:"column",gap:14}}>
+                    <div className="h-spacer" style={{height:32,flexShrink:0}}/>
                     <Row icon={<IBox color="#fbbf24"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></IBox>}>
                       <LiveClock/>
                     </Row>

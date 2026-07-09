@@ -398,10 +398,24 @@ export function SkillsSection() {
 
         .skill-item-grid {
           display: grid;
-          grid-template-columns: repeat(2, 1fr);
+          grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
           column-gap: 10px;
           row-gap: 10px;
           justify-items: center;
+          width: 100%;
+        }
+        /* minmax(0,1fr) above is the fix: without it, a long label like
+           "Framer Motion" forces its column to auto-size to the label's
+           full width, which can push the second column out and make the
+           row read as a single squeezed line. min-width:0 lets each cell
+           shrink and the label ellipsis instead of blowing out the grid. */
+        .skill-row-item {
+          min-width: 0;
+          width: 100%;
+        }
+        .skill-name-txt {
+          max-width: 100%;
+          display: block;
         }
 
         /* Permanent mobile/tablet fix: box stays 2-per-row and its content
