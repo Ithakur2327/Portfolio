@@ -130,7 +130,7 @@ function HoverBorderGradient({ children, radius = 10 }: { children: React.ReactN
   const dim    = isDark ? "rgba(255,255,255,0.10)" : "rgba(0,0,0,0.07)";
 
   return (
-    <div className="hbg-wrap" style={{ position: "relative", borderRadius: radius, overflow: "hidden" }}>
+    <div className="hbg-wrap" style={{ position: "relative", borderRadius: radius }}>
       <style suppressHydrationWarning>{`
         @keyframes hbg-spin {
           from { transform: translate(-50%,-50%) rotate(0deg); }
