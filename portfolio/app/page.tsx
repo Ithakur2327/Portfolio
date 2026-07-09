@@ -18,9 +18,7 @@ export default function Home() {
       <main style={{ paddingTop: 52 }}>
         <SparklesBridge />
         <div className="page-wrapper">
-          <div style={{ minHeight: "calc(100dvh - 52px)", display: "flex", flexDirection: "column", justifyContent: "center" }}>
-            <HeroSection />
-          </div>
+          <HeroSection />
           <DotDivider />
           <AboutSection />
           <DotDivider />

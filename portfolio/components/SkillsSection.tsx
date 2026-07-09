@@ -221,8 +221,6 @@ const LampBeam = memo(function LampBeam({ glowColor, visible, lampOn }: { glowCo
 function LampSkillBox({ title, glowColor, items }: { title: string; glowColor: string; items: string[] }) {
   const lampOn = true;
   const { ref, inView } = useBoxInView();
-  const { theme }     = useTheme();
-  const isDark        = theme === "dark";
 
   // Icons pop in once on first scroll into view; the lamp itself (inView)
   // keeps relighting on every subsequent scroll pass.
@@ -269,25 +267,15 @@ function LampSkillBox({ title, glowColor, items }: { title: string; glowColor: s
           transition: "background 0.5s ease",
         }} />
 
-        {/* Skill rows — column-major flow: first half of items fill the left
-            column top-to-bottom, second half fill the right column, so the
-            two columns stay balanced instead of items piling into column 1. */}
+        {/* Skill rows — flows naturally like text: fills each row left to
+            right and wraps, so a 5-item group reads as 3 icons then 2,
+            not two rigid columns split by a divider. */}
         <div className="skill-cols-wrap" style={{ position: "relative", padding: "0 10px 10px", flex: 1 }}>
-          <div
-            className="skill-item-grid"
-            style={{ gridAutoFlow: "column", gridTemplateRows: `repeat(${Math.ceil(items.length / 2)}, auto)` }}
-          >
+          <div className="skill-item-grid">
             {items.map((name, i) => (
               <SkillRow key={name} name={name} visible={hasAppeared} delay={hasAppeared ? 0.06 + i * 0.05 : 0} />
             ))}
           </div>
-
-          {/* Centered partition line — pinned to the true horizontal center */}
-          <div aria-hidden className="skill-cols-sep" style={{
-            position: "absolute", left: "50%", top: 4, bottom: 4, width: 1,
-            transform: "translateX(-50%)",
-            background: `linear-gradient(to bottom, transparent, ${isDark ? "rgba(255,255,255,0.10)" : glowColor + "28"}, transparent)`,
-          }} />
         </div>
       </div>
     </div>
@@ -390,7 +378,7 @@ export function SkillsSection() {
 
         .lamp-skill-box {
           background: var(--bg-base);
-          min-height: 140px;
+          min-height: 112px;
           min-width: 0;
           overflow: hidden;
         }
@@ -402,21 +390,16 @@ export function SkillsSection() {
         }
 
         .skill-item-grid {
-          display: grid;
-          grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-          column-gap: 8px;
-          row-gap: 6px;
-          justify-items: center;
+          display: flex;
+          flex-wrap: wrap;
+          justify-content: center;
+          column-gap: 14px;
+          row-gap: 8px;
           width: 100%;
         }
-        /* minmax(0,1fr) above is the fix: without it, a long label like
-           "Framer Motion" forces its column to auto-size to the label's
-           full width, which can push the second column out and make the
-           row read as a single squeezed line. min-width:0 lets each cell
-           shrink and the label ellipsis instead of blowing out the grid. */
         .skill-row-item {
-          min-width: 0;
-          width: 100%;
+          flex: 0 0 auto;
+          width: 56px;
         }
         .skill-name-txt {
           max-width: 100%;
@@ -431,27 +414,27 @@ export function SkillsSection() {
            box content could overflow its min-height and wrap the grid. */
         @media (min-width: 641px) and (max-width: 1180px) {
           .skills-grid { grid-template-columns: repeat(2, 1fr) !important; }
-          .lamp-skill-box { min-height: 150px; }
+          .lamp-skill-box { min-height: 120px; }
           .skill-item-grid { column-gap: 14px; row-gap: 8px; }
         }
 
         @media (max-width: 640px) {
           .skills-grid { border-radius: 8px; grid-template-columns: 1fr; }
-          .lamp-skill-box { min-height: 128px; }
+          .lamp-skill-box { min-height: 100px; }
           .skill-cols-wrap { gap: 10px !important; padding: 0 10px 10px !important; }
         }
 
         @media (max-width: 420px) {
-          .lamp-skill-box { min-height: 118px; }
+          .lamp-skill-box { min-height: 92px; }
           .skill-name-txt { font-size: 10.5px !important; }
-          .skill-row-item { gap: 6px !important; padding: 5px 6px !important; }
+          .skill-row-item { gap: 6px !important; padding: 5px 6px !important; width: 48px !important; }
           .skill-row-icon { width: 22px !important; height: 22px !important; }
         }
 
         @media (max-width: 340px) {
-          .lamp-skill-box { min-height: 108px; }
+          .lamp-skill-box { min-height: 84px; }
           .skill-name-txt { font-size: 9.5px !important; }
-          .skill-row-item { gap: 5px !important; padding: 4px 5px !important; }
+          .skill-row-item { gap: 5px !important; padding: 4px 5px !important; width: 44px !important; }
           .skill-row-icon { width: 20px !important; height: 20px !important; }
         }
 
