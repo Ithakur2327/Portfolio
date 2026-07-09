@@ -45,12 +45,12 @@ function GoldWord({ text, idx, total, progress, isName }: {
   const p = useSpring(raw, { stiffness: 200, damping: 30, mass: 0.5 });
   const opacity = useTransform(p, [0, 0.15, 1], [0.25, 0.65, 1]);
   if (isName) return (
-    <motion.span style={{ opacity, display: "inline-block", verticalAlign: "baseline" }}>
+    <motion.span style={{ opacity, display: "inline", verticalAlign: "baseline" }}>
       <span className="name-highlight">{text}</span>
     </motion.span>
   );
   return (
-    <motion.span className="gold-box-word" style={{ opacity, display: "inline-block", verticalAlign: "baseline" }}>
+    <motion.span className="gold-box-word" style={{ opacity, display: "inline", verticalAlign: "baseline" }}>
       {text}
     </motion.span>
   );
@@ -91,53 +91,43 @@ export function AboutSection() {
     <>
       <style suppressHydrationWarning>{`
         .name-highlight {
-          display: inline-block; color: #4ade80;
+          display: inline; color: #4ade80;
           background: linear-gradient(135deg,rgba(74,222,128,0.10) 0%,rgba(34,197,94,0.05) 50%,rgba(16,185,129,0.08) 100%);
           border: 1px solid rgba(74,222,128,0.22); border-radius: 5px;
           padding: 1px 7px 2px;
           box-shadow: 0 0 10px rgba(74,222,128,0.12),0 0 22px rgba(74,222,128,0.06);
           font-weight: 600; white-space: nowrap;
-          vertical-align: baseline;
         }
-        /* inline-block (not inline) is the fix: an inline span with a border
-           that wraps across two lines gets its background/border split into
-           two disconnected rectangles by the browser — that's the "khराब
-           alignment" look. inline-block keeps the box as one solid unit; if
-           it doesn't fit, the whole phrase drops to the next line instead of
-           being cut in half. white-space:normal lets long phrases wrap
-           internally on narrow screens without overflowing. */
         .gold-box-word {
-          display: inline-block; color: #d4a017; font-weight: 600;
+          display: inline; color: #d4a017; font-weight: 600;
           background: rgba(212,160,23,0.10); border: 1px solid rgba(212,160,23,0.22);
-          border-radius: 5px; padding: 1px 6px 2px; margin: 2px 1px;
-          white-space: normal; max-width: 100%;
-          vertical-align: baseline;
+          border-radius: 5px; padding: 1px 5px 2px; margin: 0 1px;
         }
         html.light .name-highlight { color: #16a34a; background: rgba(22,163,74,0.08); border-color: rgba(22,163,74,0.20); box-shadow: none; }
         html.light .gold-box-word { color: #d97706 !important; background: rgba(245,158,11,0.13) !important; border-color: rgba(217,119,6,0.45) !important; }
 
         .about-content {
-          max-width: 1180px; margin: 0 auto; padding: 0 20px 64px;
+          max-width: 1060px; margin: 0 auto; padding: 0 20px 64px;
         }
         @media (max-width: 860px) { .about-content { padding: 0 22px 34px; } }
         @media (max-width: 639px) {
           .about-content { padding: 0 14px 28px; }
-          .about-para    { font-size: 14px !important; line-height: 1.9 !important; }
+          .about-para    { font-size: 14px !important; line-height: 1.8 !important; }
         }
 
         .about-box {
           width: 100%;
           box-sizing: border-box;
-          border: 1px solid color-mix(in oklab, var(--border) 55%, transparent);
+          border: 1px solid var(--border);
           border-radius: 10px;
           background: var(--bg-base);
-          padding: 30px 34px;
+          padding: 28px 32px;
         }
         @media (max-width: 860px) {
-          .about-box { padding: 24px 24px; }
+          .about-box { padding: 26px 26px; }
         }
         @media (max-width: 639px) {
-          .about-box { padding: 18px 16px; border-radius: 8px; }
+          .about-box { padding: 24px 20px; border-radius: 8px; }
         }
       `}</style>
 
