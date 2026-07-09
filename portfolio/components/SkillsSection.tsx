@@ -116,8 +116,8 @@ const SkillRow = memo(function SkillRow({
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
-        display: "flex", alignItems: "center", gap: 9,
-        padding: "6px 10px",
+        display: "flex", alignItems: "center", gap: 8,
+        padding: "6px 22px",
         borderRadius: 7,
         background: hovered
           ? isDark ? `${tech.color}14` : `${tech.color}10`
@@ -138,6 +138,7 @@ const SkillRow = memo(function SkillRow({
         display: "flex", alignItems: "center", justifyContent: "center",
         transition: "border-color 0.35s ease, transform 0.22s cubic-bezier(0.34,1.56,0.64,1)",
         transform: hovered ? "scale(1.08)" : "scale(1)",
+        marginLeft: 8,
       }}>
         {tech.logo && (
           <img
@@ -324,8 +325,8 @@ const MovingStrip = memo(function MovingStrip() {
             : tech.bright && !tech.keepInLight ? "brightness(0.1) saturate(0)" : "none";
           return (
             <div key={idx} style={{
-              display:"flex", alignItems:"center", gap:9,
-              padding:"8px 14px", borderRadius:10,
+              display:"flex", alignItems:"center", gap:8,
+              padding:"8px 22px", borderRadius:10,
               border:`1px solid ${tech.color}28`,
               background:"var(--bg-card)", flexShrink:0,
             }}>
@@ -333,6 +334,7 @@ const MovingStrip = memo(function MovingStrip() {
                 width:26, height:26, borderRadius:6,
                 background:`${tech.color}18`, border:`1px solid ${tech.color}35`,
                 display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0,
+                marginLeft: 8,
               }}>
                 {tech.logo && (
                   <img src={tech.logo} alt={name} width={16} height={16}
@@ -420,15 +422,15 @@ export function SkillsSection() {
         @media (max-width: 420px) {
           .lamp-skill-box { min-height: 158px; }
           .skill-name-txt { font-size: 10.5px !important; }
-          .skill-row-item { gap: 6px !important; padding: 5px 6px !important; }
-          .skill-row-icon { width: 22px !important; height: 22px !important; }
+          .skill-row-item { gap: 6px !important; padding: 5px 16px !important; }
+          .skill-row-icon { width: 22px !important; height: 22px !important; margin-left: 6px !important; }
         }
 
         @media (max-width: 340px) {
           .lamp-skill-box { min-height: 150px; }
           .skill-name-txt { font-size: 9.5px !important; }
-          .skill-row-item { gap: 5px !important; padding: 4px 5px !important; }
-          .skill-row-icon { width: 20px !important; height: 20px !important; }
+          .skill-row-item { gap: 6px !important; padding: 4px 14px !important; }
+          .skill-row-icon { width: 20px !important; height: 20px !important; margin-left: 4px !important; }
         }
 
         @media (max-width: 639px) {
