@@ -287,7 +287,7 @@ export function HeroSection() {
           }
           /* Bigger, bolder name with more vertical room so it sits on the partition line */
           .h-nameblock h1 {
-            font-size: clamp(26px, 4.2vw, 40px) !important;
+            font-size: clamp(36px, 6vw, 64px) !important;
             font-weight: 800 !important;
             line-height: 1 !important;
             letter-spacing: 0.02em !important;
@@ -351,7 +351,7 @@ export function HeroSection() {
             min-height: calc(clamp(260px, 28vw, 300px) - 14px) !important;
           }
           .h-nameblock h1 {
-            font-size: clamp(28px, 3.4vw, 42px) !important;
+            font-size: clamp(40px, 5vw, 72px) !important;
             font-weight: 800 !important;
             line-height: 1 !important;
           }
