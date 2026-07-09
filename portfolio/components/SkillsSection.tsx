@@ -419,7 +419,7 @@ export function SkillsSection() {
         }
 
         @media (max-width: 640px) {
-          .skills-grid { border-radius: 8px; grid-template-columns: 1fr; }
+          .skills-grid { border-radius: 8px; grid-template-columns: 1fr !important; }
           .lamp-skill-box { min-height: 100px; }
           .skill-cols-wrap { gap: 10px !important; padding: 0 10px 10px !important; }
         }
