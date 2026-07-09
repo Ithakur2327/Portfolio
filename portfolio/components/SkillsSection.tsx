@@ -55,7 +55,7 @@ const TECH: Record<string, { color: string; logo: string; bright?: boolean; inve
 /* All six skill groups now live in ONE flat list — they share a single grid */
 const LAMP_GROUPS = [
   { title: "LANGUAGES",        glowColor: "#3776AB", items: ["Python", "Java", "C++", "TypeScript", "JavaScript"] },
-  { title: "FRONTEND",         glowColor: "#61DAFB", items: ["React.js", "Next.js", "Tailwind CSS", "HTML5", "CSS3", "Framer Motion", "shadcn/ui"] },
+  { title: "FRONTEND",         glowColor: "#61DAFB", items: ["React.js", "Next.js", "Tailwind CSS", "HTML5", "CSS3", "shadcn/ui", "Framer Motion"] },
   { title: "BACKEND",          glowColor: "#339933", items: ["Node.js", "Express.js", "REST APIs", "FastAPI", "GraphQL"] },
   { title: "CLOUD & DEVOPS",   glowColor: "#FF9900", items: ["AWS", "Kubernetes", "Docker", "CI/CD", "Vercel"] },
   { title: "GENAI / AI",       glowColor: "#10a37f", items: ["AI", "LangChain", "LangGraph", "RAG", "Vector DB"] },
