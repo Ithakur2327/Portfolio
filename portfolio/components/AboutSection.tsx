@@ -121,13 +121,13 @@ export function AboutSection() {
           border: 1px solid color-mix(in oklab, var(--border) 55%, transparent);
           border-radius: 10px;
           background: var(--bg-base);
-          padding: 22px 18px;
+          padding: 26px 24px;
         }
         @media (max-width: 860px) {
-          .about-box { padding: 20px 16px; }
+          .about-box { padding: 22px 20px; }
         }
         @media (max-width: 639px) {
-          .about-box { padding: 18px 12px; border-radius: 8px; }
+          .about-box { padding: 18px 16px; border-radius: 8px; }
         }
       `}</style>
 

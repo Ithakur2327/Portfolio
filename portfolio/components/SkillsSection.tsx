@@ -115,29 +115,25 @@ const SkillRow = memo(function SkillRow({
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
-        display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 6,
-        padding: "8px 6px",
-        borderRadius: 7,
+        display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 7,
+        padding: "8px 4px",
         textAlign: "center",
-        background: hovered
-          ? isDark ? `${tech.color}14` : `${tech.color}10`
-          : "transparent",
         opacity: visible ? 1 : 0,
         transform: visible ? "translateY(0) scale(1)" : "translateY(-16px) scale(0.85)",
         transition: visible
-          ? `opacity 0.45s cubic-bezier(0.34,1.56,0.64,1) ${delay}s, transform 0.55s cubic-bezier(0.34,1.56,0.64,1) ${delay}s, background 0.18s ease`
-          : "opacity 0.2s ease, transform 0.2s ease, background 0.18s ease",
+          ? `opacity 0.45s cubic-bezier(0.34,1.56,0.64,1) ${delay}s, transform 0.55s cubic-bezier(0.34,1.56,0.64,1) ${delay}s`
+          : "opacity 0.2s ease, transform 0.2s ease",
         cursor: "default",
       }}
     >
-      {/* Icon box */}
+      {/* Icon box — only the icon pops up on hover, no background block */}
       <div className="skill-row-icon" style={{
         width: 26, height: 26, borderRadius: 6, flexShrink: 0,
         background: `${tech.color}18`,
         border: `1px solid ${tech.color}${visible ? "40" : "18"}`,
         display: "flex", alignItems: "center", justifyContent: "center",
         transition: "border-color 0.35s ease, transform 0.22s cubic-bezier(0.34,1.56,0.64,1)",
-        transform: hovered ? "scale(1.08)" : "scale(1)",
+        transform: hovered ? "translateY(-3px) scale(1.08)" : "translateY(0) scale(1)",
       }}>
         {tech.logo && (
           <img
@@ -379,7 +375,7 @@ export function SkillsSection() {
            "card" squares. Always 2 columns, on every screen size. */
         .skills-grid {
           display: grid;
-          grid-template-columns: repeat(2, 1fr);
+          grid-template-columns: repeat(2, 1fr) !important;
           gap: 1px;
           background: color-mix(in oklab, var(--border) 55%, transparent);
           border: 1px solid color-mix(in oklab, var(--border) 55%, transparent);
@@ -403,8 +399,8 @@ export function SkillsSection() {
         .skill-item-grid {
           display: grid;
           grid-template-columns: repeat(2, 1fr);
-          column-gap: 8px;
-          row-gap: 4px;
+          column-gap: 10px;
+          row-gap: 10px;
           justify-items: center;
         }
 

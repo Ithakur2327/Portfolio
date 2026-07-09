@@ -859,21 +859,6 @@ html.light .nav-root.scrolled {
     padding-top: 0;
     padding-bottom: 48px;
   }
-
-  /* Larger avatar on tablet */
-  .h-avatar {
-    width: 210px !important;
-    min-width: 210px !important;
-    height: 210px !important;
-    min-height: 210px !important;
-  }
-
-  /* Larger name on tablet */
-  h1 { font-size: clamp(26px, 4.2vw, 40px) !important; }
-
-  /* Info section full width — matches profile row visual weight */
-  .h-info-wrap { max-width: 100% !important; margin: 0 !important; }
-  .h-grid { gap: 14px 48px !important; }
 }
 
 
@@ -925,7 +910,7 @@ html.light .nav-root.scrolled {
   .contact-cols { flex-direction: column !important; }
   .overview-cols { flex-direction: column !important; }
   .bottom-grid { grid-template-columns: 1fr !important; }
-  .about-heading, h1 { font-size: clamp(20px, 6vw, 28px) !important; }
+  .about-heading { font-size: clamp(20px, 6vw, 28px) !important; }
   .section-title { font-size: 18px !important; }
   .contrib-wrap { overflow-x: auto; padding-bottom: 6px; }
   .proj-tags { flex-wrap: wrap; }
@@ -943,25 +928,6 @@ html.light .nav-root.scrolled {
 }
 
 @media (max-width: 600px) {
-  .h-profile { flex-direction: row !important; }
-  .h-avatar {
-    width: clamp(100px, 28vw, 150px) !important;
-    min-width: clamp(100px, 28vw, 150px) !important;
-    height: clamp(100px, 28vw, 150px) !important;
-    min-height: clamp(100px, 28vw, 150px) !important;
-    border-right: 1px solid var(--border) !important;
-    border-bottom: none !important;
-    overflow: hidden !important;
-    padding: 0 !important;
-    flex-shrink: 0 !important;
-  }
-  .h-grid { grid-template-columns: 1fr !important; gap: 11px 0 !important; }
-  .h-social { flex-direction: column !important; }
-  .s-tile {
-    border-right: none !important;
-    border-bottom: 1px solid #27272a !important;
-  }
-  .s-tile:last-child { border-bottom: none !important; }
   section, .section-inner { padding-left: 14px !important; padding-right: 14px !important; }
   section#about { padding-left: 0 !important; padding-right: 0 !important; }
   .skills-strip-offset { margin-left: -14px !important; margin-right: -14px !important; }
@@ -970,7 +936,7 @@ html.light .nav-root.scrolled {
   .contact-cols { flex-direction: column !important; }
   .stat-badges-row { flex-wrap: wrap; gap: 8px !important; }
   .stat-badge { min-width: calc(50% - 4px) !important; padding: 12px 16px !important; }
-  .about-heading, h1 { font-size: clamp(18px, 5.5vw, 26px) !important; }
+  .about-heading { font-size: clamp(18px, 5.5vw, 26px) !important; }
   .section-title { font-size: 18px !important; }
   .contrib-wrap { overflow-x: auto; padding-bottom: 6px; }
   .overview-cols { flex-direction: column !important; }
@@ -980,12 +946,6 @@ html.light .nav-root.scrolled {
 
 @media (max-width: 400px) {
   .stat-badge { min-width: 100% !important; }
-  .h-avatar {
-    width: clamp(90px, 26vw, 120px) !important;
-    min-width: clamp(90px, 26vw, 120px) !important;
-    height: clamp(90px, 26vw, 120px) !important;
-    min-height: clamp(90px, 26vw, 120px) !important;
-  }
   .nav-inner { height: 46px; }
   .nav-root  { height: 46px; }
 }

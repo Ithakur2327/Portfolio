@@ -142,6 +142,7 @@ function HoverBorderGradient({ children, radius = 10 }: { children: React.ReactN
           overflow: hidden;
           z-index: 0;
           pointer-events: none;
+          border-radius: ${radius}px;
         }
         .hbg-rotor {
           position: absolute;
@@ -542,7 +543,7 @@ export function HeroSection() {
         <div style={{height:38, maxWidth:CW, margin:"0 auto"}}/>
 
         {/* ── INFO + SOCIAL ── */}
-        <div className="h-info-wrap" style={{borderLeft:B, borderRight:B}}>
+        <div className="h-info-wrap">
           <HoverBorderGradient>
             <div className="h-info-box" style={{background:BG, border:B, borderRadius:10, overflow:"hidden"}}>
 
