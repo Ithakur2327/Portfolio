@@ -115,8 +115,8 @@ const SkillRow = memo(function SkillRow({
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
-        display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 7,
-        padding: "8px 4px",
+        display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 5,
+        padding: "6px 4px",
         textAlign: "center",
         opacity: visible ? 1 : 0,
         transform: visible ? "translateY(0) scale(1)" : "translateY(-16px) scale(0.85)",
@@ -128,7 +128,7 @@ const SkillRow = memo(function SkillRow({
     >
       {/* Icon box — only the icon pops up on hover, no background block */}
       <div className="skill-row-icon" style={{
-        width: 26, height: 26, borderRadius: 6, flexShrink: 0,
+        width: 24, height: 24, borderRadius: 6, flexShrink: 0,
         background: `${tech.color}18`,
         border: `1px solid ${tech.color}${visible ? "40" : "18"}`,
         display: "flex", alignItems: "center", justifyContent: "center",
@@ -244,10 +244,10 @@ function LampSkillBox({ title, glowColor, items }: { title: string; glowColor: s
     >
       <LampBeam glowColor={glowColor} visible={inView} lampOn={lampOn} />
 
-      <div style={{ position:"relative", zIndex:1, paddingTop:12, display:"flex", flexDirection:"column", height:"100%" }}>
+      <div style={{ position:"relative", zIndex:1, paddingTop:10, display:"flex", flexDirection:"column", height:"100%" }}>
 
         {/* Title — single centered element, no per-card button to throw it off-center */}
-        <div style={{ padding:"0 12px", marginBottom:10 }}>
+        <div style={{ padding:"0 12px", marginBottom:8 }}>
           <span style={{
             display: "block", textAlign: "center",
             fontSize: 9.5, fontWeight: 800, letterSpacing: "0.13em",
@@ -264,14 +264,19 @@ function LampSkillBox({ title, glowColor, items }: { title: string; glowColor: s
 
         {/* Separator */}
         <div style={{
-          height: 1, margin: "0 12px 10px",
+          height: 1, margin: "0 12px 8px",
           background: `linear-gradient(to right,transparent,${glowColor}${inView && lampOn ? "35" : "08"},transparent)`,
           transition: "background 0.5s ease",
         }} />
 
-        {/* Skill rows — CSS grid so column count can respond per breakpoint */}
-        <div className="skill-cols-wrap" style={{ position: "relative", padding: "0 12px 12px", flex: 1 }}>
-          <div className="skill-item-grid">
+        {/* Skill rows — column-major flow: first half of items fill the left
+            column top-to-bottom, second half fill the right column, so the
+            two columns stay balanced instead of items piling into column 1. */}
+        <div className="skill-cols-wrap" style={{ position: "relative", padding: "0 10px 10px", flex: 1 }}>
+          <div
+            className="skill-item-grid"
+            style={{ gridAutoFlow: "column", gridTemplateRows: `repeat(${Math.ceil(items.length / 2)}, auto)` }}
+          >
             {items.map((name, i) => (
               <SkillRow key={name} name={name} visible={hasAppeared} delay={hasAppeared ? 0.06 + i * 0.05 : 0} />
             ))}
@@ -385,7 +390,7 @@ export function SkillsSection() {
 
         .lamp-skill-box {
           background: var(--bg-base);
-          min-height: 184px;
+          min-height: 140px;
           min-width: 0;
           overflow: hidden;
         }
@@ -399,8 +404,8 @@ export function SkillsSection() {
         .skill-item-grid {
           display: grid;
           grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-          column-gap: 10px;
-          row-gap: 10px;
+          column-gap: 8px;
+          row-gap: 6px;
           justify-items: center;
           width: 100%;
         }
@@ -426,25 +431,25 @@ export function SkillsSection() {
            box content could overflow its min-height and wrap the grid. */
         @media (min-width: 641px) and (max-width: 1180px) {
           .skills-grid { grid-template-columns: repeat(2, 1fr) !important; }
-          .lamp-skill-box { min-height: 200px; }
+          .lamp-skill-box { min-height: 150px; }
           .skill-item-grid { column-gap: 14px; row-gap: 8px; }
         }
 
         @media (max-width: 640px) {
           .skills-grid { border-radius: 8px; grid-template-columns: 1fr; }
-          .lamp-skill-box { min-height: 168px; }
+          .lamp-skill-box { min-height: 128px; }
           .skill-cols-wrap { gap: 10px !important; padding: 0 10px 10px !important; }
         }
 
         @media (max-width: 420px) {
-          .lamp-skill-box { min-height: 158px; }
+          .lamp-skill-box { min-height: 118px; }
           .skill-name-txt { font-size: 10.5px !important; }
           .skill-row-item { gap: 6px !important; padding: 5px 6px !important; }
           .skill-row-icon { width: 22px !important; height: 22px !important; }
         }
 
         @media (max-width: 340px) {
-          .lamp-skill-box { min-height: 150px; }
+          .lamp-skill-box { min-height: 108px; }
           .skill-name-txt { font-size: 9.5px !important; }
           .skill-row-item { gap: 5px !important; padding: 4px 5px !important; }
           .skill-row-icon { width: 20px !important; height: 20px !important; }

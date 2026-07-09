@@ -122,18 +122,16 @@ function SocialIconTile({href,label,icon,iconBg,iconBorder,iconColor}:{href:stri
 }
 
 /* ─── HoverBorderGradient ─────────────────────────────── */
-/* A spinning conic-gradient sits UNDER the content, and the wrapper's own
-   1.5px padding is the only place that background is allowed to peek
-   through — that thin ring is what reads as the "moving border". The
-   content box itself must NOT draw its own border, or it paints straight
-   over the ring and the animation disappears (this is what broke it). */
+/* A slow, soft light sweeps around a hairline border. The wrapper's own
+   1px padding is the only place the spinning gradient can show through —
+   that thin sliver IS the border, so the content box must never draw its
+   own border on top of it. */
 function HoverBorderGradient({ children, radius = 10 }: { children: React.ReactNode; radius?: number }) {
   const { theme } = useTheme();
   const isDark = theme === "dark";
 
-  const bright = isDark ? "rgba(255,255,255,0.55)" : "rgba(0,0,0,0.40)";
-  const dim    = isDark ? "rgba(255,255,255,0.14)" : "rgba(0,0,0,0.10)";
-  const base   = isDark ? "rgba(255,255,255,0.10)" : "rgba(0,0,0,0.08)";
+  const bright = isDark ? "rgba(255,255,255,0.38)" : "rgba(0,0,0,0.28)";
+  const base   = isDark ? "rgba(255,255,255,0.09)" : "rgba(0,0,0,0.08)";
 
   return (
     <div
@@ -141,7 +139,7 @@ function HoverBorderGradient({ children, radius = 10 }: { children: React.ReactN
       style={{
         position: "relative",
         borderRadius: radius,
-        padding: 1.5,
+        padding: 1,
         background: base,
         overflow: "hidden",
       }}
@@ -163,16 +161,14 @@ function HoverBorderGradient({ children, radius = 10 }: { children: React.ReactN
           position: absolute;
           top: 50%; left: 50%;
           width: 260%; height: 260%;
-          animation: hbg-spin 6s linear infinite;
+          animation: hbg-spin 13s linear infinite;
           background: conic-gradient(
             from 0deg,
-            transparent    0deg,
-            transparent    45deg,
-            ${dim}         80deg,
-            ${bright}      105deg,
-            ${dim}         130deg,
-            transparent    165deg,
-            transparent    360deg
+            transparent 0deg,
+            transparent 92deg,
+            ${bright}   100deg,
+            transparent 108deg,
+            transparent 360deg
           );
         }
         @media (prefers-reduced-motion: reduce) {
@@ -180,13 +176,13 @@ function HoverBorderGradient({ children, radius = 10 }: { children: React.ReactN
         }
       `}</style>
 
-      {/* Spinning gradient, clipped to the wrapper */}
+      {/* Spinning light, clipped to the wrapper */}
       <div className="hbg-outer">
         <div className="hbg-rotor" />
       </div>
 
-      {/* Content sits 1.5px inset from the wrapper — that inset is the border */}
-      <div style={{ position: "relative", zIndex: 1, borderRadius: Math.max(radius - 1.5, 0), overflow: "hidden" }}>
+      {/* Content sits 1px inset from the wrapper — that inset is the border */}
+      <div style={{ position: "relative", zIndex: 1, borderRadius: Math.max(radius - 1, 0), overflow: "hidden" }}>
         {children}
       </div>
     </div>
