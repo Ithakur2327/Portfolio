@@ -170,10 +170,13 @@ function HoverBorderGradient({ children, radius = 10 }: { children: React.ReactN
         <div className="hbg-rotor" />
       </div>
 
-      {/* Static hairline border on top */}
+      {/* Static hairline border on top and bottom */}
       <div aria-hidden style={{
         position: "absolute", inset: 0, zIndex: 0, pointerEvents: "none", borderRadius: radius,
-        border: isDark ? "1px solid rgba(255,255,255,0.10)" : "1px solid rgba(0,0,0,0.08)",
+        borderTop: isDark ? "1px solid rgba(255,255,255,0.10)" : "1px solid rgba(0,0,0,0.08)",
+        borderBottom: isDark ? "1px solid rgba(255,255,255,0.10)" : "1px solid rgba(0,0,0,0.08)",
+        borderLeft: "none",
+        borderRight: "none",
       }} />
 
       <div style={{ position: "relative", zIndex: 1 }}>
@@ -545,7 +548,7 @@ export function HeroSection() {
         {/* ── INFO + SOCIAL ── */}
         <div className="h-info-wrap">
           <HoverBorderGradient>
-            <div className="h-info-box" style={{background:BG, border:B, borderRadius:8.5, overflow:"hidden"}}>
+            <div className="h-info-box" style={{background:BG, borderTop:B, borderBottom:B, borderRadius:8.5, overflow:"hidden"}}>
 
               <div className="h-info-pad" style={{padding:"24px 28px 22px"}}>
                 <div className="h-grid">
