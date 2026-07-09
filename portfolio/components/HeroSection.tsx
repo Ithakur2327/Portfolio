@@ -122,28 +122,15 @@ function SocialIconTile({href,label,icon,iconBg,iconBorder,iconColor}:{href:stri
 }
 
 /* ─── HoverBorderGradient ─────────────────────────────── */
-/* A slow, soft light sweeps around a hairline border. The wrapper's own
-   1px padding is the only place the spinning gradient can show through —
-   that thin sliver IS the border, so the content box must never draw its
-   own border on top of it. */
 function HoverBorderGradient({ children, radius = 10 }: { children: React.ReactNode; radius?: number }) {
   const { theme } = useTheme();
   const isDark = theme === "dark";
 
-  const bright = isDark ? "rgba(255,255,255,0.38)" : "rgba(0,0,0,0.28)";
-  const base   = isDark ? "rgba(255,255,255,0.09)" : "rgba(0,0,0,0.08)";
+  const bright = isDark ? "rgba(255,255,255,0.40)" : "rgba(0,0,0,0.32)";
+  const dim    = isDark ? "rgba(255,255,255,0.10)" : "rgba(0,0,0,0.07)";
 
   return (
-    <div
-      className="hbg-wrap"
-      style={{
-        position: "relative",
-        borderRadius: radius,
-        padding: 1,
-        background: base,
-        overflow: "hidden",
-      }}
-    >
+    <div className="hbg-wrap" style={{ position: "relative", borderRadius: radius, overflow: "hidden" }}>
       <style suppressHydrationWarning>{`
         @keyframes hbg-spin {
           from { transform: translate(-50%,-50%) rotate(0deg); }
@@ -151,7 +138,7 @@ function HoverBorderGradient({ children, radius = 10 }: { children: React.ReactN
         }
         .hbg-outer {
           position: absolute;
-          inset: 0;
+          inset: -1px;
           overflow: hidden;
           z-index: 0;
           pointer-events: none;
@@ -160,15 +147,17 @@ function HoverBorderGradient({ children, radius = 10 }: { children: React.ReactN
         .hbg-rotor {
           position: absolute;
           top: 50%; left: 50%;
-          width: 260%; height: 260%;
-          animation: hbg-spin 13s linear infinite;
+          width: 250%; height: 250%;
+          animation: hbg-spin 10s linear infinite;
           background: conic-gradient(
             from 0deg,
-            transparent 0deg,
-            transparent 92deg,
-            ${bright}   100deg,
-            transparent 108deg,
-            transparent 360deg
+            transparent    0deg,
+            transparent    55deg,
+            ${dim}         85deg,
+            ${bright}      110deg,
+            ${dim}         140deg,
+            transparent    170deg,
+            transparent    360deg
           );
         }
         @media (prefers-reduced-motion: reduce) {
@@ -176,13 +165,18 @@ function HoverBorderGradient({ children, radius = 10 }: { children: React.ReactN
         }
       `}</style>
 
-      {/* Spinning light, clipped to the wrapper */}
+      {/* Clipping wrapper + spinning gradient */}
       <div className="hbg-outer">
         <div className="hbg-rotor" />
       </div>
 
-      {/* Content sits 1px inset from the wrapper — that inset is the border */}
-      <div style={{ position: "relative", zIndex: 1, borderRadius: Math.max(radius - 1, 0), overflow: "hidden" }}>
+      {/* Static hairline border on top */}
+      <div aria-hidden style={{
+        position: "absolute", inset: 0, zIndex: 0, pointerEvents: "none", borderRadius: radius,
+        border: isDark ? "1px solid rgba(255,255,255,0.10)" : "1px solid rgba(0,0,0,0.08)",
+      }} />
+
+      <div style={{ position: "relative", zIndex: 1 }}>
         {children}
       </div>
     </div>
@@ -551,7 +545,7 @@ export function HeroSection() {
         {/* ── INFO + SOCIAL ── */}
         <div className="h-info-wrap">
           <HoverBorderGradient>
-            <div className="h-info-box" style={{background:BG, borderRadius:8.5, overflow:"hidden"}}>
+            <div className="h-info-box" style={{background:BG, border:B, borderRadius:8.5, overflow:"hidden"}}>
 
               <div className="h-info-pad" style={{padding:"24px 28px 22px"}}>
                 <div className="h-grid">
