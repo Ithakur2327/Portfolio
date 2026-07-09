@@ -115,16 +115,17 @@ const SkillRow = memo(function SkillRow({
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
-        display: "flex", alignItems: "center", gap: 9,
-        padding: "6px 10px",
+        display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 6,
+        padding: "8px 6px",
         borderRadius: 7,
+        textAlign: "center",
         background: hovered
           ? isDark ? `${tech.color}14` : `${tech.color}10`
           : "transparent",
         opacity: visible ? 1 : 0,
-        transform: visible ? "scale(1)" : "scale(0.9)",
+        transform: visible ? "translateY(0) scale(1)" : "translateY(-16px) scale(0.85)",
         transition: visible
-          ? `opacity 0.3s ease-out ${delay}s, transform 0.3s ease-out ${delay}s, background 0.18s ease`
+          ? `opacity 0.45s cubic-bezier(0.34,1.56,0.64,1) ${delay}s, transform 0.55s cubic-bezier(0.34,1.56,0.64,1) ${delay}s, background 0.18s ease`
           : "opacity 0.2s ease, transform 0.2s ease, background 0.18s ease",
         cursor: "default",
       }}
@@ -402,13 +403,23 @@ export function SkillsSection() {
         .skill-item-grid {
           display: grid;
           grid-template-columns: repeat(2, 1fr);
-          column-gap: 20px;
-          row-gap: 2px;
+          column-gap: 8px;
+          row-gap: 4px;
+          justify-items: center;
         }
 
         /* Permanent mobile/tablet fix: box stays 2-per-row and its content
            (icon + name) shrinks gracefully instead of overflowing/clipping,
            regardless of device width. */
+        /* iPad / tablet range — force a stable 2-per-row grid; some iPad
+           viewports were falling back to a single box per row because the
+           box content could overflow its min-height and wrap the grid. */
+        @media (min-width: 641px) and (max-width: 1180px) {
+          .skills-grid { grid-template-columns: repeat(2, 1fr) !important; }
+          .lamp-skill-box { min-height: 200px; }
+          .skill-item-grid { column-gap: 14px; row-gap: 8px; }
+        }
+
         @media (max-width: 640px) {
           .skills-grid { border-radius: 8px; grid-template-columns: 1fr; }
           .lamp-skill-box { min-height: 168px; }

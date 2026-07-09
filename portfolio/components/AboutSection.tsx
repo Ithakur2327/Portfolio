@@ -118,16 +118,16 @@ export function AboutSection() {
         .about-box {
           width: 100%;
           box-sizing: border-box;
-          border: 1px solid var(--border);
+          border: 1px solid color-mix(in oklab, var(--border) 55%, transparent);
           border-radius: 10px;
           background: var(--bg-base);
-          padding: 28px 32px;
+          padding: 22px 18px;
         }
         @media (max-width: 860px) {
-          .about-box { padding: 26px 26px; }
+          .about-box { padding: 20px 16px; }
         }
         @media (max-width: 639px) {
-          .about-box { padding: 24px 20px; border-radius: 8px; }
+          .about-box { padding: 18px 12px; border-radius: 8px; }
         }
       `}</style>
 

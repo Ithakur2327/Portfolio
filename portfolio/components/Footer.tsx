@@ -323,6 +323,23 @@ export function Footer() {
           .footer-socials-row  { gap: 8px; }
           .footer-social-btn   { width: 38px; height: 38px; }
         }
+
+        /* PC / laptop only — match "IThakur.Dev" width to the content column
+           (same 1060px as the rest of the site) instead of full 100vw.
+           Mobile and tablet keep the existing full-bleed size. */
+        @media (min-width: 1025px) {
+          .fgt-outer {
+            position: static;
+            left: auto;
+            width: 100%;
+            max-width: 1060px;
+            margin-top: clamp(20px, 3vw, 44px);
+            margin-left: auto;
+            margin-right: auto;
+            padding: 0 32px;
+            box-sizing: border-box;
+          }
+        }
       `}</style>
 
       <footer id="site-footer-root" className="footer-root">

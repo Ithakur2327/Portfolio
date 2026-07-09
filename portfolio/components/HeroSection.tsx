@@ -122,7 +122,7 @@ function SocialIconTile({href,label,icon,iconBg,iconBorder,iconColor}:{href:stri
 }
 
 /* ─── HoverBorderGradient ─────────────────────────────── */
-function HoverBorderGradient({ children }: { children: React.ReactNode }) {
+function HoverBorderGradient({ children, radius = 10 }: { children: React.ReactNode; radius?: number }) {
   const { theme } = useTheme();
   const isDark = theme === "dark";
 
@@ -130,7 +130,7 @@ function HoverBorderGradient({ children }: { children: React.ReactNode }) {
   const dim    = isDark ? "rgba(255,255,255,0.10)" : "rgba(0,0,0,0.07)";
 
   return (
-    <div style={{ position: "relative" }}>
+    <div className="hbg-wrap" style={{ position: "relative", borderRadius: radius, overflow: "hidden" }}>
       <style suppressHydrationWarning>{`
         @keyframes hbg-spin {
           from { transform: translate(-50%,-50%) rotate(0deg); }
@@ -171,7 +171,7 @@ function HoverBorderGradient({ children }: { children: React.ReactNode }) {
 
       {/* Static hairline border on top */}
       <div aria-hidden style={{
-        position: "absolute", inset: 0, zIndex: 0, pointerEvents: "none",
+        position: "absolute", inset: 0, zIndex: 0, pointerEvents: "none", borderRadius: radius,
         border: isDark ? "1px solid rgba(255,255,255,0.10)" : "1px solid rgba(0,0,0,0.08)",
       }} />
 
@@ -284,11 +284,12 @@ export function HeroSection() {
             min-height: calc(clamp(220px, 32vw, 300px) - 14px) !important;
             border-radius: 24px !important;
           }
-          /* Same text size, just more vertical room so it sits on the partition line */
+          /* Bigger, bolder name with more vertical room so it sits on the partition line */
           .h-nameblock h1 {
-            font-size: clamp(19px, 3vw, 28px) !important;
+            font-size: clamp(26px, 4.2vw, 40px) !important;
+            font-weight: 800 !important;
             line-height: 1 !important;
-            letter-spacing: 0.03em !important;
+            letter-spacing: 0.02em !important;
           }
           .h-nameblock {
             padding: 0 8px !important;
@@ -349,7 +350,8 @@ export function HeroSection() {
             min-height: calc(clamp(260px, 28vw, 300px) - 14px) !important;
           }
           .h-nameblock h1 {
-            font-size: clamp(21px, 2.8vw, 28px) !important;
+            font-size: clamp(28px, 3.4vw, 42px) !important;
+            font-weight: 800 !important;
             line-height: 1 !important;
           }
           .h-nameblock > div:nth-child(2) {
@@ -370,7 +372,8 @@ export function HeroSection() {
             border-radius: 18px !important;
           }
           .h-nameblock h1 {
-            font-size: clamp(14px, 2.2vw, 19px) !important;
+            font-size: clamp(18px, 3vw, 25px) !important;
+            font-weight: 800 !important;
             line-height: 1 !important;
           }
           .h-nameblock > div:nth-child(2) {
@@ -423,8 +426,9 @@ export function HeroSection() {
             margin-bottom: -2px !important;
           }
           .h-nameblock h1 {
-            font-size: clamp(20px, 7vw, 26px) !important;
-            letter-spacing: 0.04em !important;
+            font-size: clamp(21px, 7.4vw, 29px) !important;
+            font-weight: 800 !important;
+            letter-spacing: 0.015em !important;
             line-height: 1 !important;
             white-space: nowrap !important;
           }
@@ -459,6 +463,9 @@ export function HeroSection() {
             margin-left: 12px !important;
             margin-right: 12px !important;
           }
+          .hbg-wrap, .h-info-box {
+            border-radius: 8px !important;
+          }
         }
 
         /* ── Small mobile (< 380px) ── */
@@ -471,8 +478,9 @@ export function HeroSection() {
             border-radius: 14px !important;
           }
           .h-nameblock h1 {
-            font-size: clamp(18px, 6.5vw, 20px) !important;
-            letter-spacing: 0.03em !important;
+            font-size: clamp(20px, 7vw, 24px) !important;
+            font-weight: 800 !important;
+            letter-spacing: 0.015em !important;
             line-height: 1 !important;
           }
           .h-nameblock > div:nth-child(2) {
@@ -514,8 +522,8 @@ export function HeroSection() {
               <div style={{flex:1}}/>
               <div style={{padding:"28px 20px 0", marginBottom:"-3px"}}>
                 <h1 style={{
-                  fontSize:"clamp(19px,3vw,28px)", fontWeight:700,
-                  letterSpacing:"0.03em", color:"var(--text-primary)",
+                  fontSize:"clamp(24px,3.8vw,36px)", fontWeight:800,
+                  letterSpacing:"0.02em", color:"var(--text-primary)",
                   lineHeight:1, margin:0,
                   fontFamily:"'Geist Pixel Square','Geist Mono',monospace", display:"inline-block",
                   WebkitFontSmoothing:"antialiased", MozOsxFontSmoothing:"grayscale",
@@ -536,7 +544,7 @@ export function HeroSection() {
         {/* ── INFO + SOCIAL ── */}
         <div className="h-info-wrap" style={{borderLeft:B, borderRight:B}}>
           <HoverBorderGradient>
-            <div style={{background:BG, border:B}}>
+            <div className="h-info-box" style={{background:BG, border:B, borderRadius:10, overflow:"hidden"}}>
 
               <div className="h-info-pad" style={{padding:"16px 18px 14px"}}>
                 <div className="h-grid">

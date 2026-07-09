@@ -726,8 +726,8 @@ export function StatsSection() {
           transform: translateX(-50%);
           z-index: 1;
         }
-        .about-panels > .stat-card-3d:first-child { padding-right: 24px; }
-        .about-panels > .stat-card-3d:last-child  { padding-left: 32px; }
+        .about-panels > .stat-card-3d:first-child { padding-right: 28px; }
+        .about-panels > .stat-card-3d:last-child  { padding-left: 28px; }
 
         @media (min-width: 601px) and (max-width: 1024px) {
           .about-panels { grid-template-columns: 1fr !important; }
