@@ -21,7 +21,7 @@ export function SparklesBridge() {
       const vw = window.innerWidth;
       if (vw >= 1024 && vw <= 1180) return 180;
       if (vw >= 768  && vw <= 1023) return 150;
-      if (vw >= 600  && vw <= 767)  return 120;
+      if (vw >= 600  && vw <= 767)  return 110;
       return 80;
     };
 
