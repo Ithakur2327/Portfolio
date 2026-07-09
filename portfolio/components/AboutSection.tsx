@@ -107,7 +107,7 @@ export function AboutSection() {
         html.light .gold-box-word { color: #d97706 !important; background: rgba(245,158,11,0.13) !important; border-color: rgba(217,119,6,0.45) !important; }
 
         .about-content {
-          max-width: 1060px; margin: 0 auto; padding: 0 20px 64px;
+          max-width: 980px; margin: 0 auto; padding: 0 20px 64px;
         }
         @media (max-width: 860px) { .about-content { padding: 0 22px 34px; } }
         @media (max-width: 639px) {
@@ -117,14 +117,15 @@ export function AboutSection() {
 
         .about-box {
           width: 100%;
+          max-width: 100%;
           box-sizing: border-box;
           border: 1px solid var(--border);
           border-radius: 10px;
           background: var(--bg-base);
-          padding: 28px 32px;
+          padding: 18px 18px;
         }
         @media (max-width: 860px) {
-          .about-box { padding: 26px 26px; }
+          .about-box { padding: 16px 16px; }
         }
         @media (max-width: 639px) {
           .about-box { padding: 24px 20px; border-radius: 8px; }
