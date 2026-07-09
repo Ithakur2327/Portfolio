@@ -116,7 +116,7 @@ const SkillRow = memo(function SkillRow({
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
-        display: "flex", alignItems: "center", justifyContent: "center", gap: 9,
+        display: "flex", alignItems: "center", gap: 9,
         padding: "6px 10px",
         borderRadius: 7,
         background: hovered
@@ -405,7 +405,7 @@ export function SkillsSection() {
           grid-template-columns: repeat(2, 1fr);
           column-gap: 20px;
           row-gap: 2px;
-          justify-items: center;
+          padding: 0 6px;
         }
 
         /* Permanent mobile/tablet fix: box stays 2-per-row and its content
