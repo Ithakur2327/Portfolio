@@ -76,6 +76,13 @@ const CERTIFICATIONS = [
     logo: "https://cdn.simpleicons.org/cisco/1BA0D7",
     stack: [],
   },
+  {
+    title: "Next Gen Technologies",
+    issuer: "Infosys Springboard",
+    date: "2025",
+    logo: "https://cdn.simpleicons.org/infosys/007CC3",
+    stack: [],
+  },
 ];
 
 
@@ -356,6 +363,13 @@ export function EducationSection() {
         .cert-logo-img {
           width: 17px; height: 17px; object-fit: contain;
         }
+        /* ── certifications grid — 2 columns on tablet/iPad/desktop,
+           1 column on mobile ── */
+        .cert-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          column-gap: 40px;
+        }
         .cert-item-2 {
           position: relative;
           display: flex;
@@ -367,15 +381,10 @@ export function EducationSection() {
           box-shadow: 0 3px 10px rgba(0,0,0,0.22);
           transform: translateY(-1px);
         }
-        .cert-item-2-line {
-          position: absolute;
-          left: 16px;
-          top: 62px;
-          bottom: -20px;
-          width: 2px;
-          background: linear-gradient(to bottom, var(--border), transparent);
-          z-index: 0;
-        }
+        /* Connecting line only makes visual sense as a single-column
+           timeline — it's hidden in the 2-column grid and re-enabled in
+           the mobile media query below. */
+        .cert-item-2-line { display: none; }
         .cert-item-2-body { flex: 1; min-width: 0; }
         .cert-item-2-top {
           display: flex;
@@ -383,13 +392,27 @@ export function EducationSection() {
           justify-content: space-between;
           gap: 12px;
         }
+        /* Only the certificate name is clickable now — the card itself no
+           longer carries onClick/role/tabIndex. */
         .cert-item-2-title {
+          display: inline-block;
           font-size: 14.5px;
           font-weight: 700;
           color: var(--text-primary);
           letter-spacing: -0.025em;
           font-family: ${SF};
           line-height: 1.2;
+          cursor: pointer;
+          background: none;
+          border: none;
+          padding: 0;
+          text-align: left;
+        }
+        .cert-item-2-title:hover { text-decoration: underline; text-underline-offset: 3px; }
+        .cert-item-2-title:focus-visible {
+          outline: 2px solid var(--text-muted);
+          outline-offset: 3px;
+          border-radius: 3px;
         }
         .cert-item-2-issuer {
           font-size: 12.5px;
@@ -402,7 +425,7 @@ export function EducationSection() {
           color: var(--text-muted);
           font-family: ${MONO};
           white-space: nowrap;
-          margin-left: 10px;
+          margin-left: 8px;
           font-weight: 400;
         }
         .cert-tags-row {
@@ -437,6 +460,19 @@ export function EducationSection() {
           .edu-card-top { flex-direction: column; gap: 4px; }
           .edu-card-period { margin-left: 0; }
           .edu-sec-title { font-size: 22px; }
+        }
+        @media (max-width: 767px) {
+          .cert-grid { grid-template-columns: 1fr; column-gap: 0; }
+          .cert-item-2-line {
+            display: block;
+            position: absolute;
+            left: 16px;
+            top: 62px;
+            bottom: -20px;
+            width: 2px;
+            background: linear-gradient(to bottom, var(--border), transparent);
+            z-index: 0;
+          }
         }
       `}</style>
 
@@ -503,58 +539,57 @@ export function EducationSection() {
 
             <div className="edu-sec-divider" />
 
-            {/* Cert items — education-card layout: company icon, title, issuer/date */}
-            {CERTIFICATIONS.map((cert, i) => {
-              const pdfSrc = `/certificates/${slugify(cert.title)}.pdf`;
-              return (
-                <motion.div
-                  key={i}
-                  role="button"
-                  tabIndex={0}
-                  onClick={() => openPdf(pdfSrc, cert.title)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" || e.key === " ") {
-                      e.preventDefault();
-                      openPdf(pdfSrc, cert.title);
-                    }
-                  }}
-                  className="cert-item-2"
-                  initial={false}
-                  animate={vis2 ? { opacity: 1, y: 0, rotateX: 0 } : { opacity: 0, y: 14, rotateX: 6 }}
-                  transition={{ duration: 0.46, ease: [0.22, 1, 0.36, 1], delay: vis2 ? i * 0.08 : 0 }}
-                  style={{ cursor: "pointer" }}
-                >
-                  <div className="edu-card-icon">
-                    <img
-                      className="cert-logo-img"
-                      src={cert.logo}
-                      alt={cert.issuer}
-                      loading="lazy"
-                      onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
-                    />
-                  </div>
-                  {i < CERTIFICATIONS.length - 1 && <div className="cert-item-2-line" />}
-                  <div className="cert-item-2-body">
-                    <div className="cert-item-2-top">
-                      <div>
-                        <p className="cert-item-2-title">
-                          {cert.title}
-                          <span className="cert-item-2-date">{cert.date}</span>
-                        </p>
-                        <p className="cert-item-2-issuer">{cert.issuer}</p>
-                      </div>
+            {/* Cert items — education-card layout: company icon, title, issuer/date.
+                Only the certificate name is clickable; the card itself is inert. */}
+            <div className="cert-grid">
+              {CERTIFICATIONS.map((cert, i) => {
+                const pdfSrc = `/certificates/${slugify(cert.title)}.pdf`;
+                return (
+                  <motion.div
+                    key={i}
+                    className="cert-item-2"
+                    initial={false}
+                    animate={vis2 ? { opacity: 1, y: 0, rotateX: 0 } : { opacity: 0, y: 14, rotateX: 6 }}
+                    transition={{ duration: 0.46, ease: [0.22, 1, 0.36, 1], delay: vis2 ? i * 0.08 : 0 }}
+                  >
+                    <div className="edu-card-icon">
+                      <img
+                        className="cert-logo-img"
+                        src={cert.logo}
+                        alt={cert.issuer}
+                        loading="lazy"
+                        onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+                      />
                     </div>
-                    {cert.stack.length > 0 && (
-                      <div className="cert-tags-row">
-                        {cert.stack.map((tag, ti) => (
-                          <span key={ti} className="cert-tag-pill">{tag}</span>
-                        ))}
+                    {i < CERTIFICATIONS.length - 1 && <div className="cert-item-2-line" />}
+                    <div className="cert-item-2-body">
+                      <div className="cert-item-2-top">
+                        <div>
+                          <button
+                            type="button"
+                            className="cert-item-2-title"
+                            onClick={() => openPdf(pdfSrc, cert.title)}
+                          >
+                            {cert.title}
+                          </button>
+                          <p className="cert-item-2-issuer">
+                            @{cert.issuer}
+                            <span className="cert-item-2-date">{cert.date}</span>
+                          </p>
+                        </div>
                       </div>
-                    )}
-                  </div>
-                </motion.div>
-              );
-            })}
+                      {cert.stack.length > 0 && (
+                        <div className="cert-tags-row">
+                          {cert.stack.map((tag, ti) => (
+                            <span key={ti} className="cert-tag-pill">{tag}</span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </div>
           </div>
         </div>
       </section>

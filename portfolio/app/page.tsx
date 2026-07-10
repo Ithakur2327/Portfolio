@@ -19,7 +19,6 @@ export default function Home() {
         <SparklesBridge />
         <div className="page-wrapper">
           <HeroSection />
-          <DotDivider />
           <AboutSection />
           <DotDivider />
           <StatsSection />

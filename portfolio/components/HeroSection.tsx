@@ -249,7 +249,11 @@ export function HeroSection() {
           gap: 16px 56px;
           position: relative;
         }
-        /* Dashed vertical partition down the middle — purely decorative, never intercepts clicks */
+        /* Dashed vertical partition down the middle — spans the full height
+           of the two info columns only (never the social-icon row below,
+           which lives outside .h-grid entirely), so it reads as one clean
+           line connecting the grid's own top and bottom edges. Purely
+           decorative, never intercepts clicks. */
         .h-grid::before {
           content: "";
           position: absolute;
@@ -258,6 +262,10 @@ export function HeroSection() {
           border-left: 1px dashed var(--border);
           pointer-events: none;
         }
+        /* Right column sits a touch further from that line than the raw
+           grid gap alone would give it, matching the left column's own
+           breathing room off the card's left edge. */
+        .h-grid-right { padding-left: 6px; }
 
         /* ── Social row ── */
         .h-social { display: flex; flex-direction: row; }
@@ -268,11 +276,15 @@ export function HeroSection() {
         }
         .s-icon-tile:last-child { border-right: none !important; }
 
-        /* Social left group */
+        /* Social left group — left-padded so the Mail icon's left edge lines
+           up exactly with the icons above it (Row items sit at the info
+           pad's 28px left inset; a tile's own resting padding is only 18px,
+           so without this the whole social row reads ~10px too far left). */
         .s-social-group {
           display: flex;
           flex-direction: row;
           flex: 0 0 auto;
+          padding-left: 10px;
         }
 
         /* ── iPad / Tablet (768px–1180px) ── */
@@ -451,6 +463,10 @@ export function HeroSection() {
           .s-social-group {
             border-bottom: none !important;
             flex-direction: row !important;
+            /* Tiles below go flex:1 + centered, spanning edge-to-edge —
+               the desktop/tablet left-alignment offset would just eat
+               into that width unevenly, so drop it here. */
+            padding-left: 0 !important;
           }
           .s-icon-tile {
             flex: 1 !important;
@@ -570,7 +586,7 @@ export function HeroSection() {
                   </div>
 
                   {/* RIGHT */}
-                  <div style={{display:"flex",flexDirection:"column",gap:14}}>
+                  <div className="h-grid-right" style={{display:"flex",flexDirection:"column",gap:14}}>
                     <div className="h-spacer" style={{height:32,flexShrink:0}}/>
                     <Row icon={<IBox color="#fbbf24"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></IBox>}>
                       <LiveClock/>
@@ -610,6 +626,14 @@ export function HeroSection() {
             </div>
           </HoverBorderGradient>
         </div>
+
+        {/* Closing spacer — same height/technique as the gap above the info
+            box, so the dot-field wrapping this whole section extends one
+            continuous, correctly-aligned band down to where About begins
+            instead of handing off to a second, separately-baked dot canvas
+            (that hand-off is what produced the misaligned "double line"
+            seam right under the social icons). */}
+        <div style={{ height: 38, maxWidth: CW, margin: "0 auto" }} />
 
           </div>
         </div>

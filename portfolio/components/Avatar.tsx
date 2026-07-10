@@ -25,14 +25,20 @@ export function Avatar() {
 
   useEffect(() => { isDarkRef.current = isDark; }, [isDark]);
 
-  // Force immediate re-render when theme changes (override idle throttle)
+  // Force a near-immediate re-render when theme changes (override idle
+  // throttle just long enough to guarantee one fresh frame at the new
+  // texture — NOT a long window. This used to hold full 60fps for 600ms,
+  // which on mobile meant the expensive per-pixel noise-warp shader (see
+  // FRAG below) ran unthrottled for ~36 frames right as the view
+  // transition was also compositing a full-page screenshot — that
+  // overlap was the actual "lag on theme change" bug. 120ms is plenty to
+  // land a couple of real frames at any refresh rate.
   useEffect(() => {
     const G = glRef.current;
     if (!G) return;
-    // Temporarily mark as active to bypass 2fps idle throttle
     const prevHover = G.state.hover;
     G.state.hover = true;
-    const t = setTimeout(() => { G.state.hover = prevHover; }, 600);
+    const t = setTimeout(() => { G.state.hover = prevHover; }, 120);
     return () => clearTimeout(t);
   }, [isDark]);
 
@@ -40,8 +46,16 @@ export function Avatar() {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const DPR  = Math.min(window.devicePixelRatio || 1, 3);
-    const SIZE = 768;
+    // Size the backing store to how big the avatar is actually DISPLAYED
+    // (it never exceeds ~300px CSS across any breakpoint in this design),
+    // not a fixed 768px square. At devicePixelRatio 3 that fixed size was
+    // rasterizing a ~2300px-square texture — a huge, wasted fill-rate cost
+    // on every frame — for a circle that's often shown at ~150px on
+    // mobile. This is a pure performance fix: visually identical, just not
+    // rendering many times more pixels than can ever be seen.
+    const DPR = Math.min(window.devicePixelRatio || 1, 2);
+    const rect0 = canvas.getBoundingClientRect();
+    let SIZE = Math.max(64, Math.round(Math.max(rect0.width, rect0.height)) || 300);
     canvas.width  = SIZE * DPR;
     canvas.height = SIZE * DPR;
 
@@ -311,10 +325,22 @@ export function Avatar() {
     canvas.addEventListener("mouseenter", onEnter);
     canvas.addEventListener("mouseleave", onLeave);
 
+    const ro = new ResizeObserver((entries) => {
+      const r = entries[0]?.contentRect;
+      if (!r) return;
+      const next = Math.max(64, Math.round(Math.max(r.width, r.height)));
+      if (Math.abs(next - SIZE) < 2) return; // ignore sub-pixel noise
+      SIZE = next;
+      canvas.width  = SIZE * DPR;
+      canvas.height = SIZE * DPR;
+    });
+    ro.observe(canvas);
+
     return () => {
       cancelAnimationFrame(G.raf);
       if (G.tid) clearTimeout(G.tid);
       io.disconnect();
+      ro.disconnect();
       document.removeEventListener("visibilitychange", onVisibilityChange);
       canvas.removeEventListener("mouseenter", onEnter);
       canvas.removeEventListener("mouseleave", onLeave);

@@ -10,6 +10,27 @@ import { SectionTitleIcon } from "./SectionIcon";
 const SF = "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', sans-serif";
 const MONO = "'SF Mono', 'Geist Mono', monospace";
 
+// Reads window.innerWidth safely — starts `false` on both server and the
+// client's first render (so markup always matches for hydration), then
+// syncs to the real viewport after mount and keeps it in sync on resize.
+// The previous inline `typeof window !== "undefined" && window.innerWidth...`
+// evaluated differently between the server pass (always false) and the
+// client's very first render (immediately true), which is exactly the kind
+// of mismatch that trips React's hydration warning/reconciliation.
+function useIsTablet() {
+  const [isTablet, setIsTablet] = useState(false);
+  useEffect(() => {
+    const check = () => {
+      const w = window.innerWidth;
+      setIsTablet(w >= 601 && w <= 1024);
+    };
+    check();
+    window.addEventListener("resize", check, { passive: true });
+    return () => window.removeEventListener("resize", check);
+  }, []);
+  return isTablet;
+}
+
 interface ContribDay { contributionCount: number; date: string; }
 interface Week { days: ContribDay[]; }
 interface LC {
@@ -247,7 +268,7 @@ function LeetCodeStats({ username = "IThakur09" }: { username?: string }) {
 
   const d = data ?? { easySolved: 197, totalEasy: 947, mediumSolved: 223, totalMedium: 2063, hardSolved: 32, totalHard: 939, totalSolved: 452, ranking: GLOBAL_RANK };
 
-  const isTablet = typeof window !== "undefined" && window.innerWidth >= 601 && window.innerWidth <= 1024;
+  const isTablet = useIsTablet();
   const CELL = isTablet ? 14 : 10, GAP = isTablet ? 4 : 3, STEP = CELL + GAP;
 
   const countMap = new Map<string, number>();
@@ -514,7 +535,7 @@ function GitHubGraph({ username = "Ithakur2327" }: { username?: string }) {
   }, [username]);
 
   const lvl = (n: number) => n === 0 ? 0 : n < 3 ? 1 : n < 6 ? 2 : n < 10 ? 3 : 4;
-  const isTablet = typeof window !== "undefined" && window.innerWidth >= 601 && window.innerWidth <= 1024;
+  const isTablet = useIsTablet();
   const CELL = isTablet ? 14 : 10, GAP = isTablet ? 4 : 3, STEP = CELL + GAP;
   const contribColor = isDark ? "#ffffff" : "#000000";
 
@@ -693,6 +714,7 @@ export function StatsSection() {
           overflow: visible;
           box-shadow: none;
           transition: none;
+          min-width: 0; /* keeps the center divider mathematically centered — a grid item's default min-width:auto lets its own non-scrollable content (e.g. a long header string) grow the track past 50%, dragging the divider along with it */
         }
         .stat-card-3d:hover {
           transform: none;

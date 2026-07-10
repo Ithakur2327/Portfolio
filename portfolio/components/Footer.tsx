@@ -339,6 +339,22 @@ export function Footer() {
             padding: 0 32px;
             box-sizing: border-box;
           }
+          /* Bigger on desktop — same width as the content column, more
+             presence height-wise. */
+          .fgt-svg { height: clamp(72px, 18vw, 260px); }
+          /* The divider still needs to read as full-bleed like every other
+             section divider on the site, even though its parent (.fgt-outer)
+             is now intentionally width-capped to match the text above it.
+             It stays visually flush directly under the text either way. */
+          .fgt-line {
+            position: relative;
+            left: 50%;
+            margin-left: -50vw;
+            width: 100vw;
+          }
+          /* A little more top breathing room so the copyright row doesn't
+             sit flush against the section's top edge. */
+          .footer-bottom-band { padding: 30px 32px 18px; }
         }
       `}</style>
 

@@ -38,6 +38,15 @@ function DotCanvas({ dotColor, activeDotColor, interactive }: {
     let raf: number | null = null;
     let needsDraw = false;
     let isVisible = true;
+    // Real viewport visibility (distinct from isVisible/document.hidden
+    // above). A theme toggle updates every DotCanvas on the page at once —
+    // without this, all ~8 of them (7 section dividers + Hero's field)
+    // fully re-bake and repaint even when scrolled far off-screen, which
+    // is the actual cost behind the "lag on theme change" report. Off-
+    // screen canvases now just flag themselves dirty and catch up the
+    // moment they scroll back into view.
+    let inViewport = true;
+    let colorDirty = false;
     let idleTimer: ReturnType<typeof setTimeout> | null = null;
     const mouse = { x: -9999, y: -9999, active: false };
 
@@ -71,6 +80,7 @@ function DotCanvas({ dotColor, activeDotColor, interactive }: {
     };
 
     repaintRef.current = () => {
+      if (!inViewport) { colorDirty = true; return; }
       paintStatic();
       needsDraw = true;
       schedule();
@@ -124,7 +134,7 @@ function DotCanvas({ dotColor, activeDotColor, interactive }: {
     };
 
     const schedule = () => {
-      if (!isVisible || !needsDraw || raf) return;
+      if (!isVisible || !inViewport || !needsDraw || raf) return;
       raf = requestAnimationFrame(() => { draw(); raf = null; });
     };
 
@@ -180,6 +190,18 @@ function DotCanvas({ dotColor, activeDotColor, interactive }: {
     const ro = new ResizeObserver(setup);
     ro.observe(container);
 
+    const io = new IntersectionObserver((entries) => {
+      const entry = entries[0];
+      inViewport = !!entry?.isIntersecting;
+      if (inViewport && colorDirty) {
+        colorDirty = false;
+        paintStatic();
+        needsDraw = true;
+        schedule();
+      }
+    }, { rootMargin: "200px 0px" });
+    io.observe(canvas);
+
     if (interactive) {
       window.addEventListener("mousemove",  onMove,  { passive: true });
       window.addEventListener("mouseleave", onLeave, { passive: true });
@@ -189,6 +211,7 @@ function DotCanvas({ dotColor, activeDotColor, interactive }: {
     return () => {
       repaintRef.current = null;
       ro.disconnect();
+      io.disconnect();
       window.removeEventListener("mousemove",  onMove);
       window.removeEventListener("mouseleave", onLeave);
       document.removeEventListener("visibilitychange", onVisibilityChange);
