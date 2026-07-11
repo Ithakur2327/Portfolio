@@ -249,18 +249,21 @@ export function HeroSection() {
           gap: 16px 56px;
           position: relative;
         }
-        /* Dashed vertical partition down the middle — spans the full height
+        /* Vertical partition down the middle — spans the full height
            of the two info columns only (never the social-icon row below,
            which lives outside .h-grid entirely), so it reads as one clean
            line connecting the grid's own top and bottom edges. Purely
-           decorative, never intercepts clicks. */
-        .h-grid::before {
-          content: "";
+           decorative, never intercepts clicks. Rendered as a real element
+           (not a pseudo-element) so it always paints reliably, centered
+           in the gap between the two columns. */
+        .h-partition-line {
           position: absolute;
           top: 0; bottom: 0; left: 50%;
+          width: 1px;
           transform: translateX(-50%);
-          border-left: 1px dashed var(--border);
+          background: var(--border);
           pointer-events: none;
+          z-index: 0;
         }
         /* Right column sits a touch further from that line than the raw
            grid gap alone would give it, matching the left column's own
@@ -457,7 +460,7 @@ export function HeroSection() {
             grid-template-columns: 1fr !important;
             gap: 11px 0 !important;
           }
-          .h-grid::before { display: none !important; }
+          .h-partition-line { display: none !important; }
           .h-grid-right { padding-left: 0 !important; }
           .h-spacer { display: none !important; }
           .h-social { flex-direction: column !important; }
@@ -566,6 +569,7 @@ export function HeroSection() {
 
               <div className="h-info-pad" style={{padding:"24px 28px 22px"}}>
                 <div className="h-grid">
+                  <div className="h-partition-line" aria-hidden="true" />
 
                   {/* LEFT */}
                   <div style={{display:"flex",flexDirection:"column",gap:14}}>

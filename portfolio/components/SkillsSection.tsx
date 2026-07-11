@@ -305,7 +305,10 @@ const MovingStrip = memo(function MovingStrip() {
     <div
       className="skills-strip-outer"
       style={{
-        overflow: "hidden",
+        overflowX: "hidden",
+        overflowY: "visible",
+        paddingTop: 42,
+        marginTop: -42,
         maskImage: "linear-gradient(to right,transparent,black 8%,black 92%,transparent)",
         WebkitMaskImage: "linear-gradient(to right,transparent,black 8%,black 92%,transparent)",
       }}
@@ -326,12 +329,12 @@ const MovingStrip = memo(function MovingStrip() {
           return (
             <div key={idx} className="skill-icon-only" style={{
               display:"flex", alignItems:"center", justifyContent:"center",
-              width:26, height:26, borderRadius:6, flexShrink:0,
+              width:36, height:36, borderRadius:8, flexShrink:0,
               background:`${tech.color}18`, border:`1px solid ${tech.color}35`,
               position:"relative",
             }}>
               {tech.logo && (
-                <img src={tech.logo} alt={name} width={16} height={16}
+                <img src={tech.logo} alt={name} width={21} height={21}
                   loading="lazy" draggable={false}
                   style={{ objectFit:"contain", filter:stripFilter, pointerEvents:"none" }}
                   onError={e => { (e.target as HTMLImageElement).style.display = "none"; }}
