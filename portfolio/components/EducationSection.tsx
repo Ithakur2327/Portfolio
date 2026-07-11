@@ -376,8 +376,12 @@ export function EducationSection() {
           grid-auto-flow: column;
           column-gap: 40px;
         }
-        /* Right column sits a bit further from the center gap. */
-        .cert-grid > .cert-item-2:nth-child(n+4) { padding-left: 14px; }
+        /* Right column sits a bit further from the center gap. Uses
+           margin (not padding) so the icon AND its absolutely-positioned
+           connecting line — which is anchored to this box's own edge —
+           shift together; padding here would only have moved the icon,
+           leaving the line behind and visibly misaligned from it. */
+        .cert-grid > .cert-item-2:nth-child(n+4) { margin-left: 14px; }
         /* Column 1's last card has no card visually below it in the
            2-column layout (its next DOM sibling is the top of column 2) —
            so its trailing connector line is hidden here only. */
@@ -484,7 +488,7 @@ export function EducationSection() {
             grid-template-rows: repeat(${CERTIFICATIONS.length}, auto);
             column-gap: 0;
           }
-          .cert-grid > .cert-item-2:nth-child(n+4) { padding-left: 0; }
+          .cert-grid > .cert-item-2:nth-child(n+4) { margin-left: 0; }
           .cert-grid > .cert-item-2:nth-child(3) > .cert-item-2-line { display: block; }
         }
       `}</style>
