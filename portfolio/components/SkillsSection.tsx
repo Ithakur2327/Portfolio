@@ -313,7 +313,7 @@ const MovingStrip = memo(function MovingStrip() {
       <div
         className="skills-strip"
         style={{
-          display:"flex", gap:10, width:"max-content",
+          display:"flex", gap:14, width:"max-content",
           animation:"skills-scroll-left 32s linear infinite",
           willChange:"transform", transform:"translateZ(0)",
         }}
@@ -324,29 +324,20 @@ const MovingStrip = memo(function MovingStrip() {
             ? tech.invert ? "invert(1) brightness(0.92)" : tech.bright ? "brightness(1.8) contrast(1.1)" : "none"
             : tech.bright && !tech.keepInLight ? "brightness(0.1) saturate(0)" : "none";
           return (
-            <div key={idx} style={{
-              display:"flex", alignItems:"center", gap:8,
-              padding:"8px 22px", borderRadius:10,
-              border:`1px solid ${tech.color}28`,
-              background:"var(--bg-card)", flexShrink:0,
+            <div key={idx} className="skill-icon-only" style={{
+              display:"flex", alignItems:"center", justifyContent:"center",
+              width:26, height:26, borderRadius:6, flexShrink:0,
+              background:`${tech.color}18`, border:`1px solid ${tech.color}35`,
+              position:"relative",
             }}>
-              <div style={{
-                width:26, height:26, borderRadius:6,
-                background:`${tech.color}18`, border:`1px solid ${tech.color}35`,
-                display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0,
-                marginLeft: 8,
-              }}>
-                {tech.logo && (
-                  <img src={tech.logo} alt={name} width={16} height={16}
-                    loading="lazy" draggable={false}
-                    style={{ objectFit:"contain", filter:stripFilter }}
-                    onError={e => { (e.target as HTMLImageElement).style.display = "none"; }}
-                  />
-                )}
-              </div>
-              <span style={{ fontSize:12, fontWeight:500, color:"var(--text-secondary)", fontFamily:MONO, whiteSpace:"nowrap" }}>
-                {name}
-              </span>
+              {tech.logo && (
+                <img src={tech.logo} alt={name} width={16} height={16}
+                  loading="lazy" draggable={false}
+                  style={{ objectFit:"contain", filter:stripFilter, pointerEvents:"none" }}
+                  onError={e => { (e.target as HTMLImageElement).style.display = "none"; }}
+                />
+              )}
+              <span className="skill-icon-tip">{name}</span>
             </div>
           );
         })}
@@ -363,6 +354,33 @@ export function SkillsSection() {
     <>
       <style suppressHydrationWarning>{`
         .skills-strip-outer:hover .skills-strip { animation-play-state: paused !important; }
+
+        /* Icon-only strip items — name shows as a tooltip on hover */
+        .skill-icon-only { cursor: default; transition: transform 0.18s ease; }
+        .skill-icon-only:hover { transform: translateY(-2px); }
+        .skill-icon-tip {
+          position: absolute;
+          bottom: calc(100% + 8px);
+          left: 50%;
+          transform: translateX(-50%) translateY(4px);
+          padding: 4px 9px;
+          border-radius: 6px;
+          background: var(--bg-secondary);
+          border: 1px solid var(--border);
+          color: var(--text-primary);
+          font-size: 11px;
+          font-weight: 500;
+          font-family: ${MONO};
+          white-space: nowrap;
+          opacity: 0;
+          pointer-events: none;
+          transition: opacity 0.15s ease, transform 0.15s ease;
+          z-index: 5;
+        }
+        .skill-icon-only:hover .skill-icon-tip {
+          opacity: 1;
+          transform: translateX(-50%) translateY(0);
+        }
 
         /* Subtle occasional flicker on the lit lamp beam — mostly steady,
            dips briefly a couple of times per cycle like a real tube light. */
@@ -463,7 +481,7 @@ export function SkillsSection() {
               {LAMP_GROUPS.map(g => <LampSkillBox key={g.title} {...g} />)}
             </div>
 
-            <div style={{ marginTop:28, marginLeft:-20, marginRight:-20 }}>
+            <div style={{ marginTop:28 }}>
               <MovingStrip />
             </div>
           </div>

@@ -243,9 +243,16 @@ export function Footer() {
           align-items: center;
           justify-content: center;
           gap: 16px;
-          border-bottom: 1px solid var(--border);
           flex-wrap: wrap;
           row-gap: 12px;
+        }
+        .footer-bottom-line {
+          position: relative;
+          left: 50%;
+          margin-left: -50vw;
+          width: 100vw;
+          height: 1px;
+          background: var(--border);
         }
         .footer-socials-row {
           display: flex;
@@ -309,6 +316,7 @@ export function Footer() {
           width: 100%;
           height: 1px;
           background: var(--border);
+          margin-top: -6px;
           margin-bottom: 0;
         }
         .footer-root {
@@ -351,10 +359,11 @@ export function Footer() {
             left: 50%;
             margin-left: -50vw;
             width: 100vw;
+            margin-top: -10px;
           }
           /* A little more top breathing room so the copyright row doesn't
              sit flush against the section's top edge. */
-          .footer-bottom-band { padding: 30px 32px 18px; }
+          .footer-bottom-band { padding: 40px 32px 18px; }
         }
       `}</style>
 
@@ -382,6 +391,7 @@ export function Footer() {
             </SocialIcon>
           </div>
         </div>
+        <div className="footer-bottom-line" />
 
         <FluidGradientText text="IThakur.Dev" />
       </footer>

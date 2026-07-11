@@ -95,7 +95,7 @@ export default function RootLayout({
         </noscript>
       </head>
 
-      <body>
+      <body suppressHydrationWarning>
         <ThemeProvider>
           <PdfModalProvider>
             <div style={{ position: "relative", zIndex: 1 }}>
