@@ -253,12 +253,12 @@ export function HeroSection() {
           gap: 16px 56px;
           position: relative;
         }
-        /* Vertical partition down the middle — spans the full height
-           of the info panel (not the social row below). Only visible on
-           tablet/desktop, never on narrow mobile layouts. */
-        .h-partition-line {
+        .h-grid::before {
+          content: "";
           position: absolute;
-          top: 0; bottom: 0; left: 50%;
+          top: -24px;
+          bottom: 0;
+          left: 50%;
           width: 1px;
           transform: translateX(-50%);
           background: var(--border);
@@ -332,6 +332,7 @@ export function HeroSection() {
           .h-grid {
             gap: 20px 80px !important;
           }
+          .h-grid::before { top: -28px !important; }
           /* Icon boxes bigger */
           .h-info-pad .h-grid > div > div > div:first-child,
           .h-info-pad .h-grid > div > a > div:first-child {
@@ -416,6 +417,7 @@ export function HeroSection() {
 
         /* ── Mobile (< 600px) ── */
         @media (max-width: 600px) {
+          .h-grid::before { display: none !important; }
           .h-profile { flex-direction: row !important; }
 
           /* Bigger avatar than before */
@@ -460,7 +462,7 @@ export function HeroSection() {
             grid-template-columns: 1fr !important;
             gap: 11px 0 !important;
           }
-          .h-partition-line { display: none !important; }
+          .h-grid::before { display: none !important; }
           .h-grid-right { padding-left: 0 !important; }
           .h-spacer { display: none !important; }
           .h-social { flex-direction: column !important; }
@@ -569,7 +571,6 @@ export function HeroSection() {
 
               <div className="h-info-pad" style={{padding:"24px 28px 22px"}}>
                 <div className="h-grid">
-                  <div className="h-partition-line" aria-hidden="true" />
 
                   {/* LEFT */}
                   <div style={{display:"flex",flexDirection:"column",gap:14}}>
