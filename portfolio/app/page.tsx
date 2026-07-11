@@ -7,6 +7,7 @@ import { DotDivider }      from "@/components/DotBackground";
 import { SkillsSection }   from "@/components/SkillsSection";
 import { ProjectsSection } from "@/components/ProjectsSection";
 import { EducationSection} from "@/components/EducationSection";
+import { CertificationsSection } from "@/components/CertificationsSection";
 import { ContactSection }  from "@/components/ContactSection";
 import { Footer }          from "@/components/Footer";
 import { ScrollFadeAndTop } from "@/components/ScrollFadeAndTop";
@@ -28,6 +29,8 @@ export default function Home() {
           <ProjectsSection />
           <DotDivider />
           <EducationSection />
+          <DotDivider />
+          <CertificationsSection />
           <DotDivider />
           <ContactSection />
           <Footer />

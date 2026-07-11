@@ -2,10 +2,7 @@
 import { useRef } from "react";
 import { motion, useInView } from "motion/react";
 import { useReveal } from "./useReveal";
-import { DotDivider } from "./DotBackground";
 import { SectionIcon, SectionTitleIcon } from "./SectionIcon";
-import { usePdfModal } from "./PdfViewerModal";
-import { slugify } from "@/lib/utils";
 
 const SF = "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', sans-serif";
 const MONO = "'Geist Mono', monospace";
@@ -36,56 +33,6 @@ const LANGUAGES = [
   { name: "ENGLISH" },
   { name: "MAITHILI" },
 ];
-
-// Each cert's PDF is auto-matched from its title:
-// "MERN Stack Development" -> /public/certificates/mern-stack-development.pdf
-// Just drop your PDFs into public/certificates/ using the slugified title as the filename.
-const CERTIFICATIONS = [
-  {
-    title: "MERN Stack Development",
-    issuer: "Coursera",
-    date: "2024",
-    logo: "https://cdn.simpleicons.org/coursera/2A73CC",
-    stack: [],
-  },
-  {
-    title: "Data Structures & Algorithms",
-    issuer: "GeeksforGeeks",
-    date: "2024",
-    logo: "https://cdn.simpleicons.org/geeksforgeeks/2F8D46",
-    stack: [],
-  },
-  {
-    title: "Principles of Generative AI",
-    issuer: "Coursera",
-    date: "2025",
-    logo: "https://cdn.simpleicons.org/coursera/2A73CC",
-    stack: [],
-  },
-  {
-    title: "Cloud Computing Fundamentals",
-    issuer: "Google Cloud",
-    date: "2025",
-    logo: "https://cdn.simpleicons.org/googlecloud/4285F4",
-    stack: [],
-  },
-  {
-    title: "Networking",
-    issuer: "Cisco",
-    date: "2026",
-    logo: "https://cdn.simpleicons.org/cisco/1BA0D7",
-    stack: [],
-  },
-  {
-    title: "Next Gen Technologies",
-    issuer: "Infosys Springboard",
-    date: "2025",
-    logo: "https://cdn.simpleicons.org/infosys/007CC3",
-    stack: [],
-  },
-];
-
-
 
 /* ── Language pill with skill-section-style highlight animation ── */
 function LangPill({ name, delay }: { name: string; delay: number }) {
@@ -139,8 +86,6 @@ function EduCard({ school, degree, short, period, index, sectionVisible }: {
 
 export function EducationSection() {
   const { ref, revealClass, visible } = useReveal();
-  const { ref: ref2, revealClass: revealClass2, visible: vis2 } = useReveal();
-  const { openPdf } = usePdfModal();
 
   return (
     <>
@@ -348,130 +293,6 @@ export function EducationSection() {
         }
         .lang-pill-dot { display: none; }
 
-        /* ── cert section ── */
-        .cert-count-badge {
-          font-family: ${MONO};
-          font-size: 10px;
-          color: var(--text-muted);
-          background: var(--tag-bg);
-          border: 1px solid var(--tag-border);
-          padding: 1px 6px;
-          border-radius: 4px;
-          margin-left: 8px;
-          vertical-align: middle;
-        }
-        .cert-logo-img {
-          width: 17px; height: 17px; object-fit: contain;
-        }
-        /* ── certifications grid — 2 columns on tablet/iPad/desktop,
-           1 column on mobile. grid-auto-flow:column fills a whole column
-           top-to-bottom before wrapping to the next one, so DOM order
-           stays visually stacked within each column — that's what lets
-           the connecting line below just chain consecutive DOM siblings
-           the same way it does in single-column mode. */
-        .cert-grid {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          grid-template-rows: repeat(3, auto);
-          grid-auto-flow: column;
-          column-gap: 40px;
-        }
-        /* Right column sits a bit further from the center gap. Uses
-           margin (not padding) so the icon AND its absolutely-positioned
-           connecting line — which is anchored to this box's own edge —
-           shift together; padding here would only have moved the icon,
-           leaving the line behind and visibly misaligned from it. */
-        .cert-grid > .cert-item-2:nth-child(n+4) { margin-left: 14px; }
-        /* Column 1's last card has no card visually below it in the
-           2-column layout (its next DOM sibling is the top of column 2) —
-           so its trailing connector line is hidden here only. */
-        .cert-grid > .cert-item-2:nth-child(3) > .cert-item-2-line { display: none; }
-        .cert-item-2 {
-          position: relative;
-          display: flex;
-          align-items: flex-start;
-          gap: 14px;
-          padding: 28px 0;
-        }
-        .cert-item-2:hover .edu-card-icon {
-          box-shadow: 0 3px 10px rgba(0,0,0,0.22);
-          transform: translateY(-1px);
-        }
-        .cert-item-2-line {
-          position: absolute;
-          left: 16px;
-          top: 62px;
-          bottom: -20px;
-          width: 2px;
-          background: linear-gradient(to bottom, var(--border), transparent);
-          z-index: 0;
-        }
-        .cert-item-2-body { flex: 1; min-width: 0; }
-        .cert-item-2-top {
-          display: flex;
-          align-items: flex-start;
-          justify-content: space-between;
-          gap: 12px;
-        }
-        /* Only the certificate name is clickable now — the card itself no
-           longer carries onClick/role/tabIndex. */
-        .cert-item-2-title {
-          display: inline-block;
-          font-size: 14.5px;
-          font-weight: 700;
-          color: var(--text-primary);
-          letter-spacing: -0.025em;
-          font-family: ${SF};
-          line-height: 1.2;
-          cursor: pointer;
-          background: none;
-          border: none;
-          padding: 0;
-          text-align: left;
-        }
-        .cert-item-2-title:hover { text-decoration: underline; text-underline-offset: 3px; }
-        .cert-item-2-title:focus-visible {
-          outline: 2px solid var(--text-muted);
-          outline-offset: 3px;
-          border-radius: 3px;
-        }
-        .cert-item-2-issuer {
-          font-size: 12.5px;
-          color: var(--text-secondary);
-          margin-top: 3px;
-          font-family: ${SF};
-        }
-        .cert-item-2-date {
-          font-size: 11px;
-          color: var(--text-muted);
-          font-family: ${MONO};
-          white-space: nowrap;
-          margin-left: 8px;
-          font-weight: 400;
-        }
-        .cert-tags-row {
-          display: flex;
-          flex-wrap: wrap;
-          gap: 7px;
-          margin-top: 10px;
-        }
-        .cert-tag-pill {
-          font-family: ${MONO};
-          font-size: 11px;
-          font-weight: 500;
-          color: var(--text-secondary);
-          background: var(--tag-bg);
-          border: 1px solid var(--tag-border);
-          padding: 3px 9px;
-          border-radius: 6px;
-          white-space: nowrap;
-          transition: color 0.15s, border-color 0.15s;
-        }
-        .cert-item-2:hover .cert-tag-pill {
-          color: var(--text-primary);
-          border-color: var(--text-muted);
-        }
-
         /* ── responsive ── */
         @media (max-width: 860px) {
           .edu-inner { padding: 0 22px 34px; }
@@ -481,15 +302,6 @@ export function EducationSection() {
           .edu-card-top { flex-direction: column; gap: 4px; }
           .edu-card-period { margin-left: 0; }
           .edu-sec-title { font-size: 22px; }
-        }
-        @media (max-width: 767px) {
-          .cert-grid {
-            grid-template-columns: 1fr;
-            grid-template-rows: repeat(${CERTIFICATIONS.length}, auto);
-            column-gap: 0;
-          }
-          .cert-grid > .cert-item-2:nth-child(n+4) { margin-left: 0; }
-          .cert-grid > .cert-item-2:nth-child(3) > .cert-item-2-line { display: block; }
         }
       `}</style>
 
@@ -530,82 +342,6 @@ export function EducationSection() {
                   <LangPill key={i} name={lang.name} delay={0.18 + i * 0.08} />
                 ))}
               </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <DotDivider />
-
-      {/* ═══ CERTIFICATIONS ═══ */}
-      <section
-        id="certifications"
-        ref={ref2}
-        className={revealClass2}
-      >
-        <div className="edu-outer">
-          <div className="edu-inner">
-            {/* Title row */}
-            <div className="edu-sec-titlerow">
-              <h2 className="edu-sec-title">
-                <SectionTitleIcon type="badge" />
-                Certifications
-                <span className="cert-count-badge">{CERTIFICATIONS.length}</span>
-              </h2>
-            </div>
-
-            <div className="edu-sec-divider" />
-
-            {/* Cert items — education-card layout: company icon, title, issuer/date.
-                Only the certificate name is clickable; the card itself is inert. */}
-            <div className="cert-grid">
-              {CERTIFICATIONS.map((cert, i) => {
-                const pdfSrc = `/certificates/${slugify(cert.title)}.pdf`;
-                return (
-                  <motion.div
-                    key={i}
-                    className="cert-item-2"
-                    initial={false}
-                    animate={vis2 ? { opacity: 1, y: 0, rotateX: 0 } : { opacity: 0, y: 14, rotateX: 6 }}
-                    transition={{ duration: 0.46, ease: [0.22, 1, 0.36, 1], delay: vis2 ? i * 0.08 : 0 }}
-                  >
-                    <div className="edu-card-icon">
-                      <img
-                        className="cert-logo-img"
-                        src={cert.logo}
-                        alt={cert.issuer}
-                        loading="lazy"
-                        onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
-                      />
-                    </div>
-                    {i < CERTIFICATIONS.length - 1 && <div className="cert-item-2-line" />}
-                    <div className="cert-item-2-body">
-                      <div className="cert-item-2-top">
-                        <div>
-                          <button
-                            type="button"
-                            className="cert-item-2-title"
-                            onClick={() => openPdf(pdfSrc, cert.title)}
-                          >
-                            {cert.title}
-                          </button>
-                          <p className="cert-item-2-issuer">
-                            @{cert.issuer}
-                            <span className="cert-item-2-date">{cert.date}</span>
-                          </p>
-                        </div>
-                      </div>
-                      {cert.stack.length > 0 && (
-                        <div className="cert-tags-row">
-                          {cert.stack.map((tag, ti) => (
-                            <span key={ti} className="cert-tag-pill">{tag}</span>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  </motion.div>
-                );
-              })}
             </div>
           </div>
         </div>
