@@ -567,7 +567,7 @@ export function HeroSection() {
         {/* ── INFO + SOCIAL ── */}
         <div className="h-info-wrap">
           <HoverBorderGradient>
-            <div className="h-info-box" style={{background:BG, border:B, borderRadius:8.5, overflow:"hidden"}}>
+            <div className="h-info-box" style={{background:BG, border:B, borderRadius:8.5, overflow:"visible"}}>
 
               <div className="h-info-pad" style={{padding:"24px 28px 22px"}}>
                 <div className="h-grid">
