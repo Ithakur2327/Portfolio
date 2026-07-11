@@ -256,7 +256,7 @@ export function HeroSection() {
         .h-grid::before {
           content: "";
           position: absolute;
-          top: -12px;
+          top: 0;
           bottom: 0;
           left: 50%;
           width: 1px;
@@ -332,7 +332,6 @@ export function HeroSection() {
           .h-grid {
             gap: 20px 80px !important;
           }
-          .h-grid::before { top: -12px !important; }
           /* Icon boxes bigger */
           .h-info-pad .h-grid > div > div > div:first-child,
           .h-info-pad .h-grid > div > a > div:first-child {
@@ -567,7 +566,7 @@ export function HeroSection() {
         {/* ── INFO + SOCIAL ── */}
         <div className="h-info-wrap">
           <HoverBorderGradient>
-            <div className="h-info-box" style={{background:BG, border:B, borderRadius:8.5, overflow:"visible"}}>
+            <div className="h-info-box" style={{background:BG, border:B, borderRadius:8.5, overflow:"hidden"}}>
 
               <div className="h-info-pad" style={{padding:"24px 28px 22px"}}>
                 <div className="h-grid">
