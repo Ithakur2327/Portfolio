@@ -364,12 +364,24 @@ export function EducationSection() {
           width: 17px; height: 17px; object-fit: contain;
         }
         /* ── certifications grid — 2 columns on tablet/iPad/desktop,
-           1 column on mobile ── */
+           1 column on mobile. grid-auto-flow:column fills a whole column
+           top-to-bottom before wrapping to the next one, so DOM order
+           stays visually stacked within each column — that's what lets
+           the connecting line below just chain consecutive DOM siblings
+           the same way it does in single-column mode. */
         .cert-grid {
           display: grid;
           grid-template-columns: 1fr 1fr;
+          grid-template-rows: repeat(3, auto);
+          grid-auto-flow: column;
           column-gap: 40px;
         }
+        /* Right column sits a bit further from the center gap. */
+        .cert-grid > .cert-item-2:nth-child(n+4) { padding-left: 14px; }
+        /* Column 1's last card has no card visually below it in the
+           2-column layout (its next DOM sibling is the top of column 2) —
+           so its trailing connector line is hidden here only. */
+        .cert-grid > .cert-item-2:nth-child(3) > .cert-item-2-line { display: none; }
         .cert-item-2 {
           position: relative;
           display: flex;
@@ -381,10 +393,15 @@ export function EducationSection() {
           box-shadow: 0 3px 10px rgba(0,0,0,0.22);
           transform: translateY(-1px);
         }
-        /* Connecting line only makes visual sense as a single-column
-           timeline — it's hidden in the 2-column grid and re-enabled in
-           the mobile media query below. */
-        .cert-item-2-line { display: none; }
+        .cert-item-2-line {
+          position: absolute;
+          left: 16px;
+          top: 62px;
+          bottom: -20px;
+          width: 2px;
+          background: linear-gradient(to bottom, var(--border), transparent);
+          z-index: 0;
+        }
         .cert-item-2-body { flex: 1; min-width: 0; }
         .cert-item-2-top {
           display: flex;
@@ -462,17 +479,13 @@ export function EducationSection() {
           .edu-sec-title { font-size: 22px; }
         }
         @media (max-width: 767px) {
-          .cert-grid { grid-template-columns: 1fr; column-gap: 0; }
-          .cert-item-2-line {
-            display: block;
-            position: absolute;
-            left: 16px;
-            top: 62px;
-            bottom: -20px;
-            width: 2px;
-            background: linear-gradient(to bottom, var(--border), transparent);
-            z-index: 0;
+          .cert-grid {
+            grid-template-columns: 1fr;
+            grid-template-rows: repeat(${CERTIFICATIONS.length}, auto);
+            column-gap: 0;
           }
+          .cert-grid > .cert-item-2:nth-child(n+4) { padding-left: 0; }
+          .cert-grid > .cert-item-2:nth-child(3) > .cert-item-2-line { display: block; }
         }
       `}</style>
 

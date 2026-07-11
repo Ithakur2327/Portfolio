@@ -164,11 +164,10 @@ function DonutChart({ easy, medium, hard, totalSolved, totalProblems, totalEasy,
 }
 
 // ── Portal tooltip — matches the navbar's theme-toggle tooltip style exactly ──
-function PortalTooltip({ hovered, accentColor, label, isDark }: {
+function PortalTooltip({ hovered, accentColor, label }: {
   hovered: HoveredCell | null;
   accentColor: string;
   label: string;
-  isDark: boolean;
 }) {
   const [mounted, setMounted] = useState(false);
   useEffect(() => { setMounted(true); }, []);
@@ -374,7 +373,7 @@ function LeetCodeStats({ username = "IThakur09" }: { username?: string }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
       {/* Portal tooltip — renders into body, no stacking context issues */}
-      <PortalTooltip hovered={hovered} accentColor={isDark ? "#FFA116" : "#C77600"} label="submissions" isDark={isDark} />
+      <PortalTooltip hovered={hovered} accentColor={isDark ? "#FFA116" : "#C77600"} label="submissions" />
 
       {/* Header */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10, flexWrap: "wrap", gap: 8 }}>
@@ -567,7 +566,7 @@ function GitHubGraph({ username = "Ithakur2327" }: { username?: string }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
       {/* Portal tooltip — renders into body */}
-      <PortalTooltip hovered={hovered} accentColor={isDark ? "#4ade80" : "#1a7f37"} label="contributions" isDark={isDark} />
+      <PortalTooltip hovered={hovered} accentColor={isDark ? "#4ade80" : "#1a7f37"} label="contributions" />
 
       {/* Header */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10, flexWrap: "wrap", gap: 8 }}>

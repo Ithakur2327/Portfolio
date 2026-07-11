@@ -458,6 +458,7 @@ export function HeroSection() {
             gap: 11px 0 !important;
           }
           .h-grid::before { display: none !important; }
+          .h-grid-right { padding-left: 0 !important; }
           .h-spacer { display: none !important; }
           .h-social { flex-direction: column !important; }
           .s-social-group {

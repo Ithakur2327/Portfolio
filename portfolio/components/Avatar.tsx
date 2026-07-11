@@ -25,14 +25,20 @@ export function Avatar() {
 
   useEffect(() => { isDarkRef.current = isDark; }, [isDark]);
 
-  // Force immediate re-render when theme changes (override idle throttle)
+  // Force a near-immediate re-render when theme changes (override idle
+  // throttle just long enough to guarantee one fresh frame at the new
+  // texture — NOT a long window. This used to hold full 60fps for 600ms,
+  // which on mobile meant the expensive per-pixel noise-warp shader (see
+  // FRAG below) ran unthrottled for ~36 frames right as the view
+  // transition was also compositing a full-page screenshot — that
+  // overlap was the actual "lag on theme change" bug. 120ms is plenty to
+  // land a couple of real frames at any refresh rate.
   useEffect(() => {
     const G = glRef.current;
     if (!G) return;
-    // Temporarily mark as active to bypass 2fps idle throttle
     const prevHover = G.state.hover;
     G.state.hover = true;
-    const t = setTimeout(() => { G.state.hover = prevHover; }, 600);
+    const t = setTimeout(() => { G.state.hover = prevHover; }, 120);
     return () => clearTimeout(t);
   }, [isDark]);
 
@@ -40,10 +46,19 @@ export function Avatar() {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const DPR  = Math.min(window.devicePixelRatio || 1, 3);
-    const SIZE = 768;
-    canvas.width  = SIZE * DPR;
-    canvas.height = SIZE * DPR;
+    // Size the backing store generously above the actual displayed size —
+    // this shader is a per-pixel noise/fbm warp, and under-sampling it
+    // (rendering close to 1:1 with the display size) makes the noise look
+    // visibly grainy/low-quality instead of the smooth, "8k-ish" look it's
+    // meant to have. We still avoid the old flat 768*DPR3 (~2300px) render
+    // for every avatar regardless of how small it's shown, but keep a
+    // generous supersampling floor so quality never visibly drops.
+    const DPR = Math.min(window.devicePixelRatio || 1, 3);
+    const rect0 = canvas.getBoundingClientRect();
+    const displayed = Math.round(Math.max(rect0.width, rect0.height)) || 300;
+    let SIZE = Math.min(1024, Math.max(560, displayed) * DPR);
+    canvas.width  = SIZE;
+    canvas.height = SIZE;
 
     const gl = canvas.getContext("webgl", {
       antialias: true,
@@ -311,10 +326,23 @@ export function Avatar() {
     canvas.addEventListener("mouseenter", onEnter);
     canvas.addEventListener("mouseleave", onLeave);
 
+    const ro = new ResizeObserver((entries) => {
+      const r = entries[0]?.contentRect;
+      if (!r) return;
+      const displayedNow = Math.round(Math.max(r.width, r.height));
+      const next = Math.min(1024, Math.max(560, displayedNow) * DPR);
+      if (Math.abs(next - SIZE) < 2) return; // ignore sub-pixel noise
+      SIZE = next;
+      canvas.width  = SIZE;
+      canvas.height = SIZE;
+    });
+    ro.observe(canvas);
+
     return () => {
       cancelAnimationFrame(G.raf);
       if (G.tid) clearTimeout(G.tid);
       io.disconnect();
+      ro.disconnect();
       document.removeEventListener("visibilitychange", onVisibilityChange);
       canvas.removeEventListener("mouseenter", onEnter);
       canvas.removeEventListener("mouseleave", onLeave);
