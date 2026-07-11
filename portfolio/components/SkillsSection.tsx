@@ -58,7 +58,7 @@ const LAMP_GROUPS = [
   { title: "FRONTEND",         glowColor: "#61DAFB", items: ["React.js", "Next.js", "Tailwind CSS", "HTML5", "CSS3", "shadcn/ui", "Framer Motion"] },
   { title: "BACKEND",          glowColor: "#339933", items: ["Node.js", "Express.js", "REST APIs", "FastAPI", "GraphQL"] },
   { title: "CLOUD & DEVOPS",   glowColor: "#FF9900", items: ["AWS", "Kubernetes", "Docker", "CI/CD", "Vercel"] },
-  { title: "GENAI / AI",       glowColor: "#10a37f", items: ["AI", "LangChain", "LangGraph", "RAG", "Vector DB"] },
+  { title: "GENAI / AI",       glowColor: "#10a37f", items: ["LangChain", "LangGraph", "RAG", "Vector DB"] },
   { title: "TOOLS & DATABASE", glowColor: "#47A248", items: ["MongoDB", "MySQL", "PostgreSQL", "Git", "GitHub", "Postman"] },
 ];
 
