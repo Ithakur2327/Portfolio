@@ -256,7 +256,7 @@ export function HeroSection() {
         .h-grid::before {
           content: "";
           position: absolute;
-          top: -24px;
+          top: -38px;
           bottom: 0;
           left: 50%;
           width: 1px;
@@ -332,7 +332,7 @@ export function HeroSection() {
           .h-grid {
             gap: 20px 80px !important;
           }
-          .h-grid::before { top: -28px !important; }
+          .h-grid::before { top: -38px !important; }
           /* Icon boxes bigger */
           .h-info-pad .h-grid > div > div > div:first-child,
           .h-info-pad .h-grid > div > a > div:first-child {
