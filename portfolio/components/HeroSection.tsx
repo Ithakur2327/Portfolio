@@ -242,28 +242,31 @@ export function HeroSection() {
           margin-right: auto;
         }
 
-        .h-info-pad {
-          position: static;
-        }
-
         /* ── Info grid ── */
+        .h-info-pad {
+          position: relative; /* anchors the vertical partition line below */
+        }
         .h-grid {
           display: grid;
           grid-template-columns: 1fr 1fr;
           gap: 16px 56px;
           position: relative;
         }
-        .h-grid::before {
+        /* Dashed vertical partition down the middle — anchored to
+           .h-info-pad (not .h-grid) so it spans the pad's full height:
+           flush against the info box's top border, and flush against the
+           social-icon row's top border at the bottom — instead of
+           stopping short at the grid's own inner content edges, which
+           left visible gaps top and bottom. Still never reaches into the
+           social-icon row itself, since it ends exactly at that border.
+           Purely decorative, never intercepts clicks. */
+        .h-info-pad::before {
           content: "";
           position: absolute;
-          top: 0;
-          bottom: 0;
-          left: 50%;
-          width: 1px;
+          top: 0; bottom: 0; left: 50%;
           transform: translateX(-50%);
-          background: var(--border);
+          border-left: 1px dashed var(--border);
           pointer-events: none;
-          z-index: 0;
         }
         /* Right column sits a touch further from that line than the raw
            grid gap alone would give it, matching the left column's own
@@ -416,7 +419,6 @@ export function HeroSection() {
 
         /* ── Mobile (< 600px) ── */
         @media (max-width: 600px) {
-          .h-grid::before { display: none !important; }
           .h-profile { flex-direction: row !important; }
 
           /* Bigger avatar than before */
@@ -461,7 +463,7 @@ export function HeroSection() {
             grid-template-columns: 1fr !important;
             gap: 11px 0 !important;
           }
-          .h-grid::before { display: none !important; }
+          .h-info-pad::before { display: none !important; }
           .h-grid-right { padding-left: 0 !important; }
           .h-spacer { display: none !important; }
           .h-social { flex-direction: column !important; }
