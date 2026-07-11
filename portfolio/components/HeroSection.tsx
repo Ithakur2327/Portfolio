@@ -242,6 +242,10 @@ export function HeroSection() {
           margin-right: auto;
         }
 
+        .h-info-pad {
+          position: static;
+        }
+
         /* ── Info grid ── */
         .h-grid {
           display: grid;
@@ -250,12 +254,8 @@ export function HeroSection() {
           position: relative;
         }
         /* Vertical partition down the middle — spans the full height
-           of the two info columns only (never the social-icon row below,
-           which lives outside .h-grid entirely), so it reads as one clean
-           line connecting the grid's own top and bottom edges. Purely
-           decorative, never intercepts clicks. Rendered as a real element
-           (not a pseudo-element) so it always paints reliably, centered
-           in the gap between the two columns. */
+           of the info panel (not the social row below). Only visible on
+           tablet/desktop, never on narrow mobile layouts. */
         .h-partition-line {
           position: absolute;
           top: 0; bottom: 0; left: 50%;

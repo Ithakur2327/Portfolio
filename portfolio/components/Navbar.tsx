@@ -22,6 +22,46 @@ const PORTFOLIO_LINKS = [
   { label: "Website",        href: "https://indreshthakur.dev",              icon: "website",  external: true,  type: "link"    },
 ];
 
+const SECTION_IDS = PORTFOLIO_LINKS.filter(i => i.type === "section" && i.href !== "#").map(i => i.href.slice(1));
+
+/* Tracks which section is currently in view so the nav / search can show
+   and navigate to the right "you are here" state instead of always
+   reading as Home. */
+function useActiveSection() {
+  const [active, setActive] = useState<string>("");
+
+  useEffect(() => {
+    const els = SECTION_IDS
+      .map(id => document.getElementById(id))
+      .filter((el): el is HTMLElement => !!el);
+    if (!els.length) return;
+
+    const io = new IntersectionObserver(
+      (entries) => {
+        // Pick the entry closest to the top of the "active band" among
+        // those currently intersecting it.
+        const visible = entries.filter(e => e.isIntersecting);
+        if (visible.length === 0) return;
+        const top = visible.reduce((a, b) =>
+          a.boundingClientRect.top < b.boundingClientRect.top ? a : b
+        );
+        setActive(top.target.id);
+      },
+      { rootMargin: "-15% 0px -70% 0px", threshold: [0, 1] }
+    );
+    els.forEach(el => io.observe(el));
+
+    const onScroll = () => {
+      if (window.scrollY < 60) setActive("");
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+
+    return () => { io.disconnect(); window.removeEventListener("scroll", onScroll); };
+  }, []);
+
+  return active;
+}
+
 // Icon set moved to the shared SectionIcon component so section titles can
 // reuse the exact same icons shown here in the command menu / search list.
 function MenuItemIcon({ type, color }: { type: string; color: string }) {
@@ -108,11 +148,12 @@ function NavTooltip({ children, label, kbd }: { children: React.ReactNode; label
    COMMAND MENU
 ────────────────────────────────────────────── */
 function CommandMenu({
-  open, onClose, isDark, triggerRef, openPdf,
+  open, onClose, isDark, triggerRef, openPdf, activeSection,
 }: {
   open: boolean; onClose: () => void; isDark: boolean;
   triggerRef: React.RefObject<HTMLButtonElement | null>;
   openPdf: (src: string, title: string, dl?: string) => void;
+  activeSection: string;
 }) {
   const [query,    setQuery]    = useState("");
   const [selected, setSelected] = useState(0);
@@ -141,7 +182,10 @@ function CommandMenu({
     if (open) {
       setVisible(true);
       setQuery("");
-      setSelected(0);
+      const startIdx = PORTFOLIO_LINKS.findIndex(i =>
+        i.type === "section" && (i.href === "#" ? activeSection === "" : activeSection === i.href.slice(1))
+      );
+      setSelected(startIdx >= 0 ? startIdx : 0);
       // Desktop: auto-focus; Mobile: user taps to focus
       const isMobile = window.matchMedia("(hover: none)").matches;
       if (!isMobile) requestAnimationFrame(() => inputRef.current?.focus());
@@ -149,7 +193,7 @@ function CommandMenu({
       const t = setTimeout(() => setVisible(false), 200);
       return () => clearTimeout(t);
     }
-  }, [open]);
+  }, [open, activeSection]);
 
   useEffect(() => {
     if (!open) return;
@@ -158,15 +202,22 @@ function CommandMenu({
       if (e.key === "ArrowDown") { e.preventDefault(); setSelected(s => Math.min(s + 1, filtered.length - 1)); }
       if (e.key === "ArrowUp")   { e.preventDefault(); setSelected(s => Math.max(s - 1, 0)); }
       if (e.key === "Enter" && filtered[selected]) {
-        const href = filtered[selected].href;
-        if (href === "#") window.scrollTo({ top: 0, behavior: "smooth" });
-        else document.querySelector(href)?.scrollIntoView({ behavior: "smooth" });
+        const item = filtered[selected];
+        if (item.type === "pdf") { openPdf(item.href, item.label, item.href); onClose(); return; }
+        if (item.external) { window.open(item.href, "_blank", "noopener,noreferrer"); onClose(); return; }
         onClose();
+        setTimeout(() => {
+          if (item.href === "#") { window.scrollTo({ top: 0, behavior: "smooth" }); return; }
+          const el = document.querySelector<HTMLElement>(item.href);
+          if (!el) return;
+          const top = el.getBoundingClientRect().top + window.scrollY - 64;
+          window.scrollTo({ top, behavior: "smooth" });
+        }, 60);
       }
     };
     window.addEventListener("keydown", fn);
     return () => window.removeEventListener("keydown", fn);
-  }, [open, filtered, selected, onClose]);
+  }, [open, filtered, selected, onClose, openPdf]);
 
   useEffect(() => { setSelected(0); }, [query]);
 
@@ -196,17 +247,35 @@ function CommandMenu({
   const handleItemClick = (item: typeof PORTFOLIO_LINKS[0]) => {
     if (item.type === "pdf") {
       openPdf(item.href, item.label, item.href);
-    } else if (item.external) {
+      onClose();
+      return;
+    }
+    if (item.external) {
       window.open(item.href, "_blank", "noopener,noreferrer");
-    } else {
-      if (item.href === "#") window.scrollTo({ top: 0, behavior: "smooth" });
-      else document.querySelector(item.href)?.scrollIntoView({ behavior: "smooth" });
+      onClose();
+      return;
     }
     onClose();
+    // Wait for the overlay/panel to finish its close animation (it's a
+    // fixed, full-screen element) before scrolling, so the smooth-scroll
+    // isn't started while a fixed layer still sits over the page.
+    setTimeout(() => {
+      if (item.href === "#") {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+        return;
+      }
+      const el = document.querySelector<HTMLElement>(item.href);
+      if (!el) return;
+      const navOffset = 64; // matches html { scroll-padding-top: 64px }
+      const top = el.getBoundingClientRect().top + window.scrollY - navOffset;
+      window.scrollTo({ top, behavior: "smooth" });
+    }, 60);
   };
 
   const renderItem = (item: typeof PORTFOLIO_LINKS[0], flatIdx: number) => {
     const isActive = flatIdx === selected;
+    const isCurrent = item.type === "section" &&
+      (item.href === "#" ? activeSection === "" : activeSection === item.href.slice(1));
     return (
       <div
         key={item.href + item.label}
@@ -223,10 +292,11 @@ function CommandMenu({
       >
         <div style={{
           width: 26, height: 26, borderRadius: 6,
-          background: iconBg, border: `1px solid ${border}`,
+          background: isCurrent ? "#4ade8022" : iconBg,
+          border: `1px solid ${isCurrent ? "#4ade8070" : border}`,
           display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
         }}>
-          <MenuItemIcon type={item.icon} color={isActive ? fg : muted} />
+          <MenuItemIcon type={item.icon} color={isCurrent ? "#4ade80" : isActive ? fg : muted} />
         </div>
         <span style={{
           flex: 1, fontSize: 14, fontWeight: 500,
@@ -242,6 +312,7 @@ function CommandMenu({
           </svg>
         )}
       </div>
+
     );
   };
 
@@ -356,6 +427,7 @@ export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [cmdOpen,  setCmdOpen]  = useState(false);
   const triggerRef = useRef<HTMLButtonElement>(null);
+  const activeSection = useActiveSection();
 
   useEffect(() => { setMounted(true); }, []);
 
@@ -447,6 +519,7 @@ export function Navbar() {
           cursor:pointer;background:none;border:none;
         }
         .nav-desktop-link:hover { color:var(--nav-link-hover); }
+        .nav-desktop-link.active { color:var(--nav-link-hover); }
 
         .nav-sep { width:1px;height:20px;align-self:center;background:var(--nav-border);flex-shrink:0; }
 
@@ -521,8 +594,8 @@ export function Navbar() {
           <div style={{ display: "flex", alignItems: "center", gap: 2 }}>
 
             <nav className="nav-desktop-only" style={{ display: "flex", alignItems: "center", gap: 16, marginRight: 4 }}>
-              <a href="#" className="nav-desktop-link">Home</a>
-              <a href="#projects" className="nav-desktop-link">Projects</a>
+              <a href="#" className={`nav-desktop-link${activeSection === "" ? " active" : ""}`}>Home</a>
+              <a href="#projects" className={`nav-desktop-link${activeSection === "projects" ? " active" : ""}`}>Projects</a>
             </nav>
 
             <span className="nav-sep nav-desktop-only" style={{ margin: "0 6px" }}/>
@@ -550,6 +623,7 @@ export function Navbar() {
           isDark={isDark}
           triggerRef={triggerRef}
           openPdf={openPdf}
+          activeSection={activeSection}
         />
       )}
     </>
