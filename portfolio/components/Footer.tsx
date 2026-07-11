@@ -359,12 +359,11 @@ export function Footer() {
             left: 50%;
             margin-left: -50vw;
             width: 100vw;
-            margin-top: -22px;
+            margin-top: -10px;
           }
           /* A little more top breathing room so the copyright row doesn't
-             sit flush against the section's top edge, and more room below
-             it so the divider line reads clearly separated from the text. */
-          .footer-bottom-band { padding: 40px 32px 34px; }
+             sit flush against the section's top edge. */
+          .footer-bottom-band { padding: 40px 32px 18px; }
         }
       `}</style>
 
