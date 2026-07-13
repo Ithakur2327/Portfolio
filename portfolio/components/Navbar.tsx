@@ -449,6 +449,11 @@ export function Navbar() {
 
   const handleTheme = useCallback(() => {
     const next = !isDark;
+    try {
+      if (typeof navigator !== "undefined" && navigator.vibrate) {
+        navigator.vibrate(next ? [30, 10, 15] : [15, 8, 30]);
+      }
+    } catch {}
     playThemeToggleSound(next);
     setTheme(next ? "dark" : "light");
   }, [isDark, setTheme]);

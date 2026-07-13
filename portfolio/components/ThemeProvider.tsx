@@ -21,9 +21,6 @@ export function useTheme() {
   return {
     theme: (resolvedTheme ?? "dark") as Theme,
     setTheme: (t: Theme) => {
-      if (typeof navigator !== "undefined" && navigator.vibrate) {
-        navigator.vibrate(t === "dark" ? [30, 10, 15] : [15, 8, 30]);
-      }
       const switchTheme = () => setTheme(t);
       // Matches chanhdai's own theme-toggle-effect demo exactly: just call
       // startViewTransition directly, nothing else. No "pause every

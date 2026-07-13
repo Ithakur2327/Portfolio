@@ -122,6 +122,23 @@ export function playTickSound(audioCtx: AudioContext, pitch = 1.0): void {
  * with a subtle pitch shift for dark vs light feel.
  */
 export function playThemeToggleSound(isDark: boolean): void {
-  // Use the click-soft clip at different rates for dark/light feel
-  void playB64(CLICK_SOFT_URI, 0.45, isDark ? 0.88 : 1.18);
+  try {
+    const ctx = getCtx();
+    const now = ctx.currentTime;
+
+    // short click with slight pitch difference for dark/light
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = "sine";
+    osc.frequency.setValueAtTime(isDark ? 520 : 720, now);
+
+    gain.gain.setValueAtTime(0.0, now);
+    gain.gain.linearRampToValueAtTime(0.36, now + 0.006);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.12);
+
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(now);
+    osc.stop(now + 0.14);
+  } catch { /* silent fail */ }
 }
