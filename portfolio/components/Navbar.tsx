@@ -506,7 +506,8 @@ export function Navbar() {
           -webkit-tap-highlight-color:transparent;
         }
         .cmdk-trigger:hover { color:var(--nav-link-hover);background:var(--nav-link-active-bg); }
-        @media (min-width:640px) { .cmdk-trigger-label { display:none !important; } }
+        /* Show the search label on mobile + tablets; hide only on large desktops */
+        @media (min-width:1181px) { .cmdk-trigger-label { display:none !important; } }
         /* Hide the keyboard shortcut hint on tablets and smaller (show only on large desktops) */
         @media (max-width:1180px) { .cmdk-trigger-kbd   { display:none !important; } }
         .cmdk-trigger-kbd { display:flex;align-items:center;gap:3px; }
@@ -566,7 +567,8 @@ export function Navbar() {
           border-bottom:5px solid var(--text-primary);
         }
 
-        @media (max-width:639px) { .nav-desktop-only { display:none !important; } }
+        /* Treat tablets and smaller like mobile: hide desktop-only nav links */
+        @media (max-width:1180px) { .nav-desktop-only { display:none !important; } }
       `}</style>
 
       <header className={`nav-root${scrolled ? " scrolled" : ""}`}>
