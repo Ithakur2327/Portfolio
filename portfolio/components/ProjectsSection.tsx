@@ -531,7 +531,7 @@ function ProjectCard({ proj, index, visible, onOpen }: {
   );
 }
 
-/* ── Section ── */
+
 export function ProjectsSection() {
   const { ref: revealRef, revealClass, visible } = useReveal();
   const [unlocked, setUnlocked] = useState(false);
