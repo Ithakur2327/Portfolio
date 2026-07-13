@@ -18,7 +18,7 @@ const PORTFOLIO_LINKS = [
   { label: "Certifications", href: "#certifications",                         icon: "badge",    external: false, type: "section" },
   { label: "Contact",        href: "#contact",                                icon: "mail",     external: false, type: "section" },
   { label: "GitHub",         href: "https://github.com/Ithakur2327",          icon: "github",   external: true,  type: "link"    },
-  { label: "LeetCode",       href: "https://leetcode.com/u/indreshthakur/",  icon: "leetcode", external: true,  type: "link"    },
+  { label: "LeetCode",       href: "https://leetcode.com/IThakur09/",         icon: "leetcode", external: true,  type: "link"    },
   { label: "Website",        href: "https://indreshthakur.dev",              icon: "website",  external: true,  type: "link"    },
 ];
 

@@ -341,7 +341,7 @@ export function Footer() {
           }
           /* Bigger on desktop — same width as the content column, more
              presence height-wise. */
-          .fgt-svg { height: clamp(72px, 18vw, 260px); }
+          .fgt-svg { height: clamp(84px, 18vw, 260px); }
           /* The divider still needs to read as full-bleed like every other
              section divider on the site, even though its parent (.fgt-outer)
              is now intentionally width-capped to match the text above it.
@@ -351,6 +351,7 @@ export function Footer() {
             left: 50%;
             margin-left: -50vw;
             width: 100vw;
+            margin-top: -4px;
           }
           /* A little more top breathing room so the copyright row doesn't
              sit flush against the section's top edge. */
