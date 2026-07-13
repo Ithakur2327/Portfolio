@@ -332,8 +332,8 @@ export function Footer() {
             position: static;
             left: auto;
             width: 100%;
-            max-width: 1060px;
-            margin-top: clamp(20px, 3vw, 44px);
+            max-width: 1140px;
+            margin-top: clamp(10px, 2vw, 28px);
             margin-left: auto;
             margin-right: auto;
             padding: 0 32px;
@@ -351,11 +351,9 @@ export function Footer() {
             left: 50%;
             margin-left: -50vw;
             width: 100vw;
-            margin-top: -4px;
+            margin-top: -10px;
           }
-          /* A little more top breathing room so the copyright row doesn't
-             sit flush against the section's top edge. */
-          .footer-bottom-band { padding: 30px 32px 18px; }
+          .footer-bottom-band { padding: 24px 32px 18px; }
         }
       `}</style>
 
