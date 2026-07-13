@@ -507,7 +507,8 @@ export function Navbar() {
         }
         .cmdk-trigger:hover { color:var(--nav-link-hover);background:var(--nav-link-active-bg); }
         @media (min-width:640px) { .cmdk-trigger-label { display:none !important; } }
-        @media (max-width:639px) { .cmdk-trigger-kbd   { display:none !important; } }
+        /* Hide the keyboard shortcut hint on tablets and smaller (show only on large desktops) */
+        @media (max-width:1180px) { .cmdk-trigger-kbd   { display:none !important; } }
         .cmdk-trigger-kbd { display:flex;align-items:center;gap:3px; }
 
         /* Desktop nav links */

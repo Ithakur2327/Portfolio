@@ -786,7 +786,7 @@ export function StatsSection() {
           .about-content  { padding: 0 14px 28px; }
           .stat-card-3d   { width: 100% !important; min-width: 0 !important; }
         }
-        @media (max-width: 1024px) {
+        @media (max-width: 600px) {
           .lc-body-desktop { display: none !important; }
           .lc-body-mobile  { display: flex !important; }
         }
