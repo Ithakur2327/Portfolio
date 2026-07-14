@@ -694,12 +694,12 @@ export function StatsSection() {
         html.light .gh-cell-1 { background: #fac68f; }
         html.light .gh-cell-2 { background: #c46212; }
         html.light .gh-cell-3 { background: #984b10; }
-        html.light .gh-cell-4 { background: #7419dc; }
+        html.light .gh-cell-4 { background: #000000; }
         html.light .lc-cell-0 { background: #e8eaec; outline: 1px solid rgba(0,0,0,0.08); outline-offset: -1px; }
         html.light .lc-cell-1 { background: #fac68f; }
         html.light .lc-cell-2 { background: #c46212; }
         html.light .lc-cell-3 { background: #984b10; }
-        html.light .lc-cell-4 { background: #7419dc; }
+        html.light .lc-cell-4 { background: #000000; }
 
         /* Stats panels — no box, content sits directly on black background */
         .stat-card-3d {
