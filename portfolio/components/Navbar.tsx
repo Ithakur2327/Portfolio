@@ -532,7 +532,7 @@ export function Navbar() {
 
         /* Icon button */
         .icon-btn {
-          display:inline-flex;align-items:center;justify-content:center;
+          display:grid;place-items:center;
           width:34px;height:34px;border-radius:8px;border:none;
           background:transparent;color:var(--nav-link-color);
           cursor:pointer;touch-action:manipulation;
@@ -542,9 +542,24 @@ export function Navbar() {
           padding:0;
           line-height:1;
           vertical-align:middle;
+          position:relative;
         }
+        .icon-btn > * { display:block; }
         .icon-btn:hover  { background:var(--nav-link-active-bg);color:var(--nav-link-hover); }
         .icon-btn:active { transform:scale(0.95); }
+
+        @media (max-width:639px) {
+          .icon-btn {
+            width:30px;height:30px;border-radius:0;
+            background:transparent !important;
+          }
+          .icon-btn:hover,
+          .icon-btn:active {
+            background:transparent !important;
+            color:var(--nav-link-color);
+            transform:none;
+          }
+        }
 
         /* Tooltip — desktop/mouse pointer only */
         .nav-tooltip-box {

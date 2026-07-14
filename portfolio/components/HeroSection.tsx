@@ -553,7 +553,7 @@ export function HeroSection() {
               <div style={{flex:1}}/>
               <div style={{padding:"28px 20px 0", marginBottom:"-3px"}}>
                 <h1 style={{
-                  fontSize:"clamp(24px,3.8vw,36px)", fontWeight:800,
+                  fontSize:"clamp(24px,3.8vw,36px)", fontWeight:900,
                   letterSpacing:"0.02em", color:"var(--text-primary)",
                   lineHeight:1, margin:0,
                   fontFamily:"'Geist Pixel Square','Geist Mono',monospace", display:"inline-block",
