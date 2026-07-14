@@ -391,7 +391,7 @@ export function HeroSection() {
             border-radius: 18px !important;
           }
           .h-nameblock h1 {
-            font-size: clamp(18px, 3vw, 25px) !important;
+            font-size: clamp(26px, 5.2vw, 42px) !important;
             font-weight: 800 !important;
             line-height: 1 !important;
           }
