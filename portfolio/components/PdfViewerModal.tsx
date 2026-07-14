@@ -29,7 +29,7 @@ export function PdfModalProvider({ children }: { children: React.ReactNode }) {
   const [isMobile, setIsMobile] = useState(false);
   const [origin, setOrigin] = useState("");
 
-  // Detect mobile & grab origin client-side only (avoids SSR mismatch)
+  // Detect mobile layout on the client.
   useEffect(() => {
     setIsMobile(window.innerWidth <= 768);
     setOrigin(window.location.origin);
@@ -57,9 +57,7 @@ export function PdfModalProvider({ children }: { children: React.ReactNode }) {
     };
   }, [modal, close]);
 
-  // Build the correct iframe src:
-  // - Desktop: direct PDF with toolbar
-  // - Mobile: Google Docs Viewer — renders PDF in any browser including iOS Safari
+  // Choose the right PDF viewer for each device.
   function getPdfSrc(src: string) {
     if (!isMobile) return `${src}#toolbar=1&navpanes=0&scrollbar=1&view=FitH`;
     const fullUrl = src.startsWith("http") ? src : `${origin}${src}`;

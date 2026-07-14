@@ -2,13 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 
-/**
- * SectionIcon — the exact icon set used in the navbar's command-menu
- * (search) list, extracted into one shared component so every section
- * title can render the same icon that represents it in search.
- *
- * Keep this in sync with the `icon` field on PORTFOLIO_LINKS in Navbar.tsx.
- */
+/** Shared section icons used across the site. */
 export type SectionIconType =
   | "home" | "about" | "chart" | "layers" | "box"
   | "badge" | "book" | "mail" | "resume" | "github"
@@ -64,9 +58,7 @@ export function SectionIcon({
   }
 }
 
-/** Shared flat icon box used next to every section title — same size and
- * background treatment everywhere so all sections match (no 3D/embossed effect).
- * Pops in once the first time it scrolls into view, and pops again on hover. */
+/** Shared icon badge for section titles. */
 export function SectionTitleIcon({ type }: { type: SectionIconType }) {
   const ref = useRef<HTMLSpanElement>(null);
   const [popped, setPopped] = useState(false);
@@ -112,7 +104,7 @@ export function SectionTitleIcon({ type }: { type: SectionIconType }) {
   );
 }
 
-/** Small static gold dot placed to the right of a section title. No animation. */
+/** Small section marker dot. */
 export function GoldDot() {
   return (
     <span

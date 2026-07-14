@@ -18,7 +18,7 @@ function FluidGradientText({ text }: { text: string }) {
   const { theme } = useTheme();
   const isDark = theme === "dark";
 
-  // ── shared fill logic ──
+  // Shared fill logic
   const triggerFill = (relX: number) => {
     mouseXRaw.jump(relX * VW);
     animate(hollowOpacity, 0, { duration: 0.22, ease: "easeOut" });
@@ -26,13 +26,13 @@ function FluidGradientText({ text }: { text: string }) {
     animate(sweepOpacity,  1, { duration: 0.22, ease: "easeOut" });
   };
   const triggerDrain = () => {
-    // water drain — sweep vanishes first, fill drains with accelerating easeIn
+    // Drain the fill smoothly
     animate(sweepOpacity,  0, { duration: 0.30, ease: [0.4, 0, 1, 1] });
     animate(fillOpacity,   0, { duration: 0.60, ease: [0.4, 0, 1, 1] });
     animate(hollowOpacity, 1, { duration: 0.60, ease: "easeIn", delay: 0.12 });
   };
 
-  // ── Mouse (desktop) ──
+  // Mouse interactions
   const handleMouseEnter = (e: React.MouseEvent<HTMLDivElement>) => {
     const r = e.currentTarget.getBoundingClientRect();
     triggerFill((e.clientX - r.left) / r.width);
@@ -43,7 +43,7 @@ function FluidGradientText({ text }: { text: string }) {
   };
   const handleMouseLeave = () => triggerDrain();
 
-  // ── Touch (mobile) — tap to fill, tap-off/touchend to drain ──
+  // Touch interactions
   const handleTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
     e.preventDefault(); // stops browser text-selection on long-press
     const r = e.currentTarget.getBoundingClientRect();
@@ -57,7 +57,7 @@ function FluidGradientText({ text }: { text: string }) {
   };
   const handleTouchEnd = () => triggerDrain();
 
-  // ── Colors from reference image — teal palette ──
+  // Theme colors
   const strokeColor  = isDark ? "#00c8a8" : "#7c3aed";
 
   // Dark: exact same stop structure as light (0%, 45%, 100%) just teal instead of purple
@@ -77,12 +77,7 @@ function FluidGradientText({ text }: { text: string }) {
 
   const tl = VW * 0.945;
 
-  // On narrow screens the container's aspect ratio is wider than the SVG
-  // viewBox's (3840:600 ≈ 6.4:1) — with the default "meet" scaling that
-  // leaves empty letterbox gaps on left/right instead of filling the
-  // width, which is exactly the "not full width on mobile" bug. Only on
-  // mobile we switch to "none" so the art stretches to fill the box
-  // completely; desktop keeps its normal aspect-preserving behavior.
+  // Stretch the art to fill the box on small screens.
   const [isMobile, setIsMobile] = React.useState(false);
   React.useEffect(() => {
     const mq = window.matchMedia("(max-width: 640px)");

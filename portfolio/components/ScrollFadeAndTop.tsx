@@ -10,16 +10,7 @@ function ArrowUpIcon() {
   );
 }
 
-/**
- * ScrollFadeAndTop — bottom-of-screen fade/blur strip + a bottom-right
- * "scroll to top" arrow button, styled after chanhdai.com's pattern:
- *  - the fade sits fixed at the bottom edge of the viewport
- *  - the arrow appears after scrolling past a threshold, dims while
- *    actively scrolling down, and brightens on scroll-up / hover
- *  - both are only shown while scrolling through the page content —
- *    once the footer itself scrolls into view, they disappear so they
- *    never sit on top of the footer.
- */
+/** Bottom fade and scroll-to-top helper. */
 export function ScrollFadeAndTop() {
   const [scrolledPast, setScrolledPast] = useState(false);
   const [dimmed, setDimmed] = useState(false);

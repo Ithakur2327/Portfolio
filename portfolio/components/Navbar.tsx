@@ -24,9 +24,6 @@ const PORTFOLIO_LINKS = [
 
 const SECTION_IDS = PORTFOLIO_LINKS.filter(i => i.type === "section" && i.href !== "#").map(i => i.href.slice(1));
 
-/* Tracks which section is currently in view so the nav / search can show
-   and navigate to the right "you are here" state instead of always
-   reading as Home. */
 function useActiveSection() {
   const [active, setActive] = useState<string>("");
 
@@ -62,8 +59,6 @@ function useActiveSection() {
   return active;
 }
 
-// Icon set moved to the shared SectionIcon component so section titles can
-// reuse the exact same icons shown here in the command menu / search list.
 function MenuItemIcon({ type, color }: { type: string; color: string }) {
   return <SectionIcon type={type as SectionIconType} size={14} color={color} strokeWidth={2} />;
 }
@@ -80,7 +75,6 @@ function Kbd({ children, style: s }: { children: React.ReactNode; style?: React.
   return <kbd className="nav-kbd" style={s}>{children}</kbd>;
 }
 
-/* ── Moon ── */
 const moonVariants: Variants = { normal: { rotate: 0 }, animate: { rotate: [0, -10, 10, -5, 5, 0] } };
 const moonTransition: Transition = { duration: 1.2, ease: "easeInOut" };
 function MoonIconAnimated({ size = 16 }: { size?: number }) {
@@ -94,7 +88,6 @@ function MoonIconAnimated({ size = 16 }: { size?: number }) {
   );
 }
 
-/* ── Sun ── */
 const sunPathVariants: Variants = {
   normal: { opacity: 1 },
   animate: (i: number) => ({ opacity: [0, 1], transition: { delay: i * 0.1, duration: 0.3 } }),
@@ -112,7 +105,6 @@ function SunIconAnimated({ size = 16 }: { size?: number }) {
   );
 }
 
-/* ── Tooltip — desktop/mouse only ── */
 function NavTooltip({ children, label, kbd }: { children: React.ReactNode; label: string; kbd?: string }) {
   const [show, setShow] = useState(false);
   const timer    = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -144,9 +136,6 @@ function NavTooltip({ children, label, kbd }: { children: React.ReactNode; label
   );
 }
 
-/* ──────────────────────────────────────────────
-   COMMAND MENU
-────────────────────────────────────────────── */
 function CommandMenu({
   open, onClose, isDark, triggerRef, openPdf, activeSection,
 }: {
@@ -166,11 +155,9 @@ function CommandMenu({
     ? PORTFOLIO_LINKS.filter(i => i.label.toLowerCase().includes(query.toLowerCase()))
     : PORTFOLIO_LINKS;
 
-  /* Position panel below the search trigger, nudged slightly left on desktop */
   useEffect(() => {
     if (!open || !triggerRef.current) return;
     const rect = triggerRef.current.getBoundingClientRect();
-    // Center of trigger, clamped so panel doesn't go off-screen
     const panelW = Math.min(480, window.innerWidth - 32);
     const desktopShift = window.innerWidth >= 640 ? 56 : 0;
     let left = rect.left + rect.width / 2 - panelW / 2 - desktopShift;
@@ -186,7 +173,6 @@ function CommandMenu({
         i.type === "section" && (i.href === "#" ? activeSection === "" : activeSection === i.href.slice(1))
       );
       setSelected(startIdx >= 0 ? startIdx : 0);
-      // Desktop: auto-focus; Mobile: user taps to focus
       const isMobile = window.matchMedia("(hover: none)").matches;
       if (!isMobile) requestAnimationFrame(() => inputRef.current?.focus());
     } else {
@@ -241,7 +227,6 @@ function CommandMenu({
   const sectionItems = filtered.filter(i => i.type === "section");
   const linkItems    = filtered.filter(i => i.type !== "section");
 
-  // flat list for keyboard nav (sections first, then links)
   const flatFiltered = [...sectionItems, ...linkItems];
 
   const handleItemClick = (item: typeof PORTFOLIO_LINKS[0]) => {
@@ -256,9 +241,6 @@ function CommandMenu({
       return;
     }
     onClose();
-    // Wait for the overlay/panel to finish its close animation (it's a
-    // fixed, full-screen element) before scrolling, so the smooth-scroll
-    // isn't started while a fixed layer still sits over the page.
     setTimeout(() => {
       if (item.href === "#") {
         window.scrollTo({ top: 0, behavior: "smooth" });
@@ -336,7 +318,6 @@ function CommandMenu({
         }}
         role="dialog" aria-label="Command palette"
       >
-        {/* Search input */}
         <div style={{ display: "flex", alignItems: "center", gap: 8, height: 48, padding: "0 12px", flexShrink: 0 }}>
           <span style={{ color: muted, display: "flex", flexShrink: 0 }}><SearchIcon size={18} /></span>
           <input
@@ -351,7 +332,6 @@ function CommandMenu({
           />
         </div>
 
-        {/* Results */}
         <div ref={listRef} style={{
           borderRadius: 10, background: rowBg, border: `1px solid ${border}`,
           overflow: "hidden", display: "flex", flexDirection: "column",
@@ -361,7 +341,6 @@ function CommandMenu({
               <div style={{ padding: "20px 12px", textAlign: "center", color: muted, fontSize: 13 }}>No results found.</div>
             ) : (
               <>
-                {/* Sections group */}
                 {sectionItems.filter(i => filtered.includes(i)).length > 0 && (
                   <>
                     <div style={{ padding: "4px 14px 5px", fontSize: 10.5, fontWeight: 700, color: muted, letterSpacing: "0.06em", textTransform: "uppercase", fontFamily: "-apple-system,sans-serif" }}>
@@ -370,7 +349,6 @@ function CommandMenu({
                     {sectionItems.filter(i => filtered.includes(i)).map(item => renderItem(item, flatFiltered.indexOf(item)))}
                   </>
                 )}
-                {/* Links group */}
                 {linkItems.filter(i => filtered.includes(i)).length > 0 && (
                   <>
                     <div style={{ padding: "8px 14px 5px", fontSize: 10.5, fontWeight: 700, color: muted, letterSpacing: "0.06em", textTransform: "uppercase", fontFamily: "-apple-system,sans-serif" }}>
@@ -384,13 +362,10 @@ function CommandMenu({
           </div>
         </div>
 
-        {/* Footer — <I> left, arrow only right */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", height: 38, padding: "0 8px 0 6px", flexShrink: 0 }}>
-          {/* <I> brand mark */}
           <span style={{ fontSize: 13, fontWeight: 700, color: muted, fontFamily: "-apple-system,'SF Pro Display',sans-serif", letterSpacing: "-0.02em", userSelect: "none" }}>
             &lt;I&gt;
           </span>
-          {/* Arrow only */}
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={muted} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <polyline points="9 10 4 15 9 20"/><path d="M20 4v7a4 4 0 0 1-4 4H4"/>
           </svg>
@@ -403,7 +378,6 @@ function CommandMenu({
 
 
 
-/* ── Command trigger ── */
 function CommandMenuTrigger({ onClick, btnRef }: { onClick: () => void; btnRef: React.RefObject<HTMLButtonElement | null> }) {
   return (
     <button ref={btnRef} onClick={onClick} aria-label="Open command menu" className="cmdk-trigger">
@@ -417,9 +391,6 @@ function CommandMenuTrigger({ onClick, btnRef }: { onClick: () => void; btnRef: 
   );
 }
 
-/* ──────────────────────────────────────────────
-   MAIN NAVBAR
-────────────────────────────────────────────── */
 export function Navbar() {
   const { theme, setTheme } = useTheme();
   const { openPdf } = usePdfModal();
@@ -594,7 +565,6 @@ export function Navbar() {
       <header className={`nav-root${scrolled ? " scrolled" : ""}`}>
         <div className="nav-inner">
 
-          {/* Logo */}
           <a href="#" aria-label="Home" style={{ display: "flex", alignItems: "center", textDecoration: "none" }}>
             <div className="logo-area">
               <div className={`logo-i${scrolled ? " hide" : ""}`}>&lt;I&gt;</div>
@@ -613,7 +583,6 @@ export function Navbar() {
             </div>
           </a>
 
-          {/* Right */}
           <div style={{ display: "flex", alignItems: "center", gap: 2 }}>
 
             <nav className="nav-desktop-only" style={{ display: "flex", alignItems: "center", gap: 16, marginRight: 4 }}>

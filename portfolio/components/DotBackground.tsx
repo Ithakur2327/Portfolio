@@ -38,13 +38,7 @@ function DotCanvas({ dotColor, activeDotColor, interactive }: {
     let raf: number | null = null;
     let needsDraw = false;
     let isVisible = true;
-    // Real viewport visibility (distinct from isVisible/document.hidden
-    // above). A theme toggle updates every DotCanvas on the page at once —
-    // without this, all ~8 of them (7 section dividers + Hero's field)
-    // fully re-bake and repaint even when scrolled far off-screen, which
-    // is the actual cost behind the "lag on theme change" report. Off-
-    // screen canvases now just flag themselves dirty and catch up the
-    // moment they scroll back into view.
+    // Skip repaint work for off-screen canvases.
     let inViewport = true;
     let colorDirty = false;
     let idleTimer: ReturnType<typeof setTimeout> | null = null;

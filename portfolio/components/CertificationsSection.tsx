@@ -8,9 +8,7 @@ import { slugify } from "@/lib/utils";
 const SF = "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', sans-serif";
 const MONO = "'Geist Mono', monospace";
 
-// Each cert's PDF is auto-matched from its title:
-// "MERN Stack Development" -> /public/certificates/mern-stack-development.pdf
-// Just drop your PDFs into public/certificates/ using the slugified title as the filename.
+// Certifications are matched to PDFs by title.
 const CERTIFICATIONS = [
   {
     title: "MERN Stack Development",
@@ -63,7 +61,7 @@ export function CertificationsSection() {
   return (
     <>
       <style suppressHydrationWarning>{`
-        /* ── shared section wrapper (same as Education / Skills / Projects) ── */
+        /* Shared section wrapper */
         .edu-outer {
           position: relative;
           left: 50%;
@@ -110,7 +108,7 @@ export function CertificationsSection() {
           transition: box-shadow 0.2s, transform 0.2s;
         }
 
-        /* ── cert section ── */
+        /* Certification section */
         .cert-count-badge {
           font-family: ${MONO};
           font-size: 10px;
@@ -125,12 +123,7 @@ export function CertificationsSection() {
         .cert-logo-img {
           width: 17px; height: 17px; object-fit: contain;
         }
-        /* ── certifications grid — 2 columns on tablet/iPad/desktop,
-           1 column on mobile. grid-auto-flow:column fills a whole column
-           top-to-bottom before wrapping to the next one, so DOM order
-           stays visually stacked within each column — that's what lets
-           the connecting line below just chain consecutive DOM siblings
-           the same way it does in single-column mode. */
+        /* Certification grid */
         .cert-grid {
           display: grid;
           grid-template-columns: 1fr 1fr;
@@ -234,7 +227,7 @@ export function CertificationsSection() {
           border-color: var(--text-muted);
         }
 
-        /* ── responsive ── */
+        /* Responsive tweaks */
         @media (max-width: 860px) {
           .edu-inner { padding: 0 22px 34px; }
         }

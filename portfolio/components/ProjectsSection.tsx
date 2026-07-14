@@ -132,7 +132,7 @@ const ExternalIcon = () => (
   </svg>
 );
 
-/* ── Slide to Unlock ── */
+/* Unlock control */
 const HANDLE_W = 46;
 const TRACK_H  = 42;
 
@@ -218,7 +218,7 @@ function SlideToUnlock({ onUnlock }: { onUnlock: () => void }) {
   );
 }
 
-/* ── Project Modal ── */
+/* Project modal */
 function ProjectModal({ proj, onClose }: { proj: typeof PROJECTS[0]; onClose: () => void }) {
   const [mounted, setMounted] = useState(false);
   const modalRef = useRef<HTMLDivElement>(null);
@@ -465,7 +465,7 @@ function ProjectModal({ proj, onClose }: { proj: typeof PROJECTS[0]; onClose: ()
   return createPortal(content, document.body);
 }
 
-/* ── Project Card ── */
+/* Project card */
 function ProjectCard({ proj, index, visible, onOpen }: {
   proj: typeof PROJECTS[0];
   index: number;

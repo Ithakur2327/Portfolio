@@ -81,9 +81,7 @@ function ScrollRevealText() {
   );
 }
 
-/* ─────────────────────────────────────────────────────
-   Main AboutSection export
-───────────────────────────────────────────────────── */
+/* About section export */
 export function AboutSection() {
   const { ref, revealClass } = useReveal();
 

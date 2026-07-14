@@ -5,7 +5,6 @@ import { DotField } from "./DotBackground";
 import { useTheme } from "./ThemeProvider";
 import { usePdfModal } from "./PdfViewerModal";
 
-/* ─── Flip sentences ─────────────────────────────────── */
 const SENTENCES = [
   "AI Software Engineer",
   "Open Source Contributor",
@@ -31,7 +30,6 @@ function FlipSentences() {
   );
 }
 
-/* ─── Live clock ─────────────────────────────────────── */
 function LiveClock() {
   const [time, setTime] = useState("");
   useEffect(() => {
@@ -45,7 +43,6 @@ function LiveClock() {
   return <span style={{fontFamily:"'Geist Mono',monospace"}}>{time||"--:-- IST"}</span>;
 }
 
-/* ─── Icon box ───────────────────────────────────────── */
 function IBox({color, children}:{color?:string; children:React.ReactNode}) {
   return (
     <div style={{
@@ -58,7 +55,6 @@ function IBox({color, children}:{color?:string; children:React.ReactNode}) {
   );
 }
 
-/* ─── Row ────────────────────────────────────────────── */
 function Row({icon, href, newTab, onClick, children}:{icon:React.ReactNode; href?:string; newTab?:boolean; onClick?:()=>void; children:React.ReactNode}) {
   const s:React.CSSProperties = {
     display:"flex", alignItems:"center", gap:14,
@@ -80,7 +76,6 @@ function Row({icon, href, newTab, onClick, children}:{icon:React.ReactNode; href
   return <div style={{...s}}>{icon}<span>{children}</span></div>;
 }
 
-/* ─── Social icon tile ───────────────────────────────── */
 function SocialIconTile({href,label,icon,iconBg,iconBorder,iconColor}:{href:string;label:string;icon:React.ReactNode;iconBg:string;iconBorder:string;iconColor:string}) {
   const [hovered, setHovered] = useState(false);
   return (
@@ -121,7 +116,6 @@ function SocialIconTile({href,label,icon,iconBg,iconBorder,iconColor}:{href:stri
   );
 }
 
-/* ─── HoverBorderGradient ─────────────────────────────── */
 function HoverBorderGradient({ children, radius = 10 }: { children: React.ReactNode; radius?: number }) {
   const { theme } = useTheme();
   const isDark = theme === "dark";
@@ -183,11 +177,6 @@ function HoverBorderGradient({ children, radius = 10 }: { children: React.ReactN
   );
 }
 
-/* ═══════════════════════════════════════════════════════
-   MAIN HERO
-═══════════════════════════════════════════════════════ */
-// Nav-inner is max-width:1060px with padding:0 16px → content width = 1028px
-// Hero sections must match this so right border aligns with theme toggle
 const CW = 1028;
 
 export function HeroSection() {
@@ -207,14 +196,12 @@ export function HeroSection() {
         .fs-in  { animation: fsIn  0.28s cubic-bezier(0.16,1,0.3,1) forwards }
         .fs-out { animation: fsOut 0.22s ease-in forwards }
 
-        /* ── Profile row ── */
         .h-profile {
           display: flex;
           flex-direction: row;
           align-items: stretch;
         }
 
-        /* Avatar box */
         .h-avatar {
           width: 198px;
           min-width: 198px;
@@ -235,14 +222,12 @@ export function HeroSection() {
           justify-content: flex-end; min-width: 0;
         }
 
-        /* ── Info wrap (centering) ── */
         .h-info-wrap {
           max-width: 1028px;
           margin-left: auto;
           margin-right: auto;
         }
 
-        /* ── Info grid ── */
         .h-info-pad {
           position: relative; /* anchors the vertical partition line below */
         }
@@ -252,14 +237,6 @@ export function HeroSection() {
           gap: 16px 56px;
           position: relative;
         }
-        /* Dashed vertical partition down the middle — anchored to
-           .h-info-pad (not .h-grid) so it spans the pad's full height:
-           flush against the info box's top border, and flush against the
-           social-icon row's top border at the bottom — instead of
-           stopping short at the grid's own inner content edges, which
-           left visible gaps top and bottom. Still never reaches into the
-           social-icon row itself, since it ends exactly at that border.
-           Purely decorative, never intercepts clicks. */
         .h-info-pad::before {
           content: "";
           position: absolute;
@@ -268,24 +245,15 @@ export function HeroSection() {
           border-left: 1px dashed var(--border);
           pointer-events: none;
         }
-        /* Right column sits a touch further from that line than the raw
-           grid gap alone would give it, matching the left column's own
-           breathing room off the card's left edge. */
         .h-grid-right { padding-left: 6px; }
 
-        /* ── Social row ── */
         .h-social { display: flex; flex-direction: row; }
 
-        /* Social icon tiles */
         .s-icon-tile {
           border-right: 1px solid var(--border);
         }
         .s-icon-tile:last-child { border-right: none !important; }
 
-        /* Social left group — left-padded so the Mail icon's left edge lines
-           up exactly with the icons above it (Row items sit at the info
-           pad's 28px left inset; a tile's own resting padding is only 18px,
-           so without this the whole social row reads ~10px too far left). */
         .s-social-group {
           display: flex;
           flex-direction: row;
@@ -293,9 +261,7 @@ export function HeroSection() {
           padding-left: 10px;
         }
 
-        /* ── iPad / Tablet (768px–1180px) ── */
         @media (min-width: 768px) and (max-width: 1180px) {
-          /* Avatar — much bigger on tablets */
           .h-avatar {
             width: clamp(220px, 32vw, 300px) !important;
             min-width: clamp(220px, 32vw, 300px) !important;
@@ -303,7 +269,6 @@ export function HeroSection() {
             min-height: calc(clamp(220px, 32vw, 300px) - 14px) !important;
             border-radius: 24px !important;
           }
-          /* Bigger, bolder name with more vertical room so it sits on the partition line */
           .h-nameblock h1 {
             font-size: clamp(36px, 6vw, 64px) !important;
             font-weight: 800 !important;
@@ -317,31 +282,25 @@ export function HeroSection() {
             padding-top: 26px !important;
             margin-bottom: -4px !important;
           }
-          /* Flip sentence bigger */
           .h-nameblock .fs-in,
           .h-nameblock .fs-out {
             font-size: 16px !important;
           }
-          /* Info wrap full width with tablet padding */
           .h-info-wrap {
             margin-left: 24px !important;
             margin-right: 24px !important;
           }
-          /* Info pad more spacious */
           .h-info-pad {
             padding: 28px 36px 24px !important;
           }
-          /* Grid gap bigger */
           .h-grid {
             gap: 20px 80px !important;
           }
-          /* Icon boxes bigger */
           .h-info-pad .h-grid > div > div > div:first-child,
           .h-info-pad .h-grid > div > a > div:first-child {
             width: 36px !important; height: 36px !important;
             border-radius: 9px !important;
           }
-          /* Row text bigger */
           .h-info-pad .h-grid > div > div,
           .h-info-pad .h-grid > div > a {
             font-size: 15px !important;
@@ -350,17 +309,14 @@ export function HeroSection() {
           .s-icon-tile {
             padding: 18px 24px !important;
           }
-          /* Social icon tiles bigger icons */
           .s-icon-tile > div {
             width: 38px !important; height: 38px !important;
           }
-          /* Profile row profile section taller */
           .h-profile {
             min-height: clamp(220px, 32vw, 300px) !important;
           }
         }
 
-        /* ── iPad Pro / large tablet (1024px–1180px) ── */
         @media (min-width: 1024px) and (max-width: 1180px) {
           .h-avatar {
             width: clamp(260px, 28vw, 300px) !important;
@@ -381,7 +337,6 @@ export function HeroSection() {
           }
         }
 
-        /* ── Samsung Fold unfolded (600px–768px) ── */
         @media (min-width: 600px) and (max-width: 767px) {
           .h-avatar {
             width: clamp(160px, 26vw, 200px) !important;
@@ -417,11 +372,9 @@ export function HeroSection() {
           }
         }
 
-        /* ── Mobile (< 600px) ── */
         @media (max-width: 600px) {
           .h-profile { flex-direction: row !important; }
 
-          /* Bigger avatar than before */
           .h-avatar {
             width: clamp(125px, 34vw, 165px) !important;
             min-width: clamp(125px, 34vw, 165px) !important;
@@ -439,7 +392,6 @@ export function HeroSection() {
             overflow: hidden !important;
           }
 
-          /* Name — forced to a single line, slightly bigger, touching the line below */
           .h-nameblock > div:nth-child(2) {
             padding: clamp(18px, 5.5vw, 26px) clamp(10px, 3.5vw, 16px) 0 !important;
             margin-bottom: -2px !important;
@@ -470,9 +422,6 @@ export function HeroSection() {
           .s-social-group {
             border-bottom: none !important;
             flex-direction: row !important;
-            /* Tiles below go flex:1 + centered, spanning edge-to-edge —
-               the desktop/tablet left-alignment offset would just eat
-               into that width unevenly, so drop it here. */
             padding-left: 0 !important;
           }
           .s-icon-tile {
@@ -481,9 +430,6 @@ export function HeroSection() {
             justify-content: center !important;
           }
           .s-icon-tile:last-child { border-right: none !important; }
-          /* Mail icon pinned to the same left inset as the info rows above
-             it (.h-info-pad's own 24px padding on this breakpoint) — the
-             other three tiles stay centered/evenly spread as before. */
           .s-icon-tile:first-child {
             justify-content: flex-start !important;
             padding-left: 24px !important;
@@ -499,7 +445,6 @@ export function HeroSection() {
           }
         }
 
-        /* ── Small mobile (< 380px) ── */
         @media (max-width: 380px) {
           .h-avatar {
             width: clamp(105px, 30vw, 135px) !important;
@@ -524,31 +469,23 @@ export function HeroSection() {
         className={vis === "ssr" ? "" : "reveal visible"}
       >
         <div style={{ position: "relative", left: "50%", marginLeft: "-50vw", width: "100vw" }}>
-          {/* Dot-grid backdrop — connects the avatar down through to where
-              the About section begins. This is a partition indicator, not
-              a page-covering background: it lives only behind the Hero.
-              Full-bleed (100vw) so it's never clipped by the content
-              max-width and shows completely around the info card. */}
           <div style={{ position: "absolute", inset: 0, zIndex: 0 }}>
             <DotField />
           </div>
           <div style={{ position: "relative", zIndex: 1 }}>
 
-        {/* ── PROFILE ROW ── */}
         <div style={{
           position:"relative", left:"50%", marginLeft:"-50vw", width:"100vw",
           background:BG, borderTop:B, borderBottom:B,
         }}>
           <div className="h-profile" style={{maxWidth:CW, margin:"0 auto", borderLeft:B, borderRight:B}}>
 
-            {/* Avatar */}
             <div className="h-avatar">
               <div style={{width:"100%", aspectRatio:"1 / 1", flexShrink:0}}>
                 <Avatar />
               </div>
             </div>
 
-            {/* Name + flip */}
             <div className="h-nameblock">
               <div style={{flex:1}}/>
               <div style={{padding:"28px 20px 0", marginBottom:"-3px"}}>

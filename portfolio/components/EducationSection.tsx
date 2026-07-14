@@ -34,7 +34,7 @@ const LANGUAGES = [
   { name: "MAITHILI" },
 ];
 
-/* ── Language pill with skill-section-style highlight animation ── */
+/* Language chip */
 function LangPill({ name, delay }: { name: string; delay: number }) {
   const ref = useRef<HTMLSpanElement>(null);
   const inView = useInView(ref, { once: true, margin: "-10% 0px -10% 0px" });
@@ -53,7 +53,7 @@ function LangPill({ name, delay }: { name: string; delay: number }) {
   );
 }
 
-/* ── Education card with 3D entrance ── */
+/* Education card */
 function EduCard({ school, degree, short, period, index, sectionVisible }: {
   school: string; degree: string; short: string; period: string; index: number; sectionVisible: boolean;
 }) {
@@ -90,7 +90,7 @@ export function EducationSection() {
   return (
     <>
       <style suppressHydrationWarning>{`
-        /* ── shared section wrapper (same as Skills / Projects) ── */
+        /* Shared section wrapper */
         .edu-outer {
           position: relative;
           left: 50%;
@@ -104,7 +104,7 @@ export function EducationSection() {
           padding: 0 32px 64px;
         }
 
-        /* ── section head – bold label + icon exactly like Projects/Skills ── */
+        /* Section header */
         .edu-sec-titlerow {
           padding-top: 50px;
           margin-bottom: 20px;
@@ -141,7 +141,7 @@ export function EducationSection() {
           margin-bottom: 22px;
         }
 
-        /* ── edu cards – screenshot style, no line between them ── */
+        /* Education cards */
         .edu-card {
           position: relative;
           display: flex;
@@ -212,7 +212,7 @@ export function EducationSection() {
           padding-top: 2px;
         }
 
-        /* ── language row — enhanced box layout ── */
+        /* Language row */
         .lang-row {
           display: flex;
           align-items: center;
@@ -293,7 +293,7 @@ export function EducationSection() {
         }
         .lang-pill-dot { display: none; }
 
-        /* ── responsive ── */
+        /* Responsive tweaks */
         @media (max-width: 860px) {
           .edu-inner { padding: 0 22px 34px; }
         }

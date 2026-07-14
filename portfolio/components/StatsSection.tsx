@@ -163,7 +163,7 @@ function DonutChart({ easy, medium, hard, totalSolved, totalProblems, totalEasy,
   );
 }
 
-// ── Portal tooltip — matches the navbar's theme-toggle tooltip style exactly ──
+/* Portal tooltip */
 function PortalTooltip({ hovered, accentColor, label }: {
   hovered: HoveredCell | null;
   accentColor: string;
@@ -205,9 +205,7 @@ function PortalTooltip({ hovered, accentColor, label }: {
   );
 }
 
-/* ─────────────────────────────────────────────────────
-   LeetCode Stats
-───────────────────────────────────────────────────── */
+/* LeetCode stats */
 const LC_TOTAL = 3949;
 const GLOBAL_RANK = 150000;
 const MON_SHORT = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];

@@ -8,7 +8,7 @@ import { SectionTitleIcon } from "./SectionIcon";
 const MONO = "'Geist Mono', 'SF Mono', monospace";
 const SF   = "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', sans-serif";
 
-/* ─── Tech definitions ─── */
+/* Tech definitions */
 const TECH: Record<string, { color: string; logo: string; bright?: boolean; invert?: boolean; keepInLight?: boolean }> = {
   // Languages
   Python:         { color: "#3776AB", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg" },
@@ -52,7 +52,7 @@ const TECH: Record<string, { color: string; logo: string; bright?: boolean; inve
   "VS Code":      { color: "#007ACC", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/vscode/vscode-original.svg" },
 };
 
-/* All six skill groups now live in ONE flat list — they share a single grid */
+/* Skill groups */
 const LAMP_GROUPS = [
   { title: "LANGUAGES",        glowColor: "#3776AB", items: ["Python", "Java", "C++", "TypeScript", "JavaScript"] },
   { title: "FRONTEND",         glowColor: "#61DAFB", items: ["React.js", "Next.js", "Tailwind CSS", "HTML5", "CSS3", "shadcn/ui", "Framer Motion"] },
@@ -68,8 +68,7 @@ const STRIP_NAMES = [
   "AWS", "Kubernetes", "Git", "VS Code", "Postman",
 ];
 
-/* ─── useBoxInView — re-fires every time the box scrolls into view, so the
-   lamp relights on every pass, not just once ─── */
+/* View-based reveal hook */
 function useBoxInView() {
   const ref = useRef<HTMLDivElement>(null);
   const [inView, setInView] = useState(false);
@@ -86,8 +85,7 @@ function useBoxInView() {
   return { ref, inView };
 }
 
-/* ─── SkillRow: icon left + name right, horizontal layout, centered as a
-   group within its grid cell ─── */
+/* Skill row */
 const SkillRow = memo(function SkillRow({
   name, visible, delay = 0,
 }: { name: string; visible: boolean; delay?: number }) {
@@ -171,7 +169,7 @@ const SkillRow = memo(function SkillRow({
   );
 });
 
-/* ─── LampBeam (intensity toned down slightly) ─── */
+/* Lamp beam */
 const LampBeam = memo(function LampBeam({ glowColor, visible, lampOn }: { glowColor: string; visible: boolean; lampOn: boolean }) {
   const { theme } = useTheme();
   const isDark    = theme === "dark";
@@ -221,8 +219,7 @@ const LampBeam = memo(function LampBeam({ glowColor, visible, lampOn }: { glowCo
   );
 });
 
-/* ─── LampSkillBox: a single cell in the shared grid — lamp always relights
-   automatically every time the box scrolls into view ─── */
+/* Skill box */
 function LampSkillBox({ title, glowColor, items }: { title: string; glowColor: string; items: string[] }) {
   const lampOn = true;
   const { ref, inView } = useBoxInView();
@@ -294,7 +291,7 @@ function LampSkillBox({ title, glowColor, items }: { title: string; glowColor: s
   );
 }
 
-/* ─── MovingStrip ─── */
+/* Moving strip */
 const STRIP_ALL = [...STRIP_NAMES, ...STRIP_NAMES, ...STRIP_NAMES];
 
 const MovingStrip = memo(function MovingStrip() {
@@ -349,7 +346,7 @@ const MovingStrip = memo(function MovingStrip() {
   );
 });
 
-/* ─── Main ─── */
+/* Main export */
 export function SkillsSection() {
   const { ref, revealClass } = useReveal();
 
@@ -385,8 +382,7 @@ export function SkillsSection() {
           transform: translateX(-50%) translateY(0);
         }
 
-        /* Subtle occasional flicker on the lit lamp beam — mostly steady,
-           dips briefly a couple of times per cycle like a real tube light. */
+        /* Lamp beam flicker */
         @keyframes lampBeamBlink {
           0%, 89%, 94%, 100% { opacity: 1; }
           91%                { opacity: 0.55; }
@@ -396,10 +392,7 @@ export function SkillsSection() {
           animation: lampBeamBlink 6.5s ease-in-out infinite;
         }
 
-        /* One shared grid: the 1px gap (colored like a border, but a thinner/
-           fainter tone than the rest of the site) IS the grid line, so every
-           cell shares the same continuous, subtle lines — no separate
-           "card" squares. Always 2 columns, on every screen size. */
+        /* Shared skill grid */
         .skills-grid {
           display: grid;
           grid-template-columns: repeat(2, 1fr);
@@ -431,9 +424,7 @@ export function SkillsSection() {
           padding: 0 6px;
         }
 
-        /* Permanent mobile/tablet fix: box stays 2-per-row and its content
-           (icon + name) shrinks gracefully instead of overflowing/clipping,
-           regardless of device width. */
+        /* Mobile layout fix */
         @media (max-width: 640px) {
           .skills-grid { border-radius: 8px; grid-template-columns: 1fr; }
           .lamp-skill-box { min-height: 168px; }

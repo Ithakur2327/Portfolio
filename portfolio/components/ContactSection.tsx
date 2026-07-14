@@ -35,7 +35,6 @@ const ContactCard = memo(function ContactCard() {
 
   return (
     <div className="contact-card">
-      {/* Toggle header */}
       <div
         className="contact-card-header"
         onClick={() => setOpen(o => !o)}
