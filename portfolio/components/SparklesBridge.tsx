@@ -17,12 +17,25 @@ export function SparklesBridge() {
     const ctx = canvas.getContext("2d")!;
     if (!ctx) return;
 
+    // Height now scales with BOTH viewport width (breakpoint tier) and
+    // viewport height (so short/tall screens shrink/grow it), keeping it
+    // in lockstep with the Hero section instead of a fixed pixel band.
+    // No CSS !important overrides fight this anymore — the inline style
+    // set below is the single source of truth.
     const getHeight = () => {
       const vw = window.innerWidth;
-      if (vw >= 1024 && vw <= 1180) return 148;
-      if (vw >= 768  && vw <= 1023) return 124;
-      if (vw >= 600  && vw <= 767)  return 100;
-      return 62;
+      const vh = window.innerHeight;
+
+      let base: number;
+      if (vw >= 1024 && vw <= 1180) base = 148;
+      else if (vw >= 768  && vw <= 1023) base = 124;
+      else if (vw >= 600  && vw <= 767)  base = 100;
+      else base = 62;
+
+      // Scale that base by how tall the actual viewport is, clamped so it
+      // never gets absurdly big/small on extreme aspect ratios.
+      const vhScale = Math.min(1.2, Math.max(0.7, vh / 800));
+      return Math.round(base * vhScale);
     };
 
     let canvasW = window.innerWidth;
@@ -133,17 +146,11 @@ export function SparklesBridge() {
         style={{ display: "block", width: "100%", height: 62 }}
         className="sparkles-bridge-canvas"
       />
-      <style suppressHydrationWarning>{`
-        @media (min-width: 600px) and (max-width: 767px) {
-          .sparkles-bridge-canvas { height: 100px !important; }
-        }
-        @media (min-width: 768px) and (max-width: 1023px) {
-          .sparkles-bridge-canvas { height: 124px !important; }
-        }
-        @media (min-width: 1024px) and (max-width: 1180px) {
-          .sparkles-bridge-canvas { height: 148px !important; }
-        }
-      `}</style>
+      {/* No fixed-height !important breakpoints here anymore — they used
+          to override the JS-computed inline height and stop the canvas
+          from actually scaling with the viewport. The inline height set
+          by the resize() handler above is now the only source of truth,
+          so this bridge grows/shrinks together with the Hero section. */}
     </div>
   );
 }
