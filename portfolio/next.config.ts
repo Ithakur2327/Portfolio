@@ -23,10 +23,7 @@ const nextConfig: NextConfig = {
         ],
       },
       {
-        // The in-app PDF viewer (resume / certificates) loads this file inside
-        // an <iframe>. "X-Frame-Options: DENY" above blocks that even though
-        // it's same-origin, so we relax it just for the PDF to allow framing
-        // from this site only — fixes the resume not rendering in the modal.
+        
         source: "/resume.pdf",
         headers: [
           { key: "X-Frame-Options", value: "SAMEORIGIN" },
@@ -41,6 +38,11 @@ const nextConfig: NextConfig = {
       {
         source: "/:path*.jpg",
         headers: [{ key: "Cache-Control", value: "public, max-age=31536000, immutable" }],
+      },
+      {
+
+        source: "/avatar-:theme(dark|light).jpg",
+        headers: [{ key: "Cache-Control", value: "public, max-age=0, must-revalidate" }],
       },
       {
         source: "/:path*.jpeg",
