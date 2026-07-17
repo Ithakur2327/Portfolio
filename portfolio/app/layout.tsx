@@ -55,6 +55,16 @@ export default function RootLayout({
         {/* Preconnect for the actual project card photos — bigger payload than the logo icons */}
         <link rel="preconnect" href="https://images.unsplash.com" crossOrigin="anonymous" />
 
+        {/* Avatar photos — preloaded so the browser starts fetching them the
+            instant HTML parsing begins, in parallel with JS download/parse/
+            hydration. Without this, the WebGL avatar component only starts
+            requesting these images after it mounts and its effect runs,
+            which is the actual source of the visible render delay on
+            refresh (network round-trip + decode, on top of hydration time,
+            all happening serially instead of in parallel). */}
+        <link rel="preload" as="image" href="/avatar-dark.jpg" fetchPriority="high" />
+        <link rel="preload" as="image" href="/avatar-light.jpg" fetchPriority="high" />
+
         {/* Fonts — the site references 'Geist' and 'Geist Mono' by name
             throughout its components, but neither was ever actually loaded,
             so every browser silently fell back to a generic system font.

@@ -244,45 +244,25 @@ function LeetCodeStats({ username = "IThakur09" }: { username?: string }) {
 
   useEffect(() => {
     (async () => {
-      const apis = [
-        `https://leetcode-stats-api.herokuapp.com/${username}`,
-        `https://alfa-leetcode-api.onrender.com/userProfile/${username}`,
-      ];
-      for (const url of apis) {
-        try {
-          const r = await fetch(url, { signal: AbortSignal.timeout(8000) });
-          if (!r.ok) continue;
-          const j = await r.json();
-          if (j && !j.error) {
-            const easy = j.easySolved ?? j.totalEasySolved ?? 0;
-            const medium = j.mediumSolved ?? j.totalMediumSolved ?? 0;
-            const hard = j.hardSolved ?? j.totalHardSolved ?? 0;
-            setData({ easySolved: easy, totalEasy: j.totalEasy ?? 947, mediumSolved: medium, totalMedium: j.totalMedium ?? 2063, hardSolved: hard, totalHard: j.totalHard ?? 939, totalSolved: j.totalSolved ?? (easy + medium + hard), ranking: j.ranking ?? GLOBAL_RANK });
-            break;
-          }
-        } catch { /* try next */ }
-      }
-      setLoading(false);
-    })();
-  }, [username]);
-
-  useEffect(() => {
-    (async () => {
-      // Call our own server-side proxy so CORS is never an issue.
-      // The route lives at app/api/leetcode-calendar/route.ts
+      // Single call to our own server-side proxy — it races multiple
+      // upstream sources concurrently with short timeouts and edge-caches
+      // the result, so this is always fast and never blocks on a dead
+      // third-party API the way calling them directly from the browser did.
       try {
         const r = await fetch(
           `/api/leetcode-calendar?username=${encodeURIComponent(username)}&year=2026`,
-          { signal: AbortSignal.timeout(12000) }
+          { signal: AbortSignal.timeout(9000) }
         );
         if (r.ok) {
           const json = await r.json();
           const days: LCCalDay[] = (json.days ?? []).sort(
             (a: LCCalDay, b: LCCalDay) => a.date - b.date
           );
-          if (days.length > 0) { setCalData(days); return; }
+          if (days.length > 0) setCalData(days);
+          if (json.profile) setData(json.profile as LC);
         }
-      } catch { /* show blank grid gracefully */ }
+      } catch { /* fall back to the static placeholder numbers below */ }
+      setLoading(false);
     })();
   }, [username]);
 
