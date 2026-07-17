@@ -3,7 +3,22 @@ import type { Viewport } from "next";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { PdfModalProvider } from "@/components/PdfViewerModal";
 import OnekoCatLoader from "@/components/OnekoCatLoader";
+import { createHash } from "crypto";
+import { readFileSync } from "fs";
+import path from "path";
 import "./globals.css";
+
+// Same content-hash approach as app/page.tsx — kept in sync so the
+// preloaded URL is byte-identical to what Avatar.tsx actually requests.
+function getAvatarVersion(): string {
+  try {
+    const dark = readFileSync(path.join(process.cwd(), "public", "avatar-dark.jpg"));
+    const light = readFileSync(path.join(process.cwd(), "public", "avatar-light.jpg"));
+    return createHash("md5").update(dark).update(light).digest("hex").slice(0, 10);
+  } catch {
+    return "0";
+  }
+}
 
 // ─── Viewport ─────────────────────────────────────────────
 export const viewport: Viewport = {
@@ -54,6 +69,16 @@ export default function RootLayout({
         <link rel="dns-prefetch" href="https://upload.wikimedia.org" />
         {/* Preconnect for the actual project card photos — bigger payload than the logo icons */}
         <link rel="preconnect" href="https://images.unsplash.com" crossOrigin="anonymous" />
+
+        {/* Avatar photos — preloaded so the browser starts fetching them the
+            instant HTML parsing begins, in parallel with JS download/parse/
+            hydration. Without this, the WebGL avatar component only starts
+            requesting these images after it mounts and its effect runs,
+            which is the actual source of the visible render delay on
+            refresh (network round-trip + decode, on top of hydration time,
+            all happening serially instead of in parallel). */}
+        <link rel="preload" as="image" href={`/avatar-dark.jpg?v=${getAvatarVersion()}`} fetchPriority="high" />
+        <link rel="preload" as="image" href={`/avatar-light.jpg?v=${getAvatarVersion()}`} fetchPriority="high" />
 
         {/* Fonts — the site references 'Geist' and 'Geist Mono' by name
             throughout its components, but neither was ever actually loaded,
