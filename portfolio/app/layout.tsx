@@ -3,7 +3,21 @@ import type { Viewport } from "next";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { PdfModalProvider } from "@/components/PdfViewerModal";
 import OnekoCatLoader from "@/components/OnekoCatLoader";
+import { createHash } from "crypto";
+import { readFileSync } from "fs";
+import path from "path";
 import "./globals.css";
+
+
+function getAvatarVersion(): string {
+  try {
+    const dark = readFileSync(path.join(process.cwd(), "public", "avatar-dark.jpg"));
+    const light = readFileSync(path.join(process.cwd(), "public", "avatar-light.jpg"));
+    return createHash("md5").update(dark).update(light).digest("hex").slice(0, 10);
+  } catch {
+    return "0";
+  }
+}
 
 // ─── Viewport ─────────────────────────────────────────────
 export const viewport: Viewport = {
@@ -39,7 +53,7 @@ export const metadata: Metadata = {
   },
 };
 
-// ─── Root Layout ──────────────────────────────────────────
+// ─── Root Layout ─────
 export default function RootLayout({
   children,
 }: {
@@ -55,31 +69,13 @@ export default function RootLayout({
         {/* Preconnect for the actual project card photos — bigger payload than the logo icons */}
         <link rel="preconnect" href="https://images.unsplash.com" crossOrigin="anonymous" />
 
-        {/* Avatar photos — preloaded so the browser starts fetching them the
-            instant HTML parsing begins, in parallel with JS download/parse/
-            hydration. Without this, the WebGL avatar component only starts
-            requesting these images after it mounts and its effect runs,
-            which is the actual source of the visible render delay on
-            refresh (network round-trip + decode, on top of hydration time,
-            all happening serially instead of in parallel). */}
-        <link rel="preload" as="image" href="/avatar-dark.jpg" fetchPriority="high" />
-        <link rel="preload" as="image" href="/avatar-light.jpg" fetchPriority="high" />
+        <link rel="preload" as="image" href={`/avatar-dark.jpg?v=${getAvatarVersion()}`} fetchPriority="high" />
+        <link rel="preload" as="image" href={`/avatar-light.jpg?v=${getAvatarVersion()}`} fetchPriority="high" />
 
-        {/* Fonts — the site references 'Geist' and 'Geist Mono' by name
-            throughout its components, but neither was ever actually loaded,
-            so every browser silently fell back to a generic system font.
-            That mismatch is what made text look fuzzy/inconsistent. Loading
-            the real families here fixes it everywhere without touching
-            each component. The pixel-style name heading uses the
-            self-hosted 'Geist Pixel Square' family (see globals.css
-            @font-face) instead of a Google Fonts request. */}
+        {/* Google Fonts: Geist & Geist Mono */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        {/* Loaded as non-blocking: preload the stylesheet, then swap its
-            media to "all" once it's fetched. This removes the render-blocking
-            round trip to Google Fonts that was stalling first paint — the
-            fonts, weights, and fallback behavior are identical, just applied
-            a beat sooner instead of holding up the page. */}
+
         <link
           rel="preload"
           as="style"
@@ -112,7 +108,6 @@ export default function RootLayout({
               {children}
             </div>
 
-            {/* 🐱 Pixel cat — client-only, loaded after hydration */}
             <OnekoCatLoader />
           </PdfModalProvider>
         </ThemeProvider>

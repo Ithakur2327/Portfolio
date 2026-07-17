@@ -2,7 +2,7 @@
 import { useEffect, useRef } from "react";
 import { useTheme } from "./ThemeProvider";
 
-export function Avatar() {
+export function Avatar({ version }: { version?: string } = {}) {
   const { theme } = useTheme();
   const isDark = theme === "dark";
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -264,14 +264,14 @@ export function Avatar() {
     imgD.fetchPriority = "high";
     imgD.onload  = () => { try { G.texD = mkTex(imgD); } catch { G.texD = makeFallback(true); } boot(); };
     imgD.onerror = () => { G.texD = makeFallback(true); boot(); };
-    imgD.src = "/avatar-dark.jpg";
+    imgD.src = version ? `/avatar-dark.jpg?v=${version}` : "/avatar-dark.jpg";
 
     const imgL = new window.Image();
     imgL.crossOrigin = "anonymous";
     imgL.fetchPriority = "high";
     imgL.onload  = () => { try { G.texL = mkTex(imgL); } catch { G.texL = makeFallback(false); } boot(); };
     imgL.onerror = () => { G.texL = makeFallback(false); boot(); };
-    imgL.src = "/avatar-light.jpg";
+    imgL.src = version ? `/avatar-light.jpg?v=${version}` : "/avatar-light.jpg";
 
     let isVisible = true;
     let loopFn: ((ts: number) => void) | null = null;

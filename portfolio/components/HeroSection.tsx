@@ -179,7 +179,7 @@ function HoverBorderGradient({ children, radius = 10 }: { children: React.ReactN
 
 const CW = 1028;
 
-export function HeroSection() {
+export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) {
   const [vis, setVis] = useState<"ssr" | "visible">("ssr");
   const { openPdf } = usePdfModal();
 
@@ -195,6 +195,24 @@ export function HeroSection() {
         @keyframes fsOut { from{transform:none;opacity:1} to{transform:translateY(-7px);opacity:0} }
         .fs-in  { animation: fsIn  0.28s cubic-bezier(0.16,1,0.3,1) forwards }
         .fs-out { animation: fsOut 0.22s ease-in forwards }
+
+        /* Hero fills exactly one screen on every device height — phone,
+           tablet (Samsung Tab A9 and up), iPad, laptop, desktop — so the
+           hero/about boundary always lands at the edge of the viewport.
+           100dvh already accounts for mobile browser chrome dynamically,
+           so this needs no per-device breakpoints: it scales to whatever
+           the real visible viewport height is. min-height (not height)
+           means content is never clipped if it's ever taller than one
+           screen; flex + justify-content:center then shares any leftover
+           vertical space evenly above/below the content block, which is
+           otherwise completely unchanged. */
+        .hero-viewport {
+          min-height: calc(100vh - 52px);
+          min-height: calc(100dvh - 52px);
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+        }
 
         .h-profile {
           display: flex;
@@ -466,7 +484,7 @@ export function HeroSection() {
       `}</style>
 
       <section id="home"
-        className={vis === "ssr" ? "" : "reveal visible"}
+        className={vis === "ssr" ? "hero-viewport" : "reveal visible hero-viewport"}
       >
         <div style={{ position: "relative", left: "50%", marginLeft: "-50vw", width: "100vw" }}>
           <div style={{ position: "absolute", inset: 0, zIndex: 0 }}>
@@ -482,7 +500,7 @@ export function HeroSection() {
 
             <div className="h-avatar">
               <div style={{width:"100%", aspectRatio:"1 / 1", flexShrink:0}}>
-                <Avatar />
+                <Avatar version={avatarVersion} />
               </div>
             </div>
 
