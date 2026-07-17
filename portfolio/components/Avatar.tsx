@@ -202,18 +202,31 @@ export function Avatar() {
       const tx = gl.createTexture()!;
       gl.bindTexture(gl.TEXTURE_2D, tx);
       gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, src);
-      // Source images are 1024x1024 (power-of-two), so mipmaps are always
-      // available here — trilinear minification removes the faint
-      // shimmer/moire the noise-warp shader could otherwise pick up when
-      // the avatar is displayed smaller than its native resolution.
-      gl.generateMipmap(gl.TEXTURE_2D);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+
+      // Source images are 1024x1024 (power-of-two), so mipmaps are normally
+      // available — trilinear minification removes the faint shimmer/moire
+      // the noise-warp shader could otherwise pick up when the avatar is
+      // displayed smaller than its native resolution. generateMipmap can
+      // still fail for a specific image/GPU combo (e.g. certain JPEG
+      // chroma-subsampling or color-profile variants), so this must be
+      // defensive per-texture — one bad image must never leave that
+      // texture (and therefore that theme's avatar) blank.
+      let mipmapped = false;
+      try {
+        gl.generateMipmap(gl.TEXTURE_2D);
+        mipmapped = gl.getError() === gl.NO_ERROR;
+      } catch {
+        mipmapped = false;
+      }
+
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, mipmapped ? gl.LINEAR_MIPMAP_LINEAR : gl.LINEAR);
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-      if (anisoExt) gl.texParameterf(gl.TEXTURE_2D, anisoExt.TEXTURE_MAX_ANISOTROPY_EXT, Math.min(4, maxAniso));
+      if (mipmapped && anisoExt) gl.texParameterf(gl.TEXTURE_2D, anisoExt.TEXTURE_MAX_ANISOTROPY_EXT, Math.min(4, maxAniso));
       return tx;
     };
+
 
     const makeFallback = (dark: boolean): WebGLTexture => {
       const sz = 256;
@@ -248,13 +261,13 @@ export function Avatar() {
 
     const imgD = new window.Image();
     imgD.crossOrigin = "anonymous";
-    imgD.onload  = () => { G.texD = mkTex(imgD);        boot(); };
+    imgD.onload  = () => { try { G.texD = mkTex(imgD); } catch { G.texD = makeFallback(true); } boot(); };
     imgD.onerror = () => { G.texD = makeFallback(true); boot(); };
     imgD.src = "/avatar-dark.jpg";
 
     const imgL = new window.Image();
     imgL.crossOrigin = "anonymous";
-    imgL.onload  = () => { G.texL = mkTex(imgL);         boot(); };
+    imgL.onload  = () => { try { G.texL = mkTex(imgL); } catch { G.texL = makeFallback(false); } boot(); };
     imgL.onerror = () => { G.texL = makeFallback(false); boot(); };
     imgL.src = "/avatar-light.jpg";
 
