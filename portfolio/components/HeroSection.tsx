@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, useLayoutEffect } from "react";
 import { Avatar } from "./Avatar";
 import { DotField } from "./DotBackground";
 import { useTheme } from "./ThemeProvider";
@@ -179,11 +179,59 @@ function HoverBorderGradient({ children, radius = 10 }: { children: React.ReactN
 
 const CW = 1028;
 
+const HEADER_H = 52;
+
 export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) {
   const [vis, setVis] = useState<"ssr" | "visible">("ssr");
   const { openPdf } = usePdfModal();
 
   useEffect(() => { setTimeout(() => setVis("visible"), 50); }, []);
+
+  // Fit the hero content (avatar row + info box) to whatever vertical space
+  // the device actually gives it, so the hero/about boundary always lands
+  // exactly at the bottom of the viewport — on every phone, tablet, iPad,
+  // laptop and desktop — without changing any spacing, sizing or design.
+  // The existing breakpoints already scale things by width; this scales
+  // the same, unchanged markup by height when needed (never enlarges
+  // beyond the design's natural size, only shrinks uniformly to fit).
+  const scaleRef = useRef<HTMLDivElement>(null);
+  const [fit, setFit] = useState<{ scale: number; height: number } | null>(null);
+
+  useLayoutEffect(() => {
+    const el = scaleRef.current;
+    if (!el) return;
+
+    let raf = 0;
+    const recompute = () => {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => {
+        if (!el) return;
+        const prevTransform = el.style.transform;
+        const prevHeight = el.style.height;
+        el.style.transform = "none";
+        el.style.height = "auto";
+        const natural = el.scrollHeight;
+        el.style.transform = prevTransform;
+        el.style.height = prevHeight;
+
+        const available = window.innerHeight - HEADER_H;
+        const scale = Math.min(available / natural, 1);
+        setFit({ scale, height: Math.round(natural * scale) });
+      });
+    };
+
+    recompute();
+    const ro = new ResizeObserver(recompute);
+    ro.observe(el);
+    window.addEventListener("resize", recompute);
+    window.addEventListener("orientationchange", recompute);
+    return () => {
+      cancelAnimationFrame(raf);
+      ro.disconnect();
+      window.removeEventListener("resize", recompute);
+      window.removeEventListener("orientationchange", recompute);
+    };
+  }, []);
 
   const BG = "var(--bg-base)";
   const B  = "1px solid var(--border)";
@@ -199,19 +247,26 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
         /* Hero fills exactly one screen on every device height — phone,
            tablet (Samsung Tab A9 and up), iPad, laptop, desktop — so the
            hero/about boundary always lands at the edge of the viewport.
-           100dvh already accounts for mobile browser chrome dynamically,
-           so this needs no per-device breakpoints: it scales to whatever
-           the real visible viewport height is. min-height (not height)
-           means content is never clipped if it's ever taller than one
-           screen; flex + justify-content:center then shares any leftover
-           vertical space evenly above/below the content block, which is
-           otherwise completely unchanged. */
+           100dvh already accounts for mobile browser chrome dynamically.
+           The content block itself (avatar row + info box, completely
+           unchanged) is additionally fit to the real available height in
+           JS: if it would ever be taller than the viewport on a given
+           device, it's scaled down uniformly (never redesigned, never
+           cropped, no extra bars) so it always ends exactly at the
+           viewport edge. When it's shorter, it's simply centered as
+           before. */
         .hero-viewport {
-          min-height: calc(100vh - 52px);
-          min-height: calc(100dvh - 52px);
+          height: calc(100vh - 52px);
+          height: calc(100dvh - 52px);
           display: flex;
           flex-direction: column;
           justify-content: center;
+          overflow: hidden;
+        }
+        .hero-fit {
+          width: 100%;
+          transform-origin: top center;
+          will-change: transform;
         }
 
         .h-profile {
@@ -490,7 +545,16 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
           <div style={{ position: "absolute", inset: 0, zIndex: 0 }}>
             <DotField />
           </div>
-          <div style={{ position: "relative", zIndex: 1 }}>
+          <div
+            ref={scaleRef}
+            className="hero-fit"
+            style={{
+              position: "relative",
+              zIndex: 1,
+              transform: fit ? `scale(${fit.scale})` : undefined,
+              height: fit ? fit.height : undefined,
+            }}
+          >
 
         <div style={{
           position:"relative", left:"50%", marginLeft:"-50vw", width:"100vw",
