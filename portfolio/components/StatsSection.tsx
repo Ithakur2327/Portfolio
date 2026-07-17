@@ -42,6 +42,28 @@ interface LC {
 interface LCCalDay { date: number; count: number; }
 interface HoveredCell { date: string; count: number; x: number; y: number; }
 
+// The activity-cell tooltip is a `position: fixed` portal placed at the
+// bounding-rect coordinates captured at hover/tap time. Those coordinates
+// go stale the instant the page (or any scrollable ancestor) scrolls, so
+// without this the tooltip stayed floating in the wrong spot instead of
+// disappearing. Listening in the capture phase on window catches scroll
+// events from nested scroll containers too (scroll doesn't bubble, but it
+// does propagate during capture).
+function useDismissTooltipOnScroll(setHovered: (v: null) => void, active: boolean) {
+  useEffect(() => {
+    if (!active) return;
+    const dismiss = () => setHovered(null);
+    window.addEventListener("scroll", dismiss, { capture: true, passive: true });
+    window.addEventListener("touchmove", dismiss, { passive: true });
+    window.addEventListener("resize", dismiss, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", dismiss, true);
+      window.removeEventListener("touchmove", dismiss);
+      window.removeEventListener("resize", dismiss);
+    };
+  }, [active, setHovered]);
+}
+
 function Spin({ color }: { color: string }) {
   return (
     <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: 60 }}>
@@ -218,6 +240,7 @@ function LeetCodeStats({ username = "IThakur09" }: { username?: string }) {
   const [loading, setLoading] = useState(true);
   const [calData, setCalData] = useState<LCCalDay[]>([]);
   const [hovered, setHovered] = useState<HoveredCell | null>(null);
+  useDismissTooltipOnScroll(setHovered, hovered !== null);
 
   useEffect(() => {
     (async () => {
@@ -474,6 +497,7 @@ function GitHubGraph({ username = "Ithakur2327" }: { username?: string }) {
   const [loading, setLoading] = useState(true);
   const [isLive, setIsLive] = useState(false);
   const [hovered, setHovered] = useState<HoveredCell | null>(null);
+  useDismissTooltipOnScroll(setHovered, hovered !== null);
 
   useEffect(() => {
     (async () => {

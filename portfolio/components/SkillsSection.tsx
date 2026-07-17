@@ -177,8 +177,8 @@ const LampBeam = memo(function LampBeam({ glowColor, visible, lampOn }: { glowCo
 
   // Dark mode: white lamp; Light mode: colored lamp
   const effectiveColor   = isDark ? "#ffffff" : glowColor;
-  const glowIntensity    = isDark ? "06" : "1e";
-  const innerIntensity   = isDark ? "0f" : "2c";
+  const glowIntensity    = isDark ? "0c" : "28";
+  const innerIntensity   = isDark ? "1a" : "3a";
 
   return (
     <div
@@ -193,10 +193,10 @@ const LampBeam = memo(function LampBeam({ glowColor, visible, lampOn }: { glowCo
         background:`linear-gradient(90deg,transparent 0%,${effectiveColor} 18%,${effectiveColor} 82%,transparent 100%)`,
         boxShadow: active
           ? isDark
-            ? `0 0 5px ${effectiveColor}45,0 0 11px ${effectiveColor}26`
-            : `0 0 8px ${effectiveColor},0 0 18px ${effectiveColor}50`
+            ? `0 0 6px ${effectiveColor}60,0 0 14px ${effectiveColor}38`
+            : `0 0 9px ${effectiveColor},0 0 20px ${effectiveColor}60`
           : "0 0 0px transparent",
-        opacity: active ? (isDark ? 0.36 : 0.85) : 0,
+        opacity: active ? (isDark ? 0.55 : 0.9) : 0,
         transition:"opacity 0.72s cubic-bezier(0.22,1,0.36,1), box-shadow 0.72s ease",
       }} />
       {/* Wide glow cone */}
@@ -397,10 +397,11 @@ export function SkillsSection() {
           display: grid;
           grid-template-columns: repeat(2, 1fr);
           gap: 1px;
-          background: color-mix(in oklab, var(--border) 55%, transparent);
-          border: 1px solid color-mix(in oklab, var(--border) 55%, transparent);
+          background: color-mix(in oklab, var(--border) 62%, transparent);
+          border: 1px solid color-mix(in oklab, var(--border) 62%, transparent);
           border-radius: 10px;
           overflow: hidden;
+          box-shadow: 0 1px 0 0 color-mix(in oklab, var(--border) 40%, transparent) inset;
         }
 
         .lamp-skill-box {
@@ -426,7 +427,15 @@ export function SkillsSection() {
 
         /* Mobile layout fix */
         @media (max-width: 640px) {
-          .skills-grid { border-radius: 8px; grid-template-columns: 1fr; }
+          /* Full-bleed to the viewport edge on mobile: no side border/gutter,
+             so the box reads edge-to-edge and only the animated lamp beam
+             (top line + glow) shows any accent at the left/right ends. */
+          .skills-grid {
+            border-radius: 0;
+            border-left: none;
+            border-right: none;
+            grid-template-columns: 1fr;
+          }
           .lamp-skill-box { min-height: 168px; }
           .skill-cols-wrap { gap: 10px !important; padding: 0 10px 10px !important; }
         }
@@ -446,7 +455,9 @@ export function SkillsSection() {
         }
 
         @media (max-width: 639px) {
-          .skills-inner { padding: 0 16px 28px !important; }
+          .skills-inner { padding: 0 0 28px !important; }
+          .skills-inner > div:nth-child(1),
+          .skills-inner > div:nth-child(4) { padding-left: 16px !important; padding-right: 16px !important; }
         }
       `}</style>
 
