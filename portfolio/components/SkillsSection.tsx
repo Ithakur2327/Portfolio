@@ -427,15 +427,7 @@ export function SkillsSection() {
 
         /* Mobile layout fix */
         @media (max-width: 640px) {
-          /* Full-bleed to the viewport edge on mobile: no side border/gutter,
-             so the box reads edge-to-edge and only the animated lamp beam
-             (top line + glow) shows any accent at the left/right ends. */
-          .skills-grid {
-            border-radius: 0;
-            border-left: none;
-            border-right: none;
-            grid-template-columns: 1fr;
-          }
+          .skills-grid { border-radius: 8px; grid-template-columns: 1fr; }
           .lamp-skill-box { min-height: 168px; }
           .skill-cols-wrap { gap: 10px !important; padding: 0 10px 10px !important; }
         }
@@ -455,9 +447,7 @@ export function SkillsSection() {
         }
 
         @media (max-width: 639px) {
-          .skills-inner { padding: 0 0 28px !important; }
-          .skills-inner > div:nth-child(1),
-          .skills-inner > div:nth-child(4) { padding-left: 16px !important; padding-right: 16px !important; }
+          .skills-inner { padding: 0 16px 28px !important; }
         }
       `}</style>
 
