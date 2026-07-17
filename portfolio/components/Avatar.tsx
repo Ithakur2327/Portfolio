@@ -259,17 +259,25 @@ export function Avatar() {
     let loaded = 0;
     const boot = () => { if (++loaded < 2) return; startLoop(); };
 
+    // Cache-bust every load: this file is edited in place by filename (not
+    // content-hashed like normal build assets), and browsers/CDNs may have
+    // already stored an old response under the old 1-year "immutable"
+    // header from before that policy was corrected. A changing query string
+    // guarantees a fresh network request regardless of anything cached
+    // upstream, so the avatar always reflects whatever is on disk right now.
+    const cacheBust = Date.now();
+
     const imgD = new window.Image();
     imgD.crossOrigin = "anonymous";
     imgD.onload  = () => { try { G.texD = mkTex(imgD); } catch { G.texD = makeFallback(true); } boot(); };
     imgD.onerror = () => { G.texD = makeFallback(true); boot(); };
-    imgD.src = "/avatar-dark.jpg";
+    imgD.src = `/avatar-dark.jpg?v=${cacheBust}`;
 
     const imgL = new window.Image();
     imgL.crossOrigin = "anonymous";
     imgL.onload  = () => { try { G.texL = mkTex(imgL); } catch { G.texL = makeFallback(false); } boot(); };
     imgL.onerror = () => { G.texL = makeFallback(false); boot(); };
-    imgL.src = "/avatar-light.jpg";
+    imgL.src = `/avatar-light.jpg?v=${cacheBust}`;
 
     let isVisible = true;
     let loopFn: ((ts: number) => void) | null = null;
