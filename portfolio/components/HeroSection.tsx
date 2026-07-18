@@ -479,7 +479,7 @@ export function HeroSection() {
           position:"relative", left:"50%", marginLeft:"-50vw", width:"100vw",
           background:BG, borderTop:B,
         }}>
-          <div className="h-profile" style={{maxWidth:CW, margin:"0 auto", border:B, borderRadius:8.5}}>
+          <div className="h-profile" style={{maxWidth:CW, margin:"0 auto", borderLeft:B, borderRight:B, borderBottom:B, borderTop:"none", borderRadius:8.5}}>
 
             <div className="h-avatar">
               <div style={{width:"100%", aspectRatio:"1 / 1", flexShrink:0}}>
