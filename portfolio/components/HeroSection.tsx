@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState, useRef, useLayoutEffect } from "react";
+import { useEffect, useState } from "react";
 import { Avatar } from "./Avatar";
 import { DotField } from "./DotBackground";
 import { useTheme } from "./ThemeProvider";
@@ -179,7 +179,7 @@ function HoverBorderGradient({ children, radius = 10 }: { children: React.ReactN
 
 const CW = 1028;
 
-export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) {
+export function HeroSection() {
   const [vis, setVis] = useState<"ssr" | "visible">("ssr");
   const { openPdf } = usePdfModal();
 
@@ -196,32 +196,17 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
         .fs-in  { animation: fsIn  0.28s cubic-bezier(0.16,1,0.3,1) forwards }
         .fs-out { animation: fsOut 0.22s ease-in forwards }
 
-        /* Hero now takes exactly its own natural content height — no
-           forced min-height against the viewport. That was reserving
-           leftover blank space (first above the avatar, then, after
-           top-aligning, below the social row) whenever content didn't
-           exactly match screen height. Avatar/info sizes below already
-           scale with vh, so the section still roughly fills a screen on
-           most devices — but never leaves an artificial gap either way. */
-        .hero-viewport {
-          display: flex;
-          flex-direction: column;
-        }
-
         .h-profile {
           display: flex;
           flex-direction: row;
           align-items: stretch;
         }
 
-        /* Avatar box scales with viewport HEIGHT (not a fixed px value)
-           so it genuinely grows on tall screens and shrinks on short
-           ones — no JS scale-transform, no reserved blank space. */
         .h-avatar {
-          width: clamp(150px, 24vh, 240px);
-          min-width: clamp(150px, 24vh, 240px);
-          height: clamp(142px, 22.8vh, 228px);
-          min-height: clamp(142px, 22.8vh, 228px);
+          width: 198px;
+          min-width: 198px;
+          height: 188px;
+          min-height: 188px;
           flex-shrink: 0;
           border-right: 1px solid var(--border);
           overflow: hidden;
@@ -481,7 +466,7 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
       `}</style>
 
       <section id="home"
-        className={vis === "ssr" ? "hero-viewport" : "reveal visible hero-viewport"}
+        className={vis === "ssr" ? "" : "reveal visible"}
       >
         <div style={{ position: "relative", left: "50%", marginLeft: "-50vw", width: "100vw" }}>
           <div style={{ position: "absolute", inset: 0, zIndex: 0 }}>
@@ -497,7 +482,7 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
 
             <div className="h-avatar">
               <div style={{width:"100%", aspectRatio:"1 / 1", flexShrink:0}}>
-                <Avatar version={avatarVersion} />
+                <Avatar />
               </div>
             </div>
 
