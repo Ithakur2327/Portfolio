@@ -11,28 +11,27 @@ export function SparklesBridge() {
     themeRef.current = theme;
   }, [theme]);
 
-  const wrapRef = useRef<HTMLDivElement>(null);
-
   useEffect(() => {
     const canvas = canvasRef.current;
-    const wrap = wrapRef.current;
-    if (!canvas || !wrap) return;
+    if (!canvas) return;
     const ctx = canvas.getContext("2d")!;
     if (!ctx) return;
 
-    // No guessed formula anymore. The wrapper div is a flex child of
-    // .hero-screen with flex-grow:1 (the smallest share — Info gets most,
-    // Avatar row a bit less, this bridge the least). Whatever real pixel
-    // height the browser gives it after laying out the other two flex
-    // siblings is what we measure and draw into, via ResizeObserver — so
-    // it always matches exactly, on every device, with no leftover gap.
-    let canvasW = wrap.clientWidth;
-    let canvasH = wrap.clientHeight;
+    const getHeight = () => {
+      const vw = window.innerWidth;
+      if (vw >= 1024 && vw <= 1180) return 148;
+      if (vw >= 768  && vw <= 1023) return 124;
+      if (vw >= 600  && vw <= 767)  return 100;
+      return 62;
+    };
 
-    const applySize = () => {
+    let canvasW = window.innerWidth;
+    let canvasH = getHeight();
+
+    const resize = () => {
       const dpr = Math.min(window.devicePixelRatio || 1, 4);
-      canvasW = wrap.clientWidth;
-      canvasH = wrap.clientHeight;
+      canvasW = window.innerWidth;
+      canvasH = getHeight();
       canvas.width  = Math.round(canvasW * dpr);
       canvas.height = Math.round(canvasH * dpr);
       canvas.style.width  = `${canvasW}px`;
@@ -40,11 +39,8 @@ export function SparklesBridge() {
       ctx.resetTransform();
       ctx.scale(dpr, dpr);
     };
-    applySize();
-
-    const ro = new ResizeObserver(() => applySize());
-    ro.observe(wrap);
-    window.addEventListener("orientationchange", applySize, { passive: true });
+    resize();
+    window.addEventListener("resize", resize, { passive: true });
 
     type Dot = {
       x: number; y: number;
@@ -125,24 +121,29 @@ export function SparklesBridge() {
 
     return () => {
       cancelAnimationFrame(raf);
-      ro.disconnect();
-      window.removeEventListener("orientationchange", applySize);
+      window.removeEventListener("resize", resize);
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
-    <div
-      ref={wrapRef}
-      className="hero-screen-sparkles"
-      style={{ background: "var(--bg-base)", flex: "1 1 0px", minHeight: 0, overflow: "hidden" }}
-    >
+    <div style={{ background: "var(--bg-base)" }}>
       <canvas
         ref={canvasRef}
-        style={{ display: "block", width: "100%", height: "100%" }}
+        style={{ display: "block", width: "100%", height: 62 }}
         className="sparkles-bridge-canvas"
       />
-    
+      <style suppressHydrationWarning>{`
+        @media (min-width: 600px) and (max-width: 767px) {
+          .sparkles-bridge-canvas { height: 100px !important; }
+        }
+        @media (min-width: 768px) and (max-width: 1023px) {
+          .sparkles-bridge-canvas { height: 124px !important; }
+        }
+        @media (min-width: 1024px) and (max-width: 1180px) {
+          .sparkles-bridge-canvas { height: 148px !important; }
+        }
+      `}</style>
     </div>
   );
 }
