@@ -17,28 +17,12 @@ export function SparklesBridge() {
     const ctx = canvas.getContext("2d")!;
     if (!ctx) return;
 
-    // Height now scales with BOTH viewport width (breakpoint tier) and
-    // viewport height (so short/tall screens shrink/grow it), keeping it
-    // in lockstep with the Hero section instead of a fixed pixel band.
-    // No CSS !important overrides fight this anymore — the inline style
-    // set below is the single source of truth.
     const getHeight = () => {
       const vw = window.innerWidth;
-      const vh = window.innerHeight;
-
-      // Sparkles bridge is the SMALLEST of the three hero pieces
-      // (bridge < avatar row < info box). It only gets a small slice
-      // of vertical viewport height, so short screens don't waste
-      // space on it and tall screens don't over-grow it.
-      let vhFactor: number;
-      let min: number;
-      let max: number;
-      if (vw >= 1024) { vhFactor = 0.085; min = 90;  max = 165; }
-      else if (vw >= 768) { vhFactor = 0.075; min = 72;  max = 135; }
-      else if (vw >= 600) { vhFactor = 0.065; min = 56;  max = 112; }
-      else { vhFactor = 0.05;  min = 40;  max = 78;  }
-
-      return Math.round(Math.min(max, Math.max(min, vh * vhFactor)));
+      if (vw >= 1024 && vw <= 1180) return 148;
+      if (vw >= 768  && vw <= 1023) return 124;
+      if (vw >= 600  && vw <= 767)  return 100;
+      return 62;
     };
 
     let canvasW = window.innerWidth;
@@ -149,11 +133,17 @@ export function SparklesBridge() {
         style={{ display: "block", width: "100%", height: 62 }}
         className="sparkles-bridge-canvas"
       />
-      {/* No fixed-height !important breakpoints here anymore — they used
-          to override the JS-computed inline height and stop the canvas
-          from actually scaling with the viewport. The inline height set
-          by the resize() handler above is now the only source of truth,
-          so this bridge grows/shrinks together with the Hero section. */}
+      <style suppressHydrationWarning>{`
+        @media (min-width: 600px) and (max-width: 767px) {
+          .sparkles-bridge-canvas { height: 100px !important; }
+        }
+        @media (min-width: 768px) and (max-width: 1023px) {
+          .sparkles-bridge-canvas { height: 124px !important; }
+        }
+        @media (min-width: 1024px) and (max-width: 1180px) {
+          .sparkles-bridge-canvas { height: 148px !important; }
+        }
+      `}</style>
     </div>
   );
 }
