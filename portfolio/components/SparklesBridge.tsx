@@ -26,16 +26,19 @@ export function SparklesBridge() {
       const vw = window.innerWidth;
       const vh = window.innerHeight;
 
-      let base: number;
-      if (vw >= 1024 && vw <= 1180) base = 148;
-      else if (vw >= 768  && vw <= 1023) base = 124;
-      else if (vw >= 600  && vw <= 767)  base = 100;
-      else base = 62;
+      // Sparkles bridge is the SMALLEST of the three hero pieces
+      // (bridge < avatar row < info box). It only gets a small slice
+      // of vertical viewport height, so short screens don't waste
+      // space on it and tall screens don't over-grow it.
+      let vhFactor: number;
+      let min: number;
+      let max: number;
+      if (vw >= 1024) { vhFactor = 0.085; min = 90;  max = 165; }
+      else if (vw >= 768) { vhFactor = 0.075; min = 72;  max = 135; }
+      else if (vw >= 600) { vhFactor = 0.065; min = 56;  max = 112; }
+      else { vhFactor = 0.05;  min = 40;  max = 78;  }
 
-      // Scale that base by how tall the actual viewport is, clamped so it
-      // never gets absurdly big/small on extreme aspect ratios.
-      const vhScale = Math.min(1.2, Math.max(0.7, vh / 800));
-      return Math.round(base * vhScale);
+      return Math.round(Math.min(max, Math.max(min, vh * vhFactor)));
     };
 
     let canvasW = window.innerWidth;
