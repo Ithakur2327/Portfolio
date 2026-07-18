@@ -200,6 +200,7 @@ export function HeroSection() {
           display: flex;
           flex-direction: row;
           align-items: stretch;
+          overflow: hidden; /* clips the nameblock's bottom-right corner into the curve below */
         }
 
         .h-avatar {
@@ -476,9 +477,9 @@ export function HeroSection() {
 
         <div style={{
           position:"relative", left:"50%", marginLeft:"-50vw", width:"100vw",
-          background:BG, borderTop:B, borderBottom:B,
+          background:BG, borderTop:B,
         }}>
-          <div className="h-profile" style={{maxWidth:CW, margin:"0 auto", borderLeft:B, borderRight:B}}>
+          <div className="h-profile" style={{maxWidth:CW, margin:"0 auto", borderLeft:B, borderRight:B, borderBottom:B, borderRadius:"0 0 8.5px 8.5px"}}>
 
             <div className="h-avatar">
               <div style={{width:"100%", aspectRatio:"1 / 1", flexShrink:0}}>
