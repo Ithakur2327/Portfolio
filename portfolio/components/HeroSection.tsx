@@ -218,10 +218,10 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
            so it genuinely grows on tall screens and shrinks on short
            ones — no JS scale-transform, no reserved blank space. */
         .h-avatar {
-          width: clamp(150px, 20vh, 240px);
-          min-width: clamp(150px, 20vh, 240px);
-          height: clamp(142px, 19vh, 228px);
-          min-height: clamp(142px, 19vh, 228px);
+          width: clamp(150px, 24vh, 240px);
+          min-width: clamp(150px, 24vh, 240px);
+          height: clamp(142px, 22.8vh, 228px);
+          min-height: clamp(142px, 22.8vh, 228px);
           flex-shrink: 0;
           border-right: 1px solid var(--border);
           overflow: hidden;
@@ -249,7 +249,7 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
         .h-grid {
           display: grid;
           grid-template-columns: 1fr 1fr;
-          gap: clamp(16px, 2.4vh, 30px) 56px;
+          gap: 16px 56px;
           position: relative;
         }
         .h-info-pad::before {
@@ -522,14 +522,14 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
           </div>
         </div>
 
-        <div style={{height:"clamp(24px, 4vh, 42px)", maxWidth:CW, margin:"0 auto"}}/>
+        <div style={{height:38, maxWidth:CW, margin:"0 auto"}}/>
 
         {/* ── INFO + SOCIAL ── */}
         <div className="h-info-wrap">
           <HoverBorderGradient>
             <div className="h-info-box" style={{background:BG, border:B, borderRadius:8.5, overflow:"hidden"}}>
 
-              <div className="h-info-pad" style={{padding:"clamp(24px, 4.2vh, 44px) 28px clamp(22px, 3.8vh, 40px)"}}>
+              <div className="h-info-pad" style={{padding:"24px 28px 22px"}}>
                 <div className="h-grid">
 
                   {/* LEFT */}
@@ -593,7 +593,7 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
           </HoverBorderGradient>
         </div>
 
-        <div style={{ height: "clamp(24px, 4vh, 42px)", maxWidth: CW, margin: "0 auto" }} />
+        <div style={{ height: 38, maxWidth: CW, margin: "0 auto" }} />
 
           </div>
         </div>
