@@ -215,7 +215,7 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
           display: flex;
           align-items: flex-start;
           justify-content: stretch;
-          border-radius: 20px;
+          border-radius: 8.5px;
           background: var(--bg-base);
         }
         .h-nameblock {
@@ -268,7 +268,7 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
             min-width: clamp(220px, 32vw, 300px) !important;
             height: calc(clamp(220px, 32vw, 300px) - 14px) !important;
             min-height: calc(clamp(220px, 32vw, 300px) - 14px) !important;
-            border-radius: 24px !important;
+            border-radius: 8.5px !important;
           }
           .h-nameblock h1 {
             font-size: clamp(36px, 6vw, 64px) !important;
@@ -344,7 +344,7 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
             min-width: clamp(160px, 26vw, 200px) !important;
             height: calc(clamp(160px, 26vw, 200px) - 10px) !important;
             min-height: calc(clamp(160px, 26vw, 200px) - 10px) !important;
-            border-radius: 18px !important;
+            border-radius: 8.5px !important;
           }
           .h-nameblock h1 {
             font-size: clamp(26px, 5.2vw, 42px) !important;
@@ -385,7 +385,7 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
             border-bottom: none !important;
             overflow: hidden !important;
             padding: 0 !important;
-            border-radius: 16px !important;
+            border-radius: 8.5px !important;
           }
           .h-nameblock {
             flex: 1 !important;
@@ -452,7 +452,7 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
             min-width: clamp(105px, 30vw, 135px) !important;
             height: calc(clamp(105px, 30vw, 135px) - 6px) !important;
             min-height: calc(clamp(105px, 30vw, 135px) - 6px) !important;
-            border-radius: 14px !important;
+            border-radius: 8.5px !important;
           }
           .h-nameblock h1 {
             font-size: clamp(20px, 7vw, 24px) !important;
