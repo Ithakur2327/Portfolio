@@ -179,7 +179,7 @@ function HoverBorderGradient({ children, radius = 10 }: { children: React.ReactN
 
 const CW = 1028;
 
-export function HeroSection() {
+export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) {
   const [vis, setVis] = useState<"ssr" | "visible">("ssr");
   const { openPdf } = usePdfModal();
 
@@ -483,7 +483,7 @@ export function HeroSection() {
 
             <div className="h-avatar">
               <div style={{width:"100%", aspectRatio:"1 / 1", flexShrink:0}}>
-                <Avatar />
+                <Avatar version={avatarVersion} />
               </div>
             </div>
 
