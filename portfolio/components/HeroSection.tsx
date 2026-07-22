@@ -4,6 +4,7 @@ import { Avatar } from "./Avatar";
 import { DotField } from "./DotBackground";
 import { useTheme } from "./ThemeProvider";
 import { usePdfModal } from "./PdfViewerModal";
+import { SocialTooltip } from "./SocialTooltip";
 
 const SENTENCES = [
   "AI Software Engineer",
@@ -79,40 +80,32 @@ function Row({icon, href, newTab, onClick, children}:{icon:React.ReactNode; href
 function SocialIconTile({href,label,icon,iconBg,iconBorder,iconColor}:{href:string;label:string;icon:React.ReactNode;iconBg:string;iconBorder:string;iconColor:string}) {
   const [hovered, setHovered] = useState(false);
   return (
-    <a
-      href={href} target="_blank" rel="noreferrer"
-      className="s-icon-tile"
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      style={{
-        display:"flex", alignItems:"center", justifyContent:"center",
-        gap: hovered ? 8 : 0,
-        padding: hovered ? "16px 20px" : "16px 18px",
-        background: hovered ? "var(--bg-secondary)" : "var(--bg-base)",
-        color:"var(--text-primary)",
-        textDecoration:"none", position:"relative",
-        transition:"background 0.18s, padding 0.2s cubic-bezier(0.16,1,0.3,1), gap 0.2s cubic-bezier(0.16,1,0.3,1)",
-        overflow:"hidden", minWidth: hovered ? 0 : "auto",
-        cursor:"pointer",
-      }}
-    >
-      <div style={{
-        width:32,height:32,borderRadius:8,
-        background:iconBg,border:iconBorder,
-        display:"flex",alignItems:"center",justifyContent:"center",
-        color:iconColor,flexShrink:0,
-        transform: hovered ? "scale(1.12)" : "scale(1)",
-        transition:"transform 0.18s cubic-bezier(0.16,1,0.3,1)",
-      }}>{icon}</div>
-      <span style={{
-        fontWeight:600,fontSize:13.5,fontFamily:"'Geist',sans-serif",
-        maxWidth: hovered ? 80 : 0,
-        opacity: hovered ? 1 : 0,
-        overflow:"hidden",
-        whiteSpace:"nowrap",
-        transition:"max-width 0.22s cubic-bezier(0.16,1,0.3,1), opacity 0.18s",
-      }}>{label}</span>
-    </a>
+    <SocialTooltip label={label}>
+      <a
+        href={href} target="_blank" rel="noreferrer"
+        className="s-icon-tile"
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
+        style={{
+          display:"flex", alignItems:"center", justifyContent:"center",
+          padding:"16px 20px",
+          background:"var(--bg-base)",
+          color:"var(--text-primary)",
+          textDecoration:"none", position:"relative",
+          transition:"background 0.18s",
+          cursor:"pointer",
+        }}
+      >
+        <div style={{
+          width:32,height:32,borderRadius:8,
+          background:iconBg,border:iconBorder,
+          display:"flex",alignItems:"center",justifyContent:"center",
+          color:iconColor,flexShrink:0,
+          transform: hovered ? "scale(1.12)" : "scale(1)",
+          transition:"transform 0.18s cubic-bezier(0.16,1,0.3,1)",
+        }}>{icon}</div>
+      </a>
+    </SocialTooltip>
   );
 }
 
@@ -215,12 +208,36 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
           display: flex;
           align-items: flex-start;
           justify-content: stretch;
-          border-radius: 8.5px;
+          border-radius: 22px;
           background: var(--bg-base);
         }
         .h-nameblock {
           flex: 1; display: flex; flex-direction: column;
           justify-content: flex-end; min-width: 0;
+        }
+
+        .verified-tick:hover { transform: rotate(360deg); }
+
+        @keyframes nameLineSweep {
+          0%   { transform: translateX(-120%); }
+          100% { transform: translateX(220%); }
+        }
+        .h-name-line-sweep {
+          position: absolute;
+          top: 0; left: 0;
+          width: 45%;
+          height: 100%;
+          background: linear-gradient(
+            90deg,
+            transparent 0%,
+            var(--text-muted) 50%,
+            transparent 100%
+          );
+          opacity: 0.9;
+          animation: nameLineSweep 3.2s ease-in-out infinite;
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .h-name-line-sweep { animation: none; }
         }
 
         .h-info-wrap {
@@ -235,7 +252,7 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
         .h-grid {
           display: grid;
           grid-template-columns: 1fr 1fr;
-          gap: 16px 56px;
+          gap: 14px 32px;
           position: relative;
         }
         .h-info-pad::before {
@@ -254,6 +271,7 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
           border-right: 1px solid var(--border);
         }
         .s-icon-tile:last-child { border-right: none !important; }
+        .s-icon-tile:hover { background: var(--bg-secondary) !important; }
 
         .s-social-group {
           display: flex;
@@ -268,7 +286,7 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
             min-width: clamp(220px, 32vw, 300px) !important;
             height: calc(clamp(220px, 32vw, 300px) - 14px) !important;
             min-height: calc(clamp(220px, 32vw, 300px) - 14px) !important;
-            border-radius: 8.5px !important;
+            border-radius: 26px !important;
           }
           .h-nameblock h1 {
             font-size: clamp(36px, 6vw, 64px) !important;
@@ -295,7 +313,7 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
             padding: 28px 36px 24px !important;
           }
           .h-grid {
-            gap: 20px 80px !important;
+            gap: 18px 48px !important;
           }
           .h-info-pad .h-grid > div > div > div:first-child,
           .h-info-pad .h-grid > div > a > div:first-child {
@@ -344,7 +362,7 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
             min-width: clamp(160px, 26vw, 200px) !important;
             height: calc(clamp(160px, 26vw, 200px) - 10px) !important;
             min-height: calc(clamp(160px, 26vw, 200px) - 10px) !important;
-            border-radius: 8.5px !important;
+            border-radius: 18px !important;
           }
           .h-nameblock h1 {
             font-size: clamp(26px, 5.2vw, 42px) !important;
@@ -385,7 +403,7 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
             border-bottom: none !important;
             overflow: hidden !important;
             padding: 0 !important;
-            border-radius: 8.5px !important;
+            border-radius: 16px !important;
           }
           .h-nameblock {
             flex: 1 !important;
@@ -452,7 +470,7 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
             min-width: clamp(105px, 30vw, 135px) !important;
             height: calc(clamp(105px, 30vw, 135px) - 6px) !important;
             min-height: calc(clamp(105px, 30vw, 135px) - 6px) !important;
-            border-radius: 8.5px !important;
+            border-radius: 14px !important;
           }
           .h-nameblock h1 {
             font-size: clamp(20px, 7vw, 24px) !important;
@@ -489,7 +507,7 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
 
             <div className="h-nameblock">
               <div style={{flex:1}}/>
-              <div style={{padding:"28px 20px 0", marginBottom:"-3px"}}>
+              <div style={{padding:"28px 20px 0", marginBottom:"-3px", display:"flex", alignItems:"center", gap:8}}>
                 <h1 style={{
                   fontSize:"clamp(24px,3.8vw,36px)", fontWeight:900,
                   letterSpacing:"0.02em", color:"var(--text-primary)",
@@ -498,9 +516,25 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
                   WebkitFontSmoothing:"antialiased", MozOsxFontSmoothing:"grayscale",
                   textRendering:"optimizeLegibility",
                 }}>Indresh Thakur</h1>
+                <svg
+                  className="verified-tick"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  width="20"
+                  height="20"
+                  fill="#2db6f0"
+                  style={{ flexShrink: 0, transition: "transform 0.4s cubic-bezier(0.16,1,0.3,1)" }}
+                >
+                  <path
+                    fill="#2db6f0"
+                    d="M15.616 3.268L12 .186L8.383 3.268l-4.737.378l-.378 4.737L.186 12l3.082 3.617l.378 4.737l4.737.378l3.616 3.082l3.617-3.082l4.737-.378l.378-4.737L23.813 12l-3.082-3.617l-.378-4.737zM11 16.414L6.585 12L8 10.586l3 3l5.5-5.5L17.914 9.5z"
+                  />
+                </svg>
               </div>
-              {/* Line at full nameblock width — connects left partition to right border */}
-              <div style={{height:1, background:"var(--border)", width:"100%"}}/>
+              {/* Line at full nameblock width — connects left partition to right border, with a moving bright sweep */}
+              <div className="h-name-line" style={{height:1, background:"var(--border)", width:"100%", position:"relative", overflow:"hidden"}}>
+                <div className="h-name-line-sweep" />
+              </div>
               <div style={{padding:"8px 20px 12px", height:36, display:"flex", alignItems:"center", overflow:"hidden"}}>
                 <FlipSentences/>
               </div>
