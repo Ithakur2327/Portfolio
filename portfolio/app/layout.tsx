@@ -33,24 +33,61 @@ export const viewport: Viewport = {
 
 // ─── Metadata ─────────────────────────────────────────────
 export const metadata: Metadata = {
-  title: "Indresh Thakur — Full-Stack & AI Developer",
+  metadataBase: new URL("https://ithakur.vercel.app"),
+
+  title: "Indresh Thakur | AI Engineer & Full Stack Developer",
+
   description:
-    "Computer science student (AI specialization) at NIET, passionate about full-stack development and generative AI systems.",
+    "Portfolio of Indresh Thakur. AI Engineer, Full Stack Developer, MERN Stack, Machine Learning, GenAI and Agentic AI.",
+
   keywords: [
     "Indresh Thakur",
-    "Full-Stack Developer",
-    "AI Developer",
-    "React",
+    "AI Engineer",
+    "Full Stack Developer",
+    "MERN",
     "Next.js",
-    "Node.js",
-    "LLM",
-    "NIET",
+    "Machine Learning",
+    "Portfolio"
   ],
-  authors: [{ name: "Indresh Thakur" }],
+
+  authors: [
+    {
+      name: "Indresh Thakur",
+    },
+  ],
+
+  robots: {
+    index: true,
+    follow: true,
+  },
+
+  alternates: {
+    canonical: "https://ithakur.vercel.app",
+  },
+
+  icons: {
+    icon: "/favicon.ico",
+    apple: "/apple-touch-icon.png",
+  },
+
   openGraph: {
-    title: "Indresh Thakur — Full-Stack & AI Developer",
-    description: "Building real-world apps with code.",
+    title: "Indresh Thakur | AI Engineer & Full Stack Developer",
+    description: "AI Engineer & Full Stack Developer.",
+    url: "https://ithakur.vercel.app",
+    siteName: "Indresh Thakur",
     type: "website",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+      },
+    ],
+  },
+
+  twitter: {
+    card: "summary_large_image",
+    images: ["/og-image.png"],
   },
 };
 
