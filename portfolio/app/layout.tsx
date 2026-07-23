@@ -35,19 +35,24 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   metadataBase: new URL("https://ithakur.vercel.app"),
 
-  title: "Indresh Thakur | AI Engineer & Full Stack Developer",
+  title: {
+    default: "Indresh Thakur | AI Engineer & Full Stack Developer",
+    template: "%s | Indresh Thakur",
+  },
 
   description:
-    "Portfolio of Indresh Thakur. AI Engineer, Full Stack Developer, MERN Stack, Machine Learning, GenAI and Agentic AI.",
+    "Portfolio of Indresh Thakur. AI Engineer, Full Stack Developer, MERN Stack, Machine Learning, Generative AI, Agentic AI, and modern web applications.",
 
   keywords: [
     "Indresh Thakur",
     "AI Engineer",
     "Full Stack Developer",
-    "MERN",
+    "MERN Stack",
     "Next.js",
     "Machine Learning",
-    "Portfolio"
+    "Generative AI",
+    "Agentic AI",
+    "Portfolio",
   ],
 
   authors: [
@@ -67,27 +72,37 @@ export const metadata: Metadata = {
 
   icons: {
     icon: "/favicon.ico",
-    apple: "/apple-touch-icon.png",
+    shortcut: "/favicon.ico",
   },
 
   openGraph: {
     title: "Indresh Thakur | AI Engineer & Full Stack Developer",
-    description: "AI Engineer & Full Stack Developer.",
+    description:
+      "Portfolio of Indresh Thakur. AI Engineer, Full Stack Developer, MERN Stack, Machine Learning, Generative AI and Agentic AI.",
     url: "https://ithakur.vercel.app",
     siteName: "Indresh Thakur",
     type: "website",
+    locale: "en_US",
     images: [
       {
         url: "/og-image.png",
         width: 1200,
         height: 630,
+        alt: "Indresh Thakur Portfolio",
       },
     ],
   },
 
   twitter: {
     card: "summary_large_image",
+    title: "Indresh Thakur | AI Engineer & Full Stack Developer",
+    description:
+      "Portfolio of Indresh Thakur. AI Engineer & Full Stack Developer.",
     images: ["/og-image.png"],
+  },
+
+  verification: {
+    google: "4-ItIUeyXuTQwPxwrBiCjBLvxbp5g3smWy5p8dyTOTA",
   },
 };
 
