@@ -282,7 +282,7 @@ function CommandMenu({
           border: `1px solid ${isCurrent ? "#4ade8070" : border}`,
           display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
         }}>
-          <MenuItemIcon type={item.icon} color={isCurrent ? "#4ade80" : isActive ? fg : muted} />
+          <MenuItemIcon type={item.icon} color={isCurrent ? "#21f1a8" : isActive ? fg : muted} />
         </div>
         <span style={{
           flex: 1, fontSize: 14, fontWeight: 500,
