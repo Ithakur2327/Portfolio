@@ -17,7 +17,7 @@ const PORTFOLIO_LINKS = [
   { label: "Projects",       href: "#projects",                               icon: "box",      external: false, type: "section" },
   { label: "Education",      href: "#education",                              icon: "book",     external: false, type: "section" },
   { label: "Certifications", href: "#certifications",                         icon: "badge",    external: false, type: "section" },
-  { label: "Contact",        href: "#contact",                                icon: "mail",     external: false, type: "section" },
+  { label: "Contact",        href: "/contact",                               icon: "mail",     external: false, type: "page"    },
   { label: "GitHub",         href: "https://github.com/Ithakur2327",          icon: "github",   external: true,  type: "link"    },
   { label: "LeetCode",       href: "https://leetcode.com/IThakur09/",         icon: "leetcode", external: true,  type: "link"    },
   { label: "Website",        href: "https://indreshthakur.dev",              icon: "website",  external: true,  type: "link"    },
@@ -192,6 +192,7 @@ function CommandMenu({
       if (e.key === "Enter" && filtered[selected]) {
         const item = filtered[selected];
         if (item.type === "pdf") { openPdf(item.href, item.label, item.href); onClose(); return; }
+        if (item.type === "page") { onClose(); window.location.href = item.href; return; }
         if (item.external) { window.open(item.href, "_blank", "noopener,noreferrer"); onClose(); return; }
         onClose();
         setTimeout(() => {
@@ -238,6 +239,11 @@ function CommandMenu({
       onClose();
       return;
     }
+    if (item.type === "page") {
+      onClose();
+      window.location.href = item.href;
+      return;
+    }
     if (item.external) {
       window.open(item.href, "_blank", "noopener,noreferrer");
       onClose();
@@ -282,7 +288,7 @@ function CommandMenu({
           border: `1px solid ${isCurrent ? "#4ade8070" : border}`,
           display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
         }}>
-          <MenuItemIcon type={item.icon} color={isCurrent ? "#21f1a8" : isActive ? fg : muted} />
+          <MenuItemIcon type={item.icon} color={isCurrent ? "#4ade80" : isActive ? fg : muted} />
         </div>
         <span style={{
           flex: 1, fontSize: 14, fontWeight: 500,

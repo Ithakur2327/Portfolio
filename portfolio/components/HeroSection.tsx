@@ -5,6 +5,7 @@ import { DotField } from "./DotBackground";
 import { useTheme } from "./ThemeProvider";
 import { usePdfModal } from "./PdfViewerModal";
 import { HeroActionButtons } from "./HeroActionButtons";
+import { SocialRow } from "./ui/SocialRow";
 
 const SENTENCES = [
   "AI Software Engineer",
@@ -90,24 +91,6 @@ function VerifiedBadge({ className }: { className?: string }) {
     >
       <path d="M15.616 3.268L12 .186L8.383 3.268l-4.737.378l-.378 4.737L.186 12l3.082 3.617l.378 4.737l4.737.378l3.616 3.082l3.617-3.082l4.737-.378l.378-4.737L23.813 12l-3.082-3.617l-.378-4.737zM11 16.414L6.585 12L8 10.586l3 3l5.5-5.5L17.914 9.5z" />
     </svg>
-  );
-}
-
-/* ── Social icon — icon button + floating tooltip on hover ── */
-function SocialIcon({ href, label, icon, iconBg, iconBorder, iconColor }:{
-  href:string; label:string; icon:React.ReactNode;
-  iconBg:string; iconBorder:string; iconColor:string;
-}) {
-  return (
-    <a
-      href={href} target="_blank" rel="noopener noreferrer"
-      className="h-social-icon"
-      style={{ background: iconBg, border: iconBorder, color: iconColor }}
-      aria-label={label}
-    >
-      {icon}
-      <span className="h-social-icon-tip">{label}</span>
-    </a>
   );
 }
 
@@ -198,11 +181,11 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
         .subtitle-shine {
           background: linear-gradient(
             100deg,
-            var(--text-secondary) 30%,
-            var(--text-primary) 44%,
-            #ffffff 50%,
-            var(--text-primary) 56%,
-            var(--text-secondary) 70%
+            var(--text-muted) 32%,
+            var(--text-secondary) 44%,
+            var(--text-primary) 50%,
+            var(--text-secondary) 56%,
+            var(--text-muted) 68%
           );
           background-size: 220% auto;
           -webkit-background-clip: text;
@@ -210,14 +193,14 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
           color: transparent;
           font-weight: 600;
           animation-name: fsIn, shimmer;
-          animation-duration: 0.28s, 2.6s;
+          animation-duration: 0.28s, 4.5s;
           animation-timing-function: cubic-bezier(0.16,1,0.3,1), linear;
           animation-iteration-count: 1, infinite;
           animation-fill-mode: forwards, none;
         }
         .fs-out.subtitle-shine {
           animation-name: fsOut, shimmer;
-          animation-duration: 0.22s, 2.6s;
+          animation-duration: 0.22s, 4.5s;
           animation-timing-function: ease-in, linear;
           animation-iteration-count: 1, infinite;
         }
@@ -292,62 +275,16 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
         }
         .h-grid-right { padding-left: 6px; }
 
-        .h-social { display: flex; flex-direction: row; }
+        .h-social {
+          display: flex;
+          flex-direction: row;
+          padding: 14px 22px;
+        }
 
-        /* Social icons — icon button + floating tooltip (reference-portfolio style) */
-        .h-social-icons {
-          display: flex;
-          flex-wrap: wrap;
-          align-items: center;
-          gap: 10px;
-          padding: 14px 20px;
+        /* Resume / Get in touch row — lives inside the info box now */
+        .h-info-actions {
+          margin-top: 16px;
         }
-        .h-social-icon {
-          position: relative;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          width: 38px;
-          height: 38px;
-          border-radius: 10px;
-          flex-shrink: 0;
-          transition: transform 0.18s cubic-bezier(0.16,1,0.3,1), background 0.18s ease, border-color 0.18s ease;
-        }
-        .h-social-icon:hover { transform: translateY(-3px) scale(1.06); }
-        .h-social-icon-tip {
-          position: absolute;
-          bottom: calc(100% + 9px);
-          left: 50%;
-          transform: translateX(-50%) translateY(4px);
-          padding: 5px 10px;
-          border-radius: 7px;
-          background: var(--text-primary);
-          color: var(--bg-base);
-          font-size: 11.5px;
-          font-weight: 600;
-          font-family: 'Geist Mono', monospace;
-          white-space: nowrap;
-          opacity: 0;
-          pointer-events: none;
-          box-shadow: 0 4px 14px rgba(0,0,0,0.2);
-          transition: opacity 0.15s ease, transform 0.15s ease;
-          z-index: 5;
-        }
-        .h-social-icon-tip::after {
-          content: "";
-          position: absolute;
-          top: 100%;
-          left: 50%;
-          transform: translateX(-50%);
-          border-left: 5px solid transparent;
-          border-right: 5px solid transparent;
-          border-top: 5px solid var(--text-primary);
-        }
-        .h-social-icon:hover .h-social-icon-tip {
-          opacity: 1;
-          transform: translateX(-50%) translateY(0);
-        }
-        @media (hover: none) { .h-social-icon-tip { display: none; } }
 
         @media (min-width: 768px) and (max-width: 1180px) {
           .h-avatar {
@@ -396,8 +333,7 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
             font-size: 15px !important;
             gap: 16px !important;
           }
-          .h-social-icons { padding: 16px 24px !important; gap: 12px !important; }
-          .h-social-icon { width: 42px !important; height: 42px !important; }
+          .h-social { padding: 16px 26px !important; }
           .h-profile {
             min-height: clamp(220px, 32vw, 300px) !important;
           }
@@ -457,8 +393,7 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
           .h-info-pad .h-grid > div > a {
             font-size: 13.5px !important;
           }
-          .h-social-icons { padding: 13px 16px !important; }
-          .h-social-icon { width: 36px !important; height: 36px !important; }
+          .h-social { padding: 13px 18px !important; }
         }
 
         @media (max-width: 600px) {
@@ -511,9 +446,9 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
           }
           .h-info-pad::before { display: none !important; }
           .h-grid-right { padding-left: 0 !important; }
-          .h-spacer { display: none !important; }
-          .h-social-icons { justify-content: center !important; padding: 14px 16px !important; gap: 8px !important; }
-          .h-social-icon { width: 34px !important; height: 34px !important; }
+          .h-social { justify-content: center !important; padding: 14px 16px !important; }
+          .hero-actions { justify-content: center !important; }
+          .hero-liquid-btn, .hero-contact-btn { flex: 1 1 auto; justify-content: center; }
         }
 
         @media (max-width: 380px) {
@@ -595,14 +530,6 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
 
         <div style={{height:22, maxWidth:CW, margin:"0 auto"}}/>
 
-        {/* ── RESUME / CONTACT ACTIONS ── */}
-        <div className="h-info-wrap">
-          <HeroActionButtons
-            onResumeClick={() => openPdf("/resume.pdf", "Resume", "/resume.pdf")}
-            contactHref="#contact"
-          />
-        </div>
-
         <div style={{height:22, maxWidth:CW, margin:"0 auto"}}/>
 
         {/* ── INFO + SOCIAL ── */}
@@ -626,15 +553,10 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
                       icon={<IBox color="#4ade80"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.35 2 2 0 0 1 3.6 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.6a16 16 0 0 0 6 6l.96-.96a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg></IBox>}>
                       +91 7859096326
                     </Row>
-                    <Row onClick={() => openPdf("/resume.pdf", "Resume", "/resume.pdf")}
-                      icon={<IBox color="#94a3b8"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7z"/><polyline points="14 2 14 7 19 7"/><circle cx="9" cy="13.5" r="2"/><path d="M5.5 20a3.5 3.5 0 0 1 7 0"/></svg></IBox>}>
-                      Resume
-                    </Row>
                   </div>
 
                   {/* RIGHT */}
                   <div className="h-grid-right" style={{display:"flex",flexDirection:"column",gap:10}}>
-                    <div className="h-spacer" style={{height:26,flexShrink:0}}/>
                     <Row icon={<IBox color="#fbbf24"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></IBox>}>
                       <LiveClock/>
                     </Row>
@@ -647,28 +569,19 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
                     </Row>
                   </div>
                 </div>
-              </div>
 
-              {/* ── Social row ── */}
-              <div className="h-social" style={{borderTop:B}}>
-                <div className="h-social-icons">
-                  <SocialIcon href="mailto:ithakur2327@gmail.com" label="Mail"
-                    iconBg="var(--bg-secondary)" iconBorder="1px solid var(--border)" iconColor="var(--text-primary)"
-                    icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>}
-                  />
-                  <SocialIcon href="https://github.com/Ithakur2327" label="GitHub"
-                    iconBg="var(--bg-secondary)" iconBorder="1px solid var(--border)" iconColor="var(--text-primary)"
-                    icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>}
-                  />
-                  <SocialIcon href="https://www.linkedin.com/in/indresh-thakur" label="LinkedIn"
-                    iconBg="#0A66C2" iconBorder="none" iconColor="#fff"
-                    icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 23.2 0 22.222 0h.003z"/></svg>}
-                  />
-                  <SocialIcon href="" label="X / Twitter"
-                    iconBg="var(--bg-secondary)" iconBorder="1px solid var(--border)" iconColor="var(--text-primary)"
-                    icon={<svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.255 5.623zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>}
+                {/* ── Resume / Get in touch — inside the info box ── */}
+                <div className="h-info-actions">
+                  <HeroActionButtons
+                    onResumeClick={() => openPdf("/resume.pdf", "Resume", "/resume.pdf")}
+                    contactHref="/contact"
                   />
                 </div>
+              </div>
+
+              {/* ── Social row — identical icons + tooltip everywhere on the site ── */}
+              <div className="h-social" style={{borderTop:B}}>
+                <SocialRow size={20} gap={16} />
               </div>
             </div>
           </HoverBorderGradient>

@@ -10,7 +10,7 @@ import { motion, useMotionValue, useSpring, type SpringOptions } from "motion/re
 ═══════════════════════════════════════════════════════════ */
 const MAGNETIC_SPRING: SpringOptions = { stiffness: 150, damping: 15, mass: 0.15 };
 
-function Magnetic({
+export function Magnetic({
   children,
   intensity = 0.25,
   range = 100,
@@ -68,7 +68,7 @@ function Magnetic({
    from the bottom on hover (CSS custom-property + background-
    position trick), same technique as the reference portfolio.
 ═══════════════════════════════════════════════════════════ */
-function LiquidButton({
+export function LiquidButton({
   children,
   onClick,
   fillColor,
@@ -126,7 +126,7 @@ function LiquidButton({
 }
 
 /* ── Icons (kept visually consistent with icons already used elsewhere
-   in the portfolio — the info-box "Resume" row and ContactSection) ── */
+   in the portfolio — the info-box "Resume" row and the Contact page) ── */
 function ResumeIcon() {
   return (
     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -147,12 +147,86 @@ function SendIcon() {
   );
 }
 
+export { SendIcon, ResumeIcon };
+
+/* ════════════════════════════════════════════════════════════
+   SolidMagneticButton — solid, magnetically-pulled button.
+   Self-contained (ships its own styles), so it renders correctly
+   anywhere it's used: Hero, Footer, or the standalone Contact page.
+═══════════════════════════════════════════════════════════ */
+export function SolidMagneticButton({
+  as = "button",
+  href,
+  onClick,
+  type = "button",
+  children,
+  className = "",
+}: {
+  as?: "button" | "a";
+  href?: string;
+  onClick?: () => void;
+  type?: "button" | "submit";
+  children: React.ReactNode;
+  className?: string;
+}) {
+  const inner = (
+    <Magnetic intensity={0.12} range={200}>
+      <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+        {children}
+      </span>
+    </Magnetic>
+  );
+
+  return (
+    <>
+      <style suppressHydrationWarning>{`
+        .hero-contact-btn {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          height: 40px;
+          padding: 0 20px;
+          border-radius: 10px;
+          border: none;
+          background: var(--text-primary);
+          color: var(--bg-base);
+          font-family: 'Geist Mono', monospace;
+          font-size: 13px;
+          font-weight: 600;
+          text-decoration: none;
+          white-space: nowrap;
+          cursor: pointer;
+          transition: opacity 0.18s ease, transform 0.18s ease;
+        }
+        .hero-contact-btn:hover  { opacity: 0.82; }
+        .hero-contact-btn:active { transform: scale(0.97); }
+        .hero-contact-btn:disabled { cursor: default; opacity: 0.55; }
+
+        @media (max-width: 600px) {
+          .hero-contact-btn { height: 38px; padding: 0 16px; font-size: 12.5px; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .hero-contact-btn { transition: none; }
+        }
+      `}</style>
+
+      <Magnetic intensity={0.2} range={100}>
+        {as === "a" ? (
+          <a href={href} className={`hero-contact-btn ${className}`}>{inner}</a>
+        ) : (
+          <button type={type} onClick={onClick} className={`hero-contact-btn ${className}`}>{inner}</button>
+        )}
+      </Magnetic>
+    </>
+  );
+}
+
 /* ════════════════════════════════════════════════════════════
    HeroActionButtons — Resume (liquid-fill) + Contact (magnetic)
 ═══════════════════════════════════════════════════════════ */
 export function HeroActionButtons({
   onResumeClick,
-  contactHref = "#contact",
+  contactHref = "/contact",
 }: {
   onResumeClick: () => void;
   contactHref?: string;
@@ -182,36 +256,11 @@ export function HeroActionButtons({
         }
         .hero-liquid-btn svg { flex-shrink: 0; }
 
-        .hero-contact-btn {
-          display: inline-flex;
-          align-items: center;
-          gap: 8px;
-          height: 40px;
-          padding: 0 20px;
-          border-radius: 10px;
-          background: var(--text-primary);
-          color: var(--bg-base);
-          font-family: 'Geist Mono', monospace;
-          font-size: 13px;
-          font-weight: 600;
-          text-decoration: none;
-          white-space: nowrap;
-          cursor: pointer;
-          transition: opacity 0.18s ease, transform 0.18s ease;
-        }
-        .hero-contact-btn:hover  { opacity: 0.82; }
-        .hero-contact-btn:active { transform: scale(0.97); }
-
         @media (max-width: 600px) {
-          .hero-liquid-btn, .hero-contact-btn {
-            height: 38px;
-            padding: 0 16px;
-            font-size: 12.5px;
-          }
+          .hero-liquid-btn { height: 38px; padding: 0 16px; font-size: 12.5px; }
         }
-
         @media (prefers-reduced-motion: reduce) {
-          .hero-liquid-btn, .hero-contact-btn { transition: none; }
+          .hero-liquid-btn { transition: none; }
         }
       `}</style>
 
@@ -228,16 +277,10 @@ export function HeroActionButtons({
           Resume / CV
         </LiquidButton>
 
-        <Magnetic intensity={0.2} range={100}>
-          <a href={contactHref} className="hero-contact-btn">
-            <Magnetic intensity={0.12} range={200}>
-              <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
-                <SendIcon />
-                Get in touch
-              </span>
-            </Magnetic>
-          </a>
-        </Magnetic>
+        <SolidMagneticButton as="a" href={contactHref}>
+          <SendIcon />
+          Get in touch
+        </SolidMagneticButton>
       </div>
     </>
   );
