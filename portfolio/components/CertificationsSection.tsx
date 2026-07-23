@@ -70,7 +70,6 @@ export function CertificationsSection() {
           background: var(--bg-base);
         }
         .edu-inner {
-          max-width: var(--content-width);
           margin: 0 auto;
           padding: 0 32px 64px;
         }
@@ -253,7 +252,7 @@ export function CertificationsSection() {
         className={revealClass}
       >
         <div className="edu-outer">
-          <div className="edu-inner">
+          <div className="edu-inner content-max">
             {/* Title row */}
             <div className="edu-sec-titlerow">
               <h2 className="edu-sec-title">

@@ -223,16 +223,12 @@ export function Footer() {
         }
 
         .footer-cta-band {
-          max-width: var(--content-width);
-          margin: 0 auto;
           padding: 28px 32px 22px;
           display: flex;
           align-items: center;
           justify-content: center;
         }
         .footer-bottom-band {
-          max-width: var(--content-width);
-          margin: 0 auto;
           padding: 18px 32px;
           display: flex;
           align-items: center;
@@ -330,14 +326,14 @@ export function Footer() {
       `}</style>
 
       <footer id="site-footer-root" className="footer-root">
-        <div className="footer-cta-band">
+        <div className="footer-cta-band content-max">
           <SolidMagneticButton as="a" href="/contact">
             <SendIcon />
             Get in Touch
           </SolidMagneticButton>
         </div>
 
-        <div className="footer-bottom-band">
+        <div className="footer-bottom-band content-max">
           <span className="footer-copy">© {year} Indresh Thakur. All rights reserved.</span>
           <SocialRow size={16} gap={12} />
         </div>

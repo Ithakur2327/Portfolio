@@ -155,9 +155,11 @@ function HoverBorderGradient({ children, radius = 10 }: { children: React.ReactN
   );
 }
 
-// Matches --content-width (960px) minus .page-wrapper's 16px side padding,
-// so the hero border lines up exactly with the rest of the page content.
-const CW = 928;
+// Hero breaks out to full-bleed (100vw) for its background band, then
+// re-clamps its own content using the shared --content-width-inset
+// variable (defined once in globals.css), so it always stays in sync
+// with every other section on the page.
+const CW_CSS = "var(--content-width-inset)";
 
 export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) {
   const [vis, setVis] = useState<"ssr" | "visible">("ssr");
@@ -251,7 +253,7 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
         .h-verified-badge:hover { transform: rotate(360deg); }
 
         .h-info-wrap {
-          max-width: ${CW}px;
+          max-width: ${CW_CSS};
           margin-left: auto;
           margin-right: auto;
         }
@@ -498,7 +500,7 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
           position:"relative", left:"50%", marginLeft:"-50vw", width:"100vw",
           background:BG, borderTop:B,
         }}>
-          <div className="h-profile" style={{maxWidth:CW, margin:"0 auto", borderLeft:B, borderRight:B, borderBottom:B, borderTop:"none", borderRadius:8.5}}>
+          <div className="h-profile" style={{maxWidth:CW_CSS, margin:"0 auto", borderLeft:B, borderRight:B, borderBottom:B, borderTop:"none", borderRadius:8.5}}>
 
             <div className="h-avatar">
               <div style={{width:"100%", aspectRatio:"1 / 1", flexShrink:0}}>
@@ -528,9 +530,9 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
           </div>
         </div>
 
-        <div style={{height:22, maxWidth:CW, margin:"0 auto"}}/>
+        <div style={{height:22, maxWidth:CW_CSS, margin:"0 auto"}}/>
 
-        <div style={{height:22, maxWidth:CW, margin:"0 auto"}}/>
+        <div style={{height:22, maxWidth:CW_CSS, margin:"0 auto"}}/>
 
         {/* ── INFO + SOCIAL ── */}
         <div className="h-info-wrap">
@@ -587,7 +589,7 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
           </HoverBorderGradient>
         </div>
 
-        <div style={{ height: 38, maxWidth: CW, margin: "0 auto" }} />
+        <div style={{ height: 38, maxWidth: CW_CSS, margin: "0 auto" }} />
 
           </div>
         </div>

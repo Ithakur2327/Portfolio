@@ -149,7 +149,7 @@ export function ProjectsSection() {
   return (
     <div id="projects" ref={setRefs} className={revealClass}>
       <div style={{ position: "relative", left: "50%", marginLeft: "-50vw", width: "100vw", background: "var(--bg-base)" }}>
-        <div className="proj-inner" style={{ maxWidth: "var(--content-width)", margin: "0 auto", padding: "0 20px 60px" }}>
+        <div className="proj-inner content-max" style={{ padding: "0 20px 60px" }}>
           <div style={{ paddingTop: 50, marginBottom: 4 }}>
             <span style={{ display: "inline-flex", alignItems: "center", gap: 10, fontSize: 28, fontWeight: 700, letterSpacing: "-0.03em", lineHeight: 1, fontFamily: SF, color: "var(--text-primary)" }}>
               <SectionTitleIcon type="box" />

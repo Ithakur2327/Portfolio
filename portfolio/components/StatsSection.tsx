@@ -768,7 +768,7 @@ export function StatsSection() {
         }
 
         .about-content {
-          max-width: var(--content-width); margin: 0 auto; padding: 0 20px 64px;
+          margin: 0 auto; padding: 0 20px 64px;
         }
         @media (max-width: 860px) { .about-content { padding: 0 22px 34px; } }
         @media (max-width: 639px) {
@@ -787,7 +787,7 @@ export function StatsSection() {
 
       <section id="stats" ref={statsRef} className={revealClass}>
         <div style={{ position: "relative", left: "50%", marginLeft: "-50vw", width: "100vw", background: "var(--bg-base)" }}>
-          <div className="about-content">
+          <div className="about-content content-max">
             <div style={{ paddingTop: 50 }}>
               <span style={{ display: "inline-flex", alignItems: "center", gap: 10, fontSize: 28, fontWeight: 700, letterSpacing: "-0.03em", lineHeight: 1, fontFamily: SF, color: "var(--text-primary)" }}>
                 <SectionTitleIcon type="chart" />
