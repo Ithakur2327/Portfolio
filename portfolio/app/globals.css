@@ -196,12 +196,7 @@ a, button, [role="button"] {
 }
 
 /* ═══════════════════════════════════════════════════════════
-   LAYOUT — page-wrapper
-   --content-width is the single source of truth for the site's
-   content column. Every section that re-applies a max-width
-   (Stats, Skills, Projects, Education, Certifications, Contact,
-   Footer, Navbar, Hero) reads from this token, so the whole
-   site's width is controlled from one place.
+   width is controlled from one place.
 ═══════════════════════════════════════════════════════════ */
 :root {
   --content-width: 1000px;

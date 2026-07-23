@@ -283,7 +283,12 @@ function LeetCodeStats({ username = "IThakur09" }: { username?: string }) {
     }
   });
 
-  const lcLvl = (c: number) => c === 0 ? 0 : c < 2 ? 1 : c < 4 ? 2 : c < 7 ? 3 : 4;
+  const lcLvl = (c: number) =>
+  c === 0 ? 0 :
+  c <= 3 ? 1 :
+  c <= 6 ? 2 :
+  c <= 11 ? 3 :
+  4;
   const diffColors = { Easy: "#00b8a3", Medium: "#ffc01e", Hard: "#ef4743" };
 
   const handleCellEnter = useCallback((e: React.MouseEvent<HTMLDivElement>, date: string, count: number) => {
@@ -512,7 +517,12 @@ function GitHubGraph({ username = "Ithakur2327" }: { username?: string }) {
     })();
   }, [username]);
 
-  const lvl = (n: number) => n === 0 ? 0 : n < 3 ? 1 : n < 6 ? 2 : n < 10 ? 3 : 4;
+ const lvl = (n: number) =>
+  n === 0 ? 0 :
+  n <= 8 ? 1 :
+  n <= 18 ? 2 :
+  n <= 34 ? 3 :
+  4;
   const isTablet = useIsTablet();
   const CELL = isTablet ? 14 : 10, GAP = isTablet ? 4 : 3, STEP = CELL + GAP;
   const contribColor = isDark ? "#ffffff" : "#000000";
