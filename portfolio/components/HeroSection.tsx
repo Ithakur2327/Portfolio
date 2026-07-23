@@ -4,7 +4,7 @@ import { Avatar } from "./Avatar";
 import { DotField } from "./DotBackground";
 import { useTheme } from "./ThemeProvider";
 import { usePdfModal } from "./PdfViewerModal";
-import { SocialTooltip } from "./SocialTooltip";
+import { HeroActionButtons } from "./HeroActionButtons";
 
 const SENTENCES = [
   "AI Software Engineer",
@@ -24,9 +24,9 @@ function FlipSentences() {
     return () => clearInterval(t);
   }, []);
   return (
-    <span key={idx} className={`fs-${anim}`} style={{
+    <span key={idx} className={`fs-${anim} subtitle-shine`} style={{
       display:"block", fontFamily:"'Geist Mono',monospace",
-      fontSize:13, color:"var(--text-muted)", lineHeight:1,
+      fontSize:13.5, lineHeight:1,
     }}>{SENTENCES[idx]}</span>
   );
 }
@@ -77,35 +77,37 @@ function Row({icon, href, newTab, onClick, children}:{icon:React.ReactNode; href
   return <div style={{...s}}>{icon}<span>{children}</span></div>;
 }
 
-function SocialIconTile({href,label,icon,iconBg,iconBorder,iconColor}:{href:string;label:string;icon:React.ReactNode;iconBg:string;iconBorder:string;iconColor:string}) {
-  const [hovered, setHovered] = useState(false);
+/* ── Verified badge — matches the reference portfolio's blue checkmark ── */
+function VerifiedBadge({ className }: { className?: string }) {
   return (
-    <SocialTooltip label={label}>
-      <a
-        href={href} target="_blank" rel="noreferrer"
-        className="s-icon-tile"
-        onMouseEnter={() => setHovered(true)}
-        onMouseLeave={() => setHovered(false)}
-        style={{
-          display:"flex", alignItems:"center", justifyContent:"center",
-          padding:"16px 20px",
-          background:"var(--bg-base)",
-          color:"var(--text-primary)",
-          textDecoration:"none", position:"relative",
-          transition:"background 0.18s",
-          cursor:"pointer",
-        }}
-      >
-        <div style={{
-          width:32,height:32,borderRadius:8,
-          background:iconBg,border:iconBorder,
-          display:"flex",alignItems:"center",justifyContent:"center",
-          color:iconColor,flexShrink:0,
-          transform: hovered ? "scale(1.12)" : "scale(1)",
-          transition:"transform 0.18s cubic-bezier(0.16,1,0.3,1)",
-        }}>{icon}</div>
-      </a>
-    </SocialTooltip>
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      className={className}
+      fill="#2db6f0"
+      aria-label="Verified"
+      role="img"
+    >
+      <path d="M15.616 3.268L12 .186L8.383 3.268l-4.737.378l-.378 4.737L.186 12l3.082 3.617l.378 4.737l4.737.378l3.616 3.082l3.617-3.082l4.737-.378l.378-4.737L23.813 12l-3.082-3.617l-.378-4.737zM11 16.414L6.585 12L8 10.586l3 3l5.5-5.5L17.914 9.5z" />
+    </svg>
+  );
+}
+
+/* ── Social icon — icon button + floating tooltip on hover ── */
+function SocialIcon({ href, label, icon, iconBg, iconBorder, iconColor }:{
+  href:string; label:string; icon:React.ReactNode;
+  iconBg:string; iconBorder:string; iconColor:string;
+}) {
+  return (
+    <a
+      href={href} target="_blank" rel="noopener noreferrer"
+      className="h-social-icon"
+      style={{ background: iconBg, border: iconBorder, color: iconColor }}
+      aria-label={label}
+    >
+      {icon}
+      <span className="h-social-icon-tip">{label}</span>
+    </a>
   );
 }
 
@@ -170,7 +172,9 @@ function HoverBorderGradient({ children, radius = 10 }: { children: React.ReactN
   );
 }
 
-const CW = 1028;
+// Matches --content-width (960px) minus .page-wrapper's 16px side padding,
+// so the hero border lines up exactly with the rest of the page content.
+const CW = 928;
 
 export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) {
   const [vis, setVis] = useState<"ssr" | "visible">("ssr");
@@ -188,6 +192,38 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
         @keyframes fsOut { from{transform:none;opacity:1} to{transform:translateY(-7px);opacity:0} }
         .fs-in  { animation: fsIn  0.28s cubic-bezier(0.16,1,0.3,1) forwards }
         .fs-out { animation: fsOut 0.22s ease-in forwards }
+
+        /* Subtitle — brighter + continuous left-to-right shine sweep
+           (reuses the site's existing global @keyframes shimmer) */
+        .subtitle-shine {
+          background: linear-gradient(
+            100deg,
+            var(--text-secondary) 30%,
+            var(--text-primary) 44%,
+            #ffffff 50%,
+            var(--text-primary) 56%,
+            var(--text-secondary) 70%
+          );
+          background-size: 220% auto;
+          -webkit-background-clip: text;
+          background-clip: text;
+          color: transparent;
+          font-weight: 600;
+          animation-name: fsIn, shimmer;
+          animation-duration: 0.28s, 2.6s;
+          animation-timing-function: cubic-bezier(0.16,1,0.3,1), linear;
+          animation-iteration-count: 1, infinite;
+          animation-fill-mode: forwards, none;
+        }
+        .fs-out.subtitle-shine {
+          animation-name: fsOut, shimmer;
+          animation-duration: 0.22s, 2.6s;
+          animation-timing-function: ease-in, linear;
+          animation-iteration-count: 1, infinite;
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .subtitle-shine { animation: none; }
+        }
 
         .h-profile {
           display: flex;
@@ -208,7 +244,7 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
           display: flex;
           align-items: flex-start;
           justify-content: stretch;
-          border-radius: 22px;
+          border-radius: 26px;
           background: var(--bg-base);
         }
         .h-nameblock {
@@ -216,32 +252,23 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
           justify-content: flex-end; min-width: 0;
         }
 
-        .verified-tick:hover { transform: rotate(360deg); }
-
-        @keyframes nameLineSweep {
-          0%   { transform: translateX(-120%); }
-          100% { transform: translateX(220%); }
+        /* Name row — name + verified badge */
+        .h-name-row {
+          display: flex;
+          align-items: center;
+          gap: 10px;
         }
-        .h-name-line-sweep {
-          position: absolute;
-          top: 0; left: 0;
-          width: 45%;
-          height: 100%;
-          background: linear-gradient(
-            90deg,
-            transparent 0%,
-            var(--text-muted) 50%,
-            transparent 100%
-          );
-          opacity: 0.9;
-          animation: nameLineSweep 3.2s ease-in-out infinite;
+        .h-verified-badge {
+          width: 26px;
+          height: 26px;
+          flex-shrink: 0;
+          cursor: default;
+          transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
-        @media (prefers-reduced-motion: reduce) {
-          .h-name-line-sweep { animation: none; }
-        }
+        .h-verified-badge:hover { transform: rotate(360deg); }
 
         .h-info-wrap {
-          max-width: 1028px;
+          max-width: ${CW}px;
           margin-left: auto;
           margin-right: auto;
         }
@@ -252,7 +279,7 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
         .h-grid {
           display: grid;
           grid-template-columns: 1fr 1fr;
-          gap: 14px 32px;
+          gap: 12px 44px;
           position: relative;
         }
         .h-info-pad::before {
@@ -267,18 +294,60 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
 
         .h-social { display: flex; flex-direction: row; }
 
-        .s-icon-tile {
-          border-right: 1px solid var(--border);
-        }
-        .s-icon-tile:last-child { border-right: none !important; }
-        .s-icon-tile:hover { background: var(--bg-secondary) !important; }
-
-        .s-social-group {
+        /* Social icons — icon button + floating tooltip (reference-portfolio style) */
+        .h-social-icons {
           display: flex;
-          flex-direction: row;
-          flex: 0 0 auto;
-          padding-left: 10px;
+          flex-wrap: wrap;
+          align-items: center;
+          gap: 10px;
+          padding: 14px 20px;
         }
+        .h-social-icon {
+          position: relative;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 38px;
+          height: 38px;
+          border-radius: 10px;
+          flex-shrink: 0;
+          transition: transform 0.18s cubic-bezier(0.16,1,0.3,1), background 0.18s ease, border-color 0.18s ease;
+        }
+        .h-social-icon:hover { transform: translateY(-3px) scale(1.06); }
+        .h-social-icon-tip {
+          position: absolute;
+          bottom: calc(100% + 9px);
+          left: 50%;
+          transform: translateX(-50%) translateY(4px);
+          padding: 5px 10px;
+          border-radius: 7px;
+          background: var(--text-primary);
+          color: var(--bg-base);
+          font-size: 11.5px;
+          font-weight: 600;
+          font-family: 'Geist Mono', monospace;
+          white-space: nowrap;
+          opacity: 0;
+          pointer-events: none;
+          box-shadow: 0 4px 14px rgba(0,0,0,0.2);
+          transition: opacity 0.15s ease, transform 0.15s ease;
+          z-index: 5;
+        }
+        .h-social-icon-tip::after {
+          content: "";
+          position: absolute;
+          top: 100%;
+          left: 50%;
+          transform: translateX(-50%);
+          border-left: 5px solid transparent;
+          border-right: 5px solid transparent;
+          border-top: 5px solid var(--text-primary);
+        }
+        .h-social-icon:hover .h-social-icon-tip {
+          opacity: 1;
+          transform: translateX(-50%) translateY(0);
+        }
+        @media (hover: none) { .h-social-icon-tip { display: none; } }
 
         @media (min-width: 768px) and (max-width: 1180px) {
           .h-avatar {
@@ -286,7 +355,7 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
             min-width: clamp(220px, 32vw, 300px) !important;
             height: calc(clamp(220px, 32vw, 300px) - 14px) !important;
             min-height: calc(clamp(220px, 32vw, 300px) - 14px) !important;
-            border-radius: 26px !important;
+            border-radius: 28px !important;
           }
           .h-nameblock h1 {
             font-size: clamp(36px, 6vw, 64px) !important;
@@ -294,6 +363,8 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
             line-height: 1 !important;
             letter-spacing: 0.02em !important;
           }
+          .h-name-row { gap: 14px !important; }
+          .h-verified-badge { width: 40px !important; height: 40px !important; }
           .h-nameblock {
             padding: 0 8px !important;
           }
@@ -310,10 +381,10 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
             margin-right: 24px !important;
           }
           .h-info-pad {
-            padding: 28px 36px 24px !important;
+            padding: 20px 28px 18px !important;
           }
           .h-grid {
-            gap: 18px 48px !important;
+            gap: 14px 60px !important;
           }
           .h-info-pad .h-grid > div > div > div:first-child,
           .h-info-pad .h-grid > div > a > div:first-child {
@@ -325,12 +396,8 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
             font-size: 15px !important;
             gap: 16px !important;
           }
-          .s-icon-tile {
-            padding: 18px 24px !important;
-          }
-          .s-icon-tile > div {
-            width: 38px !important; height: 38px !important;
-          }
+          .h-social-icons { padding: 16px 24px !important; gap: 12px !important; }
+          .h-social-icon { width: 42px !important; height: 42px !important; }
           .h-profile {
             min-height: clamp(220px, 32vw, 300px) !important;
           }
@@ -348,11 +415,13 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
             font-weight: 800 !important;
             line-height: 1 !important;
           }
+          .h-verified-badge { width: 46px !important; height: 46px !important; }
+          .h-name-row { gap: 16px !important; }
           .h-nameblock > div:nth-child(2) {
             margin-bottom: -4px !important;
           }
           .h-info-pad {
-            padding: 32px 44px 28px !important;
+            padding: 22px 32px 20px !important;
           }
         }
 
@@ -362,13 +431,15 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
             min-width: clamp(160px, 26vw, 200px) !important;
             height: calc(clamp(160px, 26vw, 200px) - 10px) !important;
             min-height: calc(clamp(160px, 26vw, 200px) - 10px) !important;
-            border-radius: 18px !important;
+            border-radius: 20px !important;
           }
           .h-nameblock h1 {
             font-size: clamp(26px, 5.2vw, 42px) !important;
             font-weight: 800 !important;
             line-height: 1 !important;
           }
+          .h-verified-badge { width: 30px !important; height: 30px !important; }
+          .h-name-row { gap: 8px !important; }
           .h-nameblock > div:nth-child(2) {
             margin-bottom: -3px !important;
           }
@@ -377,18 +448,17 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
             margin-right: 20px !important;
           }
           .h-info-pad {
-            padding: 20px 24px 18px !important;
+            padding: 15px 18px 13px !important;
           }
           .h-grid {
-            gap: 14px 40px !important;
+            gap: 10px 30px !important;
           }
           .h-info-pad .h-grid > div > div,
           .h-info-pad .h-grid > div > a {
             font-size: 13.5px !important;
           }
-          .s-icon-tile {
-            padding: 14px 18px !important;
-          }
+          .h-social-icons { padding: 13px 16px !important; }
+          .h-social-icon { width: 36px !important; height: 36px !important; }
         }
 
         @media (max-width: 600px) {
@@ -403,7 +473,7 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
             border-bottom: none !important;
             overflow: hidden !important;
             padding: 0 !important;
-            border-radius: 16px !important;
+            border-radius: 18px !important;
           }
           .h-nameblock {
             flex: 1 !important;
@@ -422,6 +492,8 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
             line-height: 1 !important;
             white-space: nowrap !important;
           }
+          .h-verified-badge { width: 22px !important; height: 22px !important; }
+          .h-name-row { gap: 6px !important; }
           .h-nameblock > div:nth-child(4) {
             padding: clamp(5px, 1.8vw, 8px) clamp(10px, 3.5vw, 16px) clamp(8px, 2.6vw, 12px) !important;
           }
@@ -430,38 +502,18 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
             font-size: clamp(10.5px, 3vw, 12.5px) !important;
           }
 
+          .h-info-pad {
+            padding: 14px 16px 12px !important;
+          }
           .h-grid {
             grid-template-columns: 1fr !important;
-            gap: 11px 0 !important;
+            gap: 8px 0 !important;
           }
           .h-info-pad::before { display: none !important; }
           .h-grid-right { padding-left: 0 !important; }
           .h-spacer { display: none !important; }
-          .h-social { flex-direction: column !important; }
-          .s-social-group {
-            border-bottom: none !important;
-            flex-direction: row !important;
-            padding-left: 0 !important;
-          }
-          .s-icon-tile {
-            flex: 1 !important;
-            border-right: 1px solid var(--border) !important;
-            justify-content: center !important;
-          }
-          .s-icon-tile:last-child { border-right: none !important; }
-          .s-icon-tile:first-child {
-            justify-content: flex-start !important;
-            padding-left: 24px !important;
-          }
-          .h-info-wrap {
-            border-left: none !important;
-            border-right: none !important;
-            margin-left: 12px !important;
-            margin-right: 12px !important;
-          }
-          .hbg-wrap, .h-info-box {
-            border-radius: 8px !important;
-          }
+          .h-social-icons { justify-content: center !important; padding: 14px 16px !important; gap: 8px !important; }
+          .h-social-icon { width: 34px !important; height: 34px !important; }
         }
 
         @media (max-width: 380px) {
@@ -470,7 +522,7 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
             min-width: clamp(105px, 30vw, 135px) !important;
             height: calc(clamp(105px, 30vw, 135px) - 6px) !important;
             min-height: calc(clamp(105px, 30vw, 135px) - 6px) !important;
-            border-radius: 14px !important;
+            border-radius: 16px !important;
           }
           .h-nameblock h1 {
             font-size: clamp(20px, 7vw, 24px) !important;
@@ -478,8 +530,22 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
             letter-spacing: 0.015em !important;
             line-height: 1 !important;
           }
+          .h-verified-badge { width: 20px !important; height: 20px !important; }
+          .h-name-row { gap: 5px !important; }
           .h-nameblock > div:nth-child(2) {
             margin-bottom: -2px !important;
+          }
+        }
+
+        @media (max-width: 600px) {
+          .h-info-wrap {
+            border-left: none !important;
+            border-right: none !important;
+            margin-left: 12px !important;
+            margin-right: 12px !important;
+          }
+          .hbg-wrap, .h-info-box {
+            border-radius: 8px !important;
           }
         }
       `}</style>
@@ -507,7 +573,7 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
 
             <div className="h-nameblock">
               <div style={{flex:1}}/>
-              <div style={{padding:"28px 20px 0", marginBottom:"-3px", display:"flex", alignItems:"center", gap:8}}>
+              <div className="h-name-row" style={{padding:"28px 20px 0", marginBottom:"-3px"}}>
                 <h1 style={{
                   fontSize:"clamp(24px,3.8vw,36px)", fontWeight:900,
                   letterSpacing:"0.02em", color:"var(--text-primary)",
@@ -516,25 +582,10 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
                   WebkitFontSmoothing:"antialiased", MozOsxFontSmoothing:"grayscale",
                   textRendering:"optimizeLegibility",
                 }}>Indresh Thakur</h1>
-                <svg
-                  className="verified-tick"
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  width="20"
-                  height="20"
-                  fill="#2db6f0"
-                  style={{ flexShrink: 0, transition: "transform 0.4s cubic-bezier(0.16,1,0.3,1)" }}
-                >
-                  <path
-                    fill="#2db6f0"
-                    d="M15.616 3.268L12 .186L8.383 3.268l-4.737.378l-.378 4.737L.186 12l3.082 3.617l.378 4.737l4.737.378l3.616 3.082l3.617-3.082l4.737-.378l.378-4.737L23.813 12l-3.082-3.617l-.378-4.737zM11 16.414L6.585 12L8 10.586l3 3l5.5-5.5L17.914 9.5z"
-                  />
-                </svg>
+                <VerifiedBadge className="h-verified-badge" />
               </div>
-              {/* Line at full nameblock width — connects left partition to right border, with a moving bright sweep */}
-              <div className="h-name-line" style={{height:1, background:"var(--border)", width:"100%", position:"relative", overflow:"hidden"}}>
-                <div className="h-name-line-sweep" />
-              </div>
+              {/* Line at full nameblock width — connects left partition to right border */}
+              <div style={{height:1, background:"var(--border)", width:"100%"}}/>
               <div style={{padding:"8px 20px 12px", height:36, display:"flex", alignItems:"center", overflow:"hidden"}}>
                 <FlipSentences/>
               </div>
@@ -542,18 +593,28 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
           </div>
         </div>
 
-        <div style={{height:38, maxWidth:CW, margin:"0 auto"}}/>
+        <div style={{height:22, maxWidth:CW, margin:"0 auto"}}/>
+
+        {/* ── RESUME / CONTACT ACTIONS ── */}
+        <div className="h-info-wrap">
+          <HeroActionButtons
+            onResumeClick={() => openPdf("/resume.pdf", "Resume", "/resume.pdf")}
+            contactHref="#contact"
+          />
+        </div>
+
+        <div style={{height:22, maxWidth:CW, margin:"0 auto"}}/>
 
         {/* ── INFO + SOCIAL ── */}
         <div className="h-info-wrap">
           <HoverBorderGradient>
             <div className="h-info-box" style={{background:BG, border:B, borderRadius:8.5, overflow:"hidden"}}>
 
-              <div className="h-info-pad" style={{padding:"24px 28px 22px"}}>
+              <div className="h-info-pad" style={{padding:"18px 22px 16px"}}>
                 <div className="h-grid">
 
                   {/* LEFT */}
-                  <div style={{display:"flex",flexDirection:"column",gap:14}}>
+                  <div style={{display:"flex",flexDirection:"column",gap:10}}>
                     <Row icon={<IBox color="#38bdf8"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><polyline points="18 16 22 12 18 8"/><polyline points="6 8 2 12 6 16"/><line x1="14" y1="4" x2="10" y2="20"/></svg></IBox>}>
                       AI Software Engineer
                     </Row>
@@ -572,8 +633,8 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
                   </div>
 
                   {/* RIGHT */}
-                  <div className="h-grid-right" style={{display:"flex",flexDirection:"column",gap:14}}>
-                    <div className="h-spacer" style={{height:32,flexShrink:0}}/>
+                  <div className="h-grid-right" style={{display:"flex",flexDirection:"column",gap:10}}>
+                    <div className="h-spacer" style={{height:26,flexShrink:0}}/>
                     <Row icon={<IBox color="#fbbf24"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></IBox>}>
                       <LiveClock/>
                     </Row>
@@ -590,22 +651,22 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
 
               {/* ── Social row ── */}
               <div className="h-social" style={{borderTop:B}}>
-                <div className="s-social-group">
-                  <SocialIconTile href="mailto:ithakur2327@gmail.com" label="Mail"
+                <div className="h-social-icons">
+                  <SocialIcon href="mailto:ithakur2327@gmail.com" label="Mail"
                     iconBg="var(--bg-secondary)" iconBorder="1px solid var(--border)" iconColor="var(--text-primary)"
-                    icon={<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>}
+                    icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>}
                   />
-                  <SocialIconTile href="https://github.com/Ithakur2327" label="GitHub"
+                  <SocialIcon href="https://github.com/Ithakur2327" label="GitHub"
                     iconBg="var(--bg-secondary)" iconBorder="1px solid var(--border)" iconColor="var(--text-primary)"
-                    icon={<svg width="19" height="19" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>}
+                    icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>}
                   />
-                  <SocialIconTile href="https://www.linkedin.com/in/indresh-thakur" label="LinkedIn"
+                  <SocialIcon href="https://www.linkedin.com/in/indresh-thakur" label="LinkedIn"
                     iconBg="#0A66C2" iconBorder="none" iconColor="#fff"
-                    icon={<svg width="19" height="19" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 23.2 0 22.222 0h.003z"/></svg>}
+                    icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 23.2 0 22.222 0h.003z"/></svg>}
                   />
-                  <SocialIconTile href="" label="X / Twitter"
+                  <SocialIcon href="" label="X / Twitter"
                     iconBg="var(--bg-secondary)" iconBorder="1px solid var(--border)" iconColor="var(--text-primary)"
-                    icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.255 5.623zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>}
+                    icon={<svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.255 5.623zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>}
                   />
                 </div>
               </div>

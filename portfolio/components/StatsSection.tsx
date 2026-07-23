@@ -758,7 +758,7 @@ export function StatsSection() {
         }
 
         .about-content {
-          max-width: 1060px; margin: 0 auto; padding: 0 20px 64px;
+          max-width: var(--content-width); margin: 0 auto; padding: 0 20px 64px;
         }
         @media (max-width: 860px) { .about-content { padding: 0 22px 34px; } }
         @media (max-width: 639px) {

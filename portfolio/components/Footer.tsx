@@ -231,7 +231,7 @@ export function Footer() {
         }
 
         .footer-bottom-band {
-          max-width: 1060px;
+          max-width: var(--content-width);
           margin: 0 auto;
           padding: 18px 32px;
           display: flex;
@@ -319,9 +319,10 @@ export function Footer() {
           .footer-social-btn   { width: 38px; height: 38px; }
         }
 
-        /* PC / laptop only — match "IThakur.Dev" width to the content column
-           (same 1060px as the rest of the site) instead of full 100vw.
-           Mobile and tablet keep the existing full-bleed size. */
+        /* PC / laptop only — cap "IThakur.Dev" to a fixed width instead of
+           full 100vw (intentionally wider than --content-width; it's a
+           decorative banner, not body content). Mobile and tablet keep
+           the existing full-bleed size. */
         @media (min-width: 1025px) {
           .fgt-outer {
             position: static;

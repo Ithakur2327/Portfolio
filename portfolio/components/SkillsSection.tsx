@@ -458,7 +458,7 @@ export function SkillsSection() {
           width:"100vw",
           background:"var(--bg-base)",
         }}>
-          <div className="skills-inner" style={{ maxWidth: 1057, margin:"0 auto", padding:"0 20px 64px" }}>
+          <div className="skills-inner" style={{ maxWidth: "var(--content-width)", margin:"0 auto", padding:"0 20px 64px" }}>
             <div style={{ paddingTop:50, marginBottom:4, display:"flex", alignItems:"center", gap:10 }}>
               <span style={{
                 fontSize:28, fontWeight:700,

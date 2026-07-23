@@ -70,7 +70,7 @@ export function CertificationsSection() {
           background: var(--bg-base);
         }
         .edu-inner {
-          max-width: 1060px;
+          max-width: var(--content-width);
           margin: 0 auto;
           padding: 0 32px 64px;
         }

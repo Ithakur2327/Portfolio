@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { usePathname } from "next/navigation";
 import { motion, useAnimation } from "motion/react";
 import type { Transition, Variants } from "motion/react";
 import { useTheme } from "./ThemeProvider";
@@ -137,12 +138,13 @@ function NavTooltip({ children, label, kbd }: { children: React.ReactNode; label
 }
 
 function CommandMenu({
-  open, onClose, isDark, triggerRef, openPdf, activeSection,
+  open, onClose, isDark, triggerRef, openPdf, activeSection, isHome,
 }: {
   open: boolean; onClose: () => void; isDark: boolean;
   triggerRef: React.RefObject<HTMLButtonElement | null>;
   openPdf: (src: string, title: string, dl?: string) => void;
   activeSection: string;
+  isHome: boolean;
 }) {
   const [query,    setQuery]    = useState("");
   const [selected, setSelected] = useState(0);
@@ -193,6 +195,7 @@ function CommandMenu({
         if (item.external) { window.open(item.href, "_blank", "noopener,noreferrer"); onClose(); return; }
         onClose();
         setTimeout(() => {
+          if (!isHome) { window.location.href = item.href === "#" ? "/" : `/${item.href}`; return; }
           if (item.href === "#") { window.scrollTo({ top: 0, behavior: "smooth" }); return; }
           const el = document.querySelector<HTMLElement>(item.href);
           if (!el) return;
@@ -242,6 +245,7 @@ function CommandMenu({
     }
     onClose();
     setTimeout(() => {
+      if (!isHome) { window.location.href = item.href === "#" ? "/" : `/${item.href}`; return; }
       if (item.href === "#") {
         window.scrollTo({ top: 0, behavior: "smooth" });
         return;
@@ -399,6 +403,8 @@ export function Navbar() {
   const [cmdOpen,  setCmdOpen]  = useState(false);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const activeSection = useActiveSection();
+  const pathname = usePathname();
+  const isHome = pathname === "/";
 
   useEffect(() => { setMounted(true); }, []);
 
@@ -565,7 +571,7 @@ export function Navbar() {
       <header className={`nav-root${scrolled ? " scrolled" : ""}`}>
         <div className="nav-inner">
 
-          <a href="#" aria-label="Home" style={{ display: "flex", alignItems: "center", textDecoration: "none" }}>
+          <a href={isHome ? "#" : "/"} aria-label="Home" style={{ display: "flex", alignItems: "center", textDecoration: "none" }}>
             <div className="logo-area">
               <div className={`logo-i${scrolled ? " hide" : ""}`}>&lt;I&gt;</div>
               <div className={`logo-avatar${scrolled ? " show" : ""}`}>
@@ -586,8 +592,8 @@ export function Navbar() {
           <div style={{ display: "flex", alignItems: "center", gap: 2 }}>
 
             <nav className="nav-desktop-only" style={{ display: "flex", alignItems: "center", gap: 16, marginRight: 4 }}>
-              <a href="#" className={`nav-desktop-link${activeSection === "" ? " active" : ""}`}>Home</a>
-              <a href="#projects" className={`nav-desktop-link${activeSection === "projects" ? " active" : ""}`}>Projects</a>
+              <a href={isHome ? "#" : "/"} className={`nav-desktop-link${isHome && activeSection === "" ? " active" : ""}`}>Home</a>
+              <a href={isHome ? "#projects" : "/#projects"} className={`nav-desktop-link${isHome && activeSection === "projects" ? " active" : ""}`}>Projects</a>
             </nav>
 
             <span className="nav-sep nav-desktop-only" style={{ margin: "0 6px" }}/>
@@ -616,6 +622,7 @@ export function Navbar() {
           triggerRef={triggerRef}
           openPdf={openPdf}
           activeSection={activeSection}
+          isHome={isHome}
         />
       )}
     </>
