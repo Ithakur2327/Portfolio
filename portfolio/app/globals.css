@@ -204,7 +204,7 @@ a, button, [role="button"] {
    site's width is controlled from one place.
 ═══════════════════════════════════════════════════════════ */
 :root {
-  --content-width: 970px;
+  --content-width: 980px;
 }
 .page-wrapper {
   max-width: var(--content-width);
