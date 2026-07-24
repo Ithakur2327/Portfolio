@@ -1,13 +1,4 @@
-// Central project data source.
-//
-// Add a new project by appending an object to PROJECTS — it will
-// automatically show up on the homepage (if within the first 4) and
-// always on the /projects page. Every tag used in `tags` must have a
-// matching entry in TECH_MAP so its icon renders correctly.
-//
-// `description` is used both on the card (line-clamped) and in the
-// expanded modal (in full) — keep it as one field so the shared-layout
-// animation morphs the same text instead of swapping content mid-transition.
+
 
 export type Project = {
   name: string;
@@ -23,11 +14,7 @@ export type Project = {
   live: string;
 };
 
-// Small inline SVG glyphs (as data URIs) — used ONLY for tags that
-// describe a generic concept rather than a real, brand-owned product
-// (there is no "official logo" for RAG, a vector database in the
-// abstract, or "LLM APIs" as a category). Every tag that IS a real,
-// named product now points to its official logo instead (see below).
+
 const glyph = (svg: string) => `data:image/svg+xml,${encodeURIComponent(svg)}`;
 
 const ICON_LLM = glyph(
@@ -46,20 +33,20 @@ const ICON_VECTORDB = glyph(
 const officialLogo = (slug: string, hex: string) => `https://cdn.simpleicons.org/${slug}/${hex}`;
 
 export const TECH_MAP: Record<string, { color: string; logo: string }> = {
-  "React.js":      { color: "#61DAFB", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/react/react-original.svg" },
-  "Next.js":       { color: "#aaaaaa", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nextjs/nextjs-original.svg" },
-  "Node.js":       { color: "#339933", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nodejs/nodejs-original.svg" },
-  "Express.js":    { color: "#888888", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/express/express-original.svg" },
-  "FastAPI":       { color: "#009688", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/fastapi/fastapi-original.svg" },
-  "MongoDB":       { color: "#47A248", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/mongodb/mongodb-original.svg" },
-  "TypeScript":    { color: "#3178C6", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/typescript/typescript-original.svg" },
-  "JavaScript":    { color: "#F7DF1E", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/javascript/javascript-original.svg" },
-  "Tailwind CSS":  { color: "#38BDF8", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/tailwindcss/tailwindcss-original.svg" },
-  "Redux":         { color: "#764ABC", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/redux/redux-original.svg" },
-  "LangChain":     { color: "#1C9E6E", logo: "https://cdn.jsdelivr.net/npm/simple-icons@v11/icons/langchain.svg" },
-  "Vercel":        { color: "#ffffff", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/vercel/vercel-original.svg" },
-  "YouTube API":   { color: "#FF0000", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/youtube/youtube-original.svg" },
-  "Chart.js":      { color: "#FF6384", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/chartjs/chartjs-original.svg" },
+  "React.js":      { color: "#61DAFB", logo: officialLogo("react", "61DAFB") },
+  "Next.js":       { color: "#ffffff", logo: officialLogo("nextdotjs", "ffffff") },
+  "Node.js":       { color: "#339933", logo: officialLogo("nodedotjs", "339933") },
+  "Express.js":    { color: "#ffffff", logo: officialLogo("express", "ffffff") },
+  "FastAPI":       { color: "#009688", logo: officialLogo("fastapi", "009688") },
+  "MongoDB":       { color: "#47A248", logo: officialLogo("mongodb", "47A248") },
+  "TypeScript":    { color: "#3178C6", logo: officialLogo("typescript", "3178C6") },
+  "JavaScript":    { color: "#F7DF1E", logo: officialLogo("javascript", "F7DF1E") },
+  "Tailwind CSS":  { color: "#38BDF8", logo: officialLogo("tailwindcss", "38BDF8") },
+  "Redux":         { color: "#764ABC", logo: officialLogo("redux", "764ABC") },
+  "LangChain":     { color: "#1C3C3C", logo: officialLogo("langchain", "3AAFA9") },
+  "Vercel":        { color: "#ffffff", logo: officialLogo("vercel", "ffffff") },
+  "YouTube API":   { color: "#FF0000", logo: officialLogo("youtube", "FF0000") },
+  "Chart.js":      { color: "#FF6384", logo: officialLogo("chartdotjs", "FF6384") },
   "LLM APIs":      { color: "#10a37f", logo: ICON_LLM },
   "OpenAI API":    { color: "#10a37f", logo: officialLogo("openai", "10a37f") },
   "RAG":           { color: "#a855f7", logo: ICON_RAG },

@@ -19,7 +19,7 @@ const SPRING = { type: "spring" as const, stiffness: 260, damping: 25 };
 // cards read as a deliberate pair rather than a random mix.
 const TIFFANY = "#0ABAB5";
 const GOLD = "#D4AF37";
-const FRAME_THICKNESS = "1.5px";
+const FRAME_THICKNESS = ".5px";
 
 export const GithubIcon = ({ size = 18 }: { size?: number }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor">
