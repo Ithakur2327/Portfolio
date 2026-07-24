@@ -199,7 +199,7 @@ a, button, [role="button"] {
    width is controlled from one place.
 ═══════════════════════════════════════════════════════════ */
 :root {
-  --content-width: 970px;
+  --content-width: 950px;
   --content-width-inset: calc(var(--content-width) - 32px);
 }
 .page-wrapper {
