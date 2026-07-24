@@ -23,17 +23,15 @@ export type Project = {
   live: string;
 };
 
-// Small inline SVG glyphs (as data URIs) for tags that don't have one
-// authoritative brand logo, or where relying on a third-party icon host
-// isn't worth the risk of a broken image. Zero network dependency —
-// these always render.
+// Small inline SVG glyphs (as data URIs) — used ONLY for tags that
+// describe a generic concept rather than a real, brand-owned product
+// (there is no "official logo" for RAG, a vector database in the
+// abstract, or "LLM APIs" as a category). Every tag that IS a real,
+// named product now points to its official logo instead (see below).
 const glyph = (svg: string) => `data:image/svg+xml,${encodeURIComponent(svg)}`;
 
 const ICON_LLM = glyph(
   `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='#10a37f'><path d='M12 2l1.8 6.2L20 10l-6.2 1.8L12 18l-1.8-6.2L4 10l6.2-1.8L12 2z'/></svg>`
-);
-const ICON_OPENAI = glyph(
-  `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='#10a37f' stroke-width='1.6'><circle cx='12' cy='12' r='2.8'/><ellipse cx='12' cy='12' rx='9' ry='3.6'/><ellipse cx='12' cy='12' rx='9' ry='3.6' transform='rotate(60 12 12)'/><ellipse cx='12' cy='12' rx='9' ry='3.6' transform='rotate(120 12 12)'/></svg>`
 );
 const ICON_RAG = glyph(
   `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='#a855f7' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'><rect x='3' y='3' width='12' height='15' rx='1.5'/><line x1='6' y1='7' x2='12' y2='7'/><line x1='6' y1='11' x2='10' y2='11'/><circle cx='17' cy='16' r='3.2'/><line x1='19.3' y1='18.3' x2='22' y2='21'/></svg>`
@@ -41,15 +39,11 @@ const ICON_RAG = glyph(
 const ICON_VECTORDB = glyph(
   `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='#14b8a6' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'><ellipse cx='12' cy='5' rx='8' ry='3'/><path d='M4 5v14c0 1.66 3.58 3 8 3s8-1.34 8-3V5'/><path d='M4 12c0 1.66 3.58 3 8 3s8-1.34 8-3'/></svg>`
 );
-const ICON_JWT = glyph(
-  `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='#d63aff' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'><circle cx='7.5' cy='15.5' r='4.5'/><path d='M11 12l9-9'/><path d='M15 8l3 3'/><path d='M18 5l3 3'/></svg>`
-);
-const ICON_SHADCN = glyph(
-  `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='#a1a1aa' stroke-width='2' stroke-linecap='round'><line x1='4' y1='20' x2='20' y2='4'/><line x1='9' y1='20' x2='20' y2='9'/></svg>`
-);
-const ICON_FRAMER = glyph(
-  `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='#bb4af8'><path d='M4 3h16v6.5h-8L20 16v5H4v-6.5h8L4 8V3z'/></svg>`
-);
+
+// Official brand logos, served pre-colored via the Simple Icons CDN
+// (https://cdn.simpleicons.org/<slug>/<hex>) so each icon matches its
+// project's accent instead of shipping a hand-traced approximation.
+const officialLogo = (slug: string, hex: string) => `https://cdn.simpleicons.org/${slug}/${hex}`;
 
 export const TECH_MAP: Record<string, { color: string; logo: string }> = {
   "React.js":      { color: "#61DAFB", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/react/react-original.svg" },
@@ -67,12 +61,12 @@ export const TECH_MAP: Record<string, { color: string; logo: string }> = {
   "YouTube API":   { color: "#FF0000", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/youtube/youtube-original.svg" },
   "Chart.js":      { color: "#FF6384", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/chartjs/chartjs-original.svg" },
   "LLM APIs":      { color: "#10a37f", logo: ICON_LLM },
-  "OpenAI API":    { color: "#10a37f", logo: ICON_OPENAI },
+  "OpenAI API":    { color: "#10a37f", logo: officialLogo("openai", "10a37f") },
   "RAG":           { color: "#a855f7", logo: ICON_RAG },
   "Vector DB":     { color: "#14b8a6", logo: ICON_VECTORDB },
-  "JWT":           { color: "#d63aff", logo: ICON_JWT },
-  "shadcn/ui":     { color: "#a1a1aa", logo: ICON_SHADCN },
-  "Framer Motion": { color: "#bb4af8", logo: ICON_FRAMER },
+  "JWT":           { color: "#d63aff", logo: officialLogo("jsonwebtokens", "d63aff") },
+  "shadcn/ui":     { color: "#e4e4e7", logo: officialLogo("shadcnui", "e4e4e7") },
+  "Framer Motion": { color: "#bb4af8", logo: officialLogo("framer", "bb4af8") },
 };
 
 export const PROJECTS: Project[] = [
@@ -83,7 +77,7 @@ export const PROJECTS: Project[] = [
     accentBg: "rgba(6,182,212,0.10)",
     accentBorder: "rgba(6,182,212,0.28)",
     img: "/ivision-preview.svg",
-    description: "I.Vision is a personal AI assistant built to actually know your stuff. It ingests your documents and data into a retrieval-augmented pipeline, then answers questions grounded in that context instead of guessing. A Next.js + TypeScript frontend talks to a FastAPI backend, where LangChain orchestrates retrieval over an embedded knowledge base before the query is passed to an LLM for a grounded, conversational response.",
+    description: "Personal AI assistant that answers questions grounded in your own documents instead of general model memory. A type-safe Next.js frontend calls a FastAPI backend, where LangChain orchestrates retrieval over an embedded knowledge base before handing the query to an LLM.",
     features: [
       "Retrieval-augmented generation — answers are grounded in your own ingested data, not just model memory",
       "FastAPI backend with a LangChain-orchestrated retrieval pipeline",
@@ -101,7 +95,7 @@ export const PROJECTS: Project[] = [
     accentBg: "rgba(99,102,241,0.10)",
     accentBorder: "rgba(99,102,241,0.30)",
     img: "/portfolio-preview.png",
-    description: "A fully responsive developer portfolio showcasing skills, projects and experience. Features a dot-grid animated background, custom reveal animations, 3D tilt cards, infinite scrolling skill ticker and a working contact form. Deployed on Vercel with automatic CI/CD.",
+    description: "Fully responsive developer portfolio with an animated dot-grid background, scroll-triggered reveal transitions, and a working contact form. Built with Next.js and Tailwind CSS, deployed on Vercel with automatic CI/CD.",
     features: [
       "Animated dot-grid background with scroll-triggered reveal transitions",
       "Dark/light theme with a custom slide-to-unlock projects gate",
@@ -118,8 +112,8 @@ export const PROJECTS: Project[] = [
     accent: "#10b981",
     accentBg: "rgba(16,185,129,0.10)",
     accentBorder: "rgba(16,185,129,0.25)",
-    img: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=600&q=80",
-    description: "HealthnexAI helps users proactively manage their health. Users input lifestyle data (sleep, diet, stress, activity) and family medical history. NexAI — powered by LLM APIs — generates personalized risk scores and prevention plans. Interactive charts track health metrics over time.",
+    img: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=1600&q=85",
+    description: "Preventive health platform that turns lifestyle and family-history intake into a personalized risk score. An LLM-powered assistant generates prevention plans, with interactive charts tracking health metrics over time.",
     features: [
       "Lifestyle and family-history intake feeding a personalized risk score",
       "NexAI assistant generates prevention plans powered by LLM APIs",
@@ -137,7 +131,7 @@ export const PROJECTS: Project[] = [
     accentBg: "rgba(245,158,11,0.10)",
     accentBorder: "rgba(245,158,11,0.25)",
     img: "/finledger-preview.png",
-    description: "An intelligent personal finance tool. Transactions are auto-categorized using the OpenAI API. The ML layer detects unusual spending patterns and generates weekly budget insights. Chart.js dashboards visualize trends. Users set budgets per category and receive alerts.",
+    description: "Personal finance tool that auto-categorizes transactions with the OpenAI API and flags unusual spending patterns. Chart.js dashboards visualize trends, with per-category budgets and threshold alerts.",
     features: [
       "Automatic transaction categorization via the OpenAI API",
       "Anomaly detection surfaces unusual spending patterns",
@@ -155,7 +149,7 @@ export const PROJECTS: Project[] = [
     accentBg: "rgba(139,92,246,0.10)",
     accentBorder: "rgba(139,92,246,0.25)",
     img: "/snipix-preview.png",
-    description: "A multimodal RAG pipeline ingesting PDFs, images, text and audio. Documents are chunked and embedded into a vector database. LangChain orchestrates retrieval and generation — users query documents with natural language. Supports semantic search with sub-200ms query latency.",
+    description: "Multimodal RAG pipeline that ingests PDFs, images, text and audio into a chunked vector database. LangChain orchestrates retrieval and generation for natural-language queries, with sub-200ms semantic search at production scale.",
     features: [
       "Multimodal ingestion — PDFs, images, text and audio in one pipeline",
       "Chunked embeddings stored in a vector database for semantic search",
@@ -172,8 +166,8 @@ export const PROJECTS: Project[] = [
     accent: "#ef4444",
     accentBg: "rgba(239,68,68,0.10)",
     accentBorder: "rgba(239,68,68,0.25)",
-    img: "https://images.unsplash.com/photo-1488190211105-8b0e65b80b4e?w=600&q=80",
-    description: "An AI learning companion for students. Paste any YouTube lecture URL and VidLearn fetches the transcript via the YouTube API, then uses LLM APIs to auto-summarize content, extract key concepts into structured notes, and generate MCQ quizzes with explanations.",
+    img: "https://images.unsplash.com/photo-1488190211105-8b0e65b80b4e?w=1600&q=85",
+    description: "AI study companion that turns any YouTube lecture into structured notes. Paste a URL and VidLearn pulls the transcript via the YouTube API, then uses an LLM to summarize key concepts and generate MCQ quizzes with explanations.",
     features: [
       "Transcript extraction straight from a pasted YouTube URL",
       "LLM-generated summaries and structured concept notes",
@@ -190,8 +184,8 @@ export const PROJECTS: Project[] = [
     accent: "#ec4899",
     accentBg: "rgba(236,72,153,0.10)",
     accentBorder: "rgba(236,72,153,0.25)",
-    img: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=600&q=80",
-    description: "A full-featured fashion e-commerce platform. Includes product browsing with advanced filters (brand, price, size, category), search with autocomplete, cart & wishlist with Redux, a multi-step checkout flow with address and payment pages, fully responsive design.",
+    img: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=1600&q=85",
+    description: "Full-featured fashion e-commerce platform with advanced filtering, autocomplete search, and a Redux-powered cart and wishlist. Includes a multi-step checkout flow with address and payment pages, fully responsive end to end.",
     features: [
       "Advanced filtering by brand, price, size and category",
       "Search with autocomplete suggestions",

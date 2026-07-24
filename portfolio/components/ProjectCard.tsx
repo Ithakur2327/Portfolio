@@ -1,7 +1,7 @@
 "use client";
 import { useRef, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import { motion } from "motion/react";
+import { motion, useInView } from "motion/react";
 import Image from "next/image";
 import type { Project } from "@/lib/projects-data";
 import { TECH_MAP } from "@/lib/projects-data";
@@ -32,26 +32,24 @@ const ExpandIcon = ({ size = 15 }: { size?: number }) => (
   </svg>
 );
 
-/* Bare icon links shared between the card header and the modal header via
-   layoutId — they morph in place rather than fading independently. */
+/* Bare icon links shared between the card header and the modal — they
+   morph in place via layoutId rather than fading independently. */
 function ProjectLinks({ proj, size }: { proj: Project; size: number }) {
   return (
     <>
       <a
         href={proj.live} target="_blank" rel="noreferrer" title="Live Demo"
         onClick={e => e.stopPropagation()}
-        style={{ color: "var(--text-muted)", display: "flex", transition: "color 0.15s", cursor: "pointer" }}
-        onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = proj.accent; }}
-        onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = "var(--text-muted)"; }}
+        className="proj-icon-link"
+        style={{ display: "flex", cursor: "pointer" }}
       >
         <ExternalIcon size={size} />
       </a>
       <a
         href={proj.github} target="_blank" rel="noreferrer" title="GitHub"
         onClick={e => e.stopPropagation()}
-        style={{ color: "var(--text-muted)", display: "flex", transition: "color 0.15s", cursor: "pointer" }}
-        onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = proj.accent; }}
-        onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = "var(--text-muted)"; }}
+        className="proj-icon-link"
+        style={{ display: "flex", cursor: "pointer" }}
       >
         <GithubIcon size={size} />
       </a>
@@ -59,15 +57,47 @@ function ProjectLinks({ proj, size }: { proj: Project; size: number }) {
   );
 }
 
+/* Labeled button versions of the same links — used in the modal, below
+   the image, per the requested layout. Kept visually consistent with
+   the bare-icon style (same icon glyphs/colors), just with a text label. */
+function ProjectLinkButtons({ proj }: { proj: Project }) {
+  return (
+    <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+      <a
+        href={proj.live} target="_blank" rel="noreferrer"
+        className="proj-link-btn"
+        style={{ borderColor: proj.accentBorder, background: proj.accentBg, color: proj.accent }}
+      >
+        <ExternalIcon size={16} /> Live Demo
+      </a>
+      <a
+        href={proj.github} target="_blank" rel="noreferrer"
+        className="proj-link-btn"
+        style={{ borderColor: "var(--border)", background: "var(--bg-secondary)", color: "var(--text-secondary)" }}
+      >
+        <GithubIcon size={16} /> GitHub
+      </a>
+    </div>
+  );
+}
+
 /* ─────────────────────────────────────────────────────────
    Card — collapsed grid tile
 ───────────────────────────────────────────────────────── */
-export function ProjectCard({ proj, index, visible, onOpen }: {
+export function ProjectCard({ proj, index, visible, isDesktop, onOpen }: {
   proj: Project;
   index: number;
   visible: boolean;
+  isDesktop: boolean;
   onOpen: () => void;
 }) {
+  const imgRef = useRef<HTMLDivElement>(null);
+  // Re-triggering (no "once") on purpose — the reveal should replay
+  // every time the card crosses into/out of view on touch devices.
+  const inView = useInView(imgRef, { amount: 0.6 });
+
+  const revealed = isDesktop ? undefined : inView;
+
   return (
     <motion.div
       initial={false}
@@ -88,41 +118,49 @@ export function ProjectCard({ proj, index, visible, onOpen }: {
         willChange: "transform",
       }}
     >
-      {/* Dashed frame + tilted banner photo */}
-      <div style={{ width: "100%", padding: 4, borderRadius: 10, border: "1px dashed var(--border)" }}>
+      {/* Banner photo — no decorative border, clean edge-to-edge */}
+      <motion.div
+        layoutId={`card-banner-${proj.name}`}
+        transition={SPRING}
+        style={{
+          width: "100%", height: 176, borderRadius: 10,
+          background: "var(--bg-secondary)", border: "1px solid var(--border)",
+          position: "relative", overflow: "hidden",
+        }}
+      >
         <motion.div
-          layoutId={`card-banner-${proj.name}`}
-          transition={SPRING}
+          ref={imgRef}
+          layoutId={`card-banner-image-${proj.name}`}
+          initial={{ bottom: "-32px", rotate: -8 }}
+          whileHover={isDesktop ? { bottom: 0, rotate: 0 } : undefined}
+          animate={!isDesktop ? { bottom: revealed ? 0 : "-32px", rotate: revealed ? 0 : -8 } : undefined}
+          transition={{ type: "spring", stiffness: 200, damping: 20 }}
           style={{
-            width: "100%", height: 176, borderRadius: 8,
-            background: "var(--bg-secondary)", border: "1px solid var(--border)",
-            position: "relative", overflow: "hidden",
+            position: "absolute", left: 0, right: 0, margin: "0 auto",
+            width: "85%", aspectRatio: "4 / 2",
+            borderRadius: 4, overflow: "hidden",
+            boxShadow: "0 25px 50px -12px rgba(0,0,0,0.5)",
+            willChange: "transform",
           }}
         >
-          <motion.div
-            layoutId={`card-banner-image-${proj.name}`}
-            initial={{ bottom: "-32px", rotate: -8 }}
-            whileHover={{ bottom: 0, rotate: 0 }}
-            transition={{ type: "spring", stiffness: 200, damping: 20 }}
-            style={{
-              position: "absolute", left: 0, right: 0, margin: "0 auto",
-              width: "85%", aspectRatio: "4 / 2",
-              borderRadius: 4, overflow: "hidden",
-              boxShadow: "0 25px 50px -12px rgba(0,0,0,0.5)",
-              willChange: "transform",
-            }}
-          >
-            <Image
-              src={proj.img}
-              alt={proj.name}
-              fill
-              sizes="(max-width: 640px) 90vw, 320px"
-              unoptimized={proj.img.endsWith(".svg")}
-              style={{ objectFit: "cover" }}
-            />
-          </motion.div>
+          <Image
+            src={proj.img}
+            alt={proj.name}
+            fill
+            quality={90}
+            sizes="(max-width: 640px) 90vw, 320px"
+            unoptimized={proj.img.endsWith(".svg")}
+            style={{ objectFit: "cover" }}
+          />
         </motion.div>
-      </div>
+
+        {/* Persistent "click to view" hint — desktop/laptop only; on
+            touch devices the header expand button serves this role. */}
+        <div className="card-view-hint">
+          <ExpandIcon size={11} />
+          Click to view
+        </div>
+      </motion.div>
 
       {/* Detail section */}
       <div style={{ width: "100%", padding: "12px 8px", display: "flex", flexDirection: "column", gap: 16 }}>
@@ -137,7 +175,7 @@ export function ProjectCard({ proj, index, visible, onOpen }: {
           <motion.div
             layoutId={`card-links-${proj.name}`}
             transition={SPRING}
-            style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}
+            style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}
             onClick={e => e.stopPropagation()}
           >
             <button
@@ -148,7 +186,7 @@ export function ProjectCard({ proj, index, visible, onOpen }: {
             >
               <ExpandIcon />
             </button>
-            <ProjectLinks proj={proj} size={18} />
+            <ProjectLinks proj={proj} size={20} />
           </motion.div>
         </div>
 
@@ -166,7 +204,7 @@ export function ProjectCard({ proj, index, visible, onOpen }: {
           style={{ width: "100%", display: "flex", flexDirection: "column", gap: 8 }}
         >
           <span style={{ fontSize: 14, fontWeight: 600, color: "var(--text-primary)", fontFamily: SF }}>
-            Technologies
+            Stack
           </span>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 8, alignItems: "center" }}>
             {proj.tags.map(tag => {
@@ -191,6 +229,37 @@ export function ProjectCard({ proj, index, visible, onOpen }: {
       </div>
 
       <style suppressHydrationWarning>{`
+        .proj-icon-link {
+          color: var(--text-secondary);
+          transition: color 0.15s ease, transform 0.15s cubic-bezier(0.16,1,0.3,1);
+        }
+        .proj-icon-link:hover {
+          color: ${proj.accent};
+          transform: translateY(-1.5px) scale(1.08);
+        }
+
+        .card-view-hint {
+          position: absolute;
+          right: 10px;
+          bottom: 10px;
+          display: none;
+          align-items: center;
+          gap: 5px;
+          padding: 5px 10px;
+          border-radius: 999px;
+          background: rgba(0,0,0,0.55);
+          color: #fff;
+          font-size: 11px;
+          font-weight: 600;
+          font-family: ${MONO};
+          letter-spacing: 0.02em;
+          pointer-events: none;
+          backdrop-filter: blur(3px);
+        }
+        @media (min-width: 1025px) {
+          .card-view-hint { display: flex; }
+        }
+
         @media (max-width: 640px) {
           .card-expand-btn { display: flex !important; }
         }
@@ -205,6 +274,7 @@ export function ProjectCard({ proj, index, visible, onOpen }: {
 export function ProjectModal({ proj, onClose }: { proj: Project; onClose: () => void }) {
   const [mounted, setMounted] = useState(false);
   const modalRef = useRef<HTMLDivElement>(null);
+  const closeBtnRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     setMounted(true);
@@ -213,8 +283,31 @@ export function ProjectModal({ proj, onClose }: { proj: Project; onClose: () => 
     const cat = document.getElementById("oneko");
     if (cat) cat.style.display = "none";
 
+    // Focus the close button on open, restore focus to whatever
+    // triggered the modal when it closes.
+    const previouslyFocused = document.activeElement as HTMLElement | null;
+    const focusTimer = setTimeout(() => closeBtnRef.current?.focus(), 50);
+
     const esc = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+
+    // Basic focus trap — Tab/Shift+Tab cycle within the modal only.
+    const trapFocus = (e: KeyboardEvent) => {
+      if (e.key !== "Tab" || !modalRef.current) return;
+      const focusables = modalRef.current.querySelectorAll<HTMLElement>(
+        'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])'
+      );
+      if (focusables.length === 0) return;
+      const first = focusables[0];
+      const last = focusables[focusables.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault(); last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault(); first.focus();
+      }
+    };
+
     window.addEventListener("keydown", esc);
+    window.addEventListener("keydown", trapFocus);
     const handler = (e: MouseEvent) => {
       if (modalRef.current && !modalRef.current.contains(e.target as Node)) onClose();
     };
@@ -227,8 +320,11 @@ export function ProjectModal({ proj, onClose }: { proj: Project; onClose: () => 
       const cat = document.getElementById("oneko");
       if (cat) cat.style.display = "";
       window.removeEventListener("keydown", esc);
+      window.removeEventListener("keydown", trapFocus);
       document.removeEventListener("mousedown", handler);
       clearTimeout(t);
+      clearTimeout(focusTimer);
+      previouslyFocused?.focus?.();
     };
   }, [onClose]);
 
@@ -242,19 +338,27 @@ export function ProjectModal({ proj, onClose }: { proj: Project; onClose: () => 
         exit={{ opacity: 0 }}
         transition={{ duration: 0.15 }}
         onClick={onClose}
-        style={{ position: "fixed", inset: 0, zIndex: 9000, background: "rgba(0,0,0,0.6)", willChange: "opacity" }}
+        style={{
+          position: "fixed", inset: 0, zIndex: 9000,
+          background: "rgba(0,0,0,0.55)",
+          backdropFilter: "blur(6px)", WebkitBackdropFilter: "blur(6px)",
+          willChange: "opacity, backdrop-filter",
+        }}
       />
 
       <div style={{ position: "fixed", inset: 0, zIndex: 9001, display: "grid", placeItems: "center", padding: 16, pointerEvents: "none" }}>
         <motion.div
           ref={modalRef}
+          role="dialog"
+          aria-modal="true"
+          aria-label={`${proj.name} project details`}
           layoutId={`card-container-${proj.name}`}
           transition={SPRING}
+          className="pm-body"
           style={{
             pointerEvents: "auto",
-            width: "100%", maxWidth: 672,
+            width: "100%", maxWidth: 860,
             maxHeight: "85vh",
-            display: "flex", flexDirection: "column",
             cursor: "default",
             background: "var(--bg-card)",
             border: "1px solid var(--border)",
@@ -265,62 +369,88 @@ export function ProjectModal({ proj, onClose }: { proj: Project; onClose: () => 
           }}
         >
           <style suppressHydrationWarning>{`
-            .pm-scroll::-webkit-scrollbar { display: none; }
+            .pm-body {
+              display: flex;
+              flex-direction: column;
+              overflow-y: auto;
+              overscroll-behavior: contain;
+              scrollbar-width: none;
+            }
+            .pm-body::-webkit-scrollbar { display: none; }
+
             .pm-tag {
               display: inline-flex; align-items: center; gap: 6px;
               font-size: 12.5px; padding: 6px 11px; border-radius: 999px;
               font-family: ${MONO}; font-weight: 600;
             }
+            .proj-link-btn {
+              display: inline-flex; align-items: center; gap: 7px;
+              padding: 8px 14px; border-radius: 9px;
+              border: 1px solid var(--border);
+              font-family: ${SF}; font-size: 13px; font-weight: 600;
+              text-decoration: none;
+              transition: transform 0.15s cubic-bezier(0.16,1,0.3,1), opacity 0.15s ease;
+            }
+            .proj-link-btn:hover { transform: translateY(-1.5px); opacity: 0.88; }
+            .proj-link-btn:active { transform: translateY(0) scale(0.98); }
+
+            /* Desktop/laptop: horizontal split — image+links left,
+               title/description/stack right. */
+            @media (min-width: 768px) {
+              .pm-body { flex-direction: row; max-height: 82vh; }
+              .pm-media-col {
+                width: 45%; flex-shrink: 0;
+                display: flex; flex-direction: column; gap: 14px;
+                padding: 24px; border-right: 1px solid var(--border);
+                overflow-y: auto; scrollbar-width: none;
+              }
+              .pm-media-col::-webkit-scrollbar { display: none; }
+              .pm-info-col {
+                flex: 1; min-width: 0;
+                padding: 24px; overflow-y: auto; scrollbar-width: none;
+                display: flex; flex-direction: column; gap: 16px;
+              }
+              .pm-info-col::-webkit-scrollbar { display: none; }
+              .pm-image-frame { aspect-ratio: 4 / 3; }
+            }
           `}</style>
 
-          {/* Banner */}
-          <motion.div
-            layoutId={`card-banner-${proj.name}`}
-            transition={SPRING}
-            style={{ width: "100%", aspectRatio: "16 / 9", flexShrink: 0, position: "relative", overflow: "hidden", background: "var(--bg-secondary)" }}
-          >
+          {/* Media column: image (uncropped) + Live/GitHub buttons */}
+          <div className="pm-media-col" style={{ padding: 20, display: "flex", flexDirection: "column", gap: 12 }}>
             <motion.div
-              layoutId={`card-banner-image-${proj.name}`}
+              layoutId={`card-banner-${proj.name}`}
               transition={SPRING}
-              style={{ position: "absolute", inset: 0 }}
-            >
-              <Image
-                src={proj.img}
-                alt={proj.name}
-                fill
-                sizes="(max-width: 640px) 100vw, 640px"
-                unoptimized={proj.img.endsWith(".svg")}
-                style={{ objectFit: "cover" }}
-              />
-            </motion.div>
-
-            <button
-              onClick={onClose}
-              aria-label="Close"
+              className="pm-image-frame"
               style={{
-                position: "absolute", top: 12, right: 12,
-                width: 30, height: 30, borderRadius: "50%",
-                background: "rgba(0,0,0,0.5)", border: "1px solid rgba(255,255,255,0.15)",
-                color: "#fff", display: "flex", alignItems: "center", justifyContent: "center",
-                cursor: "pointer", backdropFilter: "blur(4px)",
+                width: "100%", aspectRatio: "16 / 9", flexShrink: 0, position: "relative",
+                overflow: "hidden", borderRadius: 10,
+                background: "var(--bg-secondary)", border: "1px solid var(--border)",
               }}
             >
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-                <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-              </svg>
-            </button>
-          </motion.div>
+              <motion.div
+                layoutId={`card-banner-image-${proj.name}`}
+                transition={SPRING}
+                style={{ position: "absolute", inset: 0 }}
+              >
+                <Image
+                  src={proj.img}
+                  alt={proj.name}
+                  fill
+                  quality={90}
+                  sizes="(max-width: 767px) 100vw, 45vw"
+                  unoptimized={proj.img.endsWith(".svg")}
+                  style={{ objectFit: "contain" }}
+                />
+              </motion.div>
+            </motion.div>
 
-          {/* Scrollable content */}
-          <motion.div
-            className="pm-scroll"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ delay: 0.1, duration: 0.2 }}
-            style={{ flex: 1, overflowY: "auto", overscrollBehavior: "contain", scrollbarWidth: "none", padding: 24, display: "flex", flexDirection: "column", gap: 16 }}
-          >
-            {/* Header */}
+            <motion.div layoutId={`card-links-${proj.name}`} transition={SPRING}>
+              <ProjectLinkButtons proj={proj} />
+            </motion.div>
+          </div>
+
+          {/* Info column: title, description, stack */}
+          <div className="pm-info-col" style={{ padding: 20, display: "flex", flexDirection: "column", gap: 16 }}>
             <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16 }}>
               <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
                 <motion.h2
@@ -339,13 +469,23 @@ export function ProjectModal({ proj, onClose }: { proj: Project; onClose: () => 
                   Created: {proj.year}
                 </motion.span>
               </div>
-              <motion.div
-                layoutId={`card-links-${proj.name}`}
-                transition={SPRING}
-                style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0, paddingTop: 4 }}
+
+              <button
+                ref={closeBtnRef}
+                onClick={onClose}
+                aria-label="Close"
+                style={{
+                  flexShrink: 0,
+                  width: 30, height: 30, borderRadius: "50%",
+                  background: "var(--bg-secondary)", border: "1px solid var(--border)",
+                  color: "var(--text-secondary)", display: "flex", alignItems: "center", justifyContent: "center",
+                  cursor: "pointer",
+                }}
               >
-                <ProjectLinks proj={proj} size={18} />
-              </motion.div>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                  <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+              </button>
             </div>
 
             {/* Description */}
@@ -357,14 +497,14 @@ export function ProjectModal({ proj, onClose }: { proj: Project; onClose: () => 
               {proj.description}
             </motion.p>
 
-            {/* Technologies */}
+            {/* Stack */}
             <motion.div
               layoutId={`card-tech-section-${proj.name}`}
               transition={SPRING}
               style={{ display: "flex", flexDirection: "column", gap: 8 }}
             >
               <span style={{ fontSize: 14, fontWeight: 600, color: "var(--text-primary)", fontFamily: SF }}>
-                Technologies
+                Stack
               </span>
               <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
                 {proj.tags.map(tag => {
@@ -381,34 +521,7 @@ export function ProjectModal({ proj, onClose }: { proj: Project; onClose: () => 
                 })}
               </div>
             </motion.div>
-
-            {/* Features — only shown expanded */}
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 10 }}
-              transition={{ delay: 0.2, duration: 0.3 }}
-              style={{ display: "flex", flexDirection: "column", gap: 12 }}
-            >
-              <span style={{ fontSize: 14, fontWeight: 600, color: "var(--text-muted)", fontFamily: SF }}>
-                Features
-              </span>
-              <ul style={{ display: "flex", flexDirection: "column", gap: 8, margin: 0, padding: 0, listStyle: "none" }}>
-                {proj.features.map((feature, i) => (
-                  <motion.li
-                    key={i}
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.25 + i * 0.03 }}
-                    style={{ display: "flex", alignItems: "flex-start", gap: 8, fontSize: 14, color: "var(--text-secondary)", lineHeight: 1.6, fontFamily: SF }}
-                  >
-                    <span style={{ color: proj.accent, marginTop: 4, flexShrink: 0 }}>•</span>
-                    {feature}
-                  </motion.li>
-                ))}
-              </ul>
-            </motion.div>
-          </motion.div>
+          </div>
         </motion.div>
       </div>
     </>
