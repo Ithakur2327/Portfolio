@@ -82,7 +82,7 @@ function FluidGradientText({ text }: { text: string }) {
   // Stretch the art to fill the box on small screens.
   const [isMobile, setIsMobile] = React.useState(false);
   React.useEffect(() => {
-    const mq = window.matchMedia("(max-width: 640px)");
+    const mq = window.matchMedia("(max-width: 599px)");
     const update = () => setIsMobile(mq.matches);
     update();
     mq.addEventListener("change", update);

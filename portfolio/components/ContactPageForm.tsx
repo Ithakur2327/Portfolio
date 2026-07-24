@@ -102,7 +102,7 @@ export function ContactPageForm() {
           font-size: 13px; color: var(--text-secondary); margin: 0;
         }
 
-        @media (max-width: 640px) {
+        @media (max-width: 599px) {
           .cpf-grid { grid-template-columns: 1fr; }
           .cpf-banner { flex-direction: column; align-items: flex-start; text-align: left; }
         }

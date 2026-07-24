@@ -428,7 +428,7 @@ export function SkillsSection() {
         }
 
         /* Mobile layout fix */
-        @media (max-width: 640px) {
+        @media (max-width: 599px) {
           .skills-grid { border-radius: 8px; grid-template-columns: 1fr; }
           .lamp-skill-box { min-height: 168px; }
           .skill-cols-wrap { gap: 10px !important; padding: 0 10px 10px !important; }
@@ -448,7 +448,7 @@ export function SkillsSection() {
           .skill-row-icon { width: 20px !important; height: 20px !important; margin-left: 4px !important; }
         }
 
-        @media (max-width: 639px) {
+        @media (max-width: 599px) {
           .skills-inner { padding: 0 16px 28px !important; }
         }
       `}</style>

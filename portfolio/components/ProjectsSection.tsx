@@ -31,7 +31,7 @@ export function ProjectsSection() {
           <div style={{ height: 1, background: "var(--border)", margin: "20px 0 20px" }} />
 
           <style suppressHydrationWarning>{`
-            @media (max-width: 639px) { .proj-inner { padding: 0 16px 28px !important; } }
+            @media (max-width: 599px) { .proj-inner { padding: 0 16px 28px !important; } }
           `}</style>
 
           <ProjectsGrid projects={featured} visible={visible} mobileMax={MOBILE_COUNT} />

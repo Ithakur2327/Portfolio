@@ -34,11 +34,11 @@ export function ProjectsGrid({ projects, visible = true, mobileMax }: {
           grid-template-columns: 1fr;
           gap: 14px;
         }
-        @media (min-width: 641px) {
+        @media (min-width: 600px) {
           .proj-grid2 { grid-template-columns: repeat(2, 1fr); }
         }
         ${mobileMax ? `
-        @media (max-width: 640px) {
+        @media (max-width: 599px) {
           .proj-grid2 > *:nth-child(n + ${mobileMax + 1}) { display: none; }
         }` : ""}
       `}</style>

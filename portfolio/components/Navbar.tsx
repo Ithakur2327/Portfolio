@@ -161,7 +161,7 @@ function CommandMenu({
     if (!open || !triggerRef.current) return;
     const rect = triggerRef.current.getBoundingClientRect();
     const panelW = Math.min(480, window.innerWidth - 32);
-    const desktopShift = window.innerWidth >= 640 ? 56 : 0;
+    const desktopShift = window.innerWidth >= 600 ? 56 : 0;
     let left = rect.left + rect.width / 2 - panelW / 2 - desktopShift;
     left = Math.max(16, Math.min(left, window.innerWidth - panelW - 16));
     setPanelLeft(left);
@@ -454,7 +454,7 @@ export function Navbar() {
         @keyframes cmdk-p-out  { from{opacity:1;transform:translateY(0) scale(1)} to{opacity:0;transform:translateY(-6px) scale(0.98)} }
 
         /* Mobile overlay: blur */
-        @media (max-width: 639px) {
+        @media (max-width: 599px) {
           .cmdk-overlay { backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
         }
 
@@ -531,7 +531,7 @@ export function Navbar() {
         .icon-btn:hover  { background:var(--nav-link-active-bg);color:var(--nav-link-hover); }
         .icon-btn:active { transform:scale(0.95); }
 
-        @media (max-width:639px) {
+        @media (max-width:599px) {
           .icon-btn {
             width:30px;height:30px;border-radius:0;
             background:transparent !important;
@@ -560,7 +560,7 @@ export function Navbar() {
           from { opacity:0; transform:translateX(-50%) translateY(-4px) scale(0.96); }
           to   { opacity:1; transform:translateX(-50%) translateY(0)     scale(1);    }
         }
-        @media (max-width:639px)  { .nav-tooltip-box { display:none !important; } }
+        @media (max-width:599px)  { .nav-tooltip-box { display:none !important; } }
         @media (hover:none)       { .nav-tooltip-box { display:none !important; } }
 
         .nav-tooltip-arrow {

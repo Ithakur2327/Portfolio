@@ -297,7 +297,7 @@ export function EducationSection() {
         @media (max-width: 860px) {
           .edu-inner { padding: 0 22px 34px; }
         }
-        @media (max-width: 640px) {
+        @media (max-width: 599px) {
           .edu-inner { padding: 0 16px 28px; }
           .edu-card-top { flex-direction: column; gap: 4px; }
           .edu-card-period { margin-left: 0; }

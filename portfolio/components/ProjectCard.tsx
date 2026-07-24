@@ -148,7 +148,7 @@ export function ProjectCard({ proj, index, visible, isDesktop, onOpen }: {
             alt={proj.name}
             fill
             quality={90}
-            sizes="(max-width: 640px) 90vw, 320px"
+            sizes="(max-width: 599px) 90vw, 320px"
             unoptimized={proj.img.endsWith(".svg")}
             style={{ objectFit: "cover" }}
           />
@@ -260,7 +260,7 @@ export function ProjectCard({ proj, index, visible, isDesktop, onOpen }: {
           .card-view-hint { display: flex; }
         }
 
-        @media (max-width: 640px) {
+        @media (max-width: 599px) {
           .card-expand-btn { display: flex !important; }
         }
       `}</style>

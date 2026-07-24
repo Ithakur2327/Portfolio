@@ -231,7 +231,7 @@ export function CertificationsSection() {
         @media (max-width: 860px) {
           .edu-inner { padding: 0 22px 34px; }
         }
-        @media (max-width: 640px) {
+        @media (max-width: 599px) {
           .edu-inner { padding: 0 16px 28px; }
           .edu-sec-title { font-size: 22px; }
         }
