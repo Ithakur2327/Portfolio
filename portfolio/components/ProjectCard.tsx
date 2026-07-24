@@ -14,6 +14,13 @@ const SF   = "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Ne
 // motion instead of several independently-timed animations.
 const SPRING = { type: "spring" as const, stiffness: 260, damping: 25 };
 
+// Two alternating frame colors for the banner border — same thickness
+// everywhere, alternating tiffany / gold by card position so neighboring
+// cards read as a deliberate pair rather than a random mix.
+const TIFFANY = "#0ABAB5";
+const GOLD = "#D4AF37";
+const FRAME_THICKNESS = "1.5px";
+
 export const GithubIcon = ({ size = 18 }: { size?: number }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor">
     <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/>
@@ -118,27 +125,29 @@ export function ProjectCard({ proj, index, visible, isDesktop, onOpen }: {
         willChange: "transform",
       }}
     >
-      {/* Banner photo — no decorative border, clean edge-to-edge */}
+      {/* Banner photo — clean, uniform-thickness frame alternating
+          tiffany/gold by card position so the corners read as one
+          continuous line instead of breaking around a rotated image. */}
       <motion.div
         layoutId={`card-banner-${proj.name}`}
         transition={SPRING}
         style={{
           width: "100%", height: 176, borderRadius: 10,
-          background: "var(--bg-secondary)", border: "1px solid var(--border)",
+          background: "var(--bg-secondary)",
+          border: `${FRAME_THICKNESS} solid ${index % 2 === 0 ? TIFFANY : GOLD}`,
           position: "relative", overflow: "hidden",
         }}
       >
         <motion.div
           ref={imgRef}
           layoutId={`card-banner-image-${proj.name}`}
-          initial={{ bottom: "-32px", rotate: -8 }}
-          whileHover={isDesktop ? { bottom: 0, rotate: 0 } : undefined}
-          animate={!isDesktop ? { bottom: revealed ? 0 : "-32px", rotate: revealed ? 0 : -8 } : undefined}
-          transition={{ type: "spring", stiffness: 200, damping: 20 }}
+          initial={{ y: "78%", rotate: -4 }}
+          whileHover={isDesktop ? { y: 0, rotate: 0 } : undefined}
+          animate={!isDesktop ? { y: revealed ? 0 : "78%", rotate: revealed ? 0 : -4 } : undefined}
+          transition={{ type: "spring", stiffness: 180, damping: 24, mass: 0.9 }}
           style={{
-            position: "absolute", left: 0, right: 0, margin: "0 auto",
-            width: "85%", aspectRatio: "4 / 2",
-            borderRadius: 4, overflow: "hidden",
+            position: "absolute", inset: 0,
+            borderRadius: 8, overflow: "hidden",
             boxShadow: "0 25px 50px -12px rgba(0,0,0,0.5)",
             willChange: "transform",
           }}
@@ -147,19 +156,12 @@ export function ProjectCard({ proj, index, visible, isDesktop, onOpen }: {
             src={proj.img}
             alt={proj.name}
             fill
-            quality={90}
-            sizes="(max-width: 599px) 90vw, 320px"
+            quality={100}
+            sizes="(max-width: 640px) 95vw, (max-width: 1024px) 45vw, 480px"
             unoptimized={proj.img.endsWith(".svg")}
             style={{ objectFit: "cover" }}
           />
         </motion.div>
-
-        {/* Persistent "click to view" hint — desktop/laptop only; on
-            touch devices the header expand button serves this role. */}
-        <div className="card-view-hint">
-          <ExpandIcon size={11} />
-          Click to view
-        </div>
       </motion.div>
 
       {/* Detail section */}
@@ -182,7 +184,8 @@ export function ProjectCard({ proj, index, visible, isDesktop, onOpen }: {
               onClick={onOpen}
               className="card-expand-btn"
               aria-label="Expand"
-              style={{ display: "none", alignItems: "center", justifyContent: "center", width: 24, height: 24, padding: 0, background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer" }}
+              title="Click to view"
+              style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 24, height: 24, padding: 0, background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer" }}
             >
               <ExpandIcon />
             </button>
@@ -238,30 +241,9 @@ export function ProjectCard({ proj, index, visible, isDesktop, onOpen }: {
           transform: translateY(-1.5px) scale(1.08);
         }
 
-        .card-view-hint {
-          position: absolute;
-          right: 10px;
-          bottom: 10px;
-          display: none;
-          align-items: center;
-          gap: 5px;
-          padding: 5px 10px;
-          border-radius: 999px;
-          background: rgba(0,0,0,0.55);
-          color: #fff;
-          font-size: 11px;
-          font-weight: 600;
-          font-family: ${MONO};
-          letter-spacing: 0.02em;
-          pointer-events: none;
-          backdrop-filter: blur(3px);
-        }
-        @media (min-width: 1025px) {
-          .card-view-hint { display: flex; }
-        }
-
-        @media (max-width: 599px) {
-          .card-expand-btn { display: flex !important; }
+        .card-expand-btn:hover {
+          color: ${proj.accent};
+          transform: translateY(-1.5px) scale(1.08);
         }
       `}</style>
     </motion.div>
@@ -271,7 +253,7 @@ export function ProjectCard({ proj, index, visible, isDesktop, onOpen }: {
 /* ─────────────────────────────────────────────────────────
    Modal — expanded shared-layout counterpart of the card
 ───────────────────────────────────────────────────────── */
-export function ProjectModal({ proj, onClose }: { proj: Project; onClose: () => void }) {
+export function ProjectModal({ proj, onClose, index = 0 }: { proj: Project; onClose: () => void; index?: number }) {
   const [mounted, setMounted] = useState(false);
   const modalRef = useRef<HTMLDivElement>(null);
   const closeBtnRef = useRef<HTMLButtonElement>(null);
@@ -357,8 +339,8 @@ export function ProjectModal({ proj, onClose }: { proj: Project; onClose: () => 
           className="pm-body"
           style={{
             pointerEvents: "auto",
-            width: "100%", maxWidth: 860,
-            maxHeight: "85vh",
+            width: "100%", maxWidth: 960,
+            maxHeight: "88vh",
             cursor: "default",
             background: "var(--bg-card)",
             border: "1px solid var(--border)",
@@ -413,6 +395,9 @@ export function ProjectModal({ proj, onClose }: { proj: Project; onClose: () => 
               .pm-info-col::-webkit-scrollbar { display: none; }
               .pm-image-frame { aspect-ratio: 4 / 3; }
             }
+            @media (max-width: 767px) {
+              .pm-body { max-height: 92vh; }
+            }
           `}</style>
 
           {/* Media column: image (uncropped) + Live/GitHub buttons */}
@@ -424,7 +409,8 @@ export function ProjectModal({ proj, onClose }: { proj: Project; onClose: () => 
               style={{
                 width: "100%", aspectRatio: "16 / 9", flexShrink: 0, position: "relative",
                 overflow: "hidden", borderRadius: 10,
-                background: "var(--bg-secondary)", border: "1px solid var(--border)",
+                background: "var(--bg-secondary)",
+                border: `${FRAME_THICKNESS} solid ${index % 2 === 0 ? TIFFANY : GOLD}`,
               }}
             >
               <motion.div
@@ -436,7 +422,7 @@ export function ProjectModal({ proj, onClose }: { proj: Project; onClose: () => 
                   src={proj.img}
                   alt={proj.name}
                   fill
-                  quality={90}
+                  quality={100}
                   sizes="(max-width: 767px) 100vw, 45vw"
                   unoptimized={proj.img.endsWith(".svg")}
                   style={{ objectFit: "contain" }}

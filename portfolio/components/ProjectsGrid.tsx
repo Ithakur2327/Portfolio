@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, startTransition } from "react";
+import { useState, useEffect } from "react";
 import { AnimatePresence } from "motion/react";
 import type { Project } from "@/lib/projects-data";
 import { ProjectCard, ProjectModal } from "./ProjectCard";
@@ -16,6 +16,7 @@ export function ProjectsGrid({ projects, visible = true, mobileMax }: {
   mobileMax?: number;
 }) {
   const [active, setActive] = useState<Project | null>(null);
+  const [activeIndex, setActiveIndex] = useState(0);
   const [isDesktop, setIsDesktop] = useState(false);
 
   useEffect(() => {
@@ -34,11 +35,11 @@ export function ProjectsGrid({ projects, visible = true, mobileMax }: {
           grid-template-columns: 1fr;
           gap: 14px;
         }
-        @media (min-width: 600px) {
+        @media (min-width: 641px) {
           .proj-grid2 { grid-template-columns: repeat(2, 1fr); }
         }
         ${mobileMax ? `
-        @media (max-width: 599px) {
+        @media (max-width: 640px) {
           .proj-grid2 > *:nth-child(n + ${mobileMax + 1}) { display: none; }
         }` : ""}
       `}</style>
@@ -51,13 +52,13 @@ export function ProjectsGrid({ projects, visible = true, mobileMax }: {
             index={i}
             visible={visible}
             isDesktop={isDesktop}
-            onOpen={() => startTransition(() => setActive(proj))}
+            onOpen={() => { setActive(proj); setActiveIndex(i); }}
           />
         ))}
       </div>
 
       <AnimatePresence>
-        {active && <ProjectModal key="modal" proj={active} onClose={() => setActive(null)} />}
+        {active && <ProjectModal key="modal" proj={active} index={activeIndex} onClose={() => setActive(null)} />}
       </AnimatePresence>
     </>
   );
