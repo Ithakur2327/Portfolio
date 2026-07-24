@@ -176,8 +176,9 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
         .fs-in  { animation: fsIn  0.28s cubic-bezier(0.16,1,0.3,1) forwards }
         .fs-out { animation: fsOut 0.22s ease-in forwards }
 
-        /* Subtitle — brighter + continuous left-to-right shine sweep
-           (reuses the site's existing global @keyframes shimmer) */
+        /* Subtitle — right-to-left shine sweep, fired once per flip so it
+           starts the instant the new text flips in (reuses the site's
+           existing global @keyframes shimmer, just played once and reversed) */
         .subtitle-shine {
           background: linear-gradient(
             100deg,
@@ -193,16 +194,19 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
           color: transparent;
           font-weight: 600;
           animation-name: fsIn, shimmer;
-          animation-duration: 0.28s, 4.5s;
+          animation-duration: 0.28s, 0.9s;
           animation-timing-function: cubic-bezier(0.16,1,0.3,1), linear;
-          animation-iteration-count: 1, infinite;
-          animation-fill-mode: forwards, none;
+          animation-iteration-count: 1, 1;
+          animation-fill-mode: forwards, forwards;
+          animation-direction: normal, reverse;
         }
         .fs-out.subtitle-shine {
           animation-name: fsOut, shimmer;
-          animation-duration: 0.22s, 4.5s;
+          animation-duration: 0.22s, 0.9s;
           animation-timing-function: ease-in, linear;
-          animation-iteration-count: 1, infinite;
+          animation-iteration-count: 1, 1;
+          animation-fill-mode: forwards, forwards;
+          animation-direction: normal, reverse;
         }
         @media (prefers-reduced-motion: reduce) {
           .subtitle-shine { animation: none; }
@@ -286,7 +290,7 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
           margin-top: 16px;
         }
 
-        @media (min-width: 768px) and (max-width: 1180px) {
+        @media (min-width: 600px) and (max-width: 1180px) {
           .h-avatar {
             width: clamp(220px, 32vw, 300px) !important;
             min-width: clamp(220px, 32vw, 300px) !important;
@@ -359,41 +363,6 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
           .h-info-pad {
             padding: 22px 32px 20px !important;
           }
-        }
-
-        @media (min-width: 600px) and (max-width: 767px) {
-          .h-avatar {
-            width: clamp(160px, 26vw, 200px) !important;
-            min-width: clamp(160px, 26vw, 200px) !important;
-            height: calc(clamp(160px, 26vw, 200px) - 10px) !important;
-            min-height: calc(clamp(160px, 26vw, 200px) - 10px) !important;
-            border-radius: 20px !important;
-          }
-          .h-nameblock h1 {
-            font-size: clamp(26px, 5.2vw, 42px) !important;
-            font-weight: 800 !important;
-            line-height: 1 !important;
-          }
-          .h-verified-badge { width: 30px !important; height: 30px !important; }
-          .h-name-row { gap: 8px !important; }
-          .h-nameblock > div:nth-child(2) {
-            margin-bottom: -3px !important;
-          }
-          .h-info-wrap {
-            margin-left: 20px !important;
-            margin-right: 20px !important;
-          }
-          .h-info-pad {
-            padding: 15px 18px 13px !important;
-          }
-          .h-grid {
-            gap: 10px 30px !important;
-          }
-          .h-info-pad .h-grid > div > div,
-          .h-info-pad .h-grid > div > a {
-            font-size: 13.5px !important;
-          }
-          .h-social { padding: 13px 18px !important; }
         }
 
         @media (max-width: 600px) {

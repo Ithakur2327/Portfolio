@@ -147,6 +147,17 @@ function SendIcon() {
   );
 }
 
+/* Cleaner, more premium arrow — used only by the Hero's "Get in touch"
+   button in place of the paper-plane SendIcon used elsewhere on the site. */
+function ArrowUpRightIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+      <line x1="7" y1="17" x2="17" y2="7" />
+      <polyline points="7 7 17 7 17 17" />
+    </svg>
+  );
+}
+
 export { SendIcon, ResumeIcon };
 
 /* ════════════════════════════════════════════════════════════
@@ -244,17 +255,26 @@ export function HeroActionButtons({
           display: inline-flex;
           align-items: center;
           gap: 8px;
-          height: 40px;
-          padding: 0 20px;
+          height: 38px;
+          padding: 0 16px;
           border-radius: 10px;
           border: 1px solid var(--border);
           font-family: 'Geist Mono', monospace;
-          font-size: 13px;
+          font-size: 12.5px;
           font-weight: 600;
           cursor: pointer;
           white-space: nowrap;
         }
         .hero-liquid-btn svg { flex-shrink: 0; }
+
+        /* Get in touch — matched to the Resume button's slightly smaller size.
+           Scoped to .hero-actions so the shared .hero-contact-btn used by the
+           Footer and Contact page keeps its own (larger) size. */
+        .hero-actions .hero-contact-btn {
+          height: 38px !important;
+          padding: 0 16px !important;
+          font-size: 12.5px !important;
+        }
 
         @media (max-width: 600px) {
           .hero-liquid-btn { height: 38px; padding: 0 16px; font-size: 12.5px; }
@@ -274,11 +294,11 @@ export function HeroActionButtons({
           hoverTextColor="var(--bg-base)"
         >
           <ResumeIcon />
-          Resume / CV
+          Resume
         </LiquidButton>
 
         <SolidMagneticButton as="a" href={contactHref}>
-          <SendIcon />
+          <ArrowUpRightIcon />
           Get in touch
         </SolidMagneticButton>
       </div>
