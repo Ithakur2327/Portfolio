@@ -99,6 +99,7 @@ export function EducationSection() {
           background: var(--bg-base);
         }
         .edu-inner {
+          max-width: var(--content-width);
           margin: 0 auto;
           padding: 0 32px 64px;
         }
@@ -311,7 +312,7 @@ export function EducationSection() {
         className={revealClass}
       >
         <div className="edu-outer">
-          <div className="edu-inner content-max">
+          <div className="edu-inner">
             {/* Title row – exactly like Projects/Skills */}
             <div className="edu-sec-titlerow">
               <h2 className="edu-sec-title">

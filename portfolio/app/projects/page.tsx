@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Navbar } from "@/components/Navbar";
-import { Footer } from "@/components/Footer";
 import { SectionTitleIcon } from "@/components/SectionIcon";
 import { ProjectsGrid } from "@/components/ProjectsGrid";
 import { PROJECTS } from "@/lib/projects-data";
@@ -55,7 +54,6 @@ export default function ProjectsPage() {
           </div>
         </div>
       </main>
-      <Footer />
     </>
   );
 }

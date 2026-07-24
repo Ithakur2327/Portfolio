@@ -2,6 +2,7 @@
 import { useRef, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { motion } from "motion/react";
+import Image from "next/image";
 import type { Project } from "@/lib/projects-data";
 import { TECH_MAP } from "@/lib/projects-data";
 
@@ -111,12 +112,13 @@ export function ProjectCard({ proj, index, visible, onOpen }: {
               willChange: "transform",
             }}
           >
-            <img
+            <Image
               src={proj.img}
               alt={proj.name}
-              loading="lazy"
-              decoding="async"
-              style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+              fill
+              sizes="(max-width: 640px) 90vw, 320px"
+              unoptimized={proj.img.endsWith(".svg")}
+              style={{ objectFit: "cover" }}
             />
           </motion.div>
         </motion.div>
@@ -172,6 +174,7 @@ export function ProjectCard({ proj, index, visible, onOpen }: {
               if (!tech) return null;
               return (
                 <motion.div key={tag} layoutId={`card-tech-${proj.name}-${tag}`} transition={SPRING} title={tag} style={{ display: "flex" }}>
+                  {/* eslint-disable-next-line @next/next/no-img-element -- tiny (24px) external SVG icon; dangerouslyAllowSVG is intentionally off, and there's no bandwidth/LCP benefit to proxy such a small icon through next/image */}
                   <img
                     src={tech.logo}
                     alt={tag}
@@ -212,12 +215,11 @@ export function ProjectModal({ proj, onClose }: { proj: Project; onClose: () => 
 
     const esc = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
     window.addEventListener("keydown", esc);
+    const handler = (e: MouseEvent) => {
+      if (modalRef.current && !modalRef.current.contains(e.target as Node)) onClose();
+    };
     const t = setTimeout(() => {
-      const handler = (e: MouseEvent) => {
-        if (modalRef.current && !modalRef.current.contains(e.target as Node)) onClose();
-      };
       document.addEventListener("mousedown", handler);
-      return () => document.removeEventListener("mousedown", handler);
     }, 80);
     return () => {
       document.documentElement.style.overflow = "";
@@ -225,6 +227,7 @@ export function ProjectModal({ proj, onClose }: { proj: Project; onClose: () => 
       const cat = document.getElementById("oneko");
       if (cat) cat.style.display = "";
       window.removeEventListener("keydown", esc);
+      document.removeEventListener("mousedown", handler);
       clearTimeout(t);
     };
   }, [onClose]);
@@ -281,7 +284,14 @@ export function ProjectModal({ proj, onClose }: { proj: Project; onClose: () => 
               transition={SPRING}
               style={{ position: "absolute", inset: 0 }}
             >
-              <img src={proj.img} alt={proj.name} loading="lazy" decoding="async" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+              <Image
+                src={proj.img}
+                alt={proj.name}
+                fill
+                sizes="(max-width: 640px) 100vw, 640px"
+                unoptimized={proj.img.endsWith(".svg")}
+                style={{ objectFit: "cover" }}
+              />
             </motion.div>
 
             <button
@@ -362,6 +372,7 @@ export function ProjectModal({ proj, onClose }: { proj: Project; onClose: () => 
                   return (
                     <motion.div key={tag} layoutId={`card-tech-${proj.name}-${tag}`} transition={SPRING}>
                       <span className="pm-tag" style={{ color: "var(--tag-text)", background: "var(--tag-bg)", border: "1px solid var(--tag-border)" }}>
+                        {/* eslint-disable-next-line @next/next/no-img-element -- tiny external SVG icon, see justification on the card version above */}
                         {tech && <img src={tech.logo} alt={tag} width={15} height={15} decoding="async" style={{ objectFit: "contain", flexShrink: 0 }} />}
                         {tag}
                       </span>

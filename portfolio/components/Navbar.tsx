@@ -207,7 +207,7 @@ function CommandMenu({
     };
     window.addEventListener("keydown", fn);
     return () => window.removeEventListener("keydown", fn);
-  }, [open, filtered, selected, onClose, openPdf]);
+  }, [open, filtered, selected, onClose, openPdf, isHome]);
 
   useEffect(() => { setSelected(0); }, [query]);
 
@@ -581,6 +581,7 @@ export function Navbar() {
             <div className="logo-area">
               <div className={`logo-i${scrolled ? " hide" : ""}`}>&lt;I&gt;</div>
               <div className={`logo-avatar${scrolled ? " show" : ""}`}>
+                {/* eslint-disable-next-line @next/next/no-img-element -- intentionally a plain img: this exact URL is already preloaded in layout.tsx and fetched by Avatar.tsx's WebGL loader, so next/image would rewrite it to a different optimizer URL and cause an extra fetch instead of reusing the cached one */}
                 <img
                   src={isDark ? "/avatar-dark.jpg" : "/avatar-light.jpg"}
                   alt="IT"

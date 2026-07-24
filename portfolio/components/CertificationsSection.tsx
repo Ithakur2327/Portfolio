@@ -70,6 +70,7 @@ export function CertificationsSection() {
           background: var(--bg-base);
         }
         .edu-inner {
+          max-width: var(--content-width);
           margin: 0 auto;
           padding: 0 32px 64px;
         }
@@ -252,7 +253,7 @@ export function CertificationsSection() {
         className={revealClass}
       >
         <div className="edu-outer">
-          <div className="edu-inner content-max">
+          <div className="edu-inner">
             {/* Title row */}
             <div className="edu-sec-titlerow">
               <h2 className="edu-sec-title">
@@ -278,6 +279,7 @@ export function CertificationsSection() {
                     transition={{ duration: 0.46, ease: [0.22, 1, 0.36, 1], delay: visible ? i * 0.08 : 0 }}
                   >
                     <div className="edu-card-icon">
+                      {/* eslint-disable-next-line @next/next/no-img-element -- small external SVG issuer logo (simpleicons.org); dangerouslyAllowSVG is intentionally off */}
                       <img
                         className="cert-logo-img"
                         src={cert.logo}

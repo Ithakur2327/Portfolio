@@ -139,6 +139,7 @@ const SkillRow = memo(function SkillRow({
         marginLeft: 8,
       }}>
         {tech.logo && (
+          // eslint-disable-next-line @next/next/no-img-element -- tiny (15px) external SVG skill icon; dangerouslyAllowSVG is intentionally off
           <img
             src={tech.logo} alt={name}
             width={15} height={15}
@@ -331,6 +332,7 @@ const MovingStrip = memo(function MovingStrip() {
               position:"relative",
             }}>
               {tech.logo && (
+                // eslint-disable-next-line @next/next/no-img-element -- tiny (21px) external SVG skill icon; dangerouslyAllowSVG is intentionally off
                 <img src={tech.logo} alt={name} width={21} height={21}
                   loading="lazy" draggable={false}
                   style={{ objectFit:"contain", filter:stripFilter, pointerEvents:"none" }}
@@ -458,7 +460,7 @@ export function SkillsSection() {
           width:"100vw",
           background:"var(--bg-base)",
         }}>
-          <div className="skills-inner content-max" style={{ padding:"0 20px 64px" }}>
+          <div className="skills-inner" style={{ maxWidth: "var(--content-width)", margin:"0 auto", padding:"0 20px 64px" }}>
             <div style={{ paddingTop:50, marginBottom:4, display:"flex", alignItems:"center", gap:10 }}>
               <span style={{
                 fontSize:28, fontWeight:700,

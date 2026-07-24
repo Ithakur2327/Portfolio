@@ -199,8 +199,7 @@ a, button, [role="button"] {
    width is controlled from one place.
 ═══════════════════════════════════════════════════════════ */
 :root {
-  --content-width: 985px;
-  --content-width-inset: calc(var(--content-width) - 32px);
+  --content-width: 1000px;
 }
 .page-wrapper {
   max-width: var(--content-width);
@@ -210,12 +209,6 @@ a, button, [role="button"] {
   position: relative;
   z-index: 1;
   isolation: isolate;
-}
-
-
-.content-max {
-  max-width: var(--content-width);
-  margin: 0 auto;
 }
 
 .page-wrapper > * + * {

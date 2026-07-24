@@ -111,8 +111,9 @@ export function ContactPageForm() {
       <form onSubmit={handleSubmit}>
         <div className="cpf-grid">
           <div>
-            <label className="cpf-label">Full Name <span className="cpf-req">*</span></label>
+            <label htmlFor="cpf-name" className="cpf-label">Full Name <span className="cpf-req">*</span></label>
             <input
+              id="cpf-name"
               placeholder="Your name"
               value={form.name}
               onChange={e => setForm({ ...form, name: e.target.value })}
@@ -121,8 +122,9 @@ export function ContactPageForm() {
             />
           </div>
           <div>
-            <label className="cpf-label">Email <span className="cpf-req">*</span></label>
+            <label htmlFor="cpf-email" className="cpf-label">Email <span className="cpf-req">*</span></label>
             <input
+              id="cpf-email"
               type="email" placeholder="your@email.com"
               value={form.email}
               onChange={e => setForm({ ...form, email: e.target.value })}
@@ -133,9 +135,10 @@ export function ContactPageForm() {
         </div>
 
         <div className="cpf-purpose">
-          <label className="cpf-label">Purpose <span className="cpf-req">*</span></label>
+          <label htmlFor="cpf-purpose" className="cpf-label">Purpose <span className="cpf-req">*</span></label>
           <div className="cpf-select-wrap">
             <select
+              id="cpf-purpose"
               value={form.purpose}
               onChange={e => setForm({ ...form, purpose: e.target.value })}
               required className="field-input cpf-select"
@@ -151,8 +154,9 @@ export function ContactPageForm() {
         </div>
 
         <div className="cpf-message">
-          <label className="cpf-label">Message <span className="cpf-req">*</span></label>
+          <label htmlFor="cpf-message" className="cpf-label">Message <span className="cpf-req">*</span></label>
           <textarea
+            id="cpf-message"
             placeholder="Tell me about your project or idea..."
             value={form.message}
             onChange={e => setForm({ ...form, message: e.target.value })}
@@ -161,11 +165,21 @@ export function ContactPageForm() {
           />
         </div>
 
-        <div className="cpf-footer">
+        <div className="cpf-footer" style={{ flexDirection: "column", alignItems: "flex-start", gap: 10 }}>
           <SolidMagneticButton type="submit">
             {sent ? "Opening Email App..." : "Send Message"}
             <SendIcon />
           </SolidMagneticButton>
+          {/* mailto: silently does nothing if the visitor has no default mail
+              app configured (common on fresh desktop installs) -- there's no
+              way to detect that in JS, so always show a working fallback
+              rather than leaving those visitors with no path to reach out. */}
+          <p style={{ fontSize: 12.5, color: "var(--text-muted)", fontFamily: MONO, margin: 0 }}>
+            Or email directly at{" "}
+            <a href={`mailto:${TO_EMAIL}`} style={{ color: "var(--text-secondary)", textDecoration: "underline" }}>
+              {TO_EMAIL}
+            </a>
+          </p>
         </div>
       </form>
 

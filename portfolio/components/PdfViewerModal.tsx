@@ -170,6 +170,7 @@ export function PdfModalProvider({ children }: { children: React.ReactNode }) {
             {/* Content */}
             {/\.(png|jpe?g|webp|gif|avif)$/i.test(modal.src) ? (
               <div style={{ background: "#ffffff", overflowY: "auto", flex: 1 }}>
+                {/* eslint-disable-next-line @next/next/no-img-element -- on-demand modal content only rendered after a user opens it (no LCP impact), with dimensions unknown ahead of render */}
                 <img
                   src={modal.src}
                   alt={modal.title}

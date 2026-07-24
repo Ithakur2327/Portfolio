@@ -380,6 +380,7 @@ export function Avatar({ version }: { version?: string } = {}) {
       gl.deleteBuffer(buf);
       gl.deleteProgram(prog);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional one-time WebGL setup; `version` is a stable build-time value and re-running this effect would tear down and rebuild the whole WebGL scene unnecessarily
   }, []);
 
   return (

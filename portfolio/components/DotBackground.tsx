@@ -212,7 +212,6 @@ function DotCanvas({ dotColor, activeDotColor, interactive }: {
       if (raf)       cancelAnimationFrame(raf);
       if (idleTimer) clearTimeout(idleTimer);
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [interactive]);
 
   return (

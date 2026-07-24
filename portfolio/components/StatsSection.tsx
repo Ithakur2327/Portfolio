@@ -69,6 +69,7 @@ function LeetCodeLogo({ size = 34, isDark = true }: { size?: number; isDark?: bo
   const iconColor = isDark ? "ffffff" : "000000";
   return (
     <div style={{ width: size, height: size, borderRadius: Math.round(size * 0.26), background: bg, border, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, overflow: "hidden", lineHeight: 0 }}>
+      {/* eslint-disable-next-line @next/next/no-img-element -- small external SVG icon with a data-URI onError fallback; dangerouslyAllowSVG is intentionally off, so next/image can't optimize this anyway */}
       <img
         src={`https://cdn.simpleicons.org/leetcode/${iconColor}`}
         alt="LeetCode"
@@ -220,7 +221,10 @@ function LeetCodeStats({ username = "IThakur09" }: { username?: string }) {
   const [loading, setLoading] = useState(true);
   const [calData, setCalData] = useState<LCCalDay[]>([]);
   const [hovered, setHovered] = useState<HoveredCell | null>(null);
+  const [mounted, setMounted] = useState(false);
   useDismissTooltipOnScroll(setHovered, hovered !== null);
+
+  useEffect(() => { setMounted(true); }, []);
 
   useEffect(() => {
     (async () => {
@@ -257,12 +261,18 @@ function LeetCodeStats({ username = "IThakur09" }: { username?: string }) {
     }
   });
 
-  const today = new Date(); today.setHours(0,0,0,0);
+  // IMPORTANT: this page is statically prerendered, so `new Date()` evaluated
+  // directly during render would return the build-time date on the server
+  // but the real visit-time date on the client -- a guaranteed hydration
+  // mismatch (extra/missing week columns) any time a week boundary passes
+  // between build and visit. Gate the real "today" behind `mounted` so the
+  // first client render matches the server exactly, then let it fill in.
   const jan1 = new Date(2026, 0, 1);
   const startSun = new Date(jan1); startSun.setDate(startSun.getDate() - startSun.getDay());
+  const today = mounted ? (() => { const t = new Date(); t.setHours(0, 0, 0, 0); return t; })() : startSun;
 
   const lcWeeks: { date: Date; count: number }[][] = [];
-  let cur = new Date(startSun);
+  const cur = new Date(startSun);
   while (cur <= today) {
     const wk: { date: Date; count: number }[] = [];
     for (let i = 0; i < 7; i++) {
@@ -483,7 +493,7 @@ function GitHubGraph({ username = "Ithakur2327" }: { username?: string }) {
           const startSun = new Date(jan1); startSun.setDate(startSun.getDate() - startSun.getDay());
           const dateMap = new Map(c2026.map(x => [x.date, x.count]));
           const ws: Week[] = [];
-          let cur = new Date(startSun);
+          const cur = new Date(startSun);
           while (cur <= today) {
             const days: ContribDay[] = [];
             for (let i = 0; i < 7; i++) {
@@ -503,7 +513,7 @@ function GitHubGraph({ username = "Ithakur2327" }: { username?: string }) {
       const jan1 = new Date(2026,0,1);
       const startSun = new Date(jan1); startSun.setDate(startSun.getDate() - startSun.getDay());
       const ws: Week[] = [];
-      let cur = new Date(startSun);
+      const cur = new Date(startSun);
       while (cur <= today) {
         const days: ContribDay[] = [];
         for (let i = 0; i < 7; i++) {
@@ -768,7 +778,7 @@ export function StatsSection() {
         }
 
         .about-content {
-          margin: 0 auto; padding: 0 20px 64px;
+          max-width: var(--content-width); margin: 0 auto; padding: 0 20px 64px;
         }
         @media (max-width: 860px) { .about-content { padding: 0 22px 34px; } }
         @media (max-width: 639px) {
@@ -787,7 +797,7 @@ export function StatsSection() {
 
       <section id="stats" ref={statsRef} className={revealClass}>
         <div style={{ position: "relative", left: "50%", marginLeft: "-50vw", width: "100vw", background: "var(--bg-base)" }}>
-          <div className="about-content content-max">
+          <div className="about-content">
             <div style={{ paddingTop: 50 }}>
               <span style={{ display: "inline-flex", alignItems: "center", gap: 10, fontSize: 28, fontWeight: 700, letterSpacing: "-0.03em", lineHeight: 1, fontFamily: SF, color: "var(--text-primary)" }}>
                 <SectionTitleIcon type="chart" />

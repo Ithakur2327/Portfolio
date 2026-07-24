@@ -35,24 +35,19 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   metadataBase: new URL("https://ithakur.vercel.app"),
 
-  title: {
-    default: "Indresh Thakur | AI Engineer & Full Stack Developer",
-    template: "%s | Indresh Thakur",
-  },
+  title: "Indresh Thakur | AI Engineer & Full Stack Developer",
 
   description:
-    "Portfolio of Indresh Thakur. AI Engineer, Full Stack Developer, MERN Stack, Machine Learning, Generative AI, Agentic AI, and modern web applications.",
+    "Portfolio of Indresh Thakur. AI Engineer, Full Stack Developer, MERN Stack, Machine Learning, GenAI and Agentic AI.",
 
   keywords: [
     "Indresh Thakur",
     "AI Engineer",
     "Full Stack Developer",
-    "MERN Stack",
+    "MERN",
     "Next.js",
     "Machine Learning",
-    "Generative AI",
-    "Agentic AI",
-    "Portfolio",
+    "Portfolio"
   ],
 
   authors: [
@@ -72,37 +67,27 @@ export const metadata: Metadata = {
 
   icons: {
     icon: "/favicon.ico",
-    shortcut: "/favicon.ico",
+    apple: "/apple-touch-icon.png",
   },
 
   openGraph: {
     title: "Indresh Thakur | AI Engineer & Full Stack Developer",
-    description:
-      "Portfolio of Indresh Thakur. AI Engineer, Full Stack Developer, MERN Stack, Machine Learning, Generative AI and Agentic AI.",
+    description: "AI Engineer & Full Stack Developer.",
     url: "https://ithakur.vercel.app",
     siteName: "Indresh Thakur",
     type: "website",
-    locale: "en_US",
     images: [
       {
         url: "/og-image.png",
         width: 1200,
         height: 630,
-        alt: "Indresh Thakur Portfolio",
       },
     ],
   },
 
   twitter: {
     card: "summary_large_image",
-    title: "Indresh Thakur | AI Engineer & Full Stack Developer",
-    description:
-      "Portfolio of Indresh Thakur. AI Engineer & Full Stack Developer.",
     images: ["/og-image.png"],
-  },
-
-  verification: {
-    google: "4-ItIUeyXuTQwPxwrBiCjBLvxbp5g3smWy5p8dyTOTA",
   },
 };
 
@@ -129,8 +114,8 @@ export default function RootLayout({
             which is the actual source of the visible render delay on
             refresh (network round-trip + decode, on top of hydration time,
             all happening serially instead of in parallel). */}
-        <link rel="preload" as="image" href={`/avatar-dark.jpg?v=${getAvatarVersion()}`} fetchPriority="high" />
-        <link rel="preload" as="image" href={`/avatar-light.jpg?v=${getAvatarVersion()}`} fetchPriority="high" />
+        <link rel="preload" as="image" href={`/avatar-dark.jpg?v=${getAvatarVersion()}`} fetchPriority="high" crossOrigin="anonymous" />
+        <link rel="preload" as="image" href={`/avatar-light.jpg?v=${getAvatarVersion()}`} fetchPriority="high" crossOrigin="anonymous" />
 
         {/* Fonts — the site references 'Geist' and 'Geist Mono' by name
             throughout its components, but neither was ever actually loaded,
@@ -147,6 +132,10 @@ export default function RootLayout({
             round trip to Google Fonts that was stalling first paint — the
             fonts, weights, and fallback behavior are identical, just applied
             a beat sooner instead of holding up the page. */}
+        {/* eslint-disable @next/next/no-page-custom-font -- that rule targets
+            Pages Router per-page `_document.js` overrides, which only load
+            fonts on one route; it doesn't apply to the App Router root
+            layout, which already wraps every route by definition. */}
         <link
           rel="preload"
           as="style"
@@ -170,6 +159,7 @@ export default function RootLayout({
             href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap"
           />
         </noscript>
+        {/* eslint-enable @next/next/no-page-custom-font */}
       </head>
 
       <body suppressHydrationWarning>

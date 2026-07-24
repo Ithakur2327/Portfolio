@@ -204,7 +204,12 @@ function FluidGradientText({ text }: { text: string }) {
 }
 
 export function Footer() {
-  const year = new Date().getFullYear();
+  // Computing the year directly during render would bake the build-time
+  // year into this statically-prerendered page, which can mismatch the
+  // client's actual year right around a New Year rollover. Render a fixed
+  // value on the first (server-matching) pass, then correct it after mount.
+  const [year, setYear] = React.useState(2026);
+  React.useEffect(() => { setYear(new Date().getFullYear()); }, []);
 
   return (
     <>
@@ -223,12 +228,16 @@ export function Footer() {
         }
 
         .footer-cta-band {
+          max-width: var(--content-width);
+          margin: 0 auto;
           padding: 28px 32px 22px;
           display: flex;
           align-items: center;
           justify-content: center;
         }
         .footer-bottom-band {
+          max-width: var(--content-width);
+          margin: 0 auto;
           padding: 18px 32px;
           display: flex;
           align-items: center;
@@ -326,14 +335,14 @@ export function Footer() {
       `}</style>
 
       <footer id="site-footer-root" className="footer-root">
-        <div className="footer-cta-band content-max">
+        <div className="footer-cta-band">
           <SolidMagneticButton as="a" href="/contact">
             <SendIcon />
             Get in Touch
           </SolidMagneticButton>
         </div>
 
-        <div className="footer-bottom-band content-max">
+        <div className="footer-bottom-band">
           <span className="footer-copy">© {year} Indresh Thakur. All rights reserved.</span>
           <SocialRow size={16} gap={12} />
         </div>
