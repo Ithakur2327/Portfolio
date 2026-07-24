@@ -182,21 +182,6 @@ export function ContactPageForm() {
           </p>
         </div>
       </form>
-
-      {/* Book a call — swap the href for your real Calendly/Cal.com link */}
-      <div className="cpf-banner">
-        <span className="cpf-banner-icon"><CalendarIcon /></span>
-        <div style={{ flex: 1 }}>
-          <p className="cpf-banner-title">Let&apos;s Build Something Great</p>
-          <p className="cpf-banner-sub">Got an idea or project in mind? Let&apos;s talk.</p>
-        </div>
-        <SolidMagneticButton
-          as="a"
-          href={`mailto:${TO_EMAIL}?subject=${encodeURIComponent("Let's schedule a call")}`}
-        >
-          Book a Call
-        </SolidMagneticButton>
-      </div>
     </>
   );
 }
