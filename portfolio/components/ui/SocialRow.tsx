@@ -61,7 +61,10 @@ export const SOCIAL_LINKS = [
 
 /* ── Tooltip — mirrors the reference portfolio's animate-ui tooltip:
    shows instantly on hover, lingers ~300ms after the pointer leaves,
-   fades/scales in above the trigger with a small arrow. ── */
+   fades/scales in above the trigger with a small arrow. Always mounted
+   and driven by a CSS transition (rather than a mount/unmount + one-shot
+   keyframe) so rapid hovering between icons interrupts and reverses
+   smoothly instead of popping/flickering. ── */
 function SocialTooltip({ label, children }: { label: string; children: React.ReactNode }) {
   const [show, setShow] = useState(false);
   const hideTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -83,12 +86,14 @@ function SocialTooltip({ label, children }: { label: string; children: React.Rea
       onBlur={handleLeave}
     >
       {children}
-      {show && (
-        <span className="rt-tip" role="tooltip">
-          {label}
-          <span className="rt-arrow" aria-hidden="true" />
-        </span>
-      )}
+      <span
+        className={`rt-tip${show ? " rt-tip--visible" : ""}`}
+        role="tooltip"
+        aria-hidden={!show}
+      >
+        {label}
+        <span className="rt-arrow" aria-hidden="true" />
+      </span>
     </span>
   );
 }
@@ -107,16 +112,16 @@ export function SocialRow({ size = 22, gap = 16 }: { size?: number; gap?: number
         .rt-link {
           display: inline-flex;
           color: var(--text-muted);
-          transition: color 0.15s ease, transform 0.15s ease;
+          filter: brightness(1.18);
+          transition: color 0.15s ease, transform 0.15s ease, filter 0.15s ease;
           line-height: 0;
         }
-        .rt-link:hover { color: var(--text-primary); transform: translateY(-1px); }
+        .rt-link:hover { color: var(--text-primary); transform: translateY(-1px); filter: brightness(1); }
 
         .rt-tip {
           position: absolute;
           bottom: calc(100% + 10px);
           left: 50%;
-          transform: translateX(-50%);
           background: var(--text-primary);
           color: var(--bg-base);
           font-size: 12px;
@@ -127,11 +132,13 @@ export function SocialRow({ size = 22, gap = 16 }: { size?: number; gap?: number
           white-space: nowrap;
           pointer-events: none;
           z-index: 50;
-          animation: rt-pop 0.15s cubic-bezier(0.16,1,0.3,1);
+          opacity: 0;
+          transform: translateX(-50%) translateY(4px) scale(0.9);
+          transition: opacity 0.18s cubic-bezier(0.16,1,0.3,1), transform 0.18s cubic-bezier(0.16,1,0.3,1);
         }
-        @keyframes rt-pop {
-          from { opacity: 0; transform: translateX(-50%) translateY(4px) scale(0.9); }
-          to   { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
+        .rt-tip--visible {
+          opacity: 1;
+          transform: translateX(-50%) translateY(0) scale(1);
         }
         .rt-arrow {
           position: absolute;
@@ -147,7 +154,7 @@ export function SocialRow({ size = 22, gap = 16 }: { size?: number; gap?: number
           .rt-tip { display: none; }
         }
         @media (prefers-reduced-motion: reduce) {
-          .rt-tip { animation: none; }
+          .rt-tip { transition: none; }
         }
       `}</style>
 

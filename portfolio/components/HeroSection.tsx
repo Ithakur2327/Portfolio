@@ -550,7 +550,7 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
 
               {/* ── Social row — identical icons + tooltip everywhere on the site ── */}
               <div className="h-social" style={{borderTop:B}}>
-                <SocialRow size={20} gap={16} />
+                <SocialRow size={23} gap={20} />
               </div>
             </div>
           </HoverBorderGradient>
