@@ -25,10 +25,12 @@ function FlipSentences() {
     return () => clearInterval(t);
   }, []);
   return (
-    <span key={idx} className={`fs-${anim} subtitle-shine`} style={{
+    <span key={idx} className={`fs-${anim}`} style={{
       display:"block", fontFamily:"'Geist Mono',monospace",
       fontSize:13.5, lineHeight:1,
-    }}>{SENTENCES[idx]}</span>
+    }}>
+      <span className="subtitle-shine">{SENTENCES[idx]}</span>
+    </span>
   );
 }
 
@@ -155,11 +157,9 @@ function HoverBorderGradient({ children, radius = 10 }: { children: React.ReactN
   );
 }
 
-// Width is controlled from ONE place: the --content-width variable in
-// globals.css. --content-width-inset (defined there as content-width - 32px)
-// is what lines the hero border up with the rest of the page content, since
-// .page-wrapper already eats 16px of padding on each side.
-const CW = "var(--content-width-inset)";
+// Matches --content-width (960px) minus .page-wrapper's 16px side padding,
+// so the hero border lines up exactly with the rest of the page content.
+const CW = 928;
 
 export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) {
   const [vis, setVis] = useState<"ssr" | "visible">("ssr");
@@ -179,8 +179,10 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
         .fs-out { animation: fsOut 0.22s ease-in forwards }
 
         /* Subtitle — right-to-left shine sweep, fired once per flip so it
-           starts the instant the new text flips in (reuses the site's
-           existing global @keyframes shimmer, just played once and reversed) */
+           starts the instant the new text flips in. This element's class
+           never changes for the lifetime of the node (only the outer
+           fs-in/fs-out wrapper toggles), so the shimmer animation can only
+           ever restart when the sentence itself remounts — never mid-flip. */
         .subtitle-shine {
           background: linear-gradient(
             100deg,
@@ -195,20 +197,7 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
           background-clip: text;
           color: transparent;
           font-weight: 600;
-          animation-name: fsIn, shimmer;
-          animation-duration: 0.28s, 0.9s;
-          animation-timing-function: cubic-bezier(0.16,1,0.3,1), linear;
-          animation-iteration-count: 1, 1;
-          animation-fill-mode: forwards, forwards;
-          animation-direction: normal, reverse;
-        }
-        .fs-out.subtitle-shine {
-          animation-name: fsOut, shimmer;
-          animation-duration: 0.22s, 0.9s;
-          animation-timing-function: ease-in, linear;
-          animation-iteration-count: 1, 1;
-          animation-fill-mode: forwards, forwards;
-          animation-direction: normal, reverse;
+          animation: shimmer 1.4s linear 1 reverse forwards;
         }
         @media (prefers-reduced-motion: reduce) {
           .subtitle-shine { animation: none; }
@@ -257,7 +246,7 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
         .h-verified-badge:hover { transform: rotate(360deg); }
 
         .h-info-wrap {
-          max-width: ${CW};
+          max-width: ${CW}px;
           margin-left: auto;
           margin-right: auto;
         }
@@ -552,7 +541,7 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
 
               {/* ── Social row — identical icons + tooltip everywhere on the site ── */}
               <div className="h-social" style={{borderTop:B}}>
-                <SocialRow size={23} gap={20} />
+                <SocialRow size={23} gap={20} bright />
               </div>
             </div>
           </HoverBorderGradient>

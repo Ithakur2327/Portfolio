@@ -147,17 +147,6 @@ function SendIcon() {
   );
 }
 
-/* Cleaner, more premium arrow — used only by the Hero's "Get in touch"
-   button in place of the paper-plane SendIcon used elsewhere on the site. */
-function ArrowUpRightIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-      <line x1="7" y1="17" x2="17" y2="7" />
-      <polyline points="7 7 17 7 17 17" />
-    </svg>
-  );
-}
-
 export { SendIcon, ResumeIcon };
 
 /* ════════════════════════════════════════════════════════════
@@ -256,7 +245,7 @@ export function HeroActionButtons({
           align-items: center;
           gap: 8px;
           height: 38px;
-          padding: 0 16px;
+          padding: 0 16px 0 9px;
           border-radius: 10px;
           border: 1px solid var(--border);
           font-family: 'Geist Mono', monospace;
@@ -267,17 +256,26 @@ export function HeroActionButtons({
         }
         .hero-liquid-btn svg { flex-shrink: 0; }
 
-        /* Get in touch — matched to the Resume button's slightly smaller size.
-           Scoped to .hero-actions so the shared .hero-contact-btn used by the
-           Footer and Contact page keeps its own (larger) size. */
+        /* Get in touch — matched to the Resume button's slightly smaller size,
+           with a true translucent glass treatment (var(--bg-secondary) is
+           already a theme-adaptive translucent token: dark + glassy in dark
+           mode, light + glassy in light mode) so it never flattens into a
+           solid block that merges with the page background. Scoped to
+           .hero-actions so the shared .hero-contact-btn used by the Footer
+           and Contact page keeps its own (solid, larger) style. */
         .hero-actions .hero-contact-btn {
           height: 38px !important;
           padding: 0 16px !important;
           font-size: 12.5px !important;
+          background: var(--bg-secondary) !important;
+          backdrop-filter: blur(14px) saturate(160%) !important;
+          -webkit-backdrop-filter: blur(14px) saturate(160%) !important;
+          border: 1px solid var(--border) !important;
+          color: var(--text-primary) !important;
         }
 
         @media (max-width: 600px) {
-          .hero-liquid-btn { height: 38px; padding: 0 16px; font-size: 12.5px; }
+          .hero-liquid-btn { height: 38px; padding: 0 16px 0 9px; font-size: 12.5px; }
         }
         @media (prefers-reduced-motion: reduce) {
           .hero-liquid-btn { transition: none; }
@@ -298,7 +296,6 @@ export function HeroActionButtons({
         </LiquidButton>
 
         <SolidMagneticButton as="a" href={contactHref}>
-          <ArrowUpRightIcon />
           Get in touch
         </SolidMagneticButton>
       </div>

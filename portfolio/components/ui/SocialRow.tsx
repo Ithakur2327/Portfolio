@@ -98,7 +98,7 @@ function SocialTooltip({ label, children }: { label: string; children: React.Rea
   );
 }
 
-export function SocialRow({ size = 22, gap = 16 }: { size?: number; gap?: number }) {
+export function SocialRow({ size = 22, gap = 16, bright = false }: { size?: number; gap?: number; bright?: boolean }) {
   return (
     <>
       <style suppressHydrationWarning>{`
@@ -112,10 +112,10 @@ export function SocialRow({ size = 22, gap = 16 }: { size?: number; gap?: number
         .rt-link {
           display: inline-flex;
           color: var(--text-muted);
-          filter: brightness(1.18);
           transition: color 0.15s ease, transform 0.15s ease, filter 0.15s ease;
           line-height: 0;
         }
+        .rt-link--bright { filter: brightness(1.18); }
         .rt-link:hover { color: var(--text-primary); transform: translateY(-1px); filter: brightness(1); }
 
         .rt-tip {
@@ -166,7 +166,7 @@ export function SocialRow({ size = 22, gap = 16 }: { size?: number; gap?: number
               target={s.key === "mail" ? undefined : "_blank"}
               rel={s.key === "mail" ? undefined : "noopener noreferrer"}
               aria-label={s.label}
-              className="rt-link"
+              className={`rt-link${bright ? " rt-link--bright" : ""}`}
               style={{ fontSize: size }}
               onClick={!s.href ? (e) => e.preventDefault() : undefined}
               aria-disabled={!s.href || undefined}
