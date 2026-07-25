@@ -34,23 +34,35 @@ export default function ProjectsPage() {
           font-family: ${SF}; text-decoration: none; transition: color 0.15s;
         }
         .back-home-link:hover { color: var(--text-primary); }
+
+        .all-projects-wrap { padding: 44px 20px 70px; }
+        .all-projects-title { font-size: clamp(22px, 4.5vw, 28px); }
+        .all-projects-sub { font-size: 13.5px; }
+
+        @media (max-width: 860px) {
+          .all-projects-wrap { padding: 34px 22px 48px; }
+        }
+        @media (max-width: 599px) {
+          .all-projects-wrap { padding: 26px 16px 36px; }
+          .all-projects-sub  { font-size: 12.5px; }
+        }
       `}</style>
       <main style={{ paddingTop: 52 }}>
         <div className="page-wrapper">
-          <div style={{ padding: "44px 0 70px" }}>
+          <div className="all-projects-wrap">
             <BackToHomeLink />
 
             <div style={{ paddingTop: 18, marginBottom: 26 }}>
-              <span style={{ display: "inline-flex", alignItems: "center", gap: 10, fontSize: 28, fontWeight: 700, letterSpacing: "-0.03em", lineHeight: 1, fontFamily: SF, color: "var(--text-primary)" }}>
+              <span className="all-projects-title" style={{ display: "inline-flex", alignItems: "center", gap: 10, fontWeight: 700, letterSpacing: "-0.03em", lineHeight: 1, fontFamily: SF, color: "var(--text-primary)" }}>
                 <SectionTitleIcon type="box" />
                 All Projects
               </span>
-              <p style={{ margin: "10px 0 0", fontSize: 13.5, color: "var(--text-secondary)", fontFamily: SF }}>
+              <p className="all-projects-sub" style={{ margin: "10px 0 0", color: "var(--text-secondary)", fontFamily: SF }}>
                 {PROJECTS.length} project{PROJECTS.length === 1 ? "" : "s"} — everything I&apos;ve built and shipped.
               </p>
             </div>
 
-            <ProjectsGrid projects={PROJECTS} />
+            <ProjectsGrid projects={PROJECTS} wide />
           </div>
         </div>
       </main>

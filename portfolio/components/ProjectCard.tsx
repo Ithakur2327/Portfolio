@@ -378,15 +378,25 @@ export function ProjectModal({ proj, onClose, index = 0 }: { proj: Project; onCl
             /* Shell — the layout-animated element. Purely a sized/positioned
                frame; it does NOT scroll itself, so Framer's layout transform
                never gets applied to a scrolling element (that's what broke
-               touch-scroll on mobile after the open animation finished). */
-            .pm-shell { max-height: 92vh; }
+               touch-scroll on mobile after the open animation finished).
+               Flex + min-height:0 on the body below is what actually lets
+               the inner div scroll reliably inside a max-height parent —
+               without min-height:0 a flex/block child can refuse to shrink
+               below its content size, so overflow-y:auto never engages. */
+            .pm-shell {
+              display: flex;
+              flex-direction: column;
+              max-height: 92vh;
+            }
             @media (min-width: 768px) { .pm-shell { max-height: 82vh; } }
 
             /* Body — a plain (non-layout-animated) div that actually scrolls.
                Always a fresh, transform-free element, so touch/wheel scroll
                keeps working regardless of what the shell's animation is doing. */
             .pm-body {
-              width: 100%; height: 100%;
+              width: 100%;
+              flex: 1 1 auto;
+              min-height: 0;
               display: flex;
               flex-direction: column;
               overflow-y: auto;
@@ -487,16 +497,21 @@ export function ProjectModal({ proj, onClose, index = 0 }: { proj: Project; onCl
                 Stack
               </span>
               <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-                {proj.tags.map(tag => {
+                {proj.tags.map((tag, ti) => {
                   const tech = TECH_MAP[tag];
                   return (
-                    <motion.div key={tag} layoutId={`card-tech-${proj.name}-${tag}`} transition={SPRING}>
-                      <span className="pm-tag" style={{ color: "var(--tag-text)", background: "var(--tag-bg)", border: "1px solid var(--tag-border)" }}>
-                        {/* eslint-disable-next-line @next/next/no-img-element -- tiny external SVG icon, see justification on the card version above */}
-                        {tech && <img src={tech.logo} alt={tag} width={15} height={15} decoding="async" style={{ objectFit: "contain", flexShrink: 0 }} />}
-                        {tag}
-                      </span>
-                    </motion.div>
+                    <motion.span
+                      key={tag}
+                      initial={{ opacity: 0, y: 4 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.05 + ti * 0.02, duration: 0.2 }}
+                      className="pm-tag"
+                      style={{ color: "var(--tag-text)", background: "var(--tag-bg)", border: "1px solid var(--tag-border)" }}
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element -- tiny external SVG icon, see justification on the card version above */}
+                      {tech && <img src={tech.logo} alt={tag} width={15} height={15} decoding="async" style={{ objectFit: "contain", flexShrink: 0 }} />}
+                      {tag}
+                    </motion.span>
                   );
                 })}
               </div>

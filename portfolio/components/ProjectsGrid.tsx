@@ -8,12 +8,15 @@ import { ProjectCard, ProjectModal } from "./ProjectCard";
 // get the scroll-triggered version instead (see ProjectCard).
 const DESKTOP_QUERY = "(min-width: 1025px)";
 
-export function ProjectsGrid({ projects, visible = true, mobileMax }: {
+export function ProjectsGrid({ projects, visible = true, mobileMax, wide }: {
   projects: Project[];
   visible?: boolean;
   /** If set, only this many cards show on narrow (<=640px) screens — the
    *  rest stay in the DOM (no layout shift on resize) but are hidden. */
   mobileMax?: number;
+  /** Adds a 3-column layout on large screens — used by the "All Projects"
+   *  page, which has room to breathe with the full project list. */
+  wide?: boolean;
 }) {
   const [active, setActive] = useState<Project | null>(null);
   const [activeIndex, setActiveIndex] = useState(0);
@@ -38,6 +41,10 @@ export function ProjectsGrid({ projects, visible = true, mobileMax }: {
         @media (min-width: 601px) {
           .proj-grid2 { grid-template-columns: repeat(2, 1fr); }
         }
+        ${wide ? `
+        @media (min-width: 1300px) {
+          .proj-grid2 { grid-template-columns: repeat(3, 1fr); gap: 18px; }
+        }` : ""}
         ${mobileMax ? `
         @media (max-width: 600px) {
           .proj-grid2 > *:nth-child(n + ${mobileMax + 1}) { display: none; }
