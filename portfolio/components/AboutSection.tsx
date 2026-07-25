@@ -73,7 +73,7 @@ function ScrollRevealText() {
     <div ref={ref} style={{ display: "flex", flexDirection: "column", gap: 20 }}>
       {paras.map((tokens, pi) => (
         <p key={pi} className="about-para" style={{
-          margin: 0, lineHeight: 1.5, fontFamily: SF, fontSize: 16,
+          margin: 0, lineHeight: 1.7, fontFamily: SF, fontSize: 16,
           letterSpacing: "-0.01em", fontWeight: 400, color: "var(--text-primary)",
           textAlign: "justify", textJustify: "inter-word" as React.CSSProperties["textJustify"],
           hyphens: "auto", wordBreak: "normal", overflowWrap: "break-word",
@@ -96,20 +96,20 @@ export function AboutSection() {
   return (
     <>
       <style suppressHydrationWarning>{`
-        /* Name highlight → gold, same accent used for the project cards. */
+        /* Name highlight → tiffany, same accent used for the project cards. */
         .name-highlight {
-          display: inline; color: ${GOLD}; font-weight: 600; white-space: nowrap;
-          background: rgba(212,175,55,0.10); border: 1px solid rgba(212,175,55,0.30);
+          display: inline; color: ${TIFFANY}; font-weight: 600; white-space: nowrap;
+          background: rgba(15,168,156,0.12); border: 1px solid rgba(15,168,156,0.35);
           border-radius: 5px; padding: 1px 7px 2px;
         }
-        /* All other highlighted terms → tiffany, same accent used for the project cards. */
+        /* All other highlighted terms → gold, same accent used for the project cards. */
         .gold-box-word {
-          display: inline; color: ${TIFFANY}; font-weight: 600;
-          background: rgba(15,168,156,0.12); border: 1px solid rgba(15,168,156,0.35);
+          display: inline; color: ${GOLD}; font-weight: 600;
+          background: rgba(212,175,55,0.10); border: 1px solid rgba(212,175,55,0.30);
           border-radius: 5px; padding: 1px 5px 2px; margin: 0 1px;
         }
-        html.light .name-highlight  { color: #b8860b !important; background: rgba(212,175,55,0.14) !important; border-color: rgba(184,134,11,0.45) !important; }
-        html.light .gold-box-word   { color: #0a7a70 !important; background: rgba(15,168,156,0.14) !important; border-color: rgba(10,122,112,0.45) !important; }
+        html.light .name-highlight  { color: #0a7a70 !important; background: rgba(15,168,156,0.14) !important; border-color: rgba(10,122,112,0.45) !important; }
+        html.light .gold-box-word   { color: #b8860b !important; background: rgba(212,175,55,0.14) !important; border-color: rgba(184,134,11,0.45) !important; }
 
         .about-content {
           max-width: var(--content-width); margin: 0 auto; padding: 0 20px 64px;
@@ -134,7 +134,7 @@ export function AboutSection() {
           .about-box { padding: 16px 16px; }
         }
         @media (max-width: 599px) {
-          .about-box { padding: 24px 20px; border-radius: 8px; }
+          .about-box { padding: 14px 12px; border-radius: 8px; }
         }
       `}</style>
 
