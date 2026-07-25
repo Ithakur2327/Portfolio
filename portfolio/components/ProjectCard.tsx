@@ -112,23 +112,34 @@ export function ProjectCard({ proj, index, visible, isDesktop, onOpen }: {
       initial={false}
       animate={{ opacity: visible ? 1 : 0, y: visible ? 0 : 20 }}
       transition={{ delay: visible ? 0.05 * index : 0, type: "spring", stiffness: 340, damping: 26, mass: 0.75 }}
-      layoutId={`card-container-${proj.name}`}
-      onClick={onOpen}
-      onHoverStart={() => setHovered(true)}
-      onHoverEnd={() => setHovered(false)}
-      whileHover={{ scale: 1.02 }}
-      whileTap={{ scale: 0.98 }}
-      style={{
-        position: "relative",
-        display: "flex",
-        flexDirection: "column",
-        width: "100%",
-        cursor: "pointer",
-        overflow: "hidden",
-        borderRadius: 14,
-        willChange: "transform",
-      }}
+      style={{ width: "100%" }}
     >
+      {/* This is the actual layoutId'd box that morphs into the modal.
+          It deliberately carries NO other animate/whileHover/whileTap
+          transforms — those were fighting with Framer's shared-layout
+          projection on this exact element, which is what made the open
+          animation glitch (especially on mobile, where whileTap fires
+          right at the moment of the opening tap). Hover feedback is done
+          with box-shadow instead of scale, since that never touches
+          `transform` and can't collide with the layout animation. */}
+      <motion.div
+        layoutId={`card-container-${proj.name}`}
+        transition={SPRING}
+        onClick={onOpen}
+        onHoverStart={() => setHovered(true)}
+        onHoverEnd={() => setHovered(false)}
+        style={{
+          position: "relative",
+          display: "flex",
+          flexDirection: "column",
+          width: "100%",
+          cursor: "pointer",
+          overflow: "hidden",
+          borderRadius: 14,
+          boxShadow: hovered ? "0 14px 34px -10px rgba(0,0,0,0.5)" : "0 0px 0px rgba(0,0,0,0)",
+          transition: "box-shadow 0.2s ease",
+        }}
+      >
       {/* Banner photo — the colored accent frame lives on this plain
           (non-animated) wrapper so its corners always render as one crisp,
           fully-connected line. Layout-animated (layoutId) elements get a
@@ -149,7 +160,7 @@ export function ProjectCard({ proj, index, visible, isDesktop, onOpen }: {
           layoutId={`card-banner-${proj.name}`}
           transition={SPRING}
           style={{
-            width: "100%", height: 180, borderRadius: 9,
+            width: "100%", aspectRatio: "2 / 1", maxHeight: 200, borderRadius: 9,
             background: "var(--bg-secondary)",
             border: "1px solid var(--border)",
             position: "relative", overflow: "hidden",
@@ -178,7 +189,7 @@ export function ProjectCard({ proj, index, visible, isDesktop, onOpen }: {
                 quality={100}
                 sizes="(max-width: 640px) 96vw, (max-width: 1024px) 48vw, 520px"
                 unoptimized={proj.img.endsWith(".svg")}
-                style={{ objectFit: "contain" }}
+                style={{ objectFit: "cover" }}
               />
             </motion.div>
           </motion.div>
@@ -267,6 +278,7 @@ export function ProjectCard({ proj, index, visible, isDesktop, onOpen }: {
           transform: translateY(-1.5px) scale(1.08);
         }
       `}</style>
+      </motion.div>
     </motion.div>
   );
 }
@@ -278,6 +290,16 @@ export function ProjectModal({ proj, onClose, index = 0 }: { proj: Project; onCl
   const [mounted, setMounted] = useState(false);
   const modalRef = useRef<HTMLDivElement>(null);
   const closeBtnRef = useRef<HTMLButtonElement>(null);
+
+  // `onClose` is a fresh inline closure from the parent on every render —
+  // keying the effect below on it directly would re-run the whole
+  // scroll-lock/focus-trap setup on any unrelated parent re-render while
+  // the modal is open, which re-captures scrollY mid-lock (often as 0,
+  // since the body is already position:fixed at that point) and re-toggles
+  // the lock right as Framer is mid-measurement for the open animation.
+  // A ref keeps the callback fresh without making the effect re-run.
+  const onCloseRef = useRef(onClose);
+  useEffect(() => { onCloseRef.current = onClose; }, [onClose]);
 
   useEffect(() => {
     setMounted(true);
@@ -293,6 +315,7 @@ export function ProjectModal({ proj, onClose, index = 0 }: { proj: Project; onCl
     document.body.style.top = `-${scrollY}px`;
     document.body.style.left = "0";
     document.body.style.right = "0";
+    document.body.style.width = "100%";
     const cat = document.getElementById("oneko");
     if (cat) cat.style.display = "none";
 
@@ -301,7 +324,7 @@ export function ProjectModal({ proj, onClose, index = 0 }: { proj: Project; onCl
     const previouslyFocused = document.activeElement as HTMLElement | null;
     const focusTimer = setTimeout(() => closeBtnRef.current?.focus(), 50);
 
-    const esc = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    const esc = (e: KeyboardEvent) => { if (e.key === "Escape") onCloseRef.current(); };
 
     // Basic focus trap — Tab/Shift+Tab cycle within the modal only.
     const trapFocus = (e: KeyboardEvent) => {
@@ -322,7 +345,7 @@ export function ProjectModal({ proj, onClose, index = 0 }: { proj: Project; onCl
     window.addEventListener("keydown", esc);
     window.addEventListener("keydown", trapFocus);
     const handler = (e: MouseEvent) => {
-      if (modalRef.current && !modalRef.current.contains(e.target as Node)) onClose();
+      if (modalRef.current && !modalRef.current.contains(e.target as Node)) onCloseRef.current();
     };
     const t = setTimeout(() => {
       document.addEventListener("mousedown", handler);
@@ -332,6 +355,7 @@ export function ProjectModal({ proj, onClose, index = 0 }: { proj: Project; onCl
       document.body.style.top = "";
       document.body.style.left = "";
       document.body.style.right = "";
+      document.body.style.width = "";
       window.scrollTo(0, scrollY);
       const cat = document.getElementById("oneko");
       if (cat) cat.style.display = "";
@@ -342,7 +366,9 @@ export function ProjectModal({ proj, onClose, index = 0 }: { proj: Project; onCl
       clearTimeout(focusTimer);
       previouslyFocused?.focus?.();
     };
-  }, [onClose]);
+    // Intentionally empty — this must run exactly once per mount/unmount
+    // (i.e. once per modal open), see comment above.
+  }, []);
 
   if (!mounted) return null;
 
@@ -431,7 +457,6 @@ export function ProjectModal({ proj, onClose, index = 0 }: { proj: Project; onCl
                 display: flex; flex-direction: column; gap: 16px;
               }
               .pm-info-col::-webkit-scrollbar { display: none; }
-              .pm-image-frame { aspect-ratio: 4 / 3; }
             }
           `}</style>
 
@@ -449,7 +474,7 @@ export function ProjectModal({ proj, onClose, index = 0 }: { proj: Project; onCl
                 transition={SPRING}
                 className="pm-image-frame"
                 style={{
-                  width: "100%", aspectRatio: "16 / 9", position: "relative",
+                  width: "100%", aspectRatio: "2 / 1", position: "relative",
                   overflow: "hidden", borderRadius: 9,
                   background: "var(--bg-secondary)",
                   border: "1px solid var(--border)",
