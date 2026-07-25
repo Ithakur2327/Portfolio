@@ -727,6 +727,19 @@ export function StatsSection() {
           box-shadow: none;
         }
 
+        .stats-box {
+          width: 100%;
+          max-width: 100%;
+          box-sizing: border-box;
+          border: 1px dashed rgba(255,255,255,0.35);
+          border-radius: 10px;
+          background: var(--bg-base);
+          padding: 20px;
+        }
+        html.light .stats-box { border-color: rgba(0,0,0,0.30); }
+        @media (max-width: 860px) { .stats-box { padding: 16px; } }
+        @media (max-width: 599px) { .stats-box { padding: 14px 12px; border-radius: 8px; } }
+
         .about-panels {
           display: grid;
           gap: 14px;
@@ -734,18 +747,19 @@ export function StatsSection() {
           grid-template-columns: 1fr 1fr;
           position: relative;
         }
-        /* Vertical partition line between GitHub and LeetCode panels — spans the
-           full height of the row so it reads as one continuous connected line. */
+        /* Vertical partition line between GitHub and LeetCode panels — a single
+           continuous dashed border (not a background trick) so it never breaks
+           or looks segmented, matching the dashed frame around the box. */
         .about-panels::after {
           content: "";
           position: absolute;
           top: 0; bottom: 0;
           left: 50%;
-          width: 1px;
-          background: var(--border);
+          border-left: 1px dashed rgba(255,255,255,0.35);
           transform: translateX(-50%);
           z-index: 1;
         }
+        html.light .about-panels::after { border-left-color: rgba(0,0,0,0.30); }
         .about-panels > .stat-card-3d:first-child { padding-right: 28px; }
         .about-panels > .stat-card-3d:last-child  { padding-left: 28px; }
 
@@ -757,10 +771,11 @@ export function StatsSection() {
           .stat-card-3d { width: 100% !important; min-width: 0 !important; min-height: 220px; }
           /* Horizontal divider between stacked panels on tablet */
           .about-panels > .stat-card-3d:first-child {
-            border-bottom: 1px solid var(--border);
+            border-bottom: 1px dashed rgba(255,255,255,0.35);
             padding-bottom: 24px !important;
             margin-bottom: 4px;
           }
+          html.light .about-panels > .stat-card-3d:first-child { border-bottom-color: rgba(0,0,0,0.30); }
           /* Graph cells scale up so graph fills card width */
           .gh-cell { width: 14px !important; height: 14px !important; border-radius: 3px !important; }
           .lc-cell { width: 14px !important; height: 14px !important; border-radius: 3px !important; }
@@ -771,10 +786,11 @@ export function StatsSection() {
           .about-panels > .stat-card-3d:first-child,
           .about-panels > .stat-card-3d:last-child { padding: 0; }
           .about-panels > .stat-card-3d:first-child {
-            border-bottom: 1px solid var(--border);
+            border-bottom: 1px dashed rgba(255,255,255,0.35);
             padding-bottom: 20px !important;
             margin-bottom: 4px;
           }
+          html.light .about-panels > .stat-card-3d:first-child { border-bottom-color: rgba(0,0,0,0.30); }
         }
 
         .about-content {
@@ -805,12 +821,14 @@ export function StatsSection() {
               </span>
             </div>
             <div style={{ height: 1, background: "var(--border)", margin: "18px 0 20px" }} />
-            <div className="about-panels" style={{ paddingBottom: 32 }}>
-              <div className="stat-card-3d">
-                <GitHubGraph username="Ithakur2327" />
-              </div>
-              <div className="stat-card-3d">
-                <LeetCodeStats username="IThakur09" />
+            <div className="stats-box">
+              <div className="about-panels" style={{ paddingBottom: 32 }}>
+                <div className="stat-card-3d">
+                  <GitHubGraph username="Ithakur2327" />
+                </div>
+                <div className="stat-card-3d">
+                  <LeetCodeStats username="IThakur09" />
+                </div>
               </div>
             </div>
           </div>
