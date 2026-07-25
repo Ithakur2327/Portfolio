@@ -14,7 +14,18 @@ const SF = "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue
 
 function BackToHomeLink() {
   return (
-    <Link href="/" className="back-home-link">
+    <Link href="/#projects" className="back-home-link">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M19 12H5"/><path d="M11 18l-6-6 6-6"/>
+      </svg>
+      Back to home
+    </Link>
+  );
+}
+
+function BackToHomeGlassButton() {
+  return (
+    <Link href="/#projects" className="back-home-glass" aria-label="Back to home">
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
         <path d="M19 12H5"/><path d="M11 18l-6-6 6-6"/>
       </svg>
@@ -27,6 +38,7 @@ export default function ProjectsPage() {
   return (
     <>
       <Navbar />
+      <BackToHomeGlassButton />
       <style suppressHydrationWarning>{`
         .back-home-link {
           display: inline-flex; align-items: center; gap: 6px;
@@ -34,6 +46,34 @@ export default function ProjectsPage() {
           font-family: ${SF}; text-decoration: none; transition: color 0.15s;
         }
         .back-home-link:hover { color: var(--text-primary); }
+
+        /* Floating glass button — pinned top-right, aligned with the content
+           column's right edge (not the raw viewport edge) so it lines up
+           with the projects grid on wide screens. */
+        .back-home-glass {
+          position: fixed;
+          top: 64px;
+          right: max(16px, calc((100vw - var(--content-width)) / 2 + 16px));
+          z-index: 40;
+          display: inline-flex; align-items: center; gap: 6px;
+          padding: 8px 14px;
+          border-radius: 999px;
+          font-size: 13px; font-weight: 600;
+          font-family: ${SF};
+          color: var(--text-primary);
+          text-decoration: none;
+          background: var(--nav-bg);
+          backdrop-filter: blur(14px) saturate(160%);
+          -webkit-backdrop-filter: blur(14px) saturate(160%);
+          border: 1px solid var(--border);
+          box-shadow: 0 4px 16px rgba(0,0,0,0.14);
+          transition: transform 0.15s cubic-bezier(0.16,1,0.3,1), background 0.2s ease;
+        }
+        .back-home-glass:hover { transform: translateY(-1.5px); background: var(--nav-bg-scrolled); }
+        .back-home-glass:active { transform: translateY(0) scale(0.97); }
+        @media (max-width: 599px) {
+          .back-home-glass { top: 60px; padding: 7px 11px; font-size: 12px; }
+        }
 
         .all-projects-wrap { padding: 44px 20px 70px; }
         .all-projects-title { font-size: clamp(22px, 4.5vw, 28px); }
