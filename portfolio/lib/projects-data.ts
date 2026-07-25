@@ -61,7 +61,7 @@ export const PROJECTS: Project[] = [
     accent: "#06b6d4",
     accentBg: "rgba(6,182,212,0.10)",
     accentBorder: "rgba(6,182,212,0.28)",
-    img: "/ivision-preview.svg",
+    img: "/ivision-preview.png",
     description: "Personal AI assistant that answers questions grounded in your own documents instead of general model memory. A type-safe Next.js frontend calls a FastAPI backend, where LangChain orchestrates retrieval over an embedded knowledge base before handing the query to an LLM.",
     features: [
       "Retrieval-augmented generation — answers are grounded in your own ingested data, not just model memory",
