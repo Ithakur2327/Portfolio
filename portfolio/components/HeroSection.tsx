@@ -157,9 +157,10 @@ function HoverBorderGradient({ children, radius = 10 }: { children: React.ReactN
   );
 }
 
-// Matches --content-width (960px) minus .page-wrapper's 16px side padding,
-// so the hero border lines up exactly with the rest of the page content.
-const CW = 928;
+// Was hardcoded to 928px (matching an old --content-width of 960px minus
+// .page-wrapper's 16px side padding). Now references the shared CSS variable
+// directly so changing --content-width in globals.css updates Hero too.
+const CW = "var(--content-width-inset)";
 
 export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) {
   const [vis, setVis] = useState<"ssr" | "visible">("ssr");
@@ -246,7 +247,7 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
         .h-verified-badge:hover { transform: rotate(360deg); }
 
         .h-info-wrap {
-          max-width: ${CW}px;
+          max-width: ${CW};
           margin-left: auto;
           margin-right: auto;
         }
