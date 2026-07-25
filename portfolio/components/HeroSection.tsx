@@ -197,7 +197,7 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
           background-clip: text;
           color: transparent;
           font-weight: 600;
-          animation: shimmer 1.4s linear 1 reverse forwards;
+          animation: shimmer 2s linear 1 reverse forwards;
         }
         @media (prefers-reduced-motion: reduce) {
           .subtitle-shine { animation: none; }
@@ -361,6 +361,29 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
           }
         }
 
+        /* Bridges the gap between the tablet-scaled design (maxes out at
+           1180px) and the fixed compact desktop design, so wide tablets
+           (iPad Air/Pro landscape, ~1180-1366px) never hit a hard cliff —
+           avatar/badge/name-font/gap linearly taper down to their exact
+           desktop-base values by 1600px instead of snapping instantly. */
+        @media (min-width: 1181px) and (max-width: 1600px) {
+          .h-avatar {
+            width: clamp(198px, calc(587.5px - 24.3437vw), 300px) !important;
+            min-width: clamp(198px, calc(587.5px - 24.3437vw), 300px) !important;
+            height: clamp(188px, calc(562.2px - 23.389vw), 286px) !important;
+            min-height: clamp(188px, calc(562.2px - 23.389vw), 286px) !important;
+          }
+          .h-nameblock h1 {
+            font-size: clamp(36px, calc(124px - 5.5012vw), 59.05px) !important;
+            font-weight: 900 !important;
+          }
+          .h-verified-badge {
+            width: clamp(26px, calc(102.4px - 4.7733vw), 46px) !important;
+            height: clamp(26px, calc(102.4px - 4.7733vw), 46px) !important;
+          }
+          .h-name-row { gap: clamp(10px, calc(32.9px - 1.432vw), 16px) !important; }
+        }
+
         @media (max-width: 600px) {
           .h-profile { flex-direction: row !important; }
 
@@ -415,7 +438,7 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
           .h-grid > :nth-child(n+4) { padding-left: 0 !important; }
           .h-social { justify-content: center !important; padding: 14px 16px !important; }
           .hero-actions { justify-content: center !important; }
-          .hero-liquid-btn, .hero-contact-btn { flex: 1 1 auto; justify-content: center; }
+          .hero-actions .hero-liquid-btn, .hero-actions .hero-contact-btn { flex: 1 1 0 !important; min-width: 0 !important; justify-content: center !important; }
         }
 
         @media (max-width: 380px) {
@@ -542,7 +565,7 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
 
               {/* ── Social row — identical icons + tooltip everywhere on the site ── */}
               <div className="h-social" style={{borderTop:B}}>
-                <SocialRow size={23} gap={20} bright />
+                <SocialRow size={26} gap={22} bright />
               </div>
             </div>
           </HoverBorderGradient>

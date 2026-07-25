@@ -112,11 +112,11 @@ export function SocialRow({ size = 22, gap = 16, bright = false }: { size?: numb
         .rt-link {
           display: inline-flex;
           color: var(--text-muted);
-          transition: color 0.15s ease, transform 0.15s ease, filter 0.15s ease;
+          transition: color 0.15s ease, transform 0.15s ease;
           line-height: 0;
         }
-        .rt-link--bright { filter: brightness(1.18); }
-        .rt-link:hover { color: var(--text-primary); transform: translateY(-1px); filter: brightness(1); }
+        .rt-link--bright { color: var(--text-secondary); }
+        .rt-link:hover { color: var(--text-primary); transform: translateY(-1px); }
 
         .rt-tip {
           position: absolute;

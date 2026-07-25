@@ -42,13 +42,17 @@ export function ProjectsSection() {
                 href="/projects"
                 style={{
                   display: "inline-flex", alignItems: "center", gap: 7,
-                  padding: "10px 22px", borderRadius: 9,
-                  border: "1px solid var(--border)", background: "transparent",
+                  padding: "10px 24px", borderRadius: 10,
+                  border: "1px solid var(--border)",
+                  background: "var(--nav-bg)",
+                  backdropFilter: "blur(12px) saturate(180%)",
+                  WebkitBackdropFilter: "blur(12px) saturate(180%)",
+                  boxShadow: "0 8px 24px -8px rgba(0,0,0,0.35)",
                   color: "var(--text-secondary)", fontFamily: SF, fontSize: 13, fontWeight: 600,
-                  textDecoration: "none", transition: "color 0.15s, border-color 0.15s, background 0.15s, transform 0.15s",
+                  textDecoration: "none", transition: "color 0.15s, border-color 0.15s, background 0.2s, transform 0.15s, box-shadow 0.2s",
                 }}
-                onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.color = "var(--text-primary)"; el.style.borderColor = "var(--text-muted)"; el.style.background = "var(--bg-hover)"; el.style.transform = "translateY(-1px)"; }}
-                onMouseLeave={e => { const el = e.currentTarget as HTMLElement; el.style.color = "var(--text-secondary)"; el.style.borderColor = "var(--border)"; el.style.background = "transparent"; el.style.transform = "none"; }}
+                onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.color = "var(--text-primary)"; el.style.borderColor = "var(--text-muted)"; el.style.background = "var(--nav-bg-scrolled)"; el.style.transform = "translateY(-1.5px)"; el.style.boxShadow = "0 12px 28px -8px rgba(0,0,0,0.45)"; }}
+                onMouseLeave={e => { const el = e.currentTarget as HTMLElement; el.style.color = "var(--text-secondary)"; el.style.borderColor = "var(--border)"; el.style.background = "var(--nav-bg)"; el.style.transform = "none"; el.style.boxShadow = "0 8px 24px -8px rgba(0,0,0,0.35)"; }}
               >
                 View More
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">

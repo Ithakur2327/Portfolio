@@ -147,6 +147,18 @@ function SendIcon() {
   );
 }
 
+/* Small, clean arrow for the Hero's "Get in touch" button only —
+   kept separate from SendIcon so the Footer/Contact page CTA (which
+   uses SendIcon) is unaffected. */
+function ArrowUpRightIcon() {
+  return (
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+      <line x1="7" y1="17" x2="17" y2="7" />
+      <polyline points="7 7 17 7 17 17" />
+    </svg>
+  );
+}
+
 export { SendIcon, ResumeIcon };
 
 /* ════════════════════════════════════════════════════════════
@@ -245,6 +257,7 @@ export function HeroActionButtons({
           align-items: center;
           gap: 8px;
           height: 38px;
+          min-width: 148px;
           padding: 0 16px 0 9px;
           border-radius: 10px;
           border: 1px solid var(--border);
@@ -256,15 +269,18 @@ export function HeroActionButtons({
         }
         .hero-liquid-btn svg { flex-shrink: 0; }
 
-        /* Get in touch — matched to the Resume button's slightly smaller size,
-           with a true translucent glass treatment (var(--bg-secondary) is
-           already a theme-adaptive translucent token: dark + glassy in dark
-           mode, light + glassy in light mode) so it never flattens into a
-           solid block that merges with the page background. Scoped to
-           .hero-actions so the shared .hero-contact-btn used by the Footer
-           and Contact page keeps its own (solid, larger) style. */
+        /* Get in touch — matched to the Resume button's size (same min-width,
+           same height) at every breakpoint, with a true translucent glass
+           treatment (var(--bg-secondary) is already a theme-adaptive
+           translucent token: dark + glassy in dark mode, light + glassy in
+           light mode) so it never flattens into a solid block that merges
+           with the page background. Scoped to .hero-actions so the shared
+           .hero-contact-btn used by the Footer and Contact page keeps its
+           own (solid, larger) style. */
         .hero-actions .hero-contact-btn {
           height: 38px !important;
+          min-width: 148px !important;
+          justify-content: center !important;
           padding: 0 16px !important;
           font-size: 12.5px !important;
           background: var(--bg-secondary) !important;
@@ -276,6 +292,17 @@ export function HeroActionButtons({
 
         @media (max-width: 600px) {
           .hero-liquid-btn { height: 38px; padding: 0 16px 0 9px; font-size: 12.5px; }
+          /* Equal-width pair on mobile. Declared here (not in HeroSection's
+             stylesheet) because this component's own <style> tag renders
+             later in the DOM — with matching specificity + !important on
+             both sides, source order decides the tie, so the override has
+             to live in the same file as the base min-width:148px rule to
+             reliably win. */
+          .hero-actions .hero-liquid-btn,
+          .hero-actions .hero-contact-btn {
+            flex: 1 1 0 !important;
+            min-width: 0 !important;
+          }
         }
         @media (prefers-reduced-motion: reduce) {
           .hero-liquid-btn { transition: none; }
@@ -297,6 +324,7 @@ export function HeroActionButtons({
 
         <SolidMagneticButton as="a" href={contactHref}>
           Get in touch
+          <ArrowUpRightIcon />
         </SolidMagneticButton>
       </div>
     </>

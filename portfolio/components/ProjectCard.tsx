@@ -19,7 +19,6 @@ const SPRING = { type: "spring" as const, stiffness: 260, damping: 25 };
 // cards read as a deliberate pair rather than a random mix.
 const TIFFANY = "#0ABAB5";
 const GOLD = "#D4AF37";
-const FRAME_THICKNESS = ".7px";
 
 export const GithubIcon = ({ size = 18 }: { size?: number }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor">
@@ -98,12 +97,15 @@ export function ProjectCard({ proj, index, visible, isDesktop, onOpen }: {
   isDesktop: boolean;
   onOpen: () => void;
 }) {
-  const imgRef = useRef<HTMLDivElement>(null);
+  const frameRef = useRef<HTMLDivElement>(null);
   // Re-triggering (no "once") on purpose — the reveal should replay
   // every time the card crosses into/out of view on touch devices.
-  const inView = useInView(imgRef, { amount: 0.6 });
+  const inView = useInView(frameRef, { amount: 0.6 });
+  const [hovered, setHovered] = useState(false);
 
-  const revealed = isDesktop ? undefined : inView;
+  // Desktop: reveal on hover anywhere over the card. Touch devices: reveal
+  // on scroll into view (repeats every time it enters/leaves).
+  const shown = isDesktop ? hovered : inView;
 
   return (
     <motion.div
@@ -112,6 +114,8 @@ export function ProjectCard({ proj, index, visible, isDesktop, onOpen }: {
       transition={{ delay: visible ? 0.05 * index : 0, type: "spring", stiffness: 340, damping: 26, mass: 0.75 }}
       layoutId={`card-container-${proj.name}`}
       onClick={onOpen}
+      onHoverStart={() => setHovered(true)}
+      onHoverEnd={() => setHovered(false)}
       whileHover={{ scale: 1.02 }}
       whileTap={{ scale: 0.98 }}
       style={{
@@ -125,44 +129,59 @@ export function ProjectCard({ proj, index, visible, isDesktop, onOpen }: {
         willChange: "transform",
       }}
     >
-      {/* Banner photo — clean, uniform-thickness frame alternating
-          tiffany/gold by card position so the corners read as one
-          continuous line instead of breaking around a rotated image. */}
-      <motion.div
-        layoutId={`card-banner-${proj.name}`}
-        transition={SPRING}
+      {/* Banner photo — the colored accent frame lives on this plain
+          (non-animated) wrapper so its corners always render as one crisp,
+          fully-connected line. Layout-animated (layoutId) elements get a
+          transform applied by Framer Motion's shared-layout projection,
+          which can make hairline borders render unevenly on non-top edges —
+          keeping the visible frame on a static element sidesteps that. */}
+      <div
         style={{
-          width: "100%", height: 176, borderRadius: 10,
-          background: "var(--bg-secondary)",
-          border: `${FRAME_THICKNESS} solid ${index % 2 === 0 ? TIFFANY : GOLD}`,
-          position: "relative", overflow: "hidden",
+          width: "100%",
+          padding: 3,
+          borderRadius: 13,
+          border: `1.5px solid ${index % 2 === 0 ? TIFFANY : GOLD}`,
+          boxSizing: "border-box",
         }}
       >
         <motion.div
-          ref={imgRef}
-          layoutId={`card-banner-image-${proj.name}`}
-          initial={{ y: "78%", rotate: -4 }}
-          whileHover={isDesktop ? { y: 0, rotate: 0 } : undefined}
-          animate={!isDesktop ? { y: revealed ? 0 : "78%", rotate: revealed ? 0 : -4 } : undefined}
-          transition={{ type: "spring", stiffness: 180, damping: 24, mass: 0.9 }}
+          ref={frameRef}
+          layoutId={`card-banner-${proj.name}`}
+          transition={SPRING}
           style={{
-            position: "absolute", inset: 0,
-            borderRadius: 8, overflow: "hidden",
-            boxShadow: "0 25px 50px -12px rgba(0,0,0,0.5)",
-            willChange: "transform",
+            width: "100%", height: 170, borderRadius: 9,
+            background: "var(--bg-secondary)",
+            border: "1px solid var(--border)",
+            position: "relative", overflow: "hidden",
           }}
         >
-          <Image
-            src={proj.img}
-            alt={proj.name}
-            fill
-            quality={100}
-            sizes="(max-width: 640px) 95vw, (max-width: 1024px) 45vw, 480px"
-            unoptimized={proj.img.endsWith(".svg")}
-            style={{ objectFit: "cover" }}
-          />
+          {/* Slide wrapper — a plain motion.div (no layoutId) that owns the
+              reveal transform. Keeping it separate from the layoutId'd image
+              below is what makes the hover/scroll reveal actually animate
+              instead of fighting with Framer's shared-layout projection. */}
+          <motion.div
+            initial={false}
+            animate={{ y: shown ? "0%" : "60%" }}
+            transition={{ type: "spring", stiffness: 210, damping: 24, mass: 0.85 }}
+            style={{ position: "absolute", inset: 0, willChange: "transform" }}
+          >
+            <motion.div
+              layoutId={`card-banner-image-${proj.name}`}
+              style={{ position: "absolute", inset: 0, overflow: "hidden" }}
+            >
+              <Image
+                src={proj.img}
+                alt={proj.name}
+                fill
+                quality={100}
+                sizes="(max-width: 640px) 95vw, (max-width: 1024px) 45vw, 480px"
+                unoptimized={proj.img.endsWith(".svg")}
+                style={{ objectFit: "cover" }}
+              />
+            </motion.div>
+          </motion.div>
         </motion.div>
-      </motion.div>
+      </div>
 
       {/* Detail section */}
       <div style={{ width: "100%", padding: "12px 8px", display: "flex", flexDirection: "column", gap: 16 }}>
@@ -402,33 +421,41 @@ export function ProjectModal({ proj, onClose, index = 0 }: { proj: Project; onCl
 
           {/* Media column: image (uncropped) + Live/GitHub buttons */}
           <div className="pm-media-col" style={{ padding: 20, display: "flex", flexDirection: "column", gap: 12 }}>
-            <motion.div
-              layoutId={`card-banner-${proj.name}`}
-              transition={SPRING}
-              className="pm-image-frame"
+            <div
               style={{
-                width: "100%", aspectRatio: "16 / 9", flexShrink: 0, position: "relative",
-                overflow: "hidden", borderRadius: 10,
-                background: "var(--bg-secondary)",
-                border: `${FRAME_THICKNESS} solid ${index % 2 === 0 ? TIFFANY : GOLD}`,
+                width: "100%", padding: 3, borderRadius: 13,
+                border: `1.5px solid ${index % 2 === 0 ? TIFFANY : GOLD}`,
+                boxSizing: "border-box", flexShrink: 0,
               }}
             >
               <motion.div
-                layoutId={`card-banner-image-${proj.name}`}
+                layoutId={`card-banner-${proj.name}`}
                 transition={SPRING}
-                style={{ position: "absolute", inset: 0 }}
+                className="pm-image-frame"
+                style={{
+                  width: "100%", aspectRatio: "16 / 9", position: "relative",
+                  overflow: "hidden", borderRadius: 9,
+                  background: "var(--bg-secondary)",
+                  border: "1px solid var(--border)",
+                }}
               >
-                <Image
-                  src={proj.img}
-                  alt={proj.name}
-                  fill
-                  quality={100}
-                  sizes="(max-width: 767px) 100vw, 45vw"
-                  unoptimized={proj.img.endsWith(".svg")}
-                  style={{ objectFit: "contain" }}
-                />
+                <motion.div
+                  layoutId={`card-banner-image-${proj.name}`}
+                  transition={SPRING}
+                  style={{ position: "absolute", inset: 0 }}
+                >
+                  <Image
+                    src={proj.img}
+                    alt={proj.name}
+                    fill
+                    quality={100}
+                    sizes="(max-width: 767px) 100vw, 45vw"
+                    unoptimized={proj.img.endsWith(".svg")}
+                    style={{ objectFit: "contain" }}
+                  />
+                </motion.div>
               </motion.div>
-            </motion.div>
+            </div>
 
             <motion.div layoutId={`card-links-${proj.name}`} transition={SPRING}>
               <ProjectLinkButtons proj={proj} />
@@ -507,6 +534,36 @@ export function ProjectModal({ proj, onClose, index = 0 }: { proj: Project; onCl
                 })}
               </div>
             </motion.div>
+
+            {/* Features — only shown in the expanded view, staggered in
+                one line after another so the modal doesn't just feel like
+                a bigger version of the card. */}
+            {proj.features?.length > 0 && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.18, duration: 0.3 }}
+                style={{ display: "flex", flexDirection: "column", gap: 10 }}
+              >
+                <span style={{ fontSize: 14, fontWeight: 600, color: "var(--text-primary)", fontFamily: SF }}>
+                  Features
+                </span>
+                <ul style={{ display: "flex", flexDirection: "column", gap: 8, margin: 0, padding: 0, listStyle: "none" }}>
+                  {proj.features.map((feature, i) => (
+                    <motion.li
+                      key={i}
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: 0.22 + i * 0.035 }}
+                      style={{ display: "flex", alignItems: "flex-start", gap: 8, fontSize: 14, color: "var(--text-secondary)", lineHeight: 1.55, fontFamily: SF }}
+                    >
+                      <span style={{ color: proj.accent, marginTop: 1 }}>•</span>
+                      <span>{feature}</span>
+                    </motion.li>
+                  ))}
+                </ul>
+              </motion.div>
+            )}
           </div>
         </motion.div>
       </div>
