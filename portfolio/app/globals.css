@@ -199,7 +199,7 @@ a, button, [role="button"] {
    width is controlled from one place.
 ═══════════════════════════════════════════════════════════ */
 :root {
-  --content-width: 960px;
+  --content-width: 1000px;
   --content-width-inset: calc(var(--content-width) - 32px);
 }
 .page-wrapper {
@@ -577,6 +577,10 @@ h1, h2, h3, .section-title {
   -webkit-backface-visibility: hidden;
 }
 .marquee-inner:hover { animation-play-state: paused; }
+/* While a project modal is morphing open/closed, pause continuously-running
+   background animations so the compositor isn't juggling them at the same
+   time — noticeably reduces jank on lower-power mobile devices. */
+.modal-open .marquee-inner { animation-play-state: paused; }
 .marquee-fade {
   mask: linear-gradient(90deg,transparent,black 6%,black 94%,transparent);
   -webkit-mask: linear-gradient(90deg,transparent,black 6%,black 94%,transparent);

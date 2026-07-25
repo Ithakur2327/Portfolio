@@ -1,5 +1,3 @@
-
-
 export type Project = {
   name: string;
   year: string;
@@ -32,11 +30,11 @@ const ICON_VECTORDB = glyph(
 // project's accent instead of shipping a hand-traced approximation.
 const officialLogo = (slug: string, hex: string) => `https://cdn.simpleicons.org/${slug}/${hex}`;
 
-export const TECH_MAP: Record<string, { color: string; logo: string }> = {
+export const TECH_MAP: Record<string, { color: string; logo: string; logoLight?: string }> = {
   "React.js":      { color: "#61DAFB", logo: officialLogo("react", "61DAFB") },
-  "Next.js":       { color: "#ffffff", logo: officialLogo("nextdotjs", "ffffff") },
+  "Next.js":       { color: "#ffffff", logo: officialLogo("nextdotjs", "ffffff"), logoLight: officialLogo("nextdotjs", "000000") },
   "Node.js":       { color: "#339933", logo: officialLogo("nodedotjs", "339933") },
-  "Express.js":    { color: "#ffffff", logo: officialLogo("express", "ffffff") },
+  "Express.js":    { color: "#ffffff", logo: officialLogo("express", "ffffff"), logoLight: officialLogo("express", "000000") },
   "FastAPI":       { color: "#009688", logo: officialLogo("fastapi", "009688") },
   "MongoDB":       { color: "#47A248", logo: officialLogo("mongodb", "47A248") },
   "TypeScript":    { color: "#3178C6", logo: officialLogo("typescript", "3178C6") },
@@ -44,7 +42,7 @@ export const TECH_MAP: Record<string, { color: string; logo: string }> = {
   "Tailwind CSS":  { color: "#38BDF8", logo: officialLogo("tailwindcss", "38BDF8") },
   "Redux":         { color: "#764ABC", logo: officialLogo("redux", "764ABC") },
   "LangChain":     { color: "#1C3C3C", logo: officialLogo("langchain", "3AAFA9") },
-  "Vercel":        { color: "#ffffff", logo: officialLogo("vercel", "ffffff") },
+  "Vercel":        { color: "#ffffff", logo: officialLogo("vercel", "ffffff"), logoLight: officialLogo("vercel", "000000") },
   "YouTube API":   { color: "#FF0000", logo: officialLogo("youtube", "FF0000") },
   "Chart.js":      { color: "#FF6384", logo: officialLogo("chartdotjs", "FF6384") },
   "LLM APIs":      { color: "#10a37f", logo: ICON_LLM },
@@ -52,7 +50,7 @@ export const TECH_MAP: Record<string, { color: string; logo: string }> = {
   "RAG":           { color: "#a855f7", logo: ICON_RAG },
   "Vector DB":     { color: "#14b8a6", logo: ICON_VECTORDB },
   "JWT":           { color: "#d63aff", logo: officialLogo("jsonwebtokens", "d63aff") },
-  "shadcn/ui":     { color: "#e4e4e7", logo: officialLogo("shadcnui", "e4e4e7") },
+  "shadcn/ui":     { color: "#e4e4e7", logo: officialLogo("shadcnui", "e4e4e7"), logoLight: officialLogo("shadcnui", "27272a") },
   "Framer Motion": { color: "#bb4af8", logo: officialLogo("framer", "bb4af8") },
 };
 

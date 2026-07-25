@@ -5,9 +5,18 @@ import { motion, useInView } from "motion/react";
 import Image from "next/image";
 import type { Project } from "@/lib/projects-data";
 import { TECH_MAP } from "@/lib/projects-data";
+import { useTheme } from "./ThemeProvider";
 
 const MONO = "'Geist Mono', 'SF Mono', monospace";
 const SF   = "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', sans-serif";
+
+// A few brand logos (Next.js, Express.js, Vercel, shadcn/ui) are monochrome
+// and only ship a light-hex variant by default — invisible against the
+// light theme's near-white tag background. Swap in the dark-hex `logoLight`
+// variant when present and the current theme is light.
+function techLogoSrc(tech: { logo: string; logoLight?: string }, isDark: boolean) {
+  return !isDark && tech.logoLight ? tech.logoLight : tech.logo;
+}
 
 // One shared spring for every layoutId'd element — keeping it identical
 // everywhere is what makes the card-to-modal morph read as one continuous
@@ -102,6 +111,8 @@ export function ProjectCard({ proj, index, visible, isDesktop, onOpen }: {
   // every time the card crosses into/out of view on touch devices.
   const inView = useInView(frameRef, { amount: 0.6 });
   const [hovered, setHovered] = useState(false);
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
 
   // Desktop: reveal on hover anywhere over the card. Touch devices: reveal
   // on scroll into view (repeats every time it enters/leaves).
@@ -238,7 +249,7 @@ export function ProjectCard({ proj, index, visible, isDesktop, onOpen }: {
                 <motion.div key={tag} layoutId={`card-tech-${proj.name}-${tag}`} transition={SPRING} title={tag} style={{ display: "flex" }}>
                   {/* eslint-disable-next-line @next/next/no-img-element -- tiny (24px) external SVG icon; dangerouslyAllowSVG is intentionally off, and there's no bandwidth/LCP benefit to proxy such a small icon through next/image */}
                   <img
-                    src={tech.logo}
+                    src={techLogoSrc(tech, isDark)}
                     alt={tag}
                     width={24}
                     height={24}
@@ -277,10 +288,13 @@ export function ProjectCard({ proj, index, visible, isDesktop, onOpen }: {
 export function ProjectModal({ proj, onClose, index = 0 }: { proj: Project; onClose: () => void; index?: number }) {
   const modalRef = useRef<HTMLDivElement>(null);
   const closeBtnRef = useRef<HTMLButtonElement>(null);
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
 
   useEffect(() => {
     document.documentElement.style.overflow = "hidden";
     document.body.style.overflow = "hidden";
+    document.body.classList.add("modal-open");
     const cat = document.getElementById("oneko");
     if (cat) cat.style.display = "none";
 
@@ -318,6 +332,7 @@ export function ProjectModal({ proj, onClose, index = 0 }: { proj: Project; onCl
     return () => {
       document.documentElement.style.overflow = "";
       document.body.style.overflow = "";
+      document.body.classList.remove("modal-open");
       const cat = document.getElementById("oneko");
       if (cat) cat.style.display = "";
       window.removeEventListener("keydown", esc);
@@ -361,7 +376,7 @@ export function ProjectModal({ proj, onClose, index = 0 }: { proj: Project; onCl
             background: "var(--bg-card)",
             border: "1px solid var(--border)",
             borderRadius: 16,
-            boxShadow: "0 25px 50px -12px rgba(0,0,0,0.55)",
+            boxShadow: "0 12px 28px -8px rgba(0,0,0,0.45)",
             overflow: "hidden",
             willChange: "transform",
           }}
@@ -509,7 +524,7 @@ export function ProjectModal({ proj, onClose, index = 0 }: { proj: Project; onCl
                       style={{ color: "var(--tag-text)", background: "var(--tag-bg)", border: "1px solid var(--tag-border)" }}
                     >
                       {/* eslint-disable-next-line @next/next/no-img-element -- tiny external SVG icon, see justification on the card version above */}
-                      {tech && <img src={tech.logo} alt={tag} width={15} height={15} decoding="async" style={{ objectFit: "contain", flexShrink: 0 }} />}
+                      {tech && <img src={techLogoSrc(tech, isDark)} alt={tag} width={15} height={15} decoding="async" style={{ objectFit: "contain", flexShrink: 0 }} />}
                       {tag}
                     </motion.span>
                   );
