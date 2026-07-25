@@ -199,7 +199,7 @@ a, button, [role="button"] {
    width is controlled from one place.
 ═══════════════════════════════════════════════════════════ */
 :root {
-  --content-width: 985px;
+  --content-width: 1000px;
   --content-width-inset: calc(var(--content-width) - 32px);
 }
 .page-wrapper {
@@ -950,7 +950,7 @@ html.light .nav-root.scrolled {
   .section-title { font-size: 18px !important; }
   .contrib-wrap { overflow-x: auto; padding-bottom: 6px; }
   .overview-cols { flex-direction: column !important; }
-  .about-para { text-align: left !important; }
+  .about-para { text-align: justify !important; text-justify: inter-word !important; }
   .about-content { padding-left: 14px !important; padding-right: 14px !important; }
 }
 
