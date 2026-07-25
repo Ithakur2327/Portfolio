@@ -49,8 +49,8 @@
   --pattern-dot:    rgba(255,255,255,0.08);
   --pattern-dot-active: rgba(255,255,255,0.18);
 
-  --nav-bg:         rgba(4,4,4,0.38);
-  --nav-bg-scrolled: rgba(4,4,4,0.62);
+  --nav-bg:         rgba(0,0,0,0.32);
+  --nav-bg-scrolled: rgba(0,0,0,0.55);
   --nav-border:     rgba(255,255,255,0.06);
   --nav-link-color: rgba(255,255,255,0.45);
   --nav-link-hover: #fafafa;
@@ -94,8 +94,8 @@ html.light {
   --pattern-dot:    rgba(0,0,0,0.10);
   --pattern-dot-active: rgba(0,0,0,0.22);
 
-  --nav-bg:         rgba(242,242,240,0.38);
-  --nav-bg-scrolled: rgba(242,242,240,0.72);
+  --nav-bg:         rgba(237,241,245,0.32);
+  --nav-bg-scrolled: rgba(237,241,245,0.55);
   --nav-border:     rgba(0,0,0,0.06);
   --nav-link-color: rgba(0,0,0,0.45);
   --nav-link-hover: #1a1a1a;
@@ -199,7 +199,7 @@ a, button, [role="button"] {
    width is controlled from one place.
 ═══════════════════════════════════════════════════════════ */
 :root {
-  --content-width: 970px;
+  --content-width: 960px;
   --content-width-inset: calc(var(--content-width) - 32px);
 }
 .page-wrapper {
@@ -263,9 +263,9 @@ a, button, [role="button"] {
 .nav-root {
   position: fixed; top: 0; left: 0; right: 0; z-index: 100;
   height: 52px;
-  background: rgba(4,4,4,0.82);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
+  background: var(--nav-bg);
+  backdrop-filter: blur(14px) saturate(160%);
+  -webkit-backdrop-filter: blur(14px) saturate(160%);
   border-bottom: none;
   box-shadow: none;
   transition: background 0.2s ease;
@@ -274,19 +274,19 @@ a, button, [role="button"] {
 }
 
 .nav-root.scrolled {
-  background: rgba(4,4,4,0.88);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
+  background: var(--nav-bg-scrolled);
+  backdrop-filter: blur(14px) saturate(160%);
+  -webkit-backdrop-filter: blur(14px) saturate(160%);
   border-bottom: none;
   box-shadow: none;
 }
 html.light .nav-root {
-  background: rgba(245,245,243,0.82);
+  background: var(--nav-bg);
   border-bottom: none;
   box-shadow: none;
 }
 html.light .nav-root.scrolled {
-  background: rgba(245,245,243,0.88);
+  background: var(--nav-bg-scrolled);
   border-bottom: none;
   box-shadow: none;
 }
@@ -813,32 +813,32 @@ html.light .stat-badge {
 
 /* ── Dark theme ── */
 .nav-root {
-  backdrop-filter: blur(4px) !important;
-  -webkit-backdrop-filter: blur(4px) !important;
-  background: rgba(4,4,4,0.82) !important;
+  backdrop-filter: blur(14px) saturate(160%) !important;
+  -webkit-backdrop-filter: blur(14px) saturate(160%) !important;
+  background: var(--nav-bg) !important;
   border-bottom: none !important;
   box-shadow: none !important;
 }
 .nav-root.scrolled {
-  backdrop-filter: blur(4px) !important;
-  -webkit-backdrop-filter: blur(4px) !important;
-  background: rgba(4,4,4,0.88) !important;
+  backdrop-filter: blur(14px) saturate(160%) !important;
+  -webkit-backdrop-filter: blur(14px) saturate(160%) !important;
+  background: var(--nav-bg-scrolled) !important;
   border-bottom: none !important;
   box-shadow: none !important;
 }
 
 /* ── Light theme ── */
 html.light .nav-root {
-  backdrop-filter: blur(4px) !important;
-  -webkit-backdrop-filter: blur(4px) !important;
-  background: rgba(245,245,243,0.82) !important;
+  backdrop-filter: blur(14px) saturate(160%) !important;
+  -webkit-backdrop-filter: blur(14px) saturate(160%) !important;
+  background: var(--nav-bg) !important;
   border-bottom: none !important;
   box-shadow: none !important;
 }
 html.light .nav-root.scrolled {
-  backdrop-filter: blur(4px) !important;
-  -webkit-backdrop-filter: blur(4px) !important;
-  background: rgba(245,245,243,0.88) !important;
+  backdrop-filter: blur(14px) saturate(160%) !important;
+  -webkit-backdrop-filter: blur(14px) saturate(160%) !important;
+  background: var(--nav-bg-scrolled) !important;
   border-bottom: none !important;
   box-shadow: none !important;
 }
@@ -1104,10 +1104,10 @@ html.light .nav-root.scrolled {
   }
   /* Simpler solid fallback for nav */
   .nav-root {
-    background: rgba(4,4,4,0.92) !important;
+    background: var(--nav-bg-scrolled) !important;
   }
   html.light .nav-root {
-    background: rgba(245,245,243,0.96) !important;
+    background: var(--nav-bg-scrolled) !important;
   }
 }
 
