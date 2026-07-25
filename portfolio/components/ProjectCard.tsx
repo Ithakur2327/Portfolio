@@ -123,18 +123,12 @@ export function ProjectCard({ proj, index, visible, isDesktop, onOpen }: {
       initial={false}
       animate={{ opacity: visible ? 1 : 0, y: visible ? 0 : 20 }}
       transition={{ delay: visible ? 0.05 * index : 0, type: "spring", stiffness: 340, damping: 26, mass: 0.75 }}
-      // layoutId only registered on desktop now — see ProjectModal for the
-      // matching mobile/tablet fallback (plain fade+scale, no FLIP morph).
-      layoutId={isDesktop ? `card-container-${proj.name}` : undefined}
+      layoutId={`card-container-${proj.name}`}
       onClick={onOpen}
       onHoverStart={() => setHovered(true)}
       onHoverEnd={() => setHovered(false)}
-      // Hover/tap scale is desktop-only now — on touch devices this was
-      // firing on the same tap that opens the modal, so the shared-layout
-      // "open" transform had to fight a competing scale transform on the
-      // very first frame. That collision was a big part of the mobile jank.
-      whileHover={isDesktop ? { scale: 1.02 } : undefined}
-      whileTap={isDesktop ? { scale: 0.98 } : undefined}
+      whileHover={{ scale: 1.02 }}
+      whileTap={{ scale: 0.98 }}
       style={{
         position: "relative",
         display: "flex",
@@ -163,7 +157,7 @@ export function ProjectCard({ proj, index, visible, isDesktop, onOpen }: {
       >
         <motion.div
           ref={frameRef}
-          layoutId={isDesktop ? `card-banner-${proj.name}` : undefined}
+          layoutId={`card-banner-${proj.name}`}
           transition={SPRING}
           style={{
             width: "100%", aspectRatio: "16 / 9", borderRadius: 9,
@@ -185,7 +179,7 @@ export function ProjectCard({ proj, index, visible, isDesktop, onOpen }: {
             style={{ position: "absolute", inset: 0, willChange: "transform" }}
           >
             <motion.div
-              layoutId={isDesktop ? `card-banner-image-${proj.name}` : undefined}
+              layoutId={`card-banner-image-${proj.name}`}
               style={{ position: "absolute", inset: 0, overflow: "hidden" }}
             >
               <Image
@@ -206,13 +200,15 @@ export function ProjectCard({ proj, index, visible, isDesktop, onOpen }: {
       <div style={{ width: "100%", padding: "12px 8px", display: "flex", flexDirection: "column", gap: 16 }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <motion.span
-            layoutId={isDesktop ? `card-title-${proj.name}` : undefined}
+            layoutId={`card-title-${proj.name}`}
             transition={SPRING}
             style={{ fontSize: 20, fontWeight: 600, color: "var(--text-primary)", letterSpacing: "-0.01em", fontFamily: SF, lineHeight: 1.3 }}
           >
             {proj.name}
           </motion.span>
-          <div
+          <motion.div
+            layoutId={`card-links-${proj.name}`}
+            transition={SPRING}
             style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}
             onClick={e => e.stopPropagation()}
           >
@@ -226,16 +222,22 @@ export function ProjectCard({ proj, index, visible, isDesktop, onOpen }: {
               <ExpandIcon />
             </button>
             <ProjectLinks proj={proj} size={20} />
-          </div>
+          </motion.div>
         </div>
 
-        <p
+        <motion.p
+          layoutId={`card-description-${proj.name}`}
+          transition={SPRING}
           style={{ fontSize: 16, color: "var(--text-secondary)", lineHeight: 1.5, margin: 0, fontFamily: SF, textAlign: "left", display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical", overflow: "hidden" }}
         >
           {proj.description}
-        </p>
+        </motion.p>
 
-        <div style={{ width: "100%", display: "flex", flexDirection: "column", gap: 8 }}>
+        <motion.div
+          layoutId={`card-tech-section-${proj.name}`}
+          transition={SPRING}
+          style={{ width: "100%", display: "flex", flexDirection: "column", gap: 8 }}
+        >
           <span style={{ fontSize: 14, fontWeight: 600, color: "var(--text-primary)", fontFamily: SF }}>
             Stack
           </span>
@@ -244,7 +246,7 @@ export function ProjectCard({ proj, index, visible, isDesktop, onOpen }: {
               const tech = TECH_MAP[tag];
               if (!tech) return null;
               return (
-                <div key={tag} title={tag} style={{ display: "flex" }}>
+                <motion.div key={tag} layoutId={`card-tech-${proj.name}-${tag}`} transition={SPRING} title={tag} style={{ display: "flex" }}>
                   {/* eslint-disable-next-line @next/next/no-img-element -- tiny (24px) external SVG icon; dangerouslyAllowSVG is intentionally off, and there's no bandwidth/LCP benefit to proxy such a small icon through next/image */}
                   <img
                     src={techLogoSrc(tech, isDark)}
@@ -254,11 +256,11 @@ export function ProjectCard({ proj, index, visible, isDesktop, onOpen }: {
                     decoding="async"
                     style={{ objectFit: "contain", display: "block" }}
                   />
-                </div>
+                </motion.div>
               );
             })}
           </div>
-        </div>
+        </motion.div>
       </div>
 
       <style suppressHydrationWarning>{`
@@ -283,7 +285,7 @@ export function ProjectCard({ proj, index, visible, isDesktop, onOpen }: {
 /* ─────────────────────────────────────────────────────────
    Modal — expanded shared-layout counterpart of the card
 ───────────────────────────────────────────────────────── */
-export function ProjectModal({ proj, onClose, index = 0, isDesktop }: { proj: Project; onClose: () => void; index?: number; isDesktop: boolean }) {
+export function ProjectModal({ proj, onClose, index = 0 }: { proj: Project; onClose: () => void; index?: number }) {
   const modalRef = useRef<HTMLDivElement>(null);
   const closeBtnRef = useRef<HTMLButtonElement>(null);
   const { theme } = useTheme();
@@ -300,11 +302,10 @@ export function ProjectModal({ proj, onClose, index = 0, isDesktop }: { proj: Pr
     // triggered the modal when it closes.
     const previouslyFocused = document.activeElement as HTMLElement | null;
 
-    // Deferred by a frame on purpose — running focus/listener setup in
-    // the exact same tick as mount means it competes with the shared-layout
-    // animation's first frame for main-thread time, which is what caused
-    // the stutter right as the modal opened on mobile/tablet. Pushing it
-    // one rAF out lets the opening transform get a clean first frame.
+    // Deferred by one rAF so this setup doesn't compete with the shared-
+    // layout animation's first frame for main-thread time. This changes
+    // nothing about the animation itself (no motion value, timing, or
+    // spring is touched) — it only shifts *when* focus/listeners attach.
     let focusTimer: ReturnType<typeof setTimeout>;
     const raf = requestAnimationFrame(() => {
       focusTimer = setTimeout(() => closeBtnRef.current?.focus(), 50);
@@ -374,19 +375,8 @@ export function ProjectModal({ proj, onClose, index = 0, isDesktop }: { proj: Pr
           role="dialog"
           aria-modal="true"
           aria-label={`${proj.name} project details`}
-          layoutId={isDesktop ? `card-container-${proj.name}` : undefined}
-          // Mobile/tablet: no shared layoutId → no FLIP morph. Framer no
-          // longer needs to measure the card's on-screen box, diff it
-          // against the modal's box, and correct every layoutId'd
-          // descendant's scale each frame — that measurement+correction
-          // pipeline (not blur, not image quality) was the actual source
-          // of the lag. Instead the shell just fades/scales in from its
-          // own center, a single GPU-composited transform+opacity
-          // animation. Desktop is untouched: same morph as before.
-          initial={isDesktop ? undefined : { opacity: 0, scale: 0.94 }}
-          animate={isDesktop ? undefined : { opacity: 1, scale: 1 }}
-          exit={isDesktop ? undefined : { opacity: 0, scale: 0.96 }}
-          transition={isDesktop ? SPRING : { type: "spring", stiffness: 300, damping: 28, mass: 0.7 }}
+          layoutId={`card-container-${proj.name}`}
+          transition={SPRING}
           className="pm-shell"
           style={{
             pointerEvents: "auto",
@@ -405,14 +395,8 @@ export function ProjectModal({ proj, onClose, index = 0, isDesktop }: { proj: Pr
               backdrop-filter: blur(6px);
               -webkit-backdrop-filter: blur(6px);
             }
-            @media (max-width: 1024px) {
-              /* Blur compositing is expensive on mid-range mobile/tablet
-                 GPUs, and it was running on the same frame as the
-                 shared-layout open transform — that overlap was the
-                 single biggest contributor to the perceived lag. Plain
-                 opacity fade only below the desktop breakpoint; the
-                 open/close animation itself is unchanged. */
-              .pm-overlay { backdrop-filter: none; -webkit-backdrop-filter: none; }
+            @media (max-width: 767px) {
+              .pm-overlay { backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px); }
             }
 
             /* Shell — the layout-animated element. Purely a sized/positioned
@@ -423,10 +407,10 @@ export function ProjectModal({ proj, onClose, index = 0, isDesktop }: { proj: Pr
                the inner div scroll reliably inside a max-height parent —
                without min-height:0 a flex/block child can refuse to shrink
                below its content size, so overflow-y:auto never engages.
-               will-change + translateZ(0) promote this to its own
-               compositor layer up front, before the animation starts,
-               instead of the browser promoting it mid-animation (that
-               late promotion is a classic cause of a visible stutter). */
+               will-change + translateZ(0) are compositor hints only — they
+               don't change any animated value or timing, just tell the
+               browser to promote this element to its own GPU layer before
+               the animation starts rather than partway through it. */
             .pm-shell {
               display: flex;
               flex-direction: column;
@@ -500,7 +484,7 @@ export function ProjectModal({ proj, onClose, index = 0, isDesktop }: { proj: Pr
               }}
             >
               <motion.div
-                layoutId={isDesktop ? `card-banner-${proj.name}` : undefined}
+                layoutId={`card-banner-${proj.name}`}
                 transition={SPRING}
                 className="pm-image-frame"
                 style={{
@@ -511,7 +495,7 @@ export function ProjectModal({ proj, onClose, index = 0, isDesktop }: { proj: Pr
                 }}
               >
                 <motion.div
-                  layoutId={isDesktop ? `card-banner-image-${proj.name}` : undefined}
+                  layoutId={`card-banner-image-${proj.name}`}
                   transition={SPRING}
                   style={{ position: "absolute", inset: 0 }}
                 >
@@ -519,7 +503,7 @@ export function ProjectModal({ proj, onClose, index = 0, isDesktop }: { proj: Pr
                     src={proj.img}
                     alt={proj.name}
                     fill
-                    quality={85}
+                    quality={100}
                     sizes="(max-width: 767px) 100vw, 45vw"
                     unoptimized={proj.img.endsWith(".svg")}
                     style={{ objectFit: "contain" }}
@@ -528,23 +512,15 @@ export function ProjectModal({ proj, onClose, index = 0, isDesktop }: { proj: Pr
               </motion.div>
             </div>
 
-            <motion.div
-              initial={{ opacity: 0, y: 6 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.08, duration: 0.22 }}
-            >
+            <motion.div layoutId={`card-links-${proj.name}`} transition={SPRING}>
               <ProjectLinkButtons proj={proj} />
             </motion.div>
 
             {/* Stack — moved below the image + Live/GitHub buttons, per the
-                requested layout (image, then links, then stack). Plain
-                fade instead of a shared layoutId: one less simultaneous
-                FLIP calculation on open, which is what was causing the
-                stutter on mobile/tablet with many tags. */}
+                requested layout (image, then links, then stack). */}
             <motion.div
-              initial={{ opacity: 0, y: 6 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1, duration: 0.22 }}
+              layoutId={`card-tech-section-${proj.name}`}
+              transition={SPRING}
               style={{ display: "flex", flexDirection: "column", gap: 8 }}
             >
               <span style={{ fontSize: 14, fontWeight: 600, color: "var(--text-primary)", fontFamily: SF }}>
@@ -577,7 +553,7 @@ export function ProjectModal({ proj, onClose, index = 0, isDesktop }: { proj: Pr
             <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16 }}>
               <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
                 <motion.h2
-                  layoutId={isDesktop ? `card-title-${proj.name}` : undefined}
+                  layoutId={`card-title-${proj.name}`}
                   transition={SPRING}
                   style={{ fontSize: 24, fontWeight: 700, color: "var(--text-primary)", letterSpacing: "-0.02em", fontFamily: SF, margin: 0, lineHeight: 1.25 }}
                 >
@@ -613,9 +589,8 @@ export function ProjectModal({ proj, onClose, index = 0, isDesktop }: { proj: Pr
 
             {/* Description */}
             <motion.p
-              initial={{ opacity: 0, y: 6 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.06, duration: 0.22 }}
+              layoutId={`card-description-${proj.name}`}
+              transition={SPRING}
               style={{ fontSize: 16, color: "var(--text-secondary)", lineHeight: 1.625, margin: 0, fontFamily: SF }}
             >
               {proj.description}

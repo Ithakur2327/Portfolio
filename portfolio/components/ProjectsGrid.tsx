@@ -65,14 +65,8 @@ export function ProjectsGrid({ projects, visible = true, mobileMax, wide }: {
           ))}
         </div>
 
-        {/* mode="sync" made explicit — with a shared layoutId between the
-            card and the modal, we never want Framer waiting on an exit
-            animation to finish before starting the enter animation (that
-            would show a stale/empty layout gap and read as a stall).
-            Behavior is unchanged from the default; this just guards
-            against future edits accidentally switching modes. */}
-        <AnimatePresence mode="sync">
-          {active && <ProjectModal key="modal" proj={active} index={activeIndex} isDesktop={isDesktop} onClose={() => setActive(null)} />}
+        <AnimatePresence>
+          {active && <ProjectModal key="modal" proj={active} index={activeIndex} onClose={() => setActive(null)} />}
         </AnimatePresence>
       </LayoutGroup>
     </>
