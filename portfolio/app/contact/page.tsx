@@ -32,36 +32,79 @@ export default function ContactPage() {
           font-family: ${SF}; text-decoration: none; transition: color 0.15s;
         }
         .back-home-link:hover { color: var(--text-primary); }
+        .back-home-link:active { transform: translateX(-2px); }
 
-        .contact-page-wrap { max-width: 720px; margin: 0 auto; }
+        .contact-page-main {
+          padding-top: 52px;
+        }
+
+        .contact-page-outer {
+          padding: 44px 0 80px;
+        }
+
+        .contact-page-wrap {
+          max-width: 720px;
+          margin: 0 auto;
+          width: 100%;
+        }
+
+        .contact-page-body {
+          padding-top: 18px;
+        }
+
         .contact-page-head {
           display: flex; flex-direction: column; align-items: center;
           text-align: center; gap: 10px;
           padding-bottom: 30px; margin-bottom: 32px;
           border-bottom: 1px solid var(--border);
         }
+
         .contact-page-title {
-          font-size: clamp(32px, 5vw, 44px);
+          font-size: clamp(30px, 6vw, 44px);
           font-weight: 800;
           letter-spacing: -0.03em;
           color: var(--text-primary);
           font-family: ${SF};
           margin: 0;
+          line-height: 1.1;
         }
+
         .contact-page-sub {
-          font-size: 15px;
+          font-size: clamp(14px, 2.2vw, 15px);
+          line-height: 1.55;
           color: var(--text-secondary);
           font-family: ${SF};
           max-width: 440px;
           margin: 0;
         }
+
+        /* Tablet */
+        @media (max-width: 768px) {
+          .contact-page-main { padding-top: 40px; }
+          .contact-page-outer { padding: 32px 20px 64px; }
+          .contact-page-head { padding-bottom: 24px; margin-bottom: 26px; gap: 8px; }
+        }
+
+        /* Mobile */
+        @media (max-width: 480px) {
+          .contact-page-main { padding-top: 28px; }
+          .contact-page-outer { padding: 24px 16px 48px; }
+          .contact-page-body { padding-top: 14px; }
+          .contact-page-head { padding-bottom: 20px; margin-bottom: 20px; }
+          .contact-page-sub { max-width: 100%; padding: 0 8px; }
+        }
+
+        /* Very small devices */
+        @media (max-width: 360px) {
+          .contact-page-outer { padding: 20px 12px 40px; }
+        }
       `}</style>
-      <main style={{ paddingTop: 52 }}>
+      <main className="contact-page-main">
         <div className="page-wrapper">
-          <div style={{ padding: "44px 0 80px" }}>
+          <div className="contact-page-outer">
             <BackToHomeLink />
 
-            <div style={{ paddingTop: 18 }}>
+            <div className="contact-page-body">
               <div className="contact-page-wrap">
                 <div className="contact-page-head">
                   <h1 className="contact-page-title">Contact Me</h1>
