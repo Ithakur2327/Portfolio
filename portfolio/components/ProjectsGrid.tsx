@@ -66,7 +66,7 @@ export function ProjectsGrid({ projects, visible = true, mobileMax, wide }: {
         </div>
 
         <AnimatePresence>
-          {active && <ProjectModal key="modal" proj={active} index={activeIndex} onClose={() => setActive(null)} />}
+          {active && <ProjectModal key="modal" proj={active} index={activeIndex} isDesktop={isDesktop} onClose={() => setActive(null)} />}
         </AnimatePresence>
       </LayoutGroup>
     </>

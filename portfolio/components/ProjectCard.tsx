@@ -1,7 +1,7 @@
 "use client";
 import { useRef, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import { motion, useInView } from "motion/react";
+import { motion, useInView, type Transition } from "motion/react";
 import Image from "next/image";
 import type { Project } from "@/lib/projects-data";
 import { TECH_MAP } from "@/lib/projects-data";
@@ -22,6 +22,10 @@ function techLogoSrc(tech: { logo: string; logoLight?: string }, isDark: boolean
 // everywhere is what makes the card-to-modal morph read as one continuous
 // motion instead of several independently-timed animations.
 const SPRING = { type: "spring" as const, stiffness: 260, damping: 25 };
+
+// Snappy, GPU-cheap spring used for the mobile/tablet modal (no layoutId
+// projection involved — just a plain transform + opacity animation).
+const MOBILE_SPRING: Transition = { type: "spring", stiffness: 320, damping: 30, mass: 0.7 };
 
 // Two alternating frame colors for the banner border — same thickness
 // everywhere, alternating tiffany / gold by card position so neighboring
@@ -118,12 +122,19 @@ export function ProjectCard({ proj, index, visible, isDesktop, onOpen }: {
   // on scroll into view (repeats every time it enters/leaves).
   const shown = isDesktop ? hovered : inView;
 
+  // On desktop these ids drive the shared-layout morph into the modal. On
+  // mobile/tablet we deliberately return `undefined` so Framer never runs
+  // the layoutId projection here — that projection math is what made the
+  // open animation janky on touch devices. The modal instead mounts on its
+  // own with a plain, cheap bottom-sheet slide-up (see ProjectModal).
+  const lid = (id: string) => (isDesktop ? id : undefined);
+
   return (
     <motion.div
       initial={false}
       animate={{ opacity: visible ? 1 : 0, y: visible ? 0 : 20 }}
       transition={{ delay: visible ? 0.05 * index : 0, type: "spring", stiffness: 340, damping: 26, mass: 0.75 }}
-      layoutId={`card-container-${proj.name}`}
+      layoutId={lid(`card-container-${proj.name}`)}
       onClick={onOpen}
       onHoverStart={() => setHovered(true)}
       onHoverEnd={() => setHovered(false)}
@@ -157,7 +168,7 @@ export function ProjectCard({ proj, index, visible, isDesktop, onOpen }: {
       >
         <motion.div
           ref={frameRef}
-          layoutId={`card-banner-${proj.name}`}
+          layoutId={lid(`card-banner-${proj.name}`)}
           transition={SPRING}
           style={{
             width: "100%", aspectRatio: "16 / 9", borderRadius: 9,
@@ -179,7 +190,7 @@ export function ProjectCard({ proj, index, visible, isDesktop, onOpen }: {
             style={{ position: "absolute", inset: 0, willChange: "transform" }}
           >
             <motion.div
-              layoutId={`card-banner-image-${proj.name}`}
+              layoutId={lid(`card-banner-image-${proj.name}`)}
               style={{ position: "absolute", inset: 0, overflow: "hidden" }}
             >
               <Image
@@ -200,14 +211,14 @@ export function ProjectCard({ proj, index, visible, isDesktop, onOpen }: {
       <div style={{ width: "100%", padding: "12px 8px", display: "flex", flexDirection: "column", gap: 16 }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <motion.span
-            layoutId={`card-title-${proj.name}`}
+            layoutId={lid(`card-title-${proj.name}`)}
             transition={SPRING}
             style={{ fontSize: 20, fontWeight: 600, color: "var(--text-primary)", letterSpacing: "-0.01em", fontFamily: SF, lineHeight: 1.3 }}
           >
             {proj.name}
           </motion.span>
           <motion.div
-            layoutId={`card-links-${proj.name}`}
+            layoutId={lid(`card-links-${proj.name}`)}
             transition={SPRING}
             style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}
             onClick={e => e.stopPropagation()}
@@ -226,7 +237,7 @@ export function ProjectCard({ proj, index, visible, isDesktop, onOpen }: {
         </div>
 
         <motion.p
-          layoutId={`card-description-${proj.name}`}
+          layoutId={lid(`card-description-${proj.name}`)}
           transition={SPRING}
           style={{ fontSize: 16, color: "var(--text-secondary)", lineHeight: 1.5, margin: 0, fontFamily: SF, textAlign: "left", display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical", overflow: "hidden" }}
         >
@@ -234,7 +245,7 @@ export function ProjectCard({ proj, index, visible, isDesktop, onOpen }: {
         </motion.p>
 
         <motion.div
-          layoutId={`card-tech-section-${proj.name}`}
+          layoutId={lid(`card-tech-section-${proj.name}`)}
           transition={SPRING}
           style={{ width: "100%", display: "flex", flexDirection: "column", gap: 8 }}
         >
@@ -246,7 +257,7 @@ export function ProjectCard({ proj, index, visible, isDesktop, onOpen }: {
               const tech = TECH_MAP[tag];
               if (!tech) return null;
               return (
-                <motion.div key={tag} layoutId={`card-tech-${proj.name}-${tag}`} transition={SPRING} title={tag} style={{ display: "flex" }}>
+                <motion.div key={tag} layoutId={lid(`card-tech-${proj.name}-${tag}`)} transition={SPRING} title={tag} style={{ display: "flex" }}>
                   {/* eslint-disable-next-line @next/next/no-img-element -- tiny (24px) external SVG icon; dangerouslyAllowSVG is intentionally off, and there's no bandwidth/LCP benefit to proxy such a small icon through next/image */}
                   <img
                     src={techLogoSrc(tech, isDark)}
@@ -285,11 +296,20 @@ export function ProjectCard({ proj, index, visible, isDesktop, onOpen }: {
 /* ─────────────────────────────────────────────────────────
    Modal — expanded shared-layout counterpart of the card
 ───────────────────────────────────────────────────────── */
-export function ProjectModal({ proj, onClose, index = 0 }: { proj: Project; onClose: () => void; index?: number }) {
+export function ProjectModal({ proj, onClose, index = 0, isDesktop = true }: {
+  proj: Project;
+  onClose: () => void;
+  index?: number;
+  /** When false (mobile/tablet), skip the shared-layout morph entirely
+   *  and use a plain bottom-sheet slide-up instead — see shellMotionProps
+   *  below. */
+  isDesktop?: boolean;
+}) {
   const modalRef = useRef<HTMLDivElement>(null);
   const closeBtnRef = useRef<HTMLButtonElement>(null);
   const { theme } = useTheme();
   const isDark = theme === "dark";
+  const lid = (id: string) => (isDesktop ? id : undefined);
 
   useEffect(() => {
     document.documentElement.style.overflow = "hidden";
@@ -353,6 +373,18 @@ export function ProjectModal({ proj, onClose, index = 0 }: { proj: Project; onCl
     };
   }, [onClose]);
 
+  // Desktop: shared-layout morph continuing from the card. Mobile/tablet:
+  // plain bottom-sheet slide-up — transform + opacity only, no layoutId
+  // projection, which is what keeps it buttery on touch devices.
+  const shellMotionProps = isDesktop
+    ? { layoutId: `card-container-${proj.name}`, transition: SPRING }
+    : {
+        initial: { y: "100%", opacity: 0.85 },
+        animate: { y: 0, opacity: 1 },
+        exit: { y: "100%", opacity: 0 },
+        transition: MOBILE_SPRING,
+      };
+
   const content = (
     <>
       <motion.div
@@ -369,14 +401,13 @@ export function ProjectModal({ proj, onClose, index = 0 }: { proj: Project; onCl
         }}
       />
 
-      <div style={{ position: "fixed", inset: 0, zIndex: 9001, display: "grid", placeItems: "center", padding: 16, pointerEvents: "none" }}>
+      <div className="pm-outer" style={{ position: "fixed", inset: 0, zIndex: 9001, display: "grid", placeItems: "center", padding: 16, pointerEvents: "none" }}>
         <motion.div
           ref={modalRef}
           role="dialog"
           aria-modal="true"
           aria-label={`${proj.name} project details`}
-          layoutId={`card-container-${proj.name}`}
-          transition={SPRING}
+          {...shellMotionProps}
           className="pm-shell"
           style={{
             pointerEvents: "auto",
@@ -419,6 +450,30 @@ export function ProjectModal({ proj, onClose, index = 0 }: { proj: Project; onCl
               transform: translateZ(0);
             }
             @media (min-width: 768px) { .pm-shell { max-height: 82vh; } }
+
+            /* Mobile/tablet: a real bottom sheet — pinned to the bottom
+               edge, rounded top corners only, with a small grab-handle so
+               it reads as an intentional pattern rather than a shrunk-down
+               desktop modal. Pairs with shellMotionProps' slide-up above. */
+            @media (max-width: 767px) {
+              .pm-outer { align-items: flex-end !important; padding: 0 !important; }
+              .pm-shell {
+                max-width: 100% !important;
+                border-radius: 20px 20px 0 0 !important;
+                max-height: 90vh;
+                padding-top: 6px;
+              }
+              .pm-shell::before {
+                content: "";
+                display: block;
+                width: 36px;
+                height: 4px;
+                border-radius: 2px;
+                background: var(--border);
+                margin: 0 auto 4px;
+                flex-shrink: 0;
+              }
+            }
 
             /* Body — a plain (non-layout-animated) div that actually scrolls.
                Always a fresh, transform-free element, so touch/wheel scroll
@@ -479,13 +534,15 @@ export function ProjectModal({ proj, onClose, index = 0 }: { proj: Project; onCl
             <div
               style={{
                 width: "100%", padding: 3, borderRadius: 13,
-                border: `1.5px dashed ${index % 2 === 0 ? TIFFANY : GOLD}`,
+                border: `1.2px dashed ${index % 2 === 0 ? TIFFANY : GOLD}`,
                 boxSizing: "border-box", flexShrink: 0,
               }}
             >
               <motion.div
-                layoutId={`card-banner-${proj.name}`}
+                layoutId={lid(`card-banner-${proj.name}`)}
                 transition={SPRING}
+                initial={!isDesktop ? { opacity: 0, scale: 0.96 } : undefined}
+                animate={!isDesktop ? { opacity: 1, scale: 1 } : undefined}
                 className="pm-image-frame"
                 style={{
                   width: "100%", aspectRatio: "16 / 9", position: "relative",
@@ -495,7 +552,7 @@ export function ProjectModal({ proj, onClose, index = 0 }: { proj: Project; onCl
                 }}
               >
                 <motion.div
-                  layoutId={`card-banner-image-${proj.name}`}
+                  layoutId={lid(`card-banner-image-${proj.name}`)}
                   transition={SPRING}
                   style={{ position: "absolute", inset: 0 }}
                 >
@@ -512,15 +569,22 @@ export function ProjectModal({ proj, onClose, index = 0 }: { proj: Project; onCl
               </motion.div>
             </div>
 
-            <motion.div layoutId={`card-links-${proj.name}`} transition={SPRING}>
+            <motion.div
+              layoutId={lid(`card-links-${proj.name}`)}
+              transition={SPRING}
+              initial={!isDesktop ? { opacity: 0, y: 8 } : undefined}
+              animate={!isDesktop ? { opacity: 1, y: 0 } : undefined}
+            >
               <ProjectLinkButtons proj={proj} />
             </motion.div>
 
             {/* Stack — moved below the image + Live/GitHub buttons, per the
                 requested layout (image, then links, then stack). */}
             <motion.div
-              layoutId={`card-tech-section-${proj.name}`}
+              layoutId={lid(`card-tech-section-${proj.name}`)}
               transition={SPRING}
+              initial={!isDesktop ? { opacity: 0, y: 8 } : undefined}
+              animate={!isDesktop ? { opacity: 1, y: 0 } : undefined}
               style={{ display: "flex", flexDirection: "column", gap: 8 }}
             >
               <span style={{ fontSize: 14, fontWeight: 600, color: "var(--text-primary)", fontFamily: SF }}>
@@ -553,8 +617,10 @@ export function ProjectModal({ proj, onClose, index = 0 }: { proj: Project; onCl
             <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16 }}>
               <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
                 <motion.h2
-                  layoutId={`card-title-${proj.name}`}
+                  layoutId={lid(`card-title-${proj.name}`)}
                   transition={SPRING}
+                  initial={!isDesktop ? { opacity: 0, y: 8 } : undefined}
+                  animate={!isDesktop ? { opacity: 1, y: 0 } : undefined}
                   style={{ fontSize: 24, fontWeight: 700, color: "var(--text-primary)", letterSpacing: "-0.02em", fontFamily: SF, margin: 0, lineHeight: 1.25 }}
                 >
                   {proj.name}
@@ -589,8 +655,10 @@ export function ProjectModal({ proj, onClose, index = 0 }: { proj: Project; onCl
 
             {/* Description */}
             <motion.p
-              layoutId={`card-description-${proj.name}`}
+              layoutId={lid(`card-description-${proj.name}`)}
               transition={SPRING}
+              initial={!isDesktop ? { opacity: 0, y: 8 } : undefined}
+              animate={!isDesktop ? { opacity: 1, y: 0 } : undefined}
               style={{ fontSize: 16, color: "var(--text-secondary)", lineHeight: 1.625, margin: 0, fontFamily: SF }}
             >
               {proj.description}
