@@ -140,7 +140,7 @@ export function ProjectCard({ proj, index, visible, isDesktop, onOpen }: {
           width: "100%",
           padding: 3,
           borderRadius: 13,
-          border: `1.5px solid ${index % 2 === 0 ? TIFFANY : GOLD}`,
+          border: `1.2px dashed ${index % 2 === 0 ? TIFFANY : GOLD}`,
           boxSizing: "border-box",
         }}
       >
@@ -149,9 +149,9 @@ export function ProjectCard({ proj, index, visible, isDesktop, onOpen }: {
           layoutId={`card-banner-${proj.name}`}
           transition={SPRING}
           style={{
-            width: "100%", height: 170, borderRadius: 9,
+            width: "100%", aspectRatio: "16 / 9", borderRadius: 9,
             background: "var(--bg-secondary)",
-            border: "1px solid var(--border)",
+            border: "1.2px solid var(--border)",
             position: "relative", overflow: "hidden",
           }}
         >
@@ -161,7 +161,7 @@ export function ProjectCard({ proj, index, visible, isDesktop, onOpen }: {
               instead of fighting with Framer's shared-layout projection. */}
           <motion.div
             initial={false}
-            animate={{ y: shown ? "0%" : "60%" }}
+            animate={{ y: shown ? "0%" : "55%", rotate: shown ? 0 : -8 }}
             transition={{ type: "spring", stiffness: 210, damping: 24, mass: 0.85 }}
             style={{ position: "absolute", inset: 0, willChange: "transform" }}
           >
@@ -174,7 +174,7 @@ export function ProjectCard({ proj, index, visible, isDesktop, onOpen }: {
                 alt={proj.name}
                 fill
                 quality={100}
-                sizes="(max-width: 640px) 95vw, (max-width: 1024px) 45vw, 480px"
+                sizes="(max-width: 640px) 96vw, (max-width: 1024px) 48vw, 520px"
                 unoptimized={proj.img.endsWith(".svg")}
                 style={{ objectFit: "cover" }}
               />
