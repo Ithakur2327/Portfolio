@@ -72,7 +72,7 @@ export function ProjectsGrid({ projects, visible = true, mobileMax, wide }: {
             Behavior is unchanged from the default; this just guards
             against future edits accidentally switching modes. */}
         <AnimatePresence mode="sync">
-          {active && <ProjectModal key="modal" proj={active} index={activeIndex} onClose={() => setActive(null)} />}
+          {active && <ProjectModal key="modal" proj={active} index={activeIndex} isDesktop={isDesktop} onClose={() => setActive(null)} />}
         </AnimatePresence>
       </LayoutGroup>
     </>

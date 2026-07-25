@@ -123,7 +123,9 @@ export function ProjectCard({ proj, index, visible, isDesktop, onOpen }: {
       initial={false}
       animate={{ opacity: visible ? 1 : 0, y: visible ? 0 : 20 }}
       transition={{ delay: visible ? 0.05 * index : 0, type: "spring", stiffness: 340, damping: 26, mass: 0.75 }}
-      layoutId={`card-container-${proj.name}`}
+      // layoutId only registered on desktop now — see ProjectModal for the
+      // matching mobile/tablet fallback (plain fade+scale, no FLIP morph).
+      layoutId={isDesktop ? `card-container-${proj.name}` : undefined}
       onClick={onOpen}
       onHoverStart={() => setHovered(true)}
       onHoverEnd={() => setHovered(false)}
@@ -161,7 +163,7 @@ export function ProjectCard({ proj, index, visible, isDesktop, onOpen }: {
       >
         <motion.div
           ref={frameRef}
-          layoutId={`card-banner-${proj.name}`}
+          layoutId={isDesktop ? `card-banner-${proj.name}` : undefined}
           transition={SPRING}
           style={{
             width: "100%", aspectRatio: "16 / 9", borderRadius: 9,
@@ -183,7 +185,7 @@ export function ProjectCard({ proj, index, visible, isDesktop, onOpen }: {
             style={{ position: "absolute", inset: 0, willChange: "transform" }}
           >
             <motion.div
-              layoutId={`card-banner-image-${proj.name}`}
+              layoutId={isDesktop ? `card-banner-image-${proj.name}` : undefined}
               style={{ position: "absolute", inset: 0, overflow: "hidden" }}
             >
               <Image
@@ -204,7 +206,7 @@ export function ProjectCard({ proj, index, visible, isDesktop, onOpen }: {
       <div style={{ width: "100%", padding: "12px 8px", display: "flex", flexDirection: "column", gap: 16 }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <motion.span
-            layoutId={`card-title-${proj.name}`}
+            layoutId={isDesktop ? `card-title-${proj.name}` : undefined}
             transition={SPRING}
             style={{ fontSize: 20, fontWeight: 600, color: "var(--text-primary)", letterSpacing: "-0.01em", fontFamily: SF, lineHeight: 1.3 }}
           >
@@ -281,7 +283,7 @@ export function ProjectCard({ proj, index, visible, isDesktop, onOpen }: {
 /* ─────────────────────────────────────────────────────────
    Modal — expanded shared-layout counterpart of the card
 ───────────────────────────────────────────────────────── */
-export function ProjectModal({ proj, onClose, index = 0 }: { proj: Project; onClose: () => void; index?: number }) {
+export function ProjectModal({ proj, onClose, index = 0, isDesktop }: { proj: Project; onClose: () => void; index?: number; isDesktop: boolean }) {
   const modalRef = useRef<HTMLDivElement>(null);
   const closeBtnRef = useRef<HTMLButtonElement>(null);
   const { theme } = useTheme();
@@ -372,8 +374,19 @@ export function ProjectModal({ proj, onClose, index = 0 }: { proj: Project; onCl
           role="dialog"
           aria-modal="true"
           aria-label={`${proj.name} project details`}
-          layoutId={`card-container-${proj.name}`}
-          transition={SPRING}
+          layoutId={isDesktop ? `card-container-${proj.name}` : undefined}
+          // Mobile/tablet: no shared layoutId → no FLIP morph. Framer no
+          // longer needs to measure the card's on-screen box, diff it
+          // against the modal's box, and correct every layoutId'd
+          // descendant's scale each frame — that measurement+correction
+          // pipeline (not blur, not image quality) was the actual source
+          // of the lag. Instead the shell just fades/scales in from its
+          // own center, a single GPU-composited transform+opacity
+          // animation. Desktop is untouched: same morph as before.
+          initial={isDesktop ? undefined : { opacity: 0, scale: 0.94 }}
+          animate={isDesktop ? undefined : { opacity: 1, scale: 1 }}
+          exit={isDesktop ? undefined : { opacity: 0, scale: 0.96 }}
+          transition={isDesktop ? SPRING : { type: "spring", stiffness: 300, damping: 28, mass: 0.7 }}
           className="pm-shell"
           style={{
             pointerEvents: "auto",
@@ -487,7 +500,7 @@ export function ProjectModal({ proj, onClose, index = 0 }: { proj: Project; onCl
               }}
             >
               <motion.div
-                layoutId={`card-banner-${proj.name}`}
+                layoutId={isDesktop ? `card-banner-${proj.name}` : undefined}
                 transition={SPRING}
                 className="pm-image-frame"
                 style={{
@@ -498,7 +511,7 @@ export function ProjectModal({ proj, onClose, index = 0 }: { proj: Project; onCl
                 }}
               >
                 <motion.div
-                  layoutId={`card-banner-image-${proj.name}`}
+                  layoutId={isDesktop ? `card-banner-image-${proj.name}` : undefined}
                   transition={SPRING}
                   style={{ position: "absolute", inset: 0 }}
                 >
@@ -564,7 +577,7 @@ export function ProjectModal({ proj, onClose, index = 0 }: { proj: Project; onCl
             <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16 }}>
               <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
                 <motion.h2
-                  layoutId={`card-title-${proj.name}`}
+                  layoutId={isDesktop ? `card-title-${proj.name}` : undefined}
                   transition={SPRING}
                   style={{ fontSize: 24, fontWeight: 700, color: "var(--text-primary)", letterSpacing: "-0.02em", fontFamily: SF, margin: 0, lineHeight: 1.25 }}
                 >
