@@ -14,6 +14,13 @@ import { SectionTitleIcon } from "./SectionIcon";
 
 const SF = "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', sans-serif";
 
+// Same two accent colors used for the dashed frames around the project
+// cards, reused here so the About box reads as part of the same system.
+const TIFFANY = "#0FA89C";
+const GOLD = "#D4AF37";
+
+/* Time-of-day greeting removed — reverted back to a static "About" title. */
+
 const ABOUT_TEXT = `Hi, I'm [[Indresh Thakur]], currently pursuing [[B.Tech]] in [[Computer Science & Engineering (AI)]] at [[NIET Greater Noida]]. I'm a [[motivated]] and [[growth oriented]] [[Full-Stack]] & [[AI Developer]] passionate about building [[modern]], [[scalable]], and [[user]]-[[focused]] digital experiences.
 
 My work focuses on developing [[intelligent web applications]] and [[AI-powered systems]] while continuously improving my [[problem]]-[[solving]] abilities through active [[Data Structures and Algorithms]] practice and real-world project development. I enjoy exploring [[emerging technologies]], learning new tech stacks, and turning ideas into [[impactful]] [[solutions]].
@@ -66,9 +73,10 @@ function ScrollRevealText() {
     <div ref={ref} style={{ display: "flex", flexDirection: "column", gap: 20 }}>
       {paras.map((tokens, pi) => (
         <p key={pi} className="about-para" style={{
-          margin: 0, lineHeight: 1.85, fontFamily: SF, fontSize: 15,
+          margin: 0, lineHeight: 1.5, fontFamily: SF, fontSize: 16,
           letterSpacing: "-0.01em", fontWeight: 400, color: "var(--text-primary)",
-          wordBreak: "normal", overflowWrap: "break-word",
+          textAlign: "justify", textJustify: "inter-word" as React.CSSProperties["textJustify"],
+          hyphens: "auto", wordBreak: "normal", overflowWrap: "break-word",
         }}>
           {tokens.map((t, ti) =>
             t.hl
@@ -88,21 +96,20 @@ export function AboutSection() {
   return (
     <>
       <style suppressHydrationWarning>{`
+        /* Name highlight → gold, same accent used for the project cards. */
         .name-highlight {
-          display: inline; color: #4ade80;
-          background: linear-gradient(135deg,rgba(74,222,128,0.10) 0%,rgba(34,197,94,0.05) 50%,rgba(16,185,129,0.08) 100%);
-          border: 1px solid rgba(74,222,128,0.22); border-radius: 5px;
-          padding: 1px 7px 2px;
-          box-shadow: 0 0 10px rgba(74,222,128,0.12),0 0 22px rgba(74,222,128,0.06);
-          font-weight: 600; white-space: nowrap;
+          display: inline; color: ${GOLD}; font-weight: 600; white-space: nowrap;
+          background: rgba(212,175,55,0.10); border: 1px solid rgba(212,175,55,0.30);
+          border-radius: 5px; padding: 1px 7px 2px;
         }
+        /* All other highlighted terms → tiffany, same accent used for the project cards. */
         .gold-box-word {
-          display: inline; color: #d4a017; font-weight: 600;
-          background: rgba(212,160,23,0.10); border: 1px solid rgba(212,160,23,0.22);
+          display: inline; color: ${TIFFANY}; font-weight: 600;
+          background: rgba(15,168,156,0.12); border: 1px solid rgba(15,168,156,0.35);
           border-radius: 5px; padding: 1px 5px 2px; margin: 0 1px;
         }
-        html.light .name-highlight { color: #16a34a; background: rgba(22,163,74,0.08); border-color: rgba(22,163,74,0.20); box-shadow: none; }
-        html.light .gold-box-word { color: #d97706 !important; background: rgba(245,158,11,0.13) !important; border-color: rgba(217,119,6,0.45) !important; }
+        html.light .name-highlight  { color: #b8860b !important; background: rgba(212,175,55,0.14) !important; border-color: rgba(184,134,11,0.45) !important; }
+        html.light .gold-box-word   { color: #0a7a70 !important; background: rgba(15,168,156,0.14) !important; border-color: rgba(10,122,112,0.45) !important; }
 
         .about-content {
           max-width: var(--content-width); margin: 0 auto; padding: 0 20px 64px;
@@ -110,18 +117,19 @@ export function AboutSection() {
         @media (max-width: 860px) { .about-content { padding: 0 22px 34px; } }
         @media (max-width: 599px) {
           .about-content { padding: 0 14px 28px; }
-          .about-para    { font-size: 14px !important; line-height: 1.8 !important; }
+          .about-para    { font-size: 14px !important; }
         }
 
         .about-box {
           width: 100%;
           max-width: 100%;
           box-sizing: border-box;
-          border: 1px solid var(--border);
+          border: 1px dashed rgba(255,255,255,0.35);
           border-radius: 10px;
           background: var(--bg-base);
           padding: 18px 18px;
         }
+        html.light .about-box { border-color: rgba(0,0,0,0.30); }
         @media (max-width: 860px) {
           .about-box { padding: 16px 16px; }
         }
