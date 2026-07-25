@@ -275,12 +275,10 @@ export function ProjectCard({ proj, index, visible, isDesktop, onOpen }: {
    Modal — expanded shared-layout counterpart of the card
 ───────────────────────────────────────────────────────── */
 export function ProjectModal({ proj, onClose, index = 0 }: { proj: Project; onClose: () => void; index?: number }) {
-  const [mounted, setMounted] = useState(false);
   const modalRef = useRef<HTMLDivElement>(null);
   const closeBtnRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
-    setMounted(true);
     document.documentElement.style.overflow = "hidden";
     document.body.style.overflow = "hidden";
     const cat = document.getElementById("oneko");
@@ -331,8 +329,6 @@ export function ProjectModal({ proj, onClose, index = 0 }: { proj: Project; onCl
     };
   }, [onClose]);
 
-  if (!mounted) return null;
-
   const content = (
     <>
       <motion.div
@@ -341,11 +337,11 @@ export function ProjectModal({ proj, onClose, index = 0 }: { proj: Project; onCl
         exit={{ opacity: 0 }}
         transition={{ duration: 0.15 }}
         onClick={onClose}
+        className="pm-overlay"
         style={{
           position: "fixed", inset: 0, zIndex: 9000,
           background: "rgba(0,0,0,0.55)",
-          backdropFilter: "blur(6px)", WebkitBackdropFilter: "blur(6px)",
-          willChange: "opacity, backdrop-filter",
+          willChange: "opacity",
         }}
       />
 
@@ -357,11 +353,10 @@ export function ProjectModal({ proj, onClose, index = 0 }: { proj: Project; onCl
           aria-label={`${proj.name} project details`}
           layoutId={`card-container-${proj.name}`}
           transition={SPRING}
-          className="pm-body"
+          className="pm-shell"
           style={{
             pointerEvents: "auto",
             width: "100%", maxWidth: 960,
-            maxHeight: "88vh",
             cursor: "default",
             background: "var(--bg-card)",
             border: "1px solid var(--border)",
@@ -372,11 +367,31 @@ export function ProjectModal({ proj, onClose, index = 0 }: { proj: Project; onCl
           }}
         >
           <style suppressHydrationWarning>{`
+            .pm-overlay {
+              backdrop-filter: blur(6px);
+              -webkit-backdrop-filter: blur(6px);
+            }
+            @media (max-width: 767px) {
+              .pm-overlay { backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px); }
+            }
+
+            /* Shell — the layout-animated element. Purely a sized/positioned
+               frame; it does NOT scroll itself, so Framer's layout transform
+               never gets applied to a scrolling element (that's what broke
+               touch-scroll on mobile after the open animation finished). */
+            .pm-shell { max-height: 92vh; }
+            @media (min-width: 768px) { .pm-shell { max-height: 82vh; } }
+
+            /* Body — a plain (non-layout-animated) div that actually scrolls.
+               Always a fresh, transform-free element, so touch/wheel scroll
+               keeps working regardless of what the shell's animation is doing. */
             .pm-body {
+              width: 100%; height: 100%;
               display: flex;
               flex-direction: column;
               overflow-y: auto;
               overscroll-behavior: contain;
+              -webkit-overflow-scrolling: touch;
               scrollbar-width: none;
             }
             .pm-body::-webkit-scrollbar { display: none; }
@@ -400,7 +415,7 @@ export function ProjectModal({ proj, onClose, index = 0 }: { proj: Project; onCl
             /* Desktop/laptop: horizontal split — image+links left,
                title/description/stack right. */
             @media (min-width: 768px) {
-              .pm-body { flex-direction: row; max-height: 82vh; }
+              .pm-body { flex-direction: row; }
               .pm-media-col {
                 width: 45%; flex-shrink: 0;
                 display: flex; flex-direction: column; gap: 14px;
@@ -416,11 +431,9 @@ export function ProjectModal({ proj, onClose, index = 0 }: { proj: Project; onCl
               .pm-info-col::-webkit-scrollbar { display: none; }
               .pm-image-frame { aspect-ratio: 4 / 3; }
             }
-            @media (max-width: 767px) {
-              .pm-body { max-height: 92vh; }
-            }
           `}</style>
 
+          <div className="pm-body">
           {/* Media column: image (uncropped) + Live/GitHub buttons */}
           <div className="pm-media-col" style={{ padding: 20, display: "flex", flexDirection: "column", gap: 12 }}>
             <div
@@ -567,6 +580,7 @@ export function ProjectModal({ proj, onClose, index = 0 }: { proj: Project; onCl
                 </ul>
               </motion.div>
             )}
+          </div>
           </div>
         </motion.div>
       </div>
