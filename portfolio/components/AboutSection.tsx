@@ -119,23 +119,6 @@ export function AboutSection() {
           .about-content { padding: 0 14px 28px; }
           .about-para    { font-size: 14px !important; }
         }
-
-        .about-box {
-          width: 100%;
-          max-width: 100%;
-          box-sizing: border-box;
-          border: 1px dashed rgba(255,255,255,0.35);
-          border-radius: 10px;
-          background: var(--bg-base);
-          padding: 18px 18px;
-        }
-        html.light .about-box { border-color: rgba(0,0,0,0.30); }
-        @media (max-width: 860px) {
-          .about-box { padding: 16px 16px; }
-        }
-        @media (max-width: 599px) {
-          .about-box { padding: 14px 12px; border-radius: 8px; }
-        }
       `}</style>
 
       <section id="about" ref={ref} className={revealClass}>
@@ -148,9 +131,7 @@ export function AboutSection() {
               </span>
             </div>
             <div style={{ height: 1, background: "var(--border)", margin: "18px 0 20px" }} />
-            <div className="about-box">
-              <ScrollRevealText />
-            </div>
+            <ScrollRevealText />
           </div>
         </div>
       </section>
