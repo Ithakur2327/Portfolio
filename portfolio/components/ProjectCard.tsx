@@ -112,34 +112,23 @@ export function ProjectCard({ proj, index, visible, isDesktop, onOpen }: {
       initial={false}
       animate={{ opacity: visible ? 1 : 0, y: visible ? 0 : 20 }}
       transition={{ delay: visible ? 0.05 * index : 0, type: "spring", stiffness: 340, damping: 26, mass: 0.75 }}
-      style={{ width: "100%" }}
+      layoutId={`card-container-${proj.name}`}
+      onClick={onOpen}
+      onHoverStart={() => setHovered(true)}
+      onHoverEnd={() => setHovered(false)}
+      whileHover={{ scale: 1.02 }}
+      whileTap={{ scale: 0.98 }}
+      style={{
+        position: "relative",
+        display: "flex",
+        flexDirection: "column",
+        width: "100%",
+        cursor: "pointer",
+        overflow: "hidden",
+        borderRadius: 14,
+        willChange: "transform",
+      }}
     >
-      {/* This is the actual layoutId'd box that morphs into the modal.
-          It deliberately carries NO other animate/whileHover/whileTap
-          transforms — those were fighting with Framer's shared-layout
-          projection on this exact element, which is what made the open
-          animation glitch (especially on mobile, where whileTap fires
-          right at the moment of the opening tap). Hover feedback is done
-          with box-shadow instead of scale, since that never touches
-          `transform` and can't collide with the layout animation. */}
-      <motion.div
-        layoutId={`card-container-${proj.name}`}
-        transition={SPRING}
-        onClick={onOpen}
-        onHoverStart={() => setHovered(true)}
-        onHoverEnd={() => setHovered(false)}
-        style={{
-          position: "relative",
-          display: "flex",
-          flexDirection: "column",
-          width: "100%",
-          cursor: "pointer",
-          overflow: "hidden",
-          borderRadius: 14,
-          boxShadow: hovered ? "0 14px 34px -10px rgba(0,0,0,0.5)" : "0 0px 0px rgba(0,0,0,0)",
-          transition: "box-shadow 0.2s ease",
-        }}
-      >
       {/* Banner photo — the colored accent frame lives on this plain
           (non-animated) wrapper so its corners always render as one crisp,
           fully-connected line. Layout-animated (layoutId) elements get a
@@ -151,7 +140,7 @@ export function ProjectCard({ proj, index, visible, isDesktop, onOpen }: {
           width: "100%",
           padding: 3,
           borderRadius: 13,
-          border: `1px dashed ${index % 2 === 0 ? TIFFANY : GOLD}`,
+          border: `1.2px dashed ${index % 2 === 0 ? TIFFANY : GOLD}`,
           boxSizing: "border-box",
         }}
       >
@@ -160,9 +149,9 @@ export function ProjectCard({ proj, index, visible, isDesktop, onOpen }: {
           layoutId={`card-banner-${proj.name}`}
           transition={SPRING}
           style={{
-            width: "100%", aspectRatio: "2 / 1", maxHeight: 200, borderRadius: 9,
+            width: "100%", aspectRatio: "16 / 9", borderRadius: 9,
             background: "var(--bg-secondary)",
-            border: "1px solid var(--border)",
+            border: "1.2px solid var(--border)",
             position: "relative", overflow: "hidden",
           }}
         >
@@ -175,7 +164,7 @@ export function ProjectCard({ proj, index, visible, isDesktop, onOpen }: {
             animate={{ y: shown ? "0%" : "55%", rotate: shown ? 0 : -8 }}
             transition={isDesktop
               ? { type: "spring", stiffness: 210, damping: 24, mass: 0.85 }
-              : { type: "spring", stiffness: 90, damping: 20, mass: 1.1 }}
+              : { type: "spring", stiffness: 85, damping: 20, mass: 1.6 }}
             style={{ position: "absolute", inset: 0, willChange: "transform" }}
           >
             <motion.div
@@ -189,7 +178,7 @@ export function ProjectCard({ proj, index, visible, isDesktop, onOpen }: {
                 quality={100}
                 sizes="(max-width: 640px) 96vw, (max-width: 1024px) 48vw, 520px"
                 unoptimized={proj.img.endsWith(".svg")}
-                style={{ objectFit: "cover" }}
+                style={{ objectFit: "contain" }}
               />
             </motion.div>
           </motion.div>
@@ -278,7 +267,6 @@ export function ProjectCard({ proj, index, visible, isDesktop, onOpen }: {
           transform: translateY(-1.5px) scale(1.08);
         }
       `}</style>
-      </motion.div>
     </motion.div>
   );
 }
@@ -291,31 +279,10 @@ export function ProjectModal({ proj, onClose, index = 0 }: { proj: Project; onCl
   const modalRef = useRef<HTMLDivElement>(null);
   const closeBtnRef = useRef<HTMLButtonElement>(null);
 
-  // `onClose` is a fresh inline closure from the parent on every render —
-  // keying the effect below on it directly would re-run the whole
-  // scroll-lock/focus-trap setup on any unrelated parent re-render while
-  // the modal is open, which re-captures scrollY mid-lock (often as 0,
-  // since the body is already position:fixed at that point) and re-toggles
-  // the lock right as Framer is mid-measurement for the open animation.
-  // A ref keeps the callback fresh without making the effect re-run.
-  const onCloseRef = useRef(onClose);
-  useEffect(() => { onCloseRef.current = onClose; }, [onClose]);
-
   useEffect(() => {
     setMounted(true);
-
-    // iOS-safe scroll lock. Plain `overflow: hidden` on <body> doesn't
-    // reliably block scroll on mobile Safari, and — worse — toggling it
-    // can shift the visible viewport (URL bar collapsing) at the exact
-    // moment the modal mounts, which throws off Framer's FLIP measurement
-    // and makes the open animation appear to just snap instead of morph.
-    // Locking via position:fixed avoids both problems.
-    const scrollY = window.scrollY;
-    document.body.style.position = "fixed";
-    document.body.style.top = `-${scrollY}px`;
-    document.body.style.left = "0";
-    document.body.style.right = "0";
-    document.body.style.width = "100%";
+    document.documentElement.style.overflow = "hidden";
+    document.body.style.overflow = "hidden";
     const cat = document.getElementById("oneko");
     if (cat) cat.style.display = "none";
 
@@ -324,7 +291,7 @@ export function ProjectModal({ proj, onClose, index = 0 }: { proj: Project; onCl
     const previouslyFocused = document.activeElement as HTMLElement | null;
     const focusTimer = setTimeout(() => closeBtnRef.current?.focus(), 50);
 
-    const esc = (e: KeyboardEvent) => { if (e.key === "Escape") onCloseRef.current(); };
+    const esc = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
 
     // Basic focus trap — Tab/Shift+Tab cycle within the modal only.
     const trapFocus = (e: KeyboardEvent) => {
@@ -345,18 +312,14 @@ export function ProjectModal({ proj, onClose, index = 0 }: { proj: Project; onCl
     window.addEventListener("keydown", esc);
     window.addEventListener("keydown", trapFocus);
     const handler = (e: MouseEvent) => {
-      if (modalRef.current && !modalRef.current.contains(e.target as Node)) onCloseRef.current();
+      if (modalRef.current && !modalRef.current.contains(e.target as Node)) onClose();
     };
     const t = setTimeout(() => {
       document.addEventListener("mousedown", handler);
     }, 80);
     return () => {
-      document.body.style.position = "";
-      document.body.style.top = "";
-      document.body.style.left = "";
-      document.body.style.right = "";
-      document.body.style.width = "";
-      window.scrollTo(0, scrollY);
+      document.documentElement.style.overflow = "";
+      document.body.style.overflow = "";
       const cat = document.getElementById("oneko");
       if (cat) cat.style.display = "";
       window.removeEventListener("keydown", esc);
@@ -366,9 +329,7 @@ export function ProjectModal({ proj, onClose, index = 0 }: { proj: Project; onCl
       clearTimeout(focusTimer);
       previouslyFocused?.focus?.();
     };
-    // Intentionally empty — this must run exactly once per mount/unmount
-    // (i.e. once per modal open), see comment above.
-  }, []);
+  }, [onClose]);
 
   if (!mounted) return null;
 
@@ -396,11 +357,11 @@ export function ProjectModal({ proj, onClose, index = 0 }: { proj: Project; onCl
           aria-label={`${proj.name} project details`}
           layoutId={`card-container-${proj.name}`}
           transition={SPRING}
-          exit={{ opacity: 1 }}
           className="pm-body"
           style={{
             pointerEvents: "auto",
             width: "100%", maxWidth: 960,
+            maxHeight: "88vh",
             cursor: "default",
             background: "var(--bg-card)",
             border: "1px solid var(--border)",
@@ -414,11 +375,9 @@ export function ProjectModal({ proj, onClose, index = 0 }: { proj: Project; onCl
             .pm-body {
               display: flex;
               flex-direction: column;
-              max-height: 92vh;
               overflow-y: auto;
               overscroll-behavior: contain;
               scrollbar-width: none;
-              -webkit-overflow-scrolling: touch;
             }
             .pm-body::-webkit-scrollbar { display: none; }
 
@@ -447,16 +406,18 @@ export function ProjectModal({ proj, onClose, index = 0 }: { proj: Project; onCl
                 display: flex; flex-direction: column; gap: 14px;
                 padding: 24px; border-right: 1px solid var(--border);
                 overflow-y: auto; scrollbar-width: none;
-                -webkit-overflow-scrolling: touch;
               }
               .pm-media-col::-webkit-scrollbar { display: none; }
               .pm-info-col {
                 flex: 1; min-width: 0;
                 padding: 24px; overflow-y: auto; scrollbar-width: none;
-                -webkit-overflow-scrolling: touch;
                 display: flex; flex-direction: column; gap: 16px;
               }
               .pm-info-col::-webkit-scrollbar { display: none; }
+              .pm-image-frame { aspect-ratio: 4 / 3; }
+            }
+            @media (max-width: 767px) {
+              .pm-body { max-height: 92vh; }
             }
           `}</style>
 
@@ -465,7 +426,7 @@ export function ProjectModal({ proj, onClose, index = 0 }: { proj: Project; onCl
             <div
               style={{
                 width: "100%", padding: 3, borderRadius: 13,
-                border: `1px dashed ${index % 2 === 0 ? TIFFANY : GOLD}`,
+                border: `1.5px dashed ${index % 2 === 0 ? TIFFANY : GOLD}`,
                 boxSizing: "border-box", flexShrink: 0,
               }}
             >
@@ -474,7 +435,7 @@ export function ProjectModal({ proj, onClose, index = 0 }: { proj: Project; onCl
                 transition={SPRING}
                 className="pm-image-frame"
                 style={{
-                  width: "100%", aspectRatio: "2 / 1", position: "relative",
+                  width: "100%", aspectRatio: "16 / 9", position: "relative",
                   overflow: "hidden", borderRadius: 9,
                   background: "var(--bg-secondary)",
                   border: "1px solid var(--border)",
@@ -501,9 +462,35 @@ export function ProjectModal({ proj, onClose, index = 0 }: { proj: Project; onCl
             <motion.div layoutId={`card-links-${proj.name}`} transition={SPRING}>
               <ProjectLinkButtons proj={proj} />
             </motion.div>
+
+            {/* Stack — moved below the image + Live/GitHub buttons, per the
+                requested layout (image, then links, then stack). */}
+            <motion.div
+              layoutId={`card-tech-section-${proj.name}`}
+              transition={SPRING}
+              style={{ display: "flex", flexDirection: "column", gap: 8 }}
+            >
+              <span style={{ fontSize: 14, fontWeight: 600, color: "var(--text-primary)", fontFamily: SF }}>
+                Stack
+              </span>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                {proj.tags.map(tag => {
+                  const tech = TECH_MAP[tag];
+                  return (
+                    <motion.div key={tag} layoutId={`card-tech-${proj.name}-${tag}`} transition={SPRING}>
+                      <span className="pm-tag" style={{ color: "var(--tag-text)", background: "var(--tag-bg)", border: "1px solid var(--tag-border)" }}>
+                        {/* eslint-disable-next-line @next/next/no-img-element -- tiny external SVG icon, see justification on the card version above */}
+                        {tech && <img src={tech.logo} alt={tag} width={15} height={15} decoding="async" style={{ objectFit: "contain", flexShrink: 0 }} />}
+                        {tag}
+                      </span>
+                    </motion.div>
+                  );
+                })}
+              </div>
+            </motion.div>
           </div>
 
-          {/* Info column: title, description, stack */}
+          {/* Info column: title, description, features */}
           <div className="pm-info-col" style={{ padding: 20, display: "flex", flexDirection: "column", gap: 16 }}>
             <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16 }}>
               <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
@@ -550,31 +537,6 @@ export function ProjectModal({ proj, onClose, index = 0 }: { proj: Project; onCl
             >
               {proj.description}
             </motion.p>
-
-            {/* Stack */}
-            <motion.div
-              layoutId={`card-tech-section-${proj.name}`}
-              transition={SPRING}
-              style={{ display: "flex", flexDirection: "column", gap: 8 }}
-            >
-              <span style={{ fontSize: 14, fontWeight: 600, color: "var(--text-primary)", fontFamily: SF }}>
-                Stack
-              </span>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-                {proj.tags.map(tag => {
-                  const tech = TECH_MAP[tag];
-                  return (
-                    <motion.div key={tag} layoutId={`card-tech-${proj.name}-${tag}`} transition={SPRING}>
-                      <span className="pm-tag" style={{ color: "var(--tag-text)", background: "var(--tag-bg)", border: "1px solid var(--tag-border)" }}>
-                        {/* eslint-disable-next-line @next/next/no-img-element -- tiny external SVG icon, see justification on the card version above */}
-                        {tech && <img src={tech.logo} alt={tag} width={15} height={15} decoding="async" style={{ objectFit: "contain", flexShrink: 0 }} />}
-                        {tag}
-                      </span>
-                    </motion.div>
-                  );
-                })}
-              </div>
-            </motion.div>
 
             {/* Features — only shown in the expanded view, staggered in
                 one line after another so the modal doesn't just feel like
