@@ -140,7 +140,7 @@ export function ProjectCard({ proj, index, visible, isDesktop, onOpen }: {
           width: "100%",
           padding: 3,
           borderRadius: 13,
-          border: `1.2px dashed ${index % 2 === 0 ? TIFFANY : GOLD}`,
+          border: `1px dashed ${index % 2 === 0 ? TIFFANY : GOLD}`,
           boxSizing: "border-box",
         }}
       >
@@ -149,9 +149,9 @@ export function ProjectCard({ proj, index, visible, isDesktop, onOpen }: {
           layoutId={`card-banner-${proj.name}`}
           transition={SPRING}
           style={{
-            width: "100%", aspectRatio: "16 / 9", borderRadius: 9,
+            width: "100%", height: 180, borderRadius: 9,
             background: "var(--bg-secondary)",
-            border: "1.2px solid var(--border)",
+            border: "1px solid var(--border)",
             position: "relative", overflow: "hidden",
           }}
         >
@@ -162,7 +162,9 @@ export function ProjectCard({ proj, index, visible, isDesktop, onOpen }: {
           <motion.div
             initial={false}
             animate={{ y: shown ? "0%" : "55%", rotate: shown ? 0 : -8 }}
-            transition={{ type: "spring", stiffness: 210, damping: 24, mass: 0.85 }}
+            transition={isDesktop
+              ? { type: "spring", stiffness: 210, damping: 24, mass: 0.85 }
+              : { type: "spring", stiffness: 90, damping: 20, mass: 1.1 }}
             style={{ position: "absolute", inset: 0, willChange: "transform" }}
           >
             <motion.div
@@ -176,7 +178,7 @@ export function ProjectCard({ proj, index, visible, isDesktop, onOpen }: {
                 quality={100}
                 sizes="(max-width: 640px) 96vw, (max-width: 1024px) 48vw, 520px"
                 unoptimized={proj.img.endsWith(".svg")}
-                style={{ objectFit: "cover" }}
+                style={{ objectFit: "contain" }}
               />
             </motion.div>
           </motion.div>
@@ -279,8 +281,18 @@ export function ProjectModal({ proj, onClose, index = 0 }: { proj: Project; onCl
 
   useEffect(() => {
     setMounted(true);
-    document.documentElement.style.overflow = "hidden";
-    document.body.style.overflow = "hidden";
+
+    // iOS-safe scroll lock. Plain `overflow: hidden` on <body> doesn't
+    // reliably block scroll on mobile Safari, and — worse — toggling it
+    // can shift the visible viewport (URL bar collapsing) at the exact
+    // moment the modal mounts, which throws off Framer's FLIP measurement
+    // and makes the open animation appear to just snap instead of morph.
+    // Locking via position:fixed avoids both problems.
+    const scrollY = window.scrollY;
+    document.body.style.position = "fixed";
+    document.body.style.top = `-${scrollY}px`;
+    document.body.style.left = "0";
+    document.body.style.right = "0";
     const cat = document.getElementById("oneko");
     if (cat) cat.style.display = "none";
 
@@ -316,8 +328,11 @@ export function ProjectModal({ proj, onClose, index = 0 }: { proj: Project; onCl
       document.addEventListener("mousedown", handler);
     }, 80);
     return () => {
-      document.documentElement.style.overflow = "";
-      document.body.style.overflow = "";
+      document.body.style.position = "";
+      document.body.style.top = "";
+      document.body.style.left = "";
+      document.body.style.right = "";
+      window.scrollTo(0, scrollY);
       const cat = document.getElementById("oneko");
       if (cat) cat.style.display = "";
       window.removeEventListener("keydown", esc);
@@ -355,11 +370,11 @@ export function ProjectModal({ proj, onClose, index = 0 }: { proj: Project; onCl
           aria-label={`${proj.name} project details`}
           layoutId={`card-container-${proj.name}`}
           transition={SPRING}
+          exit={{ opacity: 1 }}
           className="pm-body"
           style={{
             pointerEvents: "auto",
             width: "100%", maxWidth: 960,
-            maxHeight: "88vh",
             cursor: "default",
             background: "var(--bg-card)",
             border: "1px solid var(--border)",
@@ -373,9 +388,11 @@ export function ProjectModal({ proj, onClose, index = 0 }: { proj: Project; onCl
             .pm-body {
               display: flex;
               flex-direction: column;
+              max-height: 92vh;
               overflow-y: auto;
               overscroll-behavior: contain;
               scrollbar-width: none;
+              -webkit-overflow-scrolling: touch;
             }
             .pm-body::-webkit-scrollbar { display: none; }
 
@@ -404,18 +421,17 @@ export function ProjectModal({ proj, onClose, index = 0 }: { proj: Project; onCl
                 display: flex; flex-direction: column; gap: 14px;
                 padding: 24px; border-right: 1px solid var(--border);
                 overflow-y: auto; scrollbar-width: none;
+                -webkit-overflow-scrolling: touch;
               }
               .pm-media-col::-webkit-scrollbar { display: none; }
               .pm-info-col {
                 flex: 1; min-width: 0;
                 padding: 24px; overflow-y: auto; scrollbar-width: none;
+                -webkit-overflow-scrolling: touch;
                 display: flex; flex-direction: column; gap: 16px;
               }
               .pm-info-col::-webkit-scrollbar { display: none; }
               .pm-image-frame { aspect-ratio: 4 / 3; }
-            }
-            @media (max-width: 767px) {
-              .pm-body { max-height: 92vh; }
             }
           `}</style>
 
@@ -424,7 +440,7 @@ export function ProjectModal({ proj, onClose, index = 0 }: { proj: Project; onCl
             <div
               style={{
                 width: "100%", padding: 3, borderRadius: 13,
-                border: `1.5px solid ${index % 2 === 0 ? TIFFANY : GOLD}`,
+                border: `1px dashed ${index % 2 === 0 ? TIFFANY : GOLD}`,
                 boxSizing: "border-box", flexShrink: 0,
               }}
             >

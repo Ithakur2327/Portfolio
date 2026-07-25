@@ -157,9 +157,8 @@ function HoverBorderGradient({ children, radius = 10 }: { children: React.ReactN
   );
 }
 
-// Was hardcoded to 928px (matching an old --content-width of 960px minus
-// .page-wrapper's 16px side padding). Now references the shared CSS variable
-// directly so changing --content-width in globals.css updates Hero too.
+// References the shared CSS variable directly so changing --content-width
+// in globals.css updates Hero too — no hardcoded pixel width here.
 const CW = "var(--content-width-inset)";
 
 export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) {
@@ -211,11 +210,15 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
           overflow: hidden; /* clips the nameblock's bottom-right corner into the curve below */
         }
 
+        /* Avatar + badge widths all come from CSS custom properties defined
+           once in globals.css (--hero-avatar-w*, --hero-badge-w*) — nothing
+           here is a hardcoded magic number, so the whole Hero scale can be
+           retuned from one place. Heights are derived from width. */
         .h-avatar {
-          width: 198px;
-          min-width: 198px;
-          height: 188px;
-          min-height: 188px;
+          width: var(--hero-avatar-w);
+          min-width: var(--hero-avatar-w);
+          height: calc(var(--hero-avatar-w) - 10px);
+          min-height: calc(var(--hero-avatar-w) - 10px);
           flex-shrink: 0;
           border-right: 1px solid var(--border);
           overflow: hidden;
@@ -238,8 +241,8 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
           gap: 10px;
         }
         .h-verified-badge {
-          width: 26px;
-          height: 26px;
+          width: var(--hero-badge-w);
+          height: var(--hero-badge-w);
           flex-shrink: 0;
           cursor: default;
           transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -289,10 +292,10 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
 
         @media (min-width: 600px) and (max-width: 1180px) {
           .h-avatar {
-            width: clamp(220px, 32vw, 300px) !important;
-            min-width: clamp(220px, 32vw, 300px) !important;
-            height: calc(clamp(220px, 32vw, 300px) - 14px) !important;
-            min-height: calc(clamp(220px, 32vw, 300px) - 14px) !important;
+            width: clamp(var(--hero-avatar-w-md-min), 32vw, var(--hero-avatar-w-md-max)) !important;
+            min-width: clamp(var(--hero-avatar-w-md-min), 32vw, var(--hero-avatar-w-md-max)) !important;
+            height: calc(clamp(var(--hero-avatar-w-md-min), 32vw, var(--hero-avatar-w-md-max)) - 14px) !important;
+            min-height: calc(clamp(var(--hero-avatar-w-md-min), 32vw, var(--hero-avatar-w-md-max)) - 14px) !important;
             border-radius: 28px !important;
           }
           .h-nameblock h1 {
@@ -302,7 +305,7 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
             letter-spacing: 0.02em !important;
           }
           .h-name-row { gap: 14px !important; }
-          .h-verified-badge { width: 40px !important; height: 40px !important; }
+          .h-verified-badge { width: var(--hero-badge-w-md) !important; height: var(--hero-badge-w-md) !important; }
           .h-nameblock {
             padding: 0 8px !important;
           }
@@ -336,23 +339,23 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
           }
           .h-social { padding: 16px 26px !important; }
           .h-profile {
-            min-height: clamp(220px, 32vw, 300px) !important;
+            min-height: clamp(var(--hero-avatar-w-md-min), 32vw, var(--hero-avatar-w-md-max)) !important;
           }
         }
 
         @media (min-width: 1024px) and (max-width: 1180px) {
           .h-avatar {
-            width: clamp(260px, 28vw, 300px) !important;
-            min-width: clamp(260px, 28vw, 300px) !important;
-            height: calc(clamp(260px, 28vw, 300px) - 14px) !important;
-            min-height: calc(clamp(260px, 28vw, 300px) - 14px) !important;
+            width: clamp(var(--hero-avatar-w-lg-min), 28vw, var(--hero-avatar-w-lg-max)) !important;
+            min-width: clamp(var(--hero-avatar-w-lg-min), 28vw, var(--hero-avatar-w-lg-max)) !important;
+            height: calc(clamp(var(--hero-avatar-w-lg-min), 28vw, var(--hero-avatar-w-lg-max)) - 14px) !important;
+            min-height: calc(clamp(var(--hero-avatar-w-lg-min), 28vw, var(--hero-avatar-w-lg-max)) - 14px) !important;
           }
           .h-nameblock h1 {
             font-size: clamp(40px, 5vw, 72px) !important;
             font-weight: 800 !important;
             line-height: 1 !important;
           }
-          .h-verified-badge { width: 46px !important; height: 46px !important; }
+          .h-verified-badge { width: var(--hero-badge-w-lg) !important; height: var(--hero-badge-w-lg) !important; }
           .h-name-row { gap: 16px !important; }
           .h-nameblock > div:nth-child(2) {
             margin-bottom: -4px !important;
@@ -366,21 +369,24 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
            1180px) and the fixed compact desktop design, so wide tablets
            (iPad Air/Pro landscape, ~1180-1366px) never hit a hard cliff —
            avatar/badge/name-font/gap linearly taper down to their exact
-           desktop-base values by 1600px instead of snapping instantly. */
+           desktop-base values by 1600px instead of snapping instantly.
+           The taper itself is computed from the same --hero-avatar-w-lg-max
+           / --hero-avatar-w / --hero-badge-w-lg / --hero-badge-w variables
+           above, so it stays correct even if those are retuned. */
         @media (min-width: 1181px) and (max-width: 1600px) {
           .h-avatar {
-            width: clamp(198px, calc(587.5px - 24.3437vw), 300px) !important;
-            min-width: clamp(198px, calc(587.5px - 24.3437vw), 300px) !important;
-            height: clamp(188px, calc(562.2px - 23.389vw), 286px) !important;
-            min-height: clamp(188px, calc(562.2px - 23.389vw), 286px) !important;
+            width: clamp(var(--hero-avatar-w), calc(var(--hero-avatar-w-lg-max) - (var(--hero-avatar-w-lg-max) - var(--hero-avatar-w)) * (100vw - 1181px) / 419px), var(--hero-avatar-w-lg-max)) !important;
+            min-width: clamp(var(--hero-avatar-w), calc(var(--hero-avatar-w-lg-max) - (var(--hero-avatar-w-lg-max) - var(--hero-avatar-w)) * (100vw - 1181px) / 419px), var(--hero-avatar-w-lg-max)) !important;
+            height: clamp(calc(var(--hero-avatar-w) - 10px), calc(var(--hero-avatar-w-lg-max) - 14px - (var(--hero-avatar-w-lg-max) - var(--hero-avatar-w) - 4px) * (100vw - 1181px) / 419px), calc(var(--hero-avatar-w-lg-max) - 14px)) !important;
+            min-height: clamp(calc(var(--hero-avatar-w) - 10px), calc(var(--hero-avatar-w-lg-max) - 14px - (var(--hero-avatar-w-lg-max) - var(--hero-avatar-w) - 4px) * (100vw - 1181px) / 419px), calc(var(--hero-avatar-w-lg-max) - 14px)) !important;
           }
           .h-nameblock h1 {
             font-size: clamp(36px, calc(124px - 5.5012vw), 59.05px) !important;
             font-weight: 900 !important;
           }
           .h-verified-badge {
-            width: clamp(26px, calc(102.4px - 4.7733vw), 46px) !important;
-            height: clamp(26px, calc(102.4px - 4.7733vw), 46px) !important;
+            width: clamp(var(--hero-badge-w), calc(var(--hero-badge-w-lg) - (var(--hero-badge-w-lg) - var(--hero-badge-w)) * (100vw - 1181px) / 419px), var(--hero-badge-w-lg)) !important;
+            height: clamp(var(--hero-badge-w), calc(var(--hero-badge-w-lg) - (var(--hero-badge-w-lg) - var(--hero-badge-w)) * (100vw - 1181px) / 419px), var(--hero-badge-w-lg)) !important;
           }
           .h-name-row { gap: clamp(10px, calc(32.9px - 1.432vw), 16px) !important; }
         }
@@ -389,10 +395,10 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
           .h-profile { flex-direction: row !important; }
 
           .h-avatar {
-            width: clamp(125px, 34vw, 165px) !important;
-            min-width: clamp(125px, 34vw, 165px) !important;
-            height: calc(clamp(125px, 34vw, 165px) - 8px) !important;
-            min-height: calc(clamp(125px, 34vw, 165px) - 8px) !important;
+            width: clamp(var(--hero-avatar-w-sm-min), 34vw, var(--hero-avatar-w-sm-max)) !important;
+            min-width: clamp(var(--hero-avatar-w-sm-min), 34vw, var(--hero-avatar-w-sm-max)) !important;
+            height: calc(clamp(var(--hero-avatar-w-sm-min), 34vw, var(--hero-avatar-w-sm-max)) - 8px) !important;
+            min-height: calc(clamp(var(--hero-avatar-w-sm-min), 34vw, var(--hero-avatar-w-sm-max)) - 8px) !important;
             border-right: 1px solid var(--border) !important;
             border-bottom: none !important;
             overflow: hidden !important;
@@ -416,7 +422,7 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
             line-height: 1 !important;
             white-space: nowrap !important;
           }
-          .h-verified-badge { width: 22px !important; height: 22px !important; }
+          .h-verified-badge { width: var(--hero-badge-w-sm) !important; height: var(--hero-badge-w-sm) !important; }
           .h-name-row { gap: 6px !important; }
           .h-nameblock > div:nth-child(4) {
             padding: clamp(5px, 1.8vw, 8px) clamp(10px, 3.5vw, 16px) clamp(8px, 2.6vw, 12px) !important;
@@ -444,10 +450,10 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
 
         @media (max-width: 380px) {
           .h-avatar {
-            width: clamp(105px, 30vw, 135px) !important;
-            min-width: clamp(105px, 30vw, 135px) !important;
-            height: calc(clamp(105px, 30vw, 135px) - 6px) !important;
-            min-height: calc(clamp(105px, 30vw, 135px) - 6px) !important;
+            width: clamp(var(--hero-avatar-w-xs-min), 30vw, var(--hero-avatar-w-xs-max)) !important;
+            min-width: clamp(var(--hero-avatar-w-xs-min), 30vw, var(--hero-avatar-w-xs-max)) !important;
+            height: calc(clamp(var(--hero-avatar-w-xs-min), 30vw, var(--hero-avatar-w-xs-max)) - 6px) !important;
+            min-height: calc(clamp(var(--hero-avatar-w-xs-min), 30vw, var(--hero-avatar-w-xs-max)) - 6px) !important;
             border-radius: 16px !important;
           }
           .h-nameblock h1 {
@@ -456,7 +462,7 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
             letter-spacing: 0.015em !important;
             line-height: 1 !important;
           }
-          .h-verified-badge { width: 20px !important; height: 20px !important; }
+          .h-verified-badge { width: var(--hero-badge-w-xs) !important; height: var(--hero-badge-w-xs) !important; }
           .h-name-row { gap: 5px !important; }
           .h-nameblock > div:nth-child(2) {
             margin-bottom: -2px !important;

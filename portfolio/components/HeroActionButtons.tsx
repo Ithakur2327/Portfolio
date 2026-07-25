@@ -290,17 +290,29 @@ export function HeroActionButtons({
           color: var(--text-primary) !important;
         }
 
+        @media (min-width: 600px) and (max-width: 1180px) {
+          .hero-liquid-btn { padding-left: 10px !important; }
+        }
+
         @media (max-width: 600px) {
           .hero-liquid-btn { height: 38px; padding: 0 16px 0 9px; font-size: 12.5px; }
-          /* Equal-width pair on mobile. Declared here (not in HeroSection's
-             stylesheet) because this component's own <style> tag renders
-             later in the DOM — with matching specificity + !important on
-             both sides, source order decides the tie, so the override has
-             to live in the same file as the base min-width:148px rule to
-             reliably win. */
+          /* Equal-width pair on mobile via CSS Grid (1fr 1fr) rather than
+             flex-grow — with white-space:nowrap content, flex-basis:0 +
+             equal flex-grow can still let one item's min-content float
+             above the naive 50/50 split while the other stays pinned to
+             its own min-content, leaving them visibly unequal. Grid's
+             1fr 1fr guarantees identical column widths regardless of
+             content. Declared here (not in HeroSection's stylesheet)
+             because this component's own <style> tag renders later in
+             the DOM and needs to win the cascade tie against the base
+             rules above. */
+          .hero-actions {
+            display: grid !important;
+            grid-template-columns: 1fr 1fr !important;
+          }
           .hero-actions .hero-liquid-btn,
           .hero-actions .hero-contact-btn {
-            flex: 1 1 0 !important;
+            width: 100% !important;
             min-width: 0 !important;
           }
         }
