@@ -127,8 +127,12 @@ export function ProjectCard({ proj, index, visible, isDesktop, onOpen }: {
       onClick={onOpen}
       onHoverStart={() => setHovered(true)}
       onHoverEnd={() => setHovered(false)}
-      whileHover={{ scale: 1.02 }}
-      whileTap={{ scale: 0.98 }}
+      // Hover/tap scale is desktop-only now — on touch devices this was
+      // firing on the same tap that opens the modal, so the shared-layout
+      // "open" transform had to fight a competing scale transform on the
+      // very first frame. That collision was a big part of the mobile jank.
+      whileHover={isDesktop ? { scale: 1.02 } : undefined}
+      whileTap={isDesktop ? { scale: 0.98 } : undefined}
       style={{
         position: "relative",
         display: "flex",
@@ -301,7 +305,16 @@ export function ProjectModal({ proj, onClose, index = 0 }: { proj: Project; onCl
     // Focus the close button on open, restore focus to whatever
     // triggered the modal when it closes.
     const previouslyFocused = document.activeElement as HTMLElement | null;
-    const focusTimer = setTimeout(() => closeBtnRef.current?.focus(), 50);
+
+    // Deferred by a frame on purpose — running focus/listener setup in
+    // the exact same tick as mount means it competes with the shared-layout
+    // animation's first frame for main-thread time, which is what caused
+    // the stutter right as the modal opened on mobile/tablet. Pushing it
+    // one rAF out lets the opening transform get a clean first frame.
+    let focusTimer: ReturnType<typeof setTimeout>;
+    const raf = requestAnimationFrame(() => {
+      focusTimer = setTimeout(() => closeBtnRef.current?.focus(), 50);
+    });
 
     const esc = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
 
@@ -338,6 +351,7 @@ export function ProjectModal({ proj, onClose, index = 0 }: { proj: Project; onCl
       window.removeEventListener("keydown", esc);
       window.removeEventListener("keydown", trapFocus);
       document.removeEventListener("mousedown", handler);
+      cancelAnimationFrame(raf);
       clearTimeout(t);
       clearTimeout(focusTimer);
       previouslyFocused?.focus?.();
@@ -386,8 +400,14 @@ export function ProjectModal({ proj, onClose, index = 0 }: { proj: Project; onCl
               backdrop-filter: blur(6px);
               -webkit-backdrop-filter: blur(6px);
             }
-            @media (max-width: 767px) {
-              .pm-overlay { backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px); }
+            @media (max-width: 1024px) {
+              /* Blur compositing is expensive on mid-range mobile/tablet
+                 GPUs, and it was running on the same frame as the
+                 shared-layout open transform — that overlap was the
+                 single biggest contributor to the perceived lag. Plain
+                 opacity fade only below the desktop breakpoint; the
+                 open/close animation itself is unchanged. */
+              .pm-overlay { backdrop-filter: none; -webkit-backdrop-filter: none; }
             }
 
             /* Shell — the layout-animated element. Purely a sized/positioned
@@ -397,11 +417,17 @@ export function ProjectModal({ proj, onClose, index = 0 }: { proj: Project; onCl
                Flex + min-height:0 on the body below is what actually lets
                the inner div scroll reliably inside a max-height parent —
                without min-height:0 a flex/block child can refuse to shrink
-               below its content size, so overflow-y:auto never engages. */
+               below its content size, so overflow-y:auto never engages.
+               will-change + translateZ(0) promote this to its own
+               compositor layer up front, before the animation starts,
+               instead of the browser promoting it mid-animation (that
+               late promotion is a classic cause of a visible stutter). */
             .pm-shell {
               display: flex;
               flex-direction: column;
               max-height: 92vh;
+              will-change: transform;
+              transform: translateZ(0);
             }
             @media (min-width: 768px) { .pm-shell { max-height: 82vh; } }
 
@@ -488,7 +514,7 @@ export function ProjectModal({ proj, onClose, index = 0 }: { proj: Project; onCl
                     src={proj.img}
                     alt={proj.name}
                     fill
-                    quality={100}
+                    quality={85}
                     sizes="(max-width: 767px) 100vw, 45vw"
                     unoptimized={proj.img.endsWith(".svg")}
                     style={{ objectFit: "contain" }}
