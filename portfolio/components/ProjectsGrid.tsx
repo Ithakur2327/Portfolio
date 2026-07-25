@@ -6,7 +6,7 @@ import { ProjectCard, ProjectModal } from "./ProjectCard";
 
 // Desktop/laptop gets the hover-driven image reveal; tablet and mobile
 // get the scroll-triggered version instead (see ProjectCard).
-const DESKTOP_QUERY = "(min-width: 1025px)";
+const DESKTOP_QUERY = "(min-width: 900px)";
 
 export function ProjectsGrid({ projects, visible = true, mobileMax, wide }: {
   projects: Project[];
