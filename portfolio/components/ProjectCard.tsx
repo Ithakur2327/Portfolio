@@ -210,9 +210,7 @@ export function ProjectCard({ proj, index, visible, isDesktop, onOpen }: {
           >
             {proj.name}
           </motion.span>
-          <motion.div
-            layoutId={`card-links-${proj.name}`}
-            transition={SPRING}
+          <div
             style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}
             onClick={e => e.stopPropagation()}
           >
@@ -226,22 +224,16 @@ export function ProjectCard({ proj, index, visible, isDesktop, onOpen }: {
               <ExpandIcon />
             </button>
             <ProjectLinks proj={proj} size={20} />
-          </motion.div>
+          </div>
         </div>
 
-        <motion.p
-          layoutId={`card-description-${proj.name}`}
-          transition={SPRING}
+        <p
           style={{ fontSize: 16, color: "var(--text-secondary)", lineHeight: 1.5, margin: 0, fontFamily: SF, textAlign: "left", display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical", overflow: "hidden" }}
         >
           {proj.description}
-        </motion.p>
+        </p>
 
-        <motion.div
-          layoutId={`card-tech-section-${proj.name}`}
-          transition={SPRING}
-          style={{ width: "100%", display: "flex", flexDirection: "column", gap: 8 }}
-        >
+        <div style={{ width: "100%", display: "flex", flexDirection: "column", gap: 8 }}>
           <span style={{ fontSize: 14, fontWeight: 600, color: "var(--text-primary)", fontFamily: SF }}>
             Stack
           </span>
@@ -250,7 +242,7 @@ export function ProjectCard({ proj, index, visible, isDesktop, onOpen }: {
               const tech = TECH_MAP[tag];
               if (!tech) return null;
               return (
-                <motion.div key={tag} layoutId={`card-tech-${proj.name}-${tag}`} transition={SPRING} title={tag} style={{ display: "flex" }}>
+                <div key={tag} title={tag} style={{ display: "flex" }}>
                   {/* eslint-disable-next-line @next/next/no-img-element -- tiny (24px) external SVG icon; dangerouslyAllowSVG is intentionally off, and there's no bandwidth/LCP benefit to proxy such a small icon through next/image */}
                   <img
                     src={techLogoSrc(tech, isDark)}
@@ -260,11 +252,11 @@ export function ProjectCard({ proj, index, visible, isDesktop, onOpen }: {
                     decoding="async"
                     style={{ objectFit: "contain", display: "block" }}
                   />
-                </motion.div>
+                </div>
               );
             })}
           </div>
-        </motion.div>
+        </div>
       </div>
 
       <style suppressHydrationWarning>{`
@@ -523,15 +515,23 @@ export function ProjectModal({ proj, onClose, index = 0 }: { proj: Project; onCl
               </motion.div>
             </div>
 
-            <motion.div layoutId={`card-links-${proj.name}`} transition={SPRING}>
+            <motion.div
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.08, duration: 0.22 }}
+            >
               <ProjectLinkButtons proj={proj} />
             </motion.div>
 
             {/* Stack — moved below the image + Live/GitHub buttons, per the
-                requested layout (image, then links, then stack). */}
+                requested layout (image, then links, then stack). Plain
+                fade instead of a shared layoutId: one less simultaneous
+                FLIP calculation on open, which is what was causing the
+                stutter on mobile/tablet with many tags. */}
             <motion.div
-              layoutId={`card-tech-section-${proj.name}`}
-              transition={SPRING}
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1, duration: 0.22 }}
               style={{ display: "flex", flexDirection: "column", gap: 8 }}
             >
               <span style={{ fontSize: 14, fontWeight: 600, color: "var(--text-primary)", fontFamily: SF }}>
@@ -600,8 +600,9 @@ export function ProjectModal({ proj, onClose, index = 0 }: { proj: Project; onCl
 
             {/* Description */}
             <motion.p
-              layoutId={`card-description-${proj.name}`}
-              transition={SPRING}
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.06, duration: 0.22 }}
               style={{ fontSize: 16, color: "var(--text-secondary)", lineHeight: 1.625, margin: 0, fontFamily: SF }}
             >
               {proj.description}
