@@ -11,7 +11,7 @@ const MONO = "'Geist Mono', 'SF Mono', monospace";
 const SF   = "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', sans-serif";
 
 /* Tiffany & Co. blue — Pantone 1837, the box's dashed border color */
-const TIFFANY = "#0ABAB5";
+const TIFFANY = "#ffffff";
 
 /* Tech definitions */
 type TechDef = { color: string; logo: string; bright?: boolean; invert?: boolean; keepInLight?: boolean };
@@ -272,7 +272,7 @@ export function SkillsSection() {
           overflow: hidden;
           border: 1px dashed ${TIFFANY};
           border-radius: 14px;
-          background: var(--bg-base-edge);
+          background: #000;
           min-height: 420px;
         }
         .falling-icons-flow {
