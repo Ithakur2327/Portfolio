@@ -1,21 +1,18 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Navbar } from "@/components/Navbar";
-import { SectionTitleIcon } from "@/components/SectionIcon";
-import { ProjectsGrid } from "@/components/ProjectsGrid";
-import { PROJECTS } from "@/lib/projects-data";
-import { mq } from "@/lib/breakpoints";
+import { ContactPageForm } from "@/components/ContactPageForm";
 
 export const metadata: Metadata = {
-  title: "All Projects — Indresh Thakur",
-  description: "Full list of projects built by Indresh Thakur — full-stack apps and AI/RAG-powered tools.",
+  title: "Contact — Indresh Thakur",
+  description: "Get in touch with Indresh Thakur for freelance projects, collaborations, or job opportunities.",
 };
 
 const SF = "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', sans-serif";
 
 function BackToHomeLink() {
   return (
-    <Link href="/#projects" className="back-home-link">
+    <Link href="/" className="back-home-link">
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
         <path d="M19 12H5"/><path d="M11 18l-6-6 6-6"/>
       </svg>
@@ -24,7 +21,7 @@ function BackToHomeLink() {
   );
 }
 
-export default function ProjectsPage() {
+export default function ContactPage() {
   return (
     <>
       <Navbar />
@@ -36,34 +33,46 @@ export default function ProjectsPage() {
         }
         .back-home-link:hover { color: var(--text-primary); }
 
-        .all-projects-wrap { padding: 44px 20px 70px; }
-        .all-projects-title { font-size: clamp(22px, 4.5vw, 28px); }
-        .all-projects-sub { font-size: 13.5px; }
-
-        ${mq.navCollapse} {
-          .all-projects-wrap { padding: 34px 22px 48px; }
+        .contact-page-wrap { max-width: 720px; margin: 0 auto; }
+        .contact-page-head {
+          display: flex; flex-direction: column; align-items: center;
+          text-align: center; gap: 10px;
+          padding-bottom: 30px; margin-bottom: 32px;
+          border-bottom: 1px solid var(--border);
         }
-        ${mq.mobile} {
-          .all-projects-wrap { padding: 26px 16px 36px; }
-          .all-projects-sub  { font-size: 12.5px; }
+        .contact-page-title {
+          font-size: clamp(32px, 5vw, 44px);
+          font-weight: 800;
+          letter-spacing: -0.03em;
+          color: var(--text-primary);
+          font-family: ${SF};
+          margin: 0;
+        }
+        .contact-page-sub {
+          font-size: 15px;
+          color: var(--text-secondary);
+          font-family: ${SF};
+          max-width: 440px;
+          margin: 0;
         }
       `}</style>
       <main style={{ paddingTop: 52 }}>
         <div className="page-wrapper">
-          <div className="all-projects-wrap">
+          <div style={{ padding: "44px 0 80px" }}>
             <BackToHomeLink />
 
-            <div style={{ paddingTop: 18, marginBottom: 26 }}>
-              <span className="all-projects-title" style={{ display: "inline-flex", alignItems: "center", gap: 10, fontWeight: 700, letterSpacing: "-0.03em", lineHeight: 1, fontFamily: SF, color: "var(--text-primary)" }}>
-                <SectionTitleIcon type="box" />
-                All Projects
-              </span>
-              <p className="all-projects-sub" style={{ margin: "10px 0 0", color: "var(--text-secondary)", fontFamily: SF }}>
-                {PROJECTS.length} project{PROJECTS.length === 1 ? "" : "s"} — everything I&apos;ve built and shipped.
-              </p>
-            </div>
+            <div style={{ paddingTop: 18 }}>
+              <div className="contact-page-wrap">
+                <div className="contact-page-head">
+                  <h1 className="contact-page-title">Contact Me</h1>
+                  <p className="contact-page-sub">
+                    Get in touch with me. I&apos;ll get back to you as soon as possible.
+                  </p>
+                </div>
 
-            <ProjectsGrid projects={PROJECTS} wide />
+                <ContactPageForm />
+              </div>
+            </div>
           </div>
         </div>
       </main>
