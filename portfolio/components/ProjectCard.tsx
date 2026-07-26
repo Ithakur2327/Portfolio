@@ -7,6 +7,7 @@ import type { Project } from "@/lib/projects-data";
 import { TECH_MAP } from "@/lib/projects-data";
 import { useTheme } from "./ThemeProvider";
 import { mq } from "@/lib/breakpoints";
+import { useIsMobile } from "@/lib/useBreakpoint";
 
 const MONO = "'Geist Mono', 'SF Mono', monospace";
 const SF   = "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', sans-serif";
@@ -291,6 +292,13 @@ export function ProjectModal({ proj, onClose, index = 0 }: { proj: Project; onCl
   const closeBtnRef = useRef<HTMLButtonElement>(null);
   const { theme } = useTheme();
   const isDark = theme === "dark";
+  // Mobile gets a simple slide-up-from-bottom open/close instead of the
+  // card-morphing shared-layout animation used everywhere else — so
+  // layoutId is intentionally omitted below on mobile (a plain
+  // initial/animate/exit drives the sheet instead).
+  const isMobile = useIsMobile();
+  const mobileTransition = { type: "spring" as const, stiffness: 300, damping: 32, mass: 0.9 };
+  const lid = (id: string) => (isMobile ? undefined : id);
 
   useEffect(() => {
     document.documentElement.style.overflow = "hidden";
@@ -376,8 +384,11 @@ export function ProjectModal({ proj, onClose, index = 0 }: { proj: Project; onCl
           role="dialog"
           aria-modal="true"
           aria-label={`${proj.name} project details`}
-          layoutId={`card-container-${proj.name}`}
-          transition={SPRING}
+          layoutId={lid(`card-container-${proj.name}`)}
+          initial={isMobile ? { y: "100%" } : false}
+          animate={isMobile ? { y: 0 } : undefined}
+          exit={isMobile ? { y: "100%" } : undefined}
+          transition={isMobile ? mobileTransition : SPRING}
           className="pm-shell"
           style={{
             pointerEvents: "auto",
@@ -485,7 +496,7 @@ export function ProjectModal({ proj, onClose, index = 0 }: { proj: Project; onCl
               }}
             >
               <motion.div
-                layoutId={`card-banner-${proj.name}`}
+                layoutId={lid(`card-banner-${proj.name}`)}
                 transition={SPRING}
                 className="pm-image-frame"
                 style={{
@@ -496,7 +507,7 @@ export function ProjectModal({ proj, onClose, index = 0 }: { proj: Project; onCl
                 }}
               >
                 <motion.div
-                  layoutId={`card-banner-image-${proj.name}`}
+                  layoutId={lid(`card-banner-image-${proj.name}`)}
                   transition={SPRING}
                   style={{ position: "absolute", inset: 0 }}
                 >
@@ -513,14 +524,14 @@ export function ProjectModal({ proj, onClose, index = 0 }: { proj: Project; onCl
               </motion.div>
             </div>
 
-            <motion.div layoutId={`card-links-${proj.name}`} transition={SPRING}>
+            <motion.div layoutId={lid(`card-links-${proj.name}`)} transition={SPRING}>
               <ProjectLinkButtons proj={proj} />
             </motion.div>
 
             {/* Stack — moved below the image + Live/GitHub buttons, per the
                 requested layout (image, then links, then stack). */}
             <motion.div
-              layoutId={`card-tech-section-${proj.name}`}
+              layoutId={lid(`card-tech-section-${proj.name}`)}
               transition={SPRING}
               style={{ display: "flex", flexDirection: "column", gap: 8 }}
             >
@@ -554,7 +565,7 @@ export function ProjectModal({ proj, onClose, index = 0 }: { proj: Project; onCl
             <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16 }}>
               <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
                 <motion.h2
-                  layoutId={`card-title-${proj.name}`}
+                  layoutId={lid(`card-title-${proj.name}`)}
                   transition={SPRING}
                   style={{ fontSize: 24, fontWeight: 700, color: "var(--text-primary)", letterSpacing: "-0.02em", fontFamily: SF, margin: 0, lineHeight: 1.25 }}
                 >
@@ -590,7 +601,7 @@ export function ProjectModal({ proj, onClose, index = 0 }: { proj: Project; onCl
 
             {/* Description */}
             <motion.p
-              layoutId={`card-description-${proj.name}`}
+              layoutId={lid(`card-description-${proj.name}`)}
               transition={SPRING}
               style={{ fontSize: 16, color: "var(--text-secondary)", lineHeight: 1.625, margin: 0, fontFamily: SF }}
             >
