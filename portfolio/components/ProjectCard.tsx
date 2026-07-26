@@ -133,7 +133,8 @@ export function ProjectCard({ proj, index, visible, isDesktop, onOpen }: {
     <motion.div
       initial={false}
       animate={{ opacity: visible ? 1 : 0, y: visible ? 0 : 20 }}
-      transition={{ delay: visible ? 0.05 * index : 0, type: "spring", stiffness: 340, damping: 26, mass: 0.75 }}
+      
+      transition={{ delay: visible ? 0.05 * index : 0, type: "spring", stiffness: 340, damping: 26, mass: 0.75, layout: SPRING }}
       layoutId={lid(`card-container-${proj.name}`)}
       onClick={onOpen}
       onHoverStart={() => setHovered(true)}
