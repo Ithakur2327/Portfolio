@@ -3,7 +3,7 @@ import { useState } from "react";
 import { AnimatePresence, LayoutGroup } from "motion/react";
 import type { Project } from "@/lib/projects-data";
 import { ProjectCard, ProjectModal } from "./ProjectCard";
-import { useIsLaptopUp } from "@/lib/breakpoints";
+import { useMediaQuery } from "@/lib/breakpoints";
 
 export function ProjectsGrid({ projects, visible = true, mobileMax, wide }: {
   projects: Project[];
@@ -17,17 +17,20 @@ export function ProjectsGrid({ projects, visible = true, mobileMax, wide }: {
 }) {
   const [active, setActive] = useState<Project | null>(null);
   const [activeIndex, setActiveIndex] = useState(0);
-  // Desktop/laptop (>=1025px, same laptopMin used by the rest of the app —
-  // see lib/breakpoints.json) gets the hover-driven image reveal and the
-  // full card-to-modal morph. Tablet and mobile get the scroll-triggered
-  // reveal and a plain bottom-sheet open instead (see ProjectCard).
+  // Desktop/laptop (has a mouse/trackpad — hover + fine pointer) gets the
+  // hover-driven image reveal and the full card-to-modal morph. Touch
+  // devices (no hover, coarse pointer) get the scroll-triggered reveal and
+  // a plain bottom-sheet open instead (see ProjectCard).
   //
-  // This used to be a local `(min-width: 900px)` media query, which didn't
-  // match the app's real tablet↔laptop boundary (1024/1025px) — so tablets
-  // in the 900–1024px range (e.g. iPad landscape) were wrongly bucketed as
-  // "desktop" and got the heavy FLIP morph meant only for mouse/hover
-  // devices. Using the shared hook fixes that mismatch.
-  const isDesktop = useIsLaptopUp();
+  // This used to be checked by viewport width (first a hardcoded 900px,
+  // then the app's 1025px laptopMin breakpoint) — but width is the wrong
+  // signal here. OS display scaling and browser zoom can shrink a real
+  // laptop's CSS viewport well below any width threshold (e.g. a 14"
+  // laptop reporting ~980px), while a touchscreen tablet in landscape can
+  // easily exceed 1024px. hover/pointer capability tracks the actual
+  // thing that matters — whether the device has a mouse — regardless of
+  // screen size or scaling.
+  const isDesktop = useMediaQuery("(hover: hover) and (pointer: fine)");
 
   return (
     <>
