@@ -166,6 +166,8 @@ const CW = "var(--content-width-inset)";
 export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) {
   const [vis, setVis] = useState<"ssr" | "visible">("ssr");
   const { openPdf } = usePdfModal();
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
 
   useEffect(() => { setTimeout(() => setVis("visible"), 50); }, []);
 
@@ -500,7 +502,20 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
         }}>
           <div className="h-profile" style={{maxWidth:CW, margin:"0 auto", borderLeft:B, borderRight:B, borderBottom:B, borderTop:"none", borderRadius:8.5}}>
 
-            <div className="h-avatar" id="hero-avatar-anchor">
+            <div
+              className="h-avatar"
+              id="hero-avatar-anchor"
+              style={{
+                // Same photo the WebGL canvas will paint over, shown as a
+                // plain background first — so if the canvas hasn't rendered
+                // its first frame yet when the intro crossfade reveals this
+                // element (slow network/device), there's never a blank flash,
+                // just the same avatar underneath either way.
+                backgroundImage: `url(${isDark ? "/avatar-dark.jpg" : "/avatar-light.jpg"}${avatarVersion ? `?v=${avatarVersion}` : ""})`,
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+              }}
+            >
               <div style={{width:"100%", aspectRatio:"1 / 1", flexShrink:0}}>
                 <Avatar version={avatarVersion} />
               </div>

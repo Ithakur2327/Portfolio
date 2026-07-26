@@ -4,19 +4,23 @@ import { useEffect, useRef, useState } from "react";
 /**
  * IntroLoader — one-time landing sequence.
  *
- * Timeline (total = 4.0s):
+ * Timeline (total = 2.6s):
  *   0ms      — centered squircle avatar + 3 loading dots fade/scale in,
  *              over a frosted glass-blur backdrop
  *   0-1300ms — "loading" hold (dots pulse, avatar breathes)
  *   1300ms   — dots + hub fade out, avatar detaches and FLIES from its
  *              centered spot to the exact rect of the real hero avatar
  *              (position/size/radius captured live via getBoundingClientRect,
- *              so it lands pixel-perfect regardless of viewport size)
- *   3600ms   — avatar has landed: the real WebGL hero avatar (which was
+ *              so it lands pixel-perfect regardless of viewport size). The
+ *              flight itself is a 0.8s CSS transition (see .intro-flip-avatar
+ *              below) — FLIGHT_MS below is kept just slightly ahead of that
+ *              so the "landed" swap fires the instant it actually arrives,
+ *              never after a dead, stuck-looking pause.
+ *   2200ms   — avatar has landed: the real WebGL hero avatar (which was
  *              hidden under `html.intro-active`, see globals.css) crossfades
  *              in, and the nav's corner avatar is revealed via the
  *              `intro:complete` event
- *   4000ms   — overlay fully unmounts
+ *   2600ms   — overlay fully unmounts
  *
  * A tiny inline script in layout.tsx paints a static placeholder version of
  * this same hub (behind id="intro-shell") the instant HTML parsing reaches
@@ -25,13 +29,19 @@ import { useEffect, useRef, useState } from "react";
  * that placeholder to itself on mount (see the `intro-shell` removal below).
  *
  * Runs once per browser session (sessionStorage) and is skipped instantly
- * for prefers-reduced-motion.
+ * for prefers-reduced-motion. `introHasRunThisPageLoad` below is an extra,
+ * in-memory guard on top of sessionStorage: it guarantees the animated
+ * sequence can only ever execute once per page load no matter why this
+ * effect happens to fire again (belt-and-suspenders against the "intro
+ * plays a second time" glitch).
  */
 
 const SESSION_KEY = "introPlayed:v1";
 const LOADING_MS = 1300;
-const FLIGHT_MS = 2300;
+const FLIGHT_MS = 900; // must stay just ahead of the 0.8s CSS flight transition, not far past it
 const SETTLE_MS = 400;
+
+let introHasRunThisPageLoad = false;
 
 type Phase = "loading" | "opening" | "landed" | "done";
 
@@ -63,6 +73,14 @@ export function IntroLoader() {
     // component owns the overlay.
     document.getElementById("intro-shell")?.remove();
 
+    if (introHasRunThisPageLoad) {
+      // The full sequence already ran once during this page's lifetime —
+      // never replay it, no matter why this effect fired again.
+      document.documentElement.classList.remove("intro-active");
+      window.dispatchEvent(new Event("intro:complete"));
+      return;
+    }
+
     let already = false;
     try {
       already = sessionStorage.getItem(SESSION_KEY) === "1";
@@ -72,6 +90,7 @@ export function IntroLoader() {
       window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
     if (already || reduced) {
+      introHasRunThisPageLoad = true;
       try {
         sessionStorage.setItem(SESSION_KEY, "1");
       } catch {}
@@ -80,6 +99,7 @@ export function IntroLoader() {
       return;
     }
 
+    introHasRunThisPageLoad = true;
     try {
       sessionStorage.setItem(SESSION_KEY, "1");
     } catch {}
@@ -243,7 +263,7 @@ export function IntroLoader() {
             height 0.8s cubic-bezier(0.16,1,0.3,1),
             border-radius 0.8s cubic-bezier(0.16,1,0.3,1),
             box-shadow 0.8s ease,
-            opacity 0.22s ease;
+            opacity 0.35s ease;
         }
         .intro-flip-avatar--landed {
           box-shadow: none;

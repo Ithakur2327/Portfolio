@@ -6,6 +6,7 @@ import { useReveal } from "./useReveal";
 import { useTheme } from "./ThemeProvider";
 import { SectionTitleIcon } from "./SectionIcon";
 import { BP, cond, mq } from "@/lib/breakpoints";
+import { useIsMobile } from "@/lib/useBreakpoint";
 
 const MONO = "'Geist Mono', 'SF Mono', monospace";
 const SF   = "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', sans-serif";
@@ -93,15 +94,17 @@ function useBoxInView() {
    permanently-visible name label below it. Position is written directly to
    the DOM node by the physics loop in FallingIconsBox — only ever
    translate, never rotate — so the card stays upright at all times. */
-const FallingIcon = memo(forwardRef<HTMLDivElement, { name: string }>(
-  function FallingIcon({ name }, ref) {
+const FallingIcon = memo(forwardRef<HTMLDivElement, { name: string; isStatic?: boolean }>(
+  function FallingIcon({ name, isStatic }, ref) {
     const tech = TECH[name] ?? { color: "#8a8a8a", logo: "" };
     const { theme } = useTheme();
     const isDark = theme === "dark";
 
     // Only the icon itself carries brand color — the chip's glass surface
     // and border stay neutral/theme-aware, no per-tech tinted border.
-    const background = isDark
+    // (Skipped on mobile's static chips, which use a flat background
+    // instead — see .is-static-chip.)
+    const background = isStatic ? undefined : isDark
       ? "linear-gradient(155deg, rgba(255,255,255,0.14) 0%, rgba(255,255,255,0.045) 45%, rgba(255,255,255,0.02) 100%)"
       : "linear-gradient(155deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.62) 45%, rgba(255,255,255,0.4) 100%)";
     const filter = isDark && tech.invert
@@ -111,8 +114,8 @@ const FallingIcon = memo(forwardRef<HTMLDivElement, { name: string }>(
     return (
       <div
         ref={ref}
-        className={`falling-icon-chip${isDark ? " is-dark" : ""}`}
-        style={{ background }}
+        className={`falling-icon-chip${isDark ? " is-dark" : ""}${isStatic ? " is-static-chip" : ""}`}
+        style={background ? { background } : undefined}
       >
         {tech.logo && (
           // eslint-disable-next-line @next/next/no-img-element -- tiny physics-driven skill icon, real brand colors, unfiltered
@@ -153,6 +156,15 @@ FallingIcon.displayName = "FallingIcon";
 function FallingIconsBox({ title, names }: { title: string; names: string[] }) {
   const { ref: boxRef, inView } = useBoxInView();
   const iconRefs = useRef<(HTMLDivElement | null)[]>([]);
+  // On mobile the falling/draggable physics simulation is skipped
+  // entirely: a continuously-running Matter.js engine plus ~17
+  // backdrop-filter-blurred chips per box was the actual source of the
+  // "as soon as Skills appears the page lags" complaint, and locking the
+  // box height to a pre-fall grid it then piles cards into is what made
+  // the box look squished/overlapping on small screens. Mobile instead
+  // just keeps the tidy static CSS grid below — zero JS animation loop,
+  // zero layout surprises, buttery smooth scrolling.
+  const isMobile = useIsMobile();
 
   // Icons drop in once on first scroll into view; they don't re-drop on
   // subsequent scroll passes.
@@ -160,7 +172,7 @@ function FallingIconsBox({ title, names }: { title: string; names: string[] }) {
   useEffect(() => { if (inView) setHasAppeared(true); }, [inView]);
 
   useEffect(() => {
-    if (!hasAppeared) return;
+    if (!hasAppeared || isMobile) return;
     const box = boxRef.current;
     if (!box) return;
 
@@ -339,18 +351,19 @@ function FallingIconsBox({ title, names }: { title: string; names: string[] }) {
       World.clear(engine.world, false);
       Engine.clear(engine);
     };
-  }, [hasAppeared, boxRef]);
+  }, [hasAppeared, boxRef, isMobile]);
 
   return (
     <div className="falling-group">
       <div className="falling-group-title">{title}</div>
-      <div ref={boxRef} className="falling-icons-box">
-        <span className="falling-icons-hint">{"// drag the icons"}</span>
+      <div ref={boxRef} className={`falling-icons-box${isMobile ? " is-static" : ""}`}>
+        {!isMobile && <span className="falling-icons-hint">{"// drag the icons"}</span>}
         <div className="falling-icons-flow">
           {names.map((name, i) => (
             <FallingIcon
               key={name}
               name={name}
+              isStatic={isMobile}
               ref={el => { iconRefs.current[i] = el; }}
             />
           ))}
@@ -394,12 +407,17 @@ export function SkillsSection() {
           border: 0.7px dashed rgba(0,0,0,0.55);
           border-radius: 14px;
           background: #ffffff;
-          min-height: 340px;
+          min-height: 300px;
         }
         html.dark .falling-icons-box {
           border-color: rgba(255,255,255,0.55);
           background: #000000;
         }
+        /* Mobile: static grid, no physics — see the isMobile check in
+           FallingIconsBox above. No locked min-height either, since there's
+           no falling pile that needs room to settle in; the box just hugs
+           its (now always-tidy) grid content. */
+        .falling-icons-box.is-static { min-height: 0; }
         .falling-icons-flow {
           position: relative;
           z-index: 1;
@@ -407,8 +425,8 @@ export function SkillsSection() {
           flex-wrap: wrap;
           align-content: flex-start;
           justify-content: center;
-          gap: 12px;
-          padding: 42px 22px 24px;
+          gap: 10px;
+          padding: 38px 20px 22px;
         }
         .falling-icons-hint {
           position: absolute; top: 14px; right: 16px; z-index: 2;
@@ -417,11 +435,11 @@ export function SkillsSection() {
         }
 
         .falling-icon-chip {
-          width: 64px; height: 72px;
-          padding: 9px 4px 7px;
+          width: 56px; height: 64px;
+          padding: 8px 4px 6px;
           display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
-          gap: 6px;
-          border-radius: 16px;
+          gap: 5px;
+          border-radius: 14px;
           border: 1px solid rgba(0,0,0,0.10);
           position: relative; z-index: 1;
           cursor: grab;
@@ -446,7 +464,7 @@ export function SkillsSection() {
         .falling-icon-chip::before {
           content: "";
           position: absolute; inset: 0; z-index: 0;
-          border-radius: 16px;
+          border-radius: 14px;
           background: linear-gradient(165deg, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.1) 32%, transparent 55%);
           pointer-events: none;
         }
@@ -455,16 +473,33 @@ export function SkillsSection() {
         }
         .falling-icon-chip:active { cursor: grabbing; }
         .falling-icon-chip img {
-          width: 28px; height: 28px; object-fit: contain;
+          width: 24px; height: 24px; object-fit: contain;
           pointer-events: none; -webkit-user-drag: none;
           position: relative; z-index: 1;
         }
         .falling-icon-name {
           position: relative; z-index: 1;
-          font-family: ${MONO}; font-size: 9px; font-weight: 600; letter-spacing: 0.005em;
+          font-family: ${MONO}; font-size: 8.5px; font-weight: 600; letter-spacing: 0.005em;
           color: var(--text-primary); text-align: center; line-height: 1.2;
           display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
           overflow: hidden; max-width: 100%; word-break: break-word;
+        }
+
+        /* Static (mobile) chips: no drag affordance, and — this is the
+           important part — no backdrop-filter. A blurred backdrop behind
+           ~17 stacked chips is expensive to recomposite on scroll on its
+           own, with or without any JS running; a flat translucent surface
+           looks almost identical here and costs nothing while scrolling. */
+        .falling-icon-chip.is-static-chip {
+          cursor: default;
+          backdrop-filter: none;
+          -webkit-backdrop-filter: none;
+          background: rgba(0,0,0,0.035) !important;
+          box-shadow: 0 1px 3px rgba(0,0,0,0.12), inset 0 1px 0 rgba(255,255,255,0.5);
+        }
+        html.dark .falling-icon-chip.is-static-chip {
+          background: rgba(255,255,255,0.055) !important;
+          box-shadow: 0 1px 3px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.08);
         }
 
         ${mq.mobile} {
@@ -474,25 +509,24 @@ export function SkillsSection() {
           .falling-groups-row > .falling-group:first-child { margin-top: 0; }
           .falling-group { margin-top: 22px; }
           .falling-group-title { font-size: 14px; }
-          .falling-icons-box { border-radius: 12px; min-height: 220px; }
+          .falling-icons-box { border-radius: 12px; }
           .falling-icons-flow {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
             justify-items: center;
-            padding: 34px 10px 14px;
-            gap: 8px;
+            padding: 16px 12px;
+            gap: 10px 8px;
           }
-          .falling-icon-chip { width: 100%; max-width: 62px; height: 62px; border-radius: 13px; gap: 4px; padding: 7px 3px 6px; }
-          .falling-icon-chip img { width: 22px; height: 22px; }
-          .falling-icon-name { font-size: 7.5px; }
+          .falling-icon-chip { width: 100%; max-width: 54px; height: 54px; border-radius: 12px; gap: 4px; padding: 6px 3px 5px; }
+          .falling-icon-chip img { width: 18px; height: 18px; }
+          .falling-icon-name { font-size: 7px; }
         }
 
         @media ${cond.down(BP.mobileXsMax)} {
-          .falling-icons-box { min-height: 200px; }
           .falling-icons-flow { grid-template-columns: repeat(3, 1fr); }
-          .falling-icon-chip { max-width: 58px; height: 58px; border-radius: 12px; }
-          .falling-icon-chip img { width: 20px; height: 20px; }
-          .falling-icon-name { font-size: 7px; }
+          .falling-icon-chip { max-width: 56px; height: 52px; border-radius: 11px; }
+          .falling-icon-chip img { width: 17px; height: 17px; }
+          .falling-icon-name { font-size: 6.5px; }
           .falling-icons-hint { font-size: 9.5px; top: 10px; right: 12px; }
         }
       `}</style>

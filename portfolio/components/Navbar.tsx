@@ -443,12 +443,18 @@ export function Navbar() {
   const { openPdf } = usePdfModal();
   const [mounted,  setMounted]  = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const [introDone, setIntroDone] = useState(false);
   const [cmdOpen,  setCmdOpen]  = useState(false);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const activeSection = useActiveSection();
   const pathname = usePathname();
   const isHome = pathname === "/";
+
+  // Corner logo swaps `<I>` for the avatar photo once the real hero avatar
+  // (`#hero-avatar-anchor`, only present on "/") has scrolled out from
+  // under the fixed navbar — and swaps back to `<I>` when it's back in
+  // view. Pages without a hero avatar (Contact, Projects) have nothing to
+  // wait for, so they just show the avatar right away.
+  const [heroAvatarOutOfView, setHeroAvatarOutOfView] = useState(!isHome);
 
   useEffect(() => { setMounted(true); }, []);
 
@@ -458,19 +464,21 @@ export function Navbar() {
     return () => window.removeEventListener("scroll", fn);
   }, []);
 
-  // The landing sequence (IntroLoader) flies the avatar into the hero
-  // section AND settles it here in the corner, all in one motion — so once
-  // that lands, the corner avatar should stay visible even at scrollY 0.
   useEffect(() => {
-    try {
-      if (sessionStorage.getItem("introPlayed:v1") === "1") setIntroDone(true);
-    } catch {}
-    const onIntroDone = () => setIntroDone(true);
-    window.addEventListener("intro:complete", onIntroDone);
-    return () => window.removeEventListener("intro:complete", onIntroDone);
-  }, []);
+    if (!isHome) { setHeroAvatarOutOfView(true); return; }
+    const el = document.getElementById("hero-avatar-anchor");
+    if (!el) { setHeroAvatarOutOfView(true); return; }
+    // -52px top margin = the fixed navbar's own height, so the swap fires
+    // exactly as the hero avatar tucks in behind the navbar, not earlier.
+    const io = new IntersectionObserver(
+      ([entry]) => setHeroAvatarOutOfView(!entry.isIntersecting),
+      { rootMargin: "-52px 0px 0px 0px", threshold: 0 }
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, [isHome]);
 
-  const showCornerAvatar = scrolled || introDone;
+  const showCornerAvatar = heroAvatarOutOfView;
 
   useEffect(() => {
     const fn = (e: KeyboardEvent) => {

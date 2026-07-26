@@ -332,12 +332,20 @@ html.light .nav-root.scrolled {
 /* ── Intro landing sequence ──
    While the intro overlay is flying the avatar into place, the real hero
    avatar underneath must stay invisible (still measurable via
-   getBoundingClientRect, hence visibility:hidden and not display:none) so
-   there's never a duplicate/mismatched avatar showing through the glass
-   blur. Scroll is locked so the page can't shift under the overlay. */
+   getBoundingClientRect, hence opacity/pointer-events and not display:none)
+   so there's never a duplicate/mismatched avatar showing through the glass
+   blur. Scroll is locked so the page can't shift under the overlay.
+   Opacity (not visibility) is used so that once `intro-active` is removed,
+   the real avatar eases in with a proper crossfade instead of popping in
+   instantly — timed to match the flip-avatar's own 0.35s fade-out in
+   IntroLoader.tsx so the two blend into each other. */
 html.intro-active { overflow: hidden; }
 html.intro-active body { overflow: hidden; }
-html.intro-active #hero-avatar-anchor { visibility: hidden; }
+#hero-avatar-anchor { opacity: 1; transition: opacity 0.35s ease; }
+html.intro-active #hero-avatar-anchor { opacity: 0; pointer-events: none; }
+@media (prefers-reduced-motion: reduce) {
+  #hero-avatar-anchor { transition: none; }
+}
 
 /* Static placeholder painted synchronously (before React hydrates) by the
    inline script in app/layout.tsx — this is what actually stops the hero
