@@ -10,16 +10,32 @@ import { usePdfModal } from "./PdfViewerModal";
 import { SectionIcon, type SectionIconType } from "./SectionIcon";
 import { BP, mq } from "@/lib/breakpoints";
 
-const PORTFOLIO_LINKS = [
+type NavLinkType = "section" | "page" | "link" | "pdf";
+type NavLink = {
+  label: string;
+  href: string;
+  icon: string;
+  external: boolean;
+  type: NavLinkType;
+  /** Shown dimmed/blurred and inert — reserved for sections not built yet. */
+  comingSoon?: boolean;
+};
+
+const PORTFOLIO_LINKS: NavLink[] = [
   { label: "Home",           href: "#",                                       icon: "home",     external: false, type: "section" },
   { label: "About",          href: "#about",                                  icon: "about",    external: false, type: "section" },
   { label: "Stats",          href: "#stats",                                  icon: "chart",    external: false, type: "section" },
   { label: "Skills",         href: "#skills",                                 icon: "layers",   external: false, type: "section" },
-  { label: "Projects",       href: "#projects",                               icon: "box",      external: false, type: "section" },
+  { label: "Projects",       href: "/projects",                               icon: "box",      external: false, type: "page"    },
   { label: "Education",      href: "#education",                              icon: "book",     external: false, type: "section" },
+  { label: "Experience",     href: "#experience",                             icon: "briefcase",external: false, type: "section", comingSoon: true },
   { label: "Certifications", href: "#certifications",                         icon: "badge",    external: false, type: "section" },
   { label: "Contact",        href: "/contact",                               icon: "mail",     external: false, type: "page"    },
+  { label: "Resume",         href: "/resume.pdf",                             icon: "resume",   external: false, type: "pdf"     },
+  { label: "Mail",           href: "mailto:ithakur2327@gmail.com",            icon: "mail",     external: true,  type: "link"    },
+  { label: "LinkedIn",       href: "https://www.linkedin.com/in/indresh-thakur", icon: "linkedin", external: true,  type: "link" },
   { label: "GitHub",         href: "https://github.com/Ithakur2327",          icon: "github",   external: true,  type: "link"    },
+  { label: "X / Twitter",    href: "https://x.com/indresh_dev",               icon: "twitter",  external: true,  type: "link"    },
   { label: "LeetCode",       href: "https://leetcode.com/IThakur09/",         icon: "leetcode", external: true,  type: "link"    },
   { label: "Website",        href: "https://indreshthakur.dev",              icon: "website",  external: true,  type: "link"    },
 ];
@@ -67,7 +83,7 @@ function MenuItemIcon({ type, color }: { type: string; color: string }) {
 
 function SearchIcon({ size = 16 }: { size?: number }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" shapeRendering="geometricPrecision">
       <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
     </svg>
   );
@@ -83,7 +99,7 @@ function MoonIconAnimated({ size = 16 }: { size?: number }) {
   const c = useAnimation();
   return (
     <div onMouseEnter={() => c.start("animate")} onMouseLeave={() => c.start("normal")}>
-      <motion.svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" variants={moonVariants} animate={c} transition={moonTransition}>
+      <motion.svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" variants={moonVariants} animate={c} transition={moonTransition} shapeRendering="geometricPrecision">
         <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>
       </motion.svg>
     </div>
@@ -99,7 +115,7 @@ function SunIconAnimated({ size = 16 }: { size?: number }) {
   const c = useAnimation();
   return (
     <div onMouseEnter={() => c.start("animate")} onMouseLeave={() => c.start("normal")}>
-      <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" shapeRendering="geometricPrecision">
         <circle cx="12" cy="12" r="4"/>
         {SUN_RAYS.map((d, i) => <motion.path key={d} d={d} animate={c} variants={sunPathVariants} custom={i + 1}/>)}
       </svg>
@@ -192,9 +208,15 @@ function CommandMenu({
       if (e.key === "ArrowUp")   { e.preventDefault(); setSelected(s => Math.max(s - 1, 0)); }
       if (e.key === "Enter" && filtered[selected]) {
         const item = filtered[selected];
+        if (item.comingSoon) return;
         if (item.type === "pdf") { openPdf(item.href, item.label, item.href); onClose(); return; }
         if (item.type === "page") { onClose(); window.location.href = item.href; return; }
-        if (item.external) { window.open(item.href, "_blank", "noopener,noreferrer"); onClose(); return; }
+        if (item.external) {
+          onClose();
+          if (item.href.startsWith("mailto:")) window.location.href = item.href;
+          else window.open(item.href, "_blank", "noopener,noreferrer");
+          return;
+        }
         onClose();
         setTimeout(() => {
           if (!isHome) { window.location.href = item.href === "#" ? "/" : `/${item.href}`; return; }
@@ -234,7 +256,8 @@ function CommandMenu({
 
   const flatFiltered = [...sectionItems, ...linkItems];
 
-  const handleItemClick = (item: typeof PORTFOLIO_LINKS[0]) => {
+  const handleItemClick = (item: NavLink) => {
+    if (item.comingSoon) return;
     if (item.type === "pdf") {
       openPdf(item.href, item.label, item.href);
       onClose();
@@ -246,8 +269,9 @@ function CommandMenu({
       return;
     }
     if (item.external) {
-      window.open(item.href, "_blank", "noopener,noreferrer");
       onClose();
+      if (item.href.startsWith("mailto:")) window.location.href = item.href;
+      else window.open(item.href, "_blank", "noopener,noreferrer");
       return;
     }
     onClose();
@@ -265,7 +289,7 @@ function CommandMenu({
     }, 60);
   };
 
-  const renderItem = (item: typeof PORTFOLIO_LINKS[0], flatIdx: number) => {
+  const renderItem = (item: NavLink, flatIdx: number) => {
     const isActive = flatIdx === selected;
     const isCurrent = item.type === "section" &&
       (item.href === "#" ? activeSection === "" : activeSection === item.href.slice(1));
@@ -278,9 +302,11 @@ function CommandMenu({
         style={{
           display: "flex", alignItems: "center", gap: 8,
           padding: "7px 10px", margin: "0 4px", borderRadius: 7,
-          background: isActive ? accent : "transparent",
-          color: fg, cursor: "pointer",
+          background: isActive && !item.comingSoon ? accent : "transparent",
+          color: fg, cursor: item.comingSoon ? "default" : "pointer",
           transition: "background 0.1s",
+          opacity: item.comingSoon ? 0.45 : 1,
+          filter: item.comingSoon ? "blur(0.4px)" : "none",
         }}
       >
         <div style={{
@@ -299,6 +325,16 @@ function CommandMenu({
         }}>
           {item.label}
         </span>
+        {item.comingSoon && (
+          <span style={{
+            fontSize: 10, fontWeight: 700, letterSpacing: "0.04em",
+            padding: "2px 6px", borderRadius: 5,
+            color: muted, border: `1px solid ${border}`,
+            fontFamily: "-apple-system,sans-serif", flexShrink: 0,
+          }}>
+            SOON
+          </span>
+        )}
         {item.external && (
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke={muted} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
             <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
@@ -407,6 +443,7 @@ export function Navbar() {
   const { openPdf } = usePdfModal();
   const [mounted,  setMounted]  = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [introDone, setIntroDone] = useState(false);
   const [cmdOpen,  setCmdOpen]  = useState(false);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const activeSection = useActiveSection();
@@ -420,6 +457,20 @@ export function Navbar() {
     window.addEventListener("scroll", fn, { passive: true });
     return () => window.removeEventListener("scroll", fn);
   }, []);
+
+  // The landing sequence (IntroLoader) flies the avatar into the hero
+  // section AND settles it here in the corner, all in one motion — so once
+  // that lands, the corner avatar should stay visible even at scrollY 0.
+  useEffect(() => {
+    try {
+      if (sessionStorage.getItem("introPlayed:v1") === "1") setIntroDone(true);
+    } catch {}
+    const onIntroDone = () => setIntroDone(true);
+    window.addEventListener("intro:complete", onIntroDone);
+    return () => window.removeEventListener("intro:complete", onIntroDone);
+  }, []);
+
+  const showCornerAvatar = scrolled || introDone;
 
   useEffect(() => {
     const fn = (e: KeyboardEvent) => {
@@ -529,6 +580,9 @@ export function Navbar() {
           position:relative;
         }
         .icon-btn > * { display:block; }
+        .icon-btn svg, .cmdk-trigger svg, .nav-tooltip-box svg, .nav-desktop-link svg {
+          shape-rendering: geometricPrecision;
+        }
         .icon-btn:hover  { background:var(--nav-link-active-bg);color:var(--nav-link-hover); }
         .icon-btn:active { transform:scale(0.95); }
 
@@ -580,8 +634,8 @@ export function Navbar() {
 
           <a href={isHome ? "#" : "/"} aria-label="Home" style={{ display: "flex", alignItems: "center", textDecoration: "none" }}>
             <div className="logo-area">
-              <div className={`logo-i${scrolled ? " hide" : ""}`}>&lt;I&gt;</div>
-              <div className={`logo-avatar${scrolled ? " show" : ""}`}>
+              <div className={`logo-i${showCornerAvatar ? " hide" : ""}`}>&lt;I&gt;</div>
+              <div className={`logo-avatar${showCornerAvatar ? " show" : ""}`}>
                 {/* eslint-disable-next-line @next/next/no-img-element -- intentionally a plain img: this exact URL is already preloaded in layout.tsx and fetched by Avatar.tsx's WebGL loader, so next/image would rewrite it to a different optimizer URL and cause an extra fetch instead of reusing the cached one */}
                 <img
                   src={isDark ? "/avatar-dark.jpg" : "/avatar-light.jpg"}
@@ -600,8 +654,8 @@ export function Navbar() {
           <div style={{ display: "flex", alignItems: "center", gap: 2 }}>
 
             <nav className="nav-desktop-only" style={{ display: "flex", alignItems: "center", gap: 16, marginRight: 4 }}>
-              <a href={isHome ? "#" : "/"} className={`nav-desktop-link${isHome && activeSection === "" ? " active" : ""}`}>Home</a>
-              <a href={isHome ? "#projects" : "/#projects"} className={`nav-desktop-link${isHome && activeSection === "projects" ? " active" : ""}`}>Projects</a>
+              <a href={isHome ? "#" : "/"} className="nav-desktop-link">Home</a>
+              <a href="/projects" className="nav-desktop-link">Projects</a>
             </nav>
 
             <span className="nav-sep nav-desktop-only" style={{ margin: "0 6px" }}/>

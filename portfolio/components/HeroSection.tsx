@@ -314,7 +314,7 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
           }
           .h-nameblock > div:nth-child(2) {
             padding-top: 26px !important;
-            margin-bottom: -3px !important;
+            margin-bottom: 0 !important;
           }
           .h-nameblock .fs-in,
           .h-nameblock .fs-out {
@@ -361,7 +361,7 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
           .h-verified-badge { width: 46px !important; height: 46px !important; }
           .h-name-row { gap: 16px !important; }
           .h-nameblock > div:nth-child(2) {
-            margin-bottom: -4px !important;
+            margin-bottom: -1px !important;
           }
           .h-info-pad {
             padding: 22px 32px 20px !important;
@@ -375,10 +375,10 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
            desktop-base values by 1600px instead of snapping instantly. */
         ${mq.laptopWide} {
           .h-avatar {
-            width: clamp(198px, calc(587.5px - 24.3437vw), 300px) !important;
-            min-width: clamp(198px, calc(587.5px - 24.3437vw), 300px) !important;
-            height: clamp(188px, calc(562.2px - 23.389vw), 286px) !important;
-            min-height: clamp(188px, calc(562.2px - 23.389vw), 286px) !important;
+            width: clamp(170px, calc(475.5px - 19.093vw), 250px) !important;
+            min-width: clamp(170px, calc(475.5px - 19.093vw), 250px) !important;
+            height: clamp(156px, calc(461.5px - 19.093vw), 236px) !important;
+            min-height: clamp(156px, calc(461.5px - 19.093vw), 236px) !important;
           }
           .h-nameblock h1 {
             font-size: clamp(36px, calc(124px - 5.5012vw), 59.05px) !important;
@@ -413,10 +413,10 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
 
           .h-nameblock > div:nth-child(2) {
             padding: clamp(18px, 5.5vw, 26px) clamp(10px, 3.5vw, 16px) 0 !important;
-            margin-bottom: -2px !important;
+            margin-bottom: 0 !important;
           }
           .h-nameblock h1 {
-            font-size: clamp(21px, 7.4vw, 29px) !important;
+            font-size: clamp(20px, 7vw, 26px) !important;
             font-weight: 800 !important;
             letter-spacing: 0.015em !important;
             line-height: 1 !important;
@@ -457,7 +457,7 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
             border-radius: 16px !important;
           }
           .h-nameblock h1 {
-            font-size: clamp(20px, 7vw, 24px) !important;
+            font-size: clamp(19px, 6.5vw, 22px) !important;
             font-weight: 800 !important;
             letter-spacing: 0.015em !important;
             line-height: 1 !important;
@@ -465,7 +465,7 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
           .h-verified-badge { width: 20px !important; height: 20px !important; }
           .h-name-row { gap: 5px !important; }
           .h-nameblock > div:nth-child(2) {
-            margin-bottom: -2px !important;
+            margin-bottom: 0 !important;
           }
         }
 

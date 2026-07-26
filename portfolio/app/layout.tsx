@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import type { Viewport } from "next";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { PdfModalProvider } from "@/components/PdfViewerModal";
+import { IntroLoader } from "@/components/IntroLoader";
 import OnekoCatLoader from "@/components/OnekoCatLoader";
 import { createHash } from "crypto";
 import { readFileSync } from "fs";
@@ -171,6 +172,10 @@ export default function RootLayout({
 
             {/* 🐱 Pixel cat — client-only, loaded after hydration */}
             <OnekoCatLoader />
+
+            {/* One-time landing sequence: avatar + dots → flies into the
+                hero section and settles. See components/IntroLoader.tsx */}
+            <IntroLoader />
           </PdfModalProvider>
         </ThemeProvider>
       </body>
