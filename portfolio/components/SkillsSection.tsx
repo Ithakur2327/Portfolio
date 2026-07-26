@@ -99,19 +99,20 @@ const FallingIcon = memo(forwardRef<HTMLDivElement, { name: string }>(
     const { theme } = useTheme();
     const isDark = theme === "dark";
 
+    // Only the icon itself carries brand color — the chip's glass surface
+    // and border stay neutral/theme-aware, no per-tech tinted border.
     const background = isDark
-      ? `linear-gradient(155deg, rgba(255,255,255,0.16) 0%, rgba(255,255,255,0.04) 55%, ${tech.color}40 100%)`
-      : `linear-gradient(155deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.5) 55%, ${tech.color}30 100%)`;
-    const borderColor = isDark ? `${tech.color}70` : `${tech.color}55`;
+      ? "linear-gradient(155deg, rgba(255,255,255,0.14) 0%, rgba(255,255,255,0.045) 45%, rgba(255,255,255,0.02) 100%)"
+      : "linear-gradient(155deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.62) 45%, rgba(255,255,255,0.4) 100%)";
     const filter = isDark && tech.invert
-      ? "invert(1) brightness(1.6) drop-shadow(0 3px 4px rgba(0,0,0,0.45))"
-      : "drop-shadow(0 3px 4px rgba(0,0,0,0.32))";
+      ? "invert(1) brightness(1.6) drop-shadow(0 3px 5px rgba(0,0,0,0.5))"
+      : "drop-shadow(0 3px 5px rgba(0,0,0,0.35))";
 
     return (
       <div
         ref={ref}
         className={`falling-icon-chip${isDark ? " is-dark" : ""}`}
-        style={{ background, borderColor }}
+        style={{ background }}
       >
         {tech.logo && (
           // eslint-disable-next-line @next/next/no-img-element -- tiny physics-driven skill icon, real brand colors, unfiltered
@@ -194,7 +195,7 @@ function FallingIconsBox({ title, names }: { title: string; names: string[] }) {
         inertia: Infinity, // never rotate — cards always stay upright
       });
       Body.setVelocity(body, { x: (Math.random() - 0.5) * 2, y: 0 });
-      return { el, body };
+      return { el, body, halfW: r.width / 2, halfH: r.height / 2 };
     });
 
     // Base offset is set once; every frame after this only `transform`
@@ -285,7 +286,22 @@ function FallingIconsBox({ title, names }: { title: string; names: string[] }) {
       const delta = Math.min(time - lastTime, 1000 / 30);
       lastTime = time;
       Engine.update(engine, delta);
-      pieces.forEach(({ el, body }) => {
+      const w = rect.width, h = rect.height;
+      pieces.forEach(({ el, body, halfW, halfH }) => {
+        // Strict containment: no matter how fast a card is flicked/dragged,
+        // its center can never leave the box's interior. This is a hard
+        // clamp on top of the wall bodies, not a replacement for them.
+        const hitX = body.position.x < halfW || body.position.x > w - halfW;
+        const hitY = body.position.y < halfH || body.position.y > h - halfH;
+        if (hitX || hitY) {
+          const cx = Math.min(Math.max(body.position.x, halfW), w - halfW);
+          const cy = Math.min(Math.max(body.position.y, halfH), h - halfH);
+          Body.setPosition(body, { x: cx, y: cy });
+          Body.setVelocity(body, {
+            x: hitX ? 0 : body.velocity.x,
+            y: hitY ? 0 : body.velocity.y,
+          });
+        }
         el.style.transform = `translate3d(${body.position.x}px, ${body.position.y}px, 0) translate(-50%, -50%)`;
       });
       rafId = requestAnimationFrame(tick);
@@ -401,74 +417,82 @@ export function SkillsSection() {
         }
 
         .falling-icon-chip {
-          width: 58px; height: 66px;
-          padding: 8px 4px 7px;
+          width: 64px; height: 72px;
+          padding: 9px 4px 7px;
           display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
-          gap: 5px;
-          border-radius: 15px; border: 1px solid;
+          gap: 6px;
+          border-radius: 16px;
+          border: 1px solid rgba(0,0,0,0.10);
           position: relative; z-index: 1;
           cursor: grab;
           user-select: none; -webkit-user-select: none;
           will-change: transform;
-          backdrop-filter: blur(10px) saturate(160%);
-          -webkit-backdrop-filter: blur(10px) saturate(160%);
+          backdrop-filter: blur(12px) saturate(170%);
+          -webkit-backdrop-filter: blur(12px) saturate(170%);
           box-shadow:
-            0 18px 26px -10px rgba(0,0,0,0.55),
-            0 4px 8px rgba(0,0,0,0.25),
-            inset 0 1px 0 rgba(255,255,255,0.55),
-            inset 0 -8px 14px -10px rgba(0,0,0,0.3);
+            0 18px 26px -10px rgba(0,0,0,0.5),
+            0 4px 8px rgba(0,0,0,0.22),
+            inset 0 1px 0 rgba(255,255,255,0.6),
+            inset 0 -8px 14px -10px rgba(0,0,0,0.28);
         }
         .falling-icon-chip.is-dark {
+          border-color: rgba(255,255,255,0.14);
           box-shadow:
-            0 18px 26px -10px rgba(0,0,0,0.7),
-            0 4px 10px rgba(0,0,0,0.4),
-            inset 0 1px 0 rgba(255,255,255,0.18),
-            inset 0 -8px 14px -10px rgba(0,0,0,0.5);
+            0 18px 26px -10px rgba(0,0,0,0.65),
+            0 4px 10px rgba(0,0,0,0.38),
+            inset 0 1px 0 rgba(255,255,255,0.16),
+            inset 0 -8px 14px -10px rgba(0,0,0,0.45);
         }
         .falling-icon-chip::before {
           content: "";
           position: absolute; inset: 0; z-index: 0;
-          border-radius: 15px;
+          border-radius: 16px;
           background: linear-gradient(165deg, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.1) 32%, transparent 55%);
           pointer-events: none;
         }
         .falling-icon-chip.is-dark::before {
-          background: linear-gradient(165deg, rgba(255,255,255,0.22) 0%, rgba(255,255,255,0.03) 32%, transparent 55%);
+          background: linear-gradient(165deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.03) 32%, transparent 55%);
         }
         .falling-icon-chip:active { cursor: grabbing; }
         .falling-icon-chip img {
-          width: 26px; height: 26px; object-fit: contain;
+          width: 28px; height: 28px; object-fit: contain;
           pointer-events: none; -webkit-user-drag: none;
           position: relative; z-index: 1;
         }
         .falling-icon-name {
           position: relative; z-index: 1;
-          font-family: ${MONO}; font-size: 8px; font-weight: 600; letter-spacing: 0.01em;
-          color: #2a2a2a; text-align: center; line-height: 1.15;
+          font-family: ${MONO}; font-size: 9px; font-weight: 600; letter-spacing: 0.005em;
+          color: var(--text-primary); text-align: center; line-height: 1.2;
           display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
-          overflow: hidden; max-width: 100%;
+          overflow: hidden; max-width: 100%; word-break: break-word;
         }
-        .falling-icon-chip.is-dark .falling-icon-name { color: #f2f2f2; }
 
         ${mq.mobile} {
           .skills-inner { padding: 0 16px 28px !important; }
           .falling-groups-row { flex-direction: column; gap: 0; }
-          .falling-groups-row > .falling-group { margin-top: 24px; }
+          .falling-groups-row > .falling-group { margin-top: 22px; }
           .falling-groups-row > .falling-group:first-child { margin-top: 0; }
-          .falling-group { margin-top: 24px; }
+          .falling-group { margin-top: 22px; }
           .falling-group-title { font-size: 14px; }
-          .falling-icons-box { border-radius: 12px; min-height: 320px; }
-          .falling-icons-flow { padding: 38px 12px 18px; gap: 9px; }
-          .falling-icon-chip { width: 50px; height: 58px; border-radius: 12px; gap: 4px; padding: 7px 3px 6px; }
+          .falling-icons-box { border-radius: 12px; min-height: 220px; }
+          .falling-icons-flow {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            justify-items: center;
+            padding: 34px 10px 14px;
+            gap: 8px;
+          }
+          .falling-icon-chip { width: 100%; max-width: 62px; height: 62px; border-radius: 13px; gap: 4px; padding: 7px 3px 6px; }
           .falling-icon-chip img { width: 22px; height: 22px; }
-          .falling-icon-name { font-size: 7px; }
+          .falling-icon-name { font-size: 7.5px; }
         }
 
         @media ${cond.down(BP.mobileXsMax)} {
-          .falling-icons-box { min-height: 300px; }
-          .falling-icon-chip { width: 44px; height: 52px; border-radius: 11px; }
-          .falling-icon-chip img { width: 19px; height: 19px; }
-          .falling-icon-name { font-size: 6.3px; }
+          .falling-icons-box { min-height: 200px; }
+          .falling-icons-flow { grid-template-columns: repeat(3, 1fr); }
+          .falling-icon-chip { max-width: 58px; height: 58px; border-radius: 12px; }
+          .falling-icon-chip img { width: 20px; height: 20px; }
+          .falling-icon-name { font-size: 7px; }
           .falling-icons-hint { font-size: 9.5px; top: 10px; right: 12px; }
         }
       `}</style>

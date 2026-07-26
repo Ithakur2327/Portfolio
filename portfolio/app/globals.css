@@ -321,13 +321,54 @@ html.light .nav-root.scrolled {
 
 .logo-avatar {
   position: absolute; inset: 0;
-  border-radius: 50%; overflow: hidden;
+  border-radius: 12px; overflow: hidden;
   border: 1.5px solid var(--border);
   opacity: 0; transform: scale(0.7) translateY(8px);
   transition: opacity 0.45s cubic-bezier(0.16,1,0.3,1), transform 0.45s cubic-bezier(0.16,1,0.3,1);
 }
 .logo-avatar.show { opacity: 1; transform: scale(1) translateY(0); }
-.logo-avatar img { width:100%; height:100%; object-fit:cover; border-radius:50%; }
+.logo-avatar img { width:100%; height:100%; object-fit:cover; border-radius:12px; }
+
+/* ── Intro landing sequence ──
+   While the intro overlay is flying the avatar into place, the real hero
+   avatar underneath must stay invisible (still measurable via
+   getBoundingClientRect, hence visibility:hidden and not display:none) so
+   there's never a duplicate/mismatched avatar showing through the glass
+   blur. Scroll is locked so the page can't shift under the overlay. */
+html.intro-active { overflow: hidden; }
+html.intro-active body { overflow: hidden; }
+html.intro-active #hero-avatar-anchor { visibility: hidden; }
+
+/* Static placeholder painted synchronously (before React hydrates) by the
+   inline script in app/layout.tsx — this is what actually stops the hero
+   section from flashing on screen before the real IntroLoader can mount.
+   Kept visually identical to IntroLoader's own "loading" phase so the
+   hand-off is seamless. */
+#intro-shell {
+  position: fixed; inset: 0; z-index: 100000;
+  display: flex; align-items: center; justify-content: center; gap: 16px;
+  background: color-mix(in srgb, var(--bg-base) 55%, transparent);
+  backdrop-filter: blur(28px) saturate(160%);
+  -webkit-backdrop-filter: blur(28px) saturate(160%);
+}
+.intro-shell-avatar {
+  width: 84px; height: 84px; border-radius: 22px;
+  overflow: hidden; border: 1.5px solid var(--border);
+  background: var(--bg-base);
+}
+.intro-shell-avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.intro-shell-dots { display: flex; align-items: center; gap: 6px; }
+.intro-shell-dots span {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--text-primary);
+  animation: intro-shell-pulse 1s ease-in-out infinite;
+}
+.intro-shell-dots span:nth-child(2) { animation-delay: 0.15s; }
+.intro-shell-dots span:nth-child(3) { animation-delay: 0.3s; }
+@keyframes intro-shell-pulse {
+  0%, 80%, 100% { opacity: 0.25; transform: scale(0.8); }
+  40%           { opacity: 1;    transform: scale(1); }
+}
 
 .theme-btn {
   width: 30px; height: 30px;

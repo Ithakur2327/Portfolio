@@ -164,6 +164,36 @@ export default function RootLayout({
       </head>
 
       <body suppressHydrationWarning>
+        {/* Runs synchronously as soon as the parser reaches <body>, i.e.
+            before any hero markup below is parsed/painted and long before
+            React hydrates. Paints a static stand-in for IntroLoader's
+            "loading" phase (see components/IntroLoader.tsx, which removes
+            #intro-shell and takes over the instant it mounts) so the intro
+            screen is always what the person sees first — never the hero
+            section flashing underneath it. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function () {
+                try {
+                  if (sessionStorage.getItem('introPlayed:v1') === '1') return;
+                } catch (e) {}
+                if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+                var d = document.documentElement;
+                d.classList.add('intro-active');
+                var isDark = d.classList.contains('dark');
+                var src = isDark ? '/avatar-dark.jpg' : '/avatar-light.jpg';
+                var shell = document.createElement('div');
+                shell.id = 'intro-shell';
+                shell.innerHTML =
+                  '<div class="intro-shell-avatar"><img src="' + src + '" alt=""/></div>' +
+                  '<div class="intro-shell-dots"><span></span><span></span><span></span></div>';
+                document.body.appendChild(shell);
+              })();
+            `,
+          }}
+        />
+
         <ThemeProvider>
           <PdfModalProvider>
             <div style={{ position: "relative", zIndex: 1 }}>

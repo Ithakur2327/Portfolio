@@ -500,7 +500,7 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
         }}>
           <div className="h-profile" style={{maxWidth:CW, margin:"0 auto", borderLeft:B, borderRight:B, borderBottom:B, borderTop:"none", borderRadius:8.5}}>
 
-            <div className="h-avatar">
+            <div className="h-avatar" id="hero-avatar-anchor">
               <div style={{width:"100%", aspectRatio:"1 / 1", flexShrink:0}}>
                 <Avatar version={avatarVersion} />
               </div>

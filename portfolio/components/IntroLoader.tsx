@@ -4,26 +4,34 @@ import { useEffect, useRef, useState } from "react";
 /**
  * IntroLoader — one-time landing sequence.
  *
- * Timeline (total ≈ 1.7s, always < 2s):
- *   0ms     — centered avatar + 3 loading dots fade/scale in
- *   0-700ms — "loading" hold (dots pulse, avatar breathes)
- *   700ms   — dots + hub fade out, avatar detaches and FLIES from its
- *             centered spot to the exact rect of the real hero avatar
- *             (position/size/radius captured live via getBoundingClientRect,
- *             so it lands pixel-perfect regardless of viewport size)
- *   1500ms  — avatar has landed: the real WebGL hero avatar (which was
- *             invisible under `html.intro-active`) crossfades in, and the
- *             nav's corner avatar is revealed via the `intro:complete` event
- *   1720ms  — overlay fully unmounts
+ * Timeline (total = 4.0s):
+ *   0ms      — centered squircle avatar + 3 loading dots fade/scale in,
+ *              over a frosted glass-blur backdrop
+ *   0-1300ms — "loading" hold (dots pulse, avatar breathes)
+ *   1300ms   — dots + hub fade out, avatar detaches and FLIES from its
+ *              centered spot to the exact rect of the real hero avatar
+ *              (position/size/radius captured live via getBoundingClientRect,
+ *              so it lands pixel-perfect regardless of viewport size)
+ *   3600ms   — avatar has landed: the real WebGL hero avatar (which was
+ *              hidden under `html.intro-active`, see globals.css) crossfades
+ *              in, and the nav's corner avatar is revealed via the
+ *              `intro:complete` event
+ *   4000ms   — overlay fully unmounts
+ *
+ * A tiny inline script in layout.tsx paints a static placeholder version of
+ * this same hub (behind id="intro-shell") the instant HTML parsing reaches
+ * <body>, before React/JS has hydrated — that's what stops the real hero
+ * section from ever flashing on screen first. This component hands off from
+ * that placeholder to itself on mount (see the `intro-shell` removal below).
  *
  * Runs once per browser session (sessionStorage) and is skipped instantly
  * for prefers-reduced-motion.
  */
 
 const SESSION_KEY = "introPlayed:v1";
-const LOADING_MS = 700;
-const FLIGHT_MS = 800;
-const SETTLE_MS = 220;
+const LOADING_MS = 1300;
+const FLIGHT_MS = 2300;
+const SETTLE_MS = 400;
 
 type Phase = "loading" | "opening" | "landed" | "done";
 
@@ -50,6 +58,11 @@ export function IntroLoader() {
   const hubAvatarRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    // Hand off from (and remove) the synchronous pre-hydration placeholder
+    // painted by the inline script in layout.tsx — from this point on, this
+    // component owns the overlay.
+    document.getElementById("intro-shell")?.remove();
+
     let already = false;
     try {
       already = sessionStorage.getItem(SESSION_KEY) === "1";
@@ -62,6 +75,7 @@ export function IntroLoader() {
       try {
         sessionStorage.setItem(SESSION_KEY, "1");
       } catch {}
+      document.documentElement.classList.remove("intro-active");
       window.dispatchEvent(new Event("intro:complete"));
       return;
     }
@@ -85,7 +99,7 @@ export function IntroLoader() {
         return;
       }
 
-      const start = readRect(hubAvatar, "50%");
+      const start = readRect(hubAvatar);
       setFlightRect(start);
       setPhase("opening");
 
@@ -131,12 +145,17 @@ export function IntroLoader() {
       <style suppressHydrationWarning>{`
         .intro-overlay {
           position: fixed; inset: 0; z-index: 100000;
-          background: var(--bg-base);
+          background: color-mix(in srgb, var(--bg-base) 55%, transparent);
+          backdrop-filter: blur(28px) saturate(160%);
+          -webkit-backdrop-filter: blur(28px) saturate(160%);
           display: flex; align-items: center; justify-content: center;
-          transition: background-color 0.6s ease;
+          transition: background-color 0.6s ease, backdrop-filter 0.6s ease,
+                      -webkit-backdrop-filter 0.6s ease;
         }
         .intro-overlay--exit {
-          background-color: transparent;
+          background: transparent;
+          backdrop-filter: blur(0px);
+          -webkit-backdrop-filter: blur(0px);
           pointer-events: none;
         }
 
@@ -151,7 +170,7 @@ export function IntroLoader() {
         }
 
         .intro-hub-avatar {
-          width: 84px; height: 84px; border-radius: 50%;
+          width: 84px; height: 84px; border-radius: 22px;
           position: relative;
           animation: intro-avatar-in 0.4s cubic-bezier(0.16,1,0.3,1) both,
                      intro-breathe 1.8s ease-in-out 0.4s infinite;
@@ -166,7 +185,7 @@ export function IntroLoader() {
         }
 
         .intro-hub-ring {
-          position: absolute; inset: -4px; border-radius: 50%;
+          position: absolute; inset: -4px; border-radius: 26px;
           overflow: hidden; z-index: 0; pointer-events: none;
         }
         .intro-hub-ring::before {
@@ -181,7 +200,7 @@ export function IntroLoader() {
         @keyframes intro-ring-spin { to { transform: rotate(360deg); } }
 
         .intro-hub-imgwrap {
-          position: absolute; inset: 3px; border-radius: 50%;
+          position: absolute; inset: 3px; border-radius: 19px;
           overflow: hidden; z-index: 1;
           border: 1.5px solid var(--border);
           background: var(--bg-base);
