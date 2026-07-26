@@ -297,7 +297,10 @@ export function ProjectModal({ proj, onClose, index = 0 }: { proj: Project; onCl
   // layoutId is intentionally omitted below on mobile (a plain
   // initial/animate/exit drives the sheet instead).
   const isMobile = useIsMobile();
-  const mobileTransition = { type: "spring" as const, stiffness: 300, damping: 32, mass: 0.9 };
+  // A plain tween (fixed duration, no per-frame spring integration) is
+  // noticeably lighter on low-end phones than a spring, so mobile gets
+  // this instead of the desktop SPRING.
+  const mobileTransition = { type: "tween" as const, duration: 0.22, ease: [0.22, 1, 0.36, 1] as const };
   const lid = (id: string) => (isMobile ? undefined : id);
 
   useEffect(() => {
@@ -409,6 +412,9 @@ export function ProjectModal({ proj, onClose, index = 0 }: { proj: Project; onCl
             }
             ${mq.tabletSplitDown} {
               .pm-overlay { backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px); }
+            }
+            ${mq.mobile} {
+              .pm-overlay { backdrop-filter: none; -webkit-backdrop-filter: none; }
             }
 
             /* Shell — the layout-animated element. Purely a sized/positioned
@@ -544,9 +550,9 @@ export function ProjectModal({ proj, onClose, index = 0 }: { proj: Project; onCl
                   return (
                     <motion.span
                       key={tag}
-                      initial={{ opacity: 0, y: 4 }}
+                      initial={isMobile ? false : { opacity: 0, y: 4 }}
                       animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.05 + ti * 0.02, duration: 0.2 }}
+                      transition={isMobile ? { duration: 0 } : { delay: 0.05 + ti * 0.02, duration: 0.2 }}
                       className="pm-tag"
                       style={{ color: "var(--tag-text)", background: "var(--tag-bg)", border: "1px solid var(--tag-border)" }}
                     >
@@ -572,9 +578,9 @@ export function ProjectModal({ proj, onClose, index = 0 }: { proj: Project; onCl
                   {proj.name}
                 </motion.h2>
                 <motion.span
-                  initial={{ opacity: 0, y: 5 }}
+                  initial={isMobile ? false : { opacity: 0, y: 5 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.15 }}
+                  transition={isMobile ? { duration: 0 } : { delay: 0.15 }}
                   style={{ fontSize: 14, color: "var(--text-muted)", fontFamily: SF }}
                 >
                   Created: {proj.year}
@@ -613,9 +619,9 @@ export function ProjectModal({ proj, onClose, index = 0 }: { proj: Project; onCl
                 a bigger version of the card. */}
             {proj.features?.length > 0 && (
               <motion.div
-                initial={{ opacity: 0, y: 10 }}
+                initial={isMobile ? false : { opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.18, duration: 0.3 }}
+                transition={isMobile ? { duration: 0 } : { delay: 0.18, duration: 0.3 }}
                 style={{ display: "flex", flexDirection: "column", gap: 10 }}
               >
                 <span style={{ fontSize: 14, fontWeight: 600, color: "var(--text-primary)", fontFamily: SF }}>
@@ -625,9 +631,9 @@ export function ProjectModal({ proj, onClose, index = 0 }: { proj: Project; onCl
                   {proj.features.map((feature, i) => (
                     <motion.li
                       key={i}
-                      initial={{ opacity: 0, x: -10 }}
+                      initial={isMobile ? false : { opacity: 0, x: -10 }}
                       animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 0.22 + i * 0.035 }}
+                      transition={isMobile ? { duration: 0 } : { delay: 0.22 + i * 0.035 }}
                       style={{ display: "flex", alignItems: "flex-start", gap: 8, fontSize: 14, color: "var(--text-secondary)", lineHeight: 1.55, fontFamily: SF }}
                     >
                       <span style={{ color: proj.accent, marginTop: 1 }}>•</span>
