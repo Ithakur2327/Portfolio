@@ -1,12 +1,9 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { AnimatePresence, LayoutGroup } from "motion/react";
 import type { Project } from "@/lib/projects-data";
 import { ProjectCard, ProjectModal } from "./ProjectCard";
-
-// Desktop/laptop gets the hover-driven image reveal; tablet and mobile
-// get the scroll-triggered version instead (see ProjectCard).
-const DESKTOP_QUERY = "(min-width: 900px)";
+import { useIsLaptopUp } from "@/lib/breakpoints";
 
 export function ProjectsGrid({ projects, visible = true, mobileMax, wide }: {
   projects: Project[];
@@ -20,15 +17,17 @@ export function ProjectsGrid({ projects, visible = true, mobileMax, wide }: {
 }) {
   const [active, setActive] = useState<Project | null>(null);
   const [activeIndex, setActiveIndex] = useState(0);
-  const [isDesktop, setIsDesktop] = useState(false);
-
-  useEffect(() => {
-    const mq = window.matchMedia(DESKTOP_QUERY);
-    const update = () => setIsDesktop(mq.matches);
-    update();
-    mq.addEventListener("change", update);
-    return () => mq.removeEventListener("change", update);
-  }, []);
+  // Desktop/laptop (>=1025px, same laptopMin used by the rest of the app —
+  // see lib/breakpoints.json) gets the hover-driven image reveal and the
+  // full card-to-modal morph. Tablet and mobile get the scroll-triggered
+  // reveal and a plain bottom-sheet open instead (see ProjectCard).
+  //
+  // This used to be a local `(min-width: 900px)` media query, which didn't
+  // match the app's real tablet↔laptop boundary (1024/1025px) — so tablets
+  // in the 900–1024px range (e.g. iPad landscape) were wrongly bucketed as
+  // "desktop" and got the heavy FLIP morph meant only for mouse/hover
+  // devices. Using the shared hook fixes that mismatch.
+  const isDesktop = useIsLaptopUp();
 
   return (
     <>
