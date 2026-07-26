@@ -55,10 +55,17 @@ const TECH: Record<string, TechDef> = {
   "VS Code":      { color: "#007ACC", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/vscode/vscode-original.svg" },
 };
 
-/* Every skill in TECH falls into the box — nothing is grouped anymore.
-   Every chip sits on its own light card regardless of site theme, so
-   every logo shows in its real, unfiltered brand color. */
-const ALL_TECH = Object.keys(TECH);
+/* The skillset is split into two falling boxes. */
+const GROUP_LANGUAGES_FULLSTACK = [
+  "Python", "Java", "C++", "TypeScript", "JavaScript",
+  "React.js", "Next.js", "Tailwind CSS", "HTML5", "CSS3", "Framer Motion", "shadcn/ui",
+  "Node.js", "Express.js", "REST APIs", "FastAPI", "GraphQL",
+];
+const GROUP_GENAI_DEVOPS_TOOLS = [
+  "AI", "LangChain", "LangGraph", "RAG", "Vector DB",
+  "AWS", "Kubernetes", "Docker", "CI/CD", "Vercel",
+  "MongoDB", "MySQL", "PostgreSQL", "Git", "GitHub", "Postman", "VS Code",
+];
 
 /* View-based reveal hook — the box only "wakes up" (starts the physics
    simulation) once it's scrolled into view, not on page load. */
@@ -111,19 +118,28 @@ const FallingIcon = memo(forwardRef<HTMLDivElement, { name: string }>(
 ));
 FallingIcon.displayName = "FallingIcon";
 
-/* The falling-icons box: every skill card starts laid out in a tidy grid,
-   then — once scrolled into view — drops into a physics-driven pile inside
-   the dashed box, exactly like the FallingText word-drop effect but with
-   skill icons instead of words. Cards stay mouse/touch-draggable after
-   settling, never rotate, and use a transform-only render loop (no
-   Matter.Render, no Matter.Runner) to stay light on mobile.
+/* One falling-icons box for a given subset of skills. Cards start laid out
+   in a tidy grid, then — once scrolled into view — drop into a
+   physics-driven pile inside the dashed box, exactly like the FallingText
+   word-drop effect but with skill icons instead of words. Cards stay
+   mouse/touch-draggable after settling, never rotate, and use a
+   transform-only render loop (no Matter.Render, no Matter.Runner) to stay
+   light on mobile.
 
-   Touch handling is custom: Matter's own touch listeners would call
-   preventDefault() for ANY touch inside the box, which blocks normal page
-   scrolling. Instead we only take over (and block scroll) when a touch
-   actually starts on a card — everywhere else in the box, the page keeps
-   scrolling normally. */
-function FallingIconsBox() {
+   Two things this guards against:
+   1) Touch handling is custom: Matter's own touch listeners would call
+      preventDefault() for ANY touch inside the box, which blocks normal
+      page scrolling. Instead we only take over (and block scroll) when a
+      touch actually starts on a card — everywhere else in the box, the
+      page keeps scrolling normally.
+   2) The box's height is locked the instant physics starts. Before that,
+      the box is only `min-height` and grows taller to fit the tidy grid of
+      cards. The moment cards go `position:absolute` that grid collapses,
+      which would otherwise shrink the box out from under the physics
+      floor — leaving cards to "fall through" past the dashed border on
+      narrower screens. Locking the height first keeps the box and the
+      physics boundaries in permanent agreement, on every device. */
+function FallingIconsBox({ title, names }: { title: string; names: string[] }) {
   const { ref: boxRef, inView } = useBoxInView();
   const iconRefs = useRef<(HTMLDivElement | null)[]>([]);
 
@@ -141,6 +157,10 @@ function FallingIconsBox() {
 
     let rect = box.getBoundingClientRect();
     if (rect.width <= 0 || rect.height <= 0) return;
+
+    // Lock the box's height NOW, while it still reflects the full tidy
+    // grid of cards — see note (2) above.
+    box.style.height = `${rect.height}px`;
 
     const engine = Engine.create();
     engine.world.gravity.y = 0.85;
@@ -234,7 +254,8 @@ function FallingIconsBox() {
 
     // Keep the box's walls in sync if the viewport is resized/rotated.
     // The pieces themselves are left alone so a settled pile isn't
-    // disturbed — only the boundaries around it move.
+    // disturbed — only the boundaries around it move. (Height stays
+    // locked; only width-driven wall positions need to move.)
     let resizeTimer: ReturnType<typeof setTimeout>;
     const handleResize = () => {
       clearTimeout(resizeTimer);
@@ -264,16 +285,19 @@ function FallingIconsBox() {
   }, [hasAppeared, boxRef]);
 
   return (
-    <div ref={boxRef} className="falling-icons-box">
-      <span className="falling-icons-hint">{"// drag the icons"}</span>
-      <div className="falling-icons-flow">
-        {ALL_TECH.map((name, i) => (
-          <FallingIcon
-            key={name}
-            name={name}
-            ref={el => { iconRefs.current[i] = el; }}
-          />
-        ))}
+    <div className="falling-group">
+      <div className="falling-group-title">{title}</div>
+      <div ref={boxRef} className="falling-icons-box">
+        <span className="falling-icons-hint">{"// drag the icons"}</span>
+        <div className="falling-icons-flow">
+          {names.map((name, i) => (
+            <FallingIcon
+              key={name}
+              name={name}
+              ref={el => { iconRefs.current[i] = el; }}
+            />
+          ))}
+        </div>
       </div>
     </div>
   );
@@ -286,13 +310,24 @@ export function SkillsSection() {
   return (
     <>
       <style suppressHydrationWarning>{`
+        .falling-group { margin-top: 30px; }
+        .falling-group:first-child { margin-top: 0; }
+        .falling-group-title {
+          font-family: ${SF};
+          font-size: 15px;
+          font-weight: 700;
+          letter-spacing: -0.01em;
+          color: var(--text-primary);
+          margin: 0 0 12px 2px;
+        }
+
         .falling-icons-box {
           position: relative;
           overflow: hidden;
           border: 0.7px dashed rgba(0,0,0,0.55);
           border-radius: 14px;
           background: #ffffff;
-          min-height: 420px;
+          min-height: 340px;
         }
         html.dark .falling-icons-box {
           border-color: rgba(255,255,255,0.55);
@@ -353,7 +388,9 @@ export function SkillsSection() {
 
         ${mq.mobile} {
           .skills-inner { padding: 0 16px 28px !important; }
-          .falling-icons-box { border-radius: 12px; min-height: 400px; }
+          .falling-group { margin-top: 24px; }
+          .falling-group-title { font-size: 14px; }
+          .falling-icons-box { border-radius: 12px; min-height: 320px; }
           .falling-icons-flow { padding: 38px 12px 18px; gap: 9px; }
           .falling-icon-chip { width: 50px; height: 58px; border-radius: 12px; gap: 4px; padding: 7px 3px 6px; }
           .falling-icon-chip img { width: 22px; height: 22px; }
@@ -361,7 +398,7 @@ export function SkillsSection() {
         }
 
         @media ${cond.down(BP.mobileXsMax)} {
-          .falling-icons-box { min-height: 360px; }
+          .falling-icons-box { min-height: 300px; }
           .falling-icon-chip { width: 44px; height: 52px; border-radius: 11px; }
           .falling-icon-chip img { width: 19px; height: 19px; }
           .falling-icon-name { font-size: 6.3px; }
@@ -390,7 +427,8 @@ export function SkillsSection() {
             </div>
             <div style={{ height:1, background:"var(--border)", margin:"18px 0 18px" }} />
 
-            <FallingIconsBox />
+            <FallingIconsBox title="Languages & Full-Stack" names={GROUP_LANGUAGES_FULLSTACK} />
+            <FallingIconsBox title="GenAI, DevOps & Tools" names={GROUP_GENAI_DEVOPS_TOOLS} />
           </div>
         </div>
       </section>
