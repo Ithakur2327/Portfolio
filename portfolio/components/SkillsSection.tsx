@@ -6,7 +6,6 @@ import { useReveal } from "./useReveal";
 import { useTheme } from "./ThemeProvider";
 import { SectionTitleIcon } from "./SectionIcon";
 import { BP, cond, mq } from "@/lib/breakpoints";
-import { useIsMobile } from "@/lib/useBreakpoint";
 
 const MONO = "'Geist Mono', 'SF Mono', monospace";
 const SF   = "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', sans-serif";
@@ -154,7 +153,6 @@ FallingIcon.displayName = "FallingIcon";
 function FallingIconsBox({ title, names }: { title: string; names: string[] }) {
   const { ref: boxRef, inView } = useBoxInView();
   const iconRefs = useRef<(HTMLDivElement | null)[]>([]);
-  const isMobile = useIsMobile();
 
   // Icons drop in once on first scroll into view; they don't re-drop on
   // subsequent scroll passes.
@@ -162,10 +160,7 @@ function FallingIconsBox({ title, names }: { title: string; names: string[] }) {
   useEffect(() => { if (inView) setHasAppeared(true); }, [inView]);
 
   useEffect(() => {
-    // Mobile never runs the physics engine at all — a static grid renders
-    // instantly and costs zero JS per frame, guaranteeing no jank on phones.
-    // Only tablet/desktop get the drag-and-fall simulation.
-    if (!hasAppeared || isMobile) return;
+    if (!hasAppeared) return;
     const box = boxRef.current;
     if (!box) return;
 
@@ -344,14 +339,14 @@ function FallingIconsBox({ title, names }: { title: string; names: string[] }) {
       World.clear(engine.world, false);
       Engine.clear(engine);
     };
-  }, [hasAppeared, isMobile, boxRef]);
+  }, [hasAppeared, boxRef]);
 
   return (
     <div className="falling-group">
       <div className="falling-group-title">{title}</div>
-      <div ref={boxRef} className={`falling-icons-box${isMobile ? " is-static" : ""}`}>
-        {!isMobile && <span className="falling-icons-hint">{"// drag the icons"}</span>}
-        <div className={`falling-icons-flow${isMobile ? " falling-icons-flow--static" : ""}`}>
+      <div ref={boxRef} className="falling-icons-box">
+        <span className="falling-icons-hint">{"// drag the icons"}</span>
+        <div className="falling-icons-flow">
           {names.map((name, i) => (
             <FallingIcon
               key={name}
@@ -399,17 +394,12 @@ export function SkillsSection() {
           border: 0.7px dashed rgba(0,0,0,0.55);
           border-radius: 14px;
           background: #ffffff;
-          min-height: 320px;
+          min-height: 340px;
         }
         html.dark .falling-icons-box {
           border-color: rgba(255,255,255,0.55);
           background: #000000;
         }
-        /* Static (mobile) variant: no physics, no locked height — the box
-           just sizes itself to its grid content, so it never balloons
-           into a tall mostly-empty rectangle. */
-        .falling-icons-box.is-static { min-height: 0; }
-
         .falling-icons-flow {
           position: relative;
           z-index: 1;
@@ -420,11 +410,6 @@ export function SkillsSection() {
           gap: 12px;
           padding: 42px 22px 24px;
         }
-        .falling-icons-flow--static {
-          display: grid;
-          grid-template-columns: repeat(5, 1fr);
-          justify-items: center;
-        }
         .falling-icons-hint {
           position: absolute; top: 14px; right: 16px; z-index: 2;
           font-family: ${MONO}; font-size: 10.5px; letter-spacing: 0.02em;
@@ -432,11 +417,11 @@ export function SkillsSection() {
         }
 
         .falling-icon-chip {
-          width: 60px; height: 68px;
-          padding: 8px 4px 7px;
+          width: 64px; height: 72px;
+          padding: 9px 4px 7px;
           display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
           gap: 6px;
-          border-radius: 15px;
+          border-radius: 16px;
           border: 1px solid rgba(0,0,0,0.10);
           position: relative; z-index: 1;
           cursor: grab;
@@ -461,7 +446,7 @@ export function SkillsSection() {
         .falling-icon-chip::before {
           content: "";
           position: absolute; inset: 0; z-index: 0;
-          border-radius: 15px;
+          border-radius: 16px;
           background: linear-gradient(165deg, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.1) 32%, transparent 55%);
           pointer-events: none;
         }
@@ -470,7 +455,7 @@ export function SkillsSection() {
         }
         .falling-icon-chip:active { cursor: grabbing; }
         .falling-icon-chip img {
-          width: 25px; height: 25px; object-fit: contain;
+          width: 28px; height: 28px; object-fit: contain;
           pointer-events: none; -webkit-user-drag: none;
           position: relative; z-index: 1;
         }
@@ -489,22 +474,25 @@ export function SkillsSection() {
           .falling-groups-row > .falling-group:first-child { margin-top: 0; }
           .falling-group { margin-top: 22px; }
           .falling-group-title { font-size: 14px; }
-          .falling-icons-box { border-radius: 12px; }
-          .falling-icons-flow--static {
+          .falling-icons-box { border-radius: 12px; min-height: 220px; }
+          .falling-icons-flow {
+            display: grid;
             grid-template-columns: repeat(4, 1fr);
-            padding: 16px 12px;
-            gap: 10px 8px;
+            justify-items: center;
+            padding: 34px 10px 14px;
+            gap: 8px;
           }
-          .falling-icon-chip { width: 100%; max-width: 54px; height: 54px; border-radius: 12px; gap: 3px; padding: 6px 3px 5px; }
-          .falling-icon-chip img { width: 19px; height: 19px; }
-          .falling-icon-name { font-size: 6.8px; }
+          .falling-icon-chip { width: 100%; max-width: 62px; height: 62px; border-radius: 13px; gap: 4px; padding: 7px 3px 6px; }
+          .falling-icon-chip img { width: 22px; height: 22px; }
+          .falling-icon-name { font-size: 7.5px; }
         }
 
         @media ${cond.down(BP.mobileXsMax)} {
-          .falling-icons-flow--static { grid-template-columns: repeat(3, 1fr); padding: 14px 10px; }
-          .falling-icon-chip { max-width: 56px; height: 56px; border-radius: 12px; }
-          .falling-icon-chip img { width: 19px; height: 19px; }
-          .falling-icon-name { font-size: 6.6px; }
+          .falling-icons-box { min-height: 200px; }
+          .falling-icons-flow { grid-template-columns: repeat(3, 1fr); }
+          .falling-icon-chip { max-width: 58px; height: 58px; border-radius: 12px; }
+          .falling-icon-chip img { width: 20px; height: 20px; }
+          .falling-icon-name { font-size: 7px; }
           .falling-icons-hint { font-size: 9.5px; top: 10px; right: 12px; }
         }
       `}</style>
