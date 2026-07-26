@@ -1,0 +1,44 @@
+{
+  "_comment": "SINGLE SOURCE OF TRUTH for every responsive breakpoint in this app. Change a number here and it propagates everywhere: Tailwind config, every component's inline <style> media query (via lib/breakpoints.ts), and globals.css (via the auto-generated app/breakpoints.generated.css, rebuilt automatically before every dev/build run). Never hardcode a raw pixel number in a @media query anywhere else in the codebase.",
+
+  "_deviceGuide": {
+    "mobileTinyMax": "0–340px  — oldest/smallest phones (tightest chip/badge sizing)",
+    "mobileXxsMax":  "341–380px — iPhone SE and similarly narrow phones",
+    "mobileXsMax":   "381–420px — small phones, second chip-sizing refinement",
+    "mobileSmMax":   "421–480px — larger phones",
+    "mobileMax":     "482–599px — the general mobile ceiling used almost everywhere",
+    "tabletMin":     "600px — where tablets/iPads begin (complements mobileMax)",
+    "tabletSplitMax/Min": "767/768px — secondary split inside the tablet range (small vs. large tablets), used by nav height + a few content sections",
+    "navCollapseMax":"860px — the nav's own collapse point; a deliberately separate, coarser threshold than the content-level tablet/laptop split",
+    "tabletMax/laptopMin": "1024/1025px — tablet ↔ laptop boundary (e.g. iPad landscape vs. small laptop)",
+    "laptopNarrowMax/laptopWideMin": "1180/1181px — narrow vs. wide laptop (nav fully expands here)",
+    "laptopWideMax/desktopMin": "1599/1600px — laptop ↔ desktop boundary",
+    "contentWideMin":"1200px — page-wrapper max-width reassertion tier",
+    "wideGridMin":   "1300px — the /projects page's 3-column grid tier"
+  },
+
+  "mobileTinyMax": 340,
+  "mobileXxsMax": 380,
+  "mobileXsMax": 420,
+  "navTinyMax": 400,
+  "mobileSmMax": 480,
+  "mobileMax": 599,
+
+  "tabletMin": 600,
+  "tabletSplitMax": 767,
+  "tabletSplitMin": 768,
+  "navRoomyMax": 1180,
+  "footerCompactMax": 720,
+  "navCollapseMax": 860,
+  "tabletMax": 1024,
+
+  "laptopMin": 1025,
+  "laptopNarrowMax": 1180,
+  "laptopWideMin": 1181,
+  "laptopWideMax": 1599,
+
+  "desktopMin": 1600,
+
+  "contentWideMin": 1200,
+  "wideGridMin": 1300
+}

@@ -1,6 +1,7 @@
 "use client";
 import { useCallback, useState } from "react";
 import { SolidMagneticButton, SendIcon } from "./HeroActionButtons";
+import { mq } from "@/lib/breakpoints";
 
 const MONO = "'Geist Mono', monospace";
 const TO_EMAIL = "ithakur2327@gmail.com";
@@ -102,7 +103,7 @@ export function ContactPageForm() {
           font-size: 13px; color: var(--text-secondary); margin: 0;
         }
 
-        @media (max-width: 599px) {
+        ${mq.mobile} {
           .cpf-grid { grid-template-columns: 1fr; }
           .cpf-banner { flex-direction: column; align-items: flex-start; text-align: left; }
         }

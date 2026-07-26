@@ -4,6 +4,7 @@ import { useTheme } from "./ThemeProvider";
 import { motion, useMotionValue, useSpring, useTransform, animate } from "motion/react";
 import { SocialRow } from "./ui/SocialRow";
 import { SolidMagneticButton, SendIcon } from "./HeroActionButtons";
+import { BP, mq as MQ, useIsMobile } from "@/lib/breakpoints";
 
 const MONO = "'Geist Mono', monospace";
 
@@ -80,14 +81,7 @@ function FluidGradientText({ text }: { text: string }) {
   const tl = VW * 0.945;
 
   // Stretch the art to fill the box on small screens.
-  const [isMobile, setIsMobile] = React.useState(false);
-  React.useEffect(() => {
-    const mq = window.matchMedia("(max-width: 599px)");
-    const update = () => setIsMobile(mq.matches);
-    update();
-    mq.addEventListener("change", update);
-    return () => mq.removeEventListener("change", update);
-  }, []);
+  const isMobile = useIsMobile();
 
   return (
     <div
@@ -292,10 +286,10 @@ export function Footer() {
           padding-bottom: clamp(18px, 3vw, 40px);
         }
 
-        @media (max-width: 720px) {
+        @media (max-width: ${BP.footerCompactMax}px) {
           .footer-bottom-band  { padding: 14px 22px; gap: 14px; }
         }
-        @media (max-width: 480px) {
+        ${MQ.mobileSm} {
           .footer-cta-band     { padding: 20px 16px 16px; }
           .footer-bottom-band  { padding: 12px 16px; flex-direction: column; gap: 10px; }
         }
@@ -304,7 +298,7 @@ export function Footer() {
            full 100vw (intentionally wider than --content-width; it's a
            decorative banner, not body content). Mobile and tablet keep
            the existing full-bleed size. */
-        @media (min-width: 1025px) {
+        @media (min-width: ${BP.laptopMin}px) {
           .fgt-outer {
             position: static;
             left: auto;

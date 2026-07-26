@@ -4,6 +4,7 @@ import { useRef, memo, useEffect, useState } from "react";
 import { useReveal } from "./useReveal";
 import { useTheme } from "./ThemeProvider";
 import { SectionTitleIcon } from "./SectionIcon";
+import { BP, cond, mq } from "@/lib/breakpoints";
 
 const MONO = "'Geist Mono', 'SF Mono', monospace";
 const SF   = "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', sans-serif";
@@ -428,27 +429,27 @@ export function SkillsSection() {
         }
 
         /* Mobile layout fix */
-        @media (max-width: 599px) {
+        ${mq.mobile} {
           .skills-grid { border-radius: 8px; grid-template-columns: 1fr; }
           .lamp-skill-box { min-height: 168px; }
           .skill-cols-wrap { gap: 10px !important; padding: 0 10px 10px !important; }
         }
 
-        @media (max-width: 420px) {
+        @media ${cond.down(BP.mobileXsMax)} {
           .lamp-skill-box { min-height: 158px; }
           .skill-name-txt { font-size: 10.5px !important; }
           .skill-row-item { gap: 6px !important; padding: 5px 16px !important; }
           .skill-row-icon { width: 22px !important; height: 22px !important; margin-left: 6px !important; }
         }
 
-        @media (max-width: 340px) {
+        @media ${cond.down(BP.mobileTinyMax)} {
           .lamp-skill-box { min-height: 150px; }
           .skill-name-txt { font-size: 9.5px !important; }
           .skill-row-item { gap: 6px !important; padding: 4px 14px !important; }
           .skill-row-icon { width: 20px !important; height: 20px !important; margin-left: 4px !important; }
         }
 
-        @media (max-width: 599px) {
+        ${mq.mobile} {
           .skills-inner { padding: 0 16px 28px !important; }
         }
       `}</style>

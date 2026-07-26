@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useRef } from "react";
 import { useTheme } from "./ThemeProvider";
+import { BP, mq } from "@/lib/breakpoints";
 
 export function SparklesBridge() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -19,9 +20,9 @@ export function SparklesBridge() {
 
     const getHeight = () => {
       const vw = window.innerWidth;
-      if (vw >= 1024 && vw <= 1180) return 148;
-      if (vw >= 768  && vw <= 1023) return 124;
-      if (vw >= 600  && vw <= 767)  return 100;
+      if (vw >= BP.laptopMin && vw <= BP.laptopNarrowMax) return 148;
+      if (vw >= BP.tabletSplitMin && vw <= BP.tabletMax) return 124;
+      if (vw >= BP.tabletMin && vw <= BP.tabletSplitMax) return 100;
       return 62;
     };
 
@@ -133,13 +134,13 @@ export function SparklesBridge() {
         className="sparkles-bridge-canvas"
       />
       <style suppressHydrationWarning>{`
-        @media (min-width: 600px) and (max-width: 767px) {
+        @media (min-width: ${BP.tabletMin}px) and (max-width: ${BP.tabletSplitMax}px) {
           .sparkles-bridge-canvas { height: 100px !important; }
         }
-        @media (min-width: 768px) and (max-width: 1023px) {
+        @media (min-width: ${BP.tabletSplitMin}px) and (max-width: ${BP.tabletMax}px) {
           .sparkles-bridge-canvas { height: 124px !important; }
         }
-        @media (min-width: 1024px) and (max-width: 1180px) {
+        ${mq.laptopNarrow} {
           .sparkles-bridge-canvas { height: 148px !important; }
         }
       `}</style>

@@ -3,6 +3,7 @@ import { useRef } from "react";
 import { motion, useInView } from "motion/react";
 import { useReveal } from "./useReveal";
 import { SectionIcon, SectionTitleIcon } from "./SectionIcon";
+import { mq } from "@/lib/breakpoints";
 
 const SF = "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', sans-serif";
 const MONO = "'Geist Mono', monospace";
@@ -294,10 +295,10 @@ export function EducationSection() {
         .lang-pill-dot { display: none; }
 
         /* Responsive tweaks */
-        @media (max-width: 860px) {
+        ${mq.navCollapse} {
           .edu-inner { padding: 0 22px 34px; }
         }
-        @media (max-width: 599px) {
+        ${mq.mobile} {
           .edu-inner { padding: 0 16px 28px; }
           .edu-card-top { flex-direction: column; gap: 4px; }
           .edu-card-period { margin-left: 0; }

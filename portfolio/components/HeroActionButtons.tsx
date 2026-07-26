@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useRef } from "react";
 import { motion, useMotionValue, useSpring, type SpringOptions } from "motion/react";
+import { mq } from "@/lib/breakpoints";
 
 /* ════════════════════════════════════════════════════════════
    Magnetic — subtle cursor-attraction wrapper.
@@ -214,7 +215,7 @@ export function SolidMagneticButton({
         .hero-contact-btn:active { transform: scale(0.97); }
         .hero-contact-btn:disabled { cursor: default; opacity: 0.55; }
 
-        @media (max-width: 600px) {
+        ${mq.mobile} {
           .hero-contact-btn { height: 38px; padding: 0 16px; font-size: 12.5px; }
         }
         @media (prefers-reduced-motion: reduce) {
@@ -290,11 +291,11 @@ export function HeroActionButtons({
           color: var(--text-primary) !important;
         }
 
-        @media (min-width: 600px) and (max-width: 1180px) {
+        ${mq.tabletThroughLaptopNarrow} {
           .hero-liquid-btn { padding-left: 10px !important; }
         }
 
-        @media (max-width: 600px) {
+        ${mq.mobile} {
           .hero-liquid-btn { height: 38px; padding: 0 16px 0 9px; font-size: 12.5px; }
           /* Equal-width pair on mobile via CSS Grid (1fr 1fr) rather than
              flex-grow — with white-space:nowrap content, flex-basis:0 +

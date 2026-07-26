@@ -6,6 +6,7 @@ import { useTheme } from "./ThemeProvider";
 import { usePdfModal } from "./PdfViewerModal";
 import { HeroActionButtons } from "./HeroActionButtons";
 import { SocialRow } from "./ui/SocialRow";
+import { BP, cond, mq } from "@/lib/breakpoints";
 
 const SENTENCES = [
   "AI Software Engineer",
@@ -287,7 +288,7 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
           margin-top: 16px;
         }
 
-        @media (min-width: 600px) and (max-width: 1180px) {
+        ${mq.tabletThroughLaptopNarrow} {
           .h-avatar {
             width: clamp(220px, 32vw, 300px) !important;
             min-width: clamp(220px, 32vw, 300px) !important;
@@ -340,7 +341,7 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
           }
         }
 
-        @media (min-width: 1024px) and (max-width: 1180px) {
+        ${mq.laptopNarrow} {
           .h-avatar {
             width: clamp(260px, 28vw, 300px) !important;
             min-width: clamp(260px, 28vw, 300px) !important;
@@ -367,7 +368,7 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
            (iPad Air/Pro landscape, ~1180-1366px) never hit a hard cliff —
            avatar/badge/name-font/gap linearly taper down to their exact
            desktop-base values by 1600px instead of snapping instantly. */
-        @media (min-width: 1181px) and (max-width: 1600px) {
+        ${mq.laptopWide} {
           .h-avatar {
             width: clamp(198px, calc(587.5px - 24.3437vw), 300px) !important;
             min-width: clamp(198px, calc(587.5px - 24.3437vw), 300px) !important;
@@ -385,7 +386,7 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
           .h-name-row { gap: clamp(10px, calc(32.9px - 1.432vw), 16px) !important; }
         }
 
-        @media (max-width: 600px) {
+        ${mq.mobile} {
           .h-profile { flex-direction: row !important; }
 
           .h-avatar {
@@ -442,7 +443,7 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
           .hero-actions .hero-liquid-btn, .hero-actions .hero-contact-btn { flex: 1 1 0 !important; min-width: 0 !important; justify-content: center !important; }
         }
 
-        @media (max-width: 380px) {
+        @media ${cond.down(BP.mobileXxsMax)} {
           .h-avatar {
             width: clamp(105px, 30vw, 135px) !important;
             min-width: clamp(105px, 30vw, 135px) !important;
@@ -463,7 +464,7 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
           }
         }
 
-        @media (max-width: 600px) {
+        ${mq.mobile} {
           .h-info-wrap {
             border-left: none !important;
             border-right: none !important;

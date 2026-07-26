@@ -4,6 +4,7 @@ import { useReveal } from "./useReveal";
 import { SectionTitleIcon } from "./SectionIcon";
 import { usePdfModal } from "./PdfViewerModal";
 import { slugify } from "@/lib/utils";
+import { mq } from "@/lib/breakpoints";
 
 const SF = "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', sans-serif";
 const MONO = "'Geist Mono', monospace";
@@ -228,14 +229,14 @@ export function CertificationsSection() {
         }
 
         /* Responsive tweaks */
-        @media (max-width: 860px) {
+        ${mq.navCollapse} {
           .edu-inner { padding: 0 22px 34px; }
         }
-        @media (max-width: 599px) {
+        ${mq.mobile} {
           .edu-inner { padding: 0 16px 28px; }
           .edu-sec-title { font-size: 22px; }
         }
-        @media (max-width: 767px) {
+        ${mq.tabletSplitDown} {
           .cert-grid {
             grid-template-columns: 1fr;
             grid-template-rows: repeat(${CERTIFICATIONS.length}, auto);

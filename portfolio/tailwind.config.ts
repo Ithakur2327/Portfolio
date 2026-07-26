@@ -1,4 +1,5 @@
 import type { Config } from "tailwindcss";
+import bp from "./lib/breakpoints.json";
 
 const config: Config = {
   darkMode: "class",
@@ -8,6 +9,16 @@ const config: Config = {
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
+    // Screens are derived from lib/breakpoints.json — the single source
+    // of truth shared with every component's inline media queries and
+    // with globals.css. Do not hardcode pixel values here; edit the
+    // JSON file instead so every consumer stays in sync.
+    screens: {
+      sm: `${bp.tabletMin}px`, // 600  — tablet and up
+      md: `${bp.laptopMin}px`, // 1025 — laptop and up
+      lg: `${bp.laptopWideMin}px`, // 1181 — wide laptop and up
+      xl: `${bp.desktopMin}px`, // 1600 — desktop and up
+    },
     extend: {
       fontFamily: {
         sans: ["var(--font-geist-sans)", "system-ui", "sans-serif"],

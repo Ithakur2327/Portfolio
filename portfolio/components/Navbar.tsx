@@ -8,6 +8,7 @@ import { useTheme } from "./ThemeProvider";
 import { playThemeToggleSound } from "@/lib/soundcn/sounds";
 import { usePdfModal } from "./PdfViewerModal";
 import { SectionIcon, type SectionIconType } from "./SectionIcon";
+import { BP, mq } from "@/lib/breakpoints";
 
 const PORTFOLIO_LINKS = [
   { label: "Home",           href: "#",                                       icon: "home",     external: false, type: "section" },
@@ -161,7 +162,7 @@ function CommandMenu({
     if (!open || !triggerRef.current) return;
     const rect = triggerRef.current.getBoundingClientRect();
     const panelW = Math.min(480, window.innerWidth - 32);
-    const desktopShift = window.innerWidth >= 600 ? 56 : 0;
+    const desktopShift = window.innerWidth >= BP.tabletMin ? 56 : 0;
     let left = rect.left + rect.width / 2 - panelW / 2 - desktopShift;
     left = Math.max(16, Math.min(left, window.innerWidth - panelW - 16));
     setPanelLeft(left);
@@ -454,7 +455,7 @@ export function Navbar() {
         @keyframes cmdk-p-out  { from{opacity:1;transform:translateY(0) scale(1)} to{opacity:0;transform:translateY(-6px) scale(0.98)} }
 
         /* Mobile overlay: blur */
-        @media (max-width: 599px) {
+        ${mq.mobile} {
           .cmdk-overlay { backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
         }
 
@@ -495,9 +496,9 @@ export function Navbar() {
         }
         .cmdk-trigger:hover { color:var(--nav-link-hover);background:var(--nav-link-active-bg); }
         /* Show the search label on mobile + tablets; hide only on large desktops */
-        @media (min-width:1181px) { .cmdk-trigger-label { display:none !important; } }
+        ${mq.laptopWideUp} { .cmdk-trigger-label { display:none !important; } }
         /* Hide the keyboard shortcut hint on tablets and smaller (show only on large desktops) */
-        @media (max-width:1180px) { .cmdk-trigger-kbd   { display:none !important; } }
+        ${mq.laptopNarrowDown} { .cmdk-trigger-kbd   { display:none !important; } }
         .cmdk-trigger-kbd { display:flex;align-items:center;gap:3px; }
 
         /* Desktop nav links */
@@ -531,7 +532,7 @@ export function Navbar() {
         .icon-btn:hover  { background:var(--nav-link-active-bg);color:var(--nav-link-hover); }
         .icon-btn:active { transform:scale(0.95); }
 
-        @media (max-width:599px) {
+        ${mq.mobile} {
           .icon-btn {
             width:30px;height:30px;border-radius:0;
             background:transparent !important;
@@ -560,7 +561,7 @@ export function Navbar() {
           from { opacity:0; transform:translateX(-50%) translateY(-4px) scale(0.96); }
           to   { opacity:1; transform:translateX(-50%) translateY(0)     scale(1);    }
         }
-        @media (max-width:599px)  { .nav-tooltip-box { display:none !important; } }
+        ${mq.mobile}  { .nav-tooltip-box { display:none !important; } }
         @media (hover:none)       { .nav-tooltip-box { display:none !important; } }
 
         .nav-tooltip-arrow {
@@ -571,7 +572,7 @@ export function Navbar() {
         }
 
         /* Treat tablets and smaller like mobile: hide desktop-only nav links */
-        @media (max-width:1180px) { .nav-desktop-only { display:none !important; } }
+        ${mq.laptopNarrowDown} { .nav-desktop-only { display:none !important; } }
       `}</style>
 
       <header className={`nav-root${scrolled ? " scrolled" : ""}`}>

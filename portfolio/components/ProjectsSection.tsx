@@ -4,6 +4,7 @@ import { useReveal } from "./useReveal";
 import { SectionTitleIcon } from "./SectionIcon";
 import { PROJECTS } from "@/lib/projects-data";
 import { ProjectsGrid } from "./ProjectsGrid";
+import { mq } from "@/lib/breakpoints";
 
 const SF = "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', sans-serif";
 
@@ -31,7 +32,7 @@ export function ProjectsSection() {
           <div style={{ height: 1, background: "var(--border)", margin: "20px 0 20px" }} />
 
           <style suppressHydrationWarning>{`
-            @media (max-width: 599px) { .proj-inner { padding: 0 16px 28px !important; } }
+            ${mq.mobile} { .proj-inner { padding: 0 16px 28px !important; } }
           `}</style>
 
           <ProjectsGrid projects={featured} visible={visible} mobileMax={MOBILE_COUNT} />

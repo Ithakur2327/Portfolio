@@ -1,4 +1,11 @@
 /* ═══════════════════════════════════════════════════════════
+   RESPONSIVE BREAKPOINTS — single source of truth
+   Every @media (--xxx) below comes from lib/breakpoints.json.
+   See app/breakpoints.generated.css and lib/breakpoints.ts.
+═══════════════════════════════════════════════════════════ */
+@import "./breakpoints.generated.css";
+
+/* ═══════════════════════════════════════════════════════════
    FONTS — self-hosted (no external request, never 404s)
 ═══════════════════════════════════════════════════════════ */
 @font-face {
@@ -199,7 +206,7 @@ a, button, [role="button"] {
    width is controlled from one place.
 ═══════════════════════════════════════════════════════════ */
 :root {
-  --content-width: 950px;
+  --content-width: 960px;
   --content-width-inset: calc(var(--content-width) - 32px);
 }
 .page-wrapper {
@@ -847,15 +854,20 @@ html.light .nav-root.scrolled {
   box-shadow: none !important;
 }
 
-/* Mobile nav height */
-@media (max-width: 760px) {
+/* Mobile nav height. (Was `max-width: 760px`, which left a 761–767px gap
+   before the tablet rule below started at 768px — during that sliver the
+   nav silently fell back to its unstyled default height. Using the same
+   --tablet-split-down tier the rest of the app already uses for this
+   exact boundary closes the gap.) */
+@media (--tablet-split-down) {
   .nav-root { height: 56px !important; }
   .nav-inner { height: 56px !important; }
   .logo-area { width: 38px; height: 38px; }
 }
 
-/* Tablet nav height (768px–1180px) */
-@media (min-width: 768px) and (max-width: 1180px) {
+/* Tablet nav height (768px–1180px) — the range where the nav gets extra
+   breathing room before collapsing back down on real laptops. */
+@media (--nav-roomy) {
   .nav-root { height: 68px !important; }
   .nav-inner { height: 68px !important; padding: 0 32px !important; }
   .logo-area { width: 46px; height: 46px; }
@@ -868,7 +880,7 @@ html.light .nav-root.scrolled {
 /* ═══════════════════════════════════════════════════════════
    HERO LAYOUT — TABLET
 ═══════════════════════════════════════════════════════════ */
-@media (min-width: 600px) and (max-width: 1024px) {
+@media (--tablet) {
   section#about {
     padding-top: 0;
     padding-bottom: 48px;
@@ -879,7 +891,7 @@ html.light .nav-root.scrolled {
 /* ═══════════════════════════════════════════════════════════
    LOW-END DEVICE PERFORMANCE
 ═══════════════════════════════════════════════════════════ */
-@media (max-width: 600px) and (max-device-pixel-ratio: 2) {
+@media (--mobile) and (max-device-pixel-ratio: 2) {
   .nav-root {
     backdrop-filter: blur(8px) !important;
     -webkit-backdrop-filter: blur(8px) !important;
@@ -888,7 +900,7 @@ html.light .nav-root.scrolled {
 
 
 /* Reduce will-change on small screens */
-@media (max-width: 600px) {
+@media (--mobile) {
   .nav-root,
   .s-tile,
   .proj-card,
@@ -905,13 +917,11 @@ html.light .nav-root.scrolled {
 /* ═══════════════════════════════════════════════════════════
    RESPONSIVE
 ═══════════════════════════════════════════════════════════ */
-@media (max-width: 860px) {
-  .desktop-nav { display: none !important; }
+@media (--nav-collapse) {
   .page-wrapper { padding: 0; }
-  .mobile-nav-btn { display: flex !important; }
 }
 
-@media (max-width: 860px) {
+@media (--nav-collapse) {
   .hero-grid { grid-template-columns: 1fr !important; }
   .nav-inner { padding: 0 14px; }
   .page-wrapper { border-left: none !important; border-right: none !important; }
@@ -941,7 +951,7 @@ html.light .nav-root.scrolled {
   .name-highlight { box-shadow: none !important; }
 }
 
-@media (max-width: 600px) {
+@media (--mobile) {
   section, .section-inner { padding-left: 14px !important; padding-right: 14px !important; }
   section#about { padding-left: 0 !important; padding-right: 0 !important; }
   .skills-strip-offset { margin-left: -14px !important; margin-right: -14px !important; }
@@ -958,77 +968,20 @@ html.light .nav-root.scrolled {
   .about-content { padding-left: 14px !important; padding-right: 14px !important; }
 }
 
-@media (max-width: 400px) {
+@media (--nav-tiny) {
   .stat-badge { min-width: 100% !important; }
   .nav-inner { height: 46px; }
   .nav-root  { height: 46px; }
 }
 
+/* Short landscape phones — a height/orientation query, not a width tier,
+   so it intentionally sits outside the BP width ladder. */
 @media (max-height: 500px) and (orientation: landscape) {
   section { padding-top: 8px; padding-bottom: 8px; }
 }
 
-@media (min-width: 1200px) {
+@media (--content-wide-up) {
   .page-wrapper { max-width: var(--content-width); }
-}
-
-/* ═══════════════════════════════════════════════════════════
-   NAVBAR — mobile nav
-═══════════════════════════════════════════════════════════ */
-.mobile-nav-btn { display: none; }
-.mobile-menu {
-  display: none;
-  position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background: var(--nav-bg);
-  backdrop-filter: blur(12px) saturate(180%);
-  -webkit-backdrop-filter: blur(12px) saturate(180%);
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-  z-index: 99;
-  padding: 20px;
-  opacity: 0;
-  transform: translateY(-8px);
-  transition: opacity 0.22s var(--spring-smooth), transform 0.22s var(--spring-smooth);
-  pointer-events: none;
-}
-.mobile-menu.open {
-  display: flex;
-  opacity: 1;
-  transform: translateY(0);
-  pointer-events: auto;
-}
-.mobile-menu a {
-  width: 100%; max-width: 320px;
-  padding: 14px 24px; border-radius: 10px;
-  font-size: 18px; font-weight: 600;
-  color: var(--nav-link-color);
-  background: transparent;
-  text-decoration: none;
-  text-align: center;
-  transition: color 0.15s, background 0.15s;
-  border: 1px solid transparent;
-}
-.mobile-menu a:hover,
-.mobile-menu a.active {
-  color: var(--nav-link-hover);
-  background: var(--nav-link-active-bg);
-  border-color: var(--nav-border);
-}
-.mobile-menu-close {
-  position: absolute; top: 16px; right: 16px;
-  display: flex; align-items: center; justify-content: center;
-  width: 36px; height: 36px; border-radius: 50%;
-  background: var(--bg-hover); border: 1px solid var(--nav-border);
-  color: var(--text-muted); cursor: pointer;
-  transition: background 0.15s;
-}
-
-@media (max-width: 860px) {
-  .mobile-nav-btn { display: flex !important; }
-  .desktop-nav    { display: none !important; }
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -1048,7 +1001,7 @@ html.light .nav-root.scrolled {
 
 
 /* Force GPU layers only on elements that need it — avoid layer explosion */
-@media (max-width: 860px) {
+@media (--nav-collapse) {
   /* Remove will-change from everything except the cat */
   .marquee-inner,
   .reveal,
@@ -1100,9 +1053,8 @@ html.light .nav-root.scrolled {
 }
 
 
-@media (max-width: 480px) and (max-device-pixel-ratio: 1) {
-  .nav-root,
-  .mobile-menu {
+@media (--mobile-sm) and (max-device-pixel-ratio: 1) {
+  .nav-root {
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
   }

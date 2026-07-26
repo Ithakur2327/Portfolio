@@ -6,23 +6,10 @@ import { createPortal } from "react-dom";
 import { useReveal } from "./useReveal";
 import { useTheme } from "./ThemeProvider";
 import { SectionTitleIcon } from "./SectionIcon";
+import { mq, useIsTablet } from "@/lib/breakpoints";
 
 const SF = "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', sans-serif";
 const MONO = "'SF Mono', 'Geist Mono', monospace";
-
-function useIsTablet() {
-  const [isTablet, setIsTablet] = useState(false);
-  useEffect(() => {
-    const check = () => {
-      const w = window.innerWidth;
-      setIsTablet(w >= 600 && w <= 1024);
-    };
-    check();
-    window.addEventListener("resize", check, { passive: true });
-    return () => window.removeEventListener("resize", check);
-  }, []);
-  return isTablet;
-}
 
 interface ContribDay { contributionCount: number; date: string; }
 interface Week { days: ContribDay[]; }
@@ -749,7 +736,7 @@ export function StatsSection() {
         .about-panels > .stat-card-3d:first-child { padding-right: 28px; }
         .about-panels > .stat-card-3d:last-child  { padding-left: 28px; }
 
-        @media (min-width: 600px) and (max-width: 1024px) {
+        ${mq.tablet} {
           .about-panels { grid-template-columns: 1fr !important; }
           .about-panels::after { display: none; }
           .about-panels > .stat-card-3d:first-child,
@@ -765,7 +752,7 @@ export function StatsSection() {
           .gh-cell { width: 14px !important; height: 14px !important; border-radius: 3px !important; }
           .lc-cell { width: 14px !important; height: 14px !important; border-radius: 3px !important; }
         }
-        @media (max-width: 599px) {
+        ${mq.mobile} {
           .about-panels { grid-template-columns: 1fr; }
           .about-panels::after { display: none; }
           .about-panels > .stat-card-3d:first-child,
@@ -780,12 +767,12 @@ export function StatsSection() {
         .about-content {
           max-width: var(--content-width); margin: 0 auto; padding: 0 20px 64px;
         }
-        @media (max-width: 860px) { .about-content { padding: 0 22px 34px; } }
-        @media (max-width: 599px) {
+        ${mq.navCollapse} { .about-content { padding: 0 22px 34px; } }
+        ${mq.mobile} {
           .about-content  { padding: 0 14px 28px; }
           .stat-card-3d   { width: 100% !important; min-width: 0 !important; }
         }
-        @media (max-width: 600px) {
+        ${mq.mobile} {
           .lc-body-desktop { display: none !important; }
           .lc-body-mobile  { display: flex !important; }
         }
