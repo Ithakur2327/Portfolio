@@ -213,6 +213,7 @@ function FallingIconsBox({ title, names }: { title: string; names: string[] }) {
       mousedown: (event: Event) => void;
       mousemove: (event: Event) => void;
       mouseup: (event: Event) => void;
+      mousewheel: (event: Event) => void;
     };
     const mouseConstraint = MouseConstraint.create(engine, {
       mouse,
@@ -225,6 +226,7 @@ function FallingIconsBox({ title, names }: { title: string; names: string[] }) {
     box.removeEventListener("touchstart", mouse.mousedown);
     box.removeEventListener("touchmove", mouse.mousemove);
     box.removeEventListener("touchend", mouse.mouseup);
+    box.removeEventListener("wheel", mouse.mousewheel);
 
     const HOLD_MS = 160;
     const MOVE_TOLERANCE = 9;
@@ -349,6 +351,16 @@ export function SkillsSection() {
   return (
     <>
       <style suppressHydrationWarning>{`
+        .falling-groups-row {
+          display: flex;
+          align-items: flex-start;
+          gap: 24px;
+        }
+        .falling-groups-row > .falling-group {
+          flex: 1 1 0;
+          min-width: 0;
+          margin-top: 0;
+        }
         .falling-group { margin-top: 30px; }
         .falling-group:first-child { margin-top: 0; }
         .falling-group-title {
@@ -440,6 +452,9 @@ export function SkillsSection() {
 
         ${mq.mobile} {
           .skills-inner { padding: 0 16px 28px !important; }
+          .falling-groups-row { flex-direction: column; gap: 0; }
+          .falling-groups-row > .falling-group { margin-top: 24px; }
+          .falling-groups-row > .falling-group:first-child { margin-top: 0; }
           .falling-group { margin-top: 24px; }
           .falling-group-title { font-size: 14px; }
           .falling-icons-box { border-radius: 12px; min-height: 320px; }
@@ -479,8 +494,10 @@ export function SkillsSection() {
             </div>
             <div style={{ height:1, background:"var(--border)", margin:"18px 0 18px" }} />
 
-            <FallingIconsBox title="Languages & Full-Stack" names={GROUP_LANGUAGES_FULLSTACK} />
-            <FallingIconsBox title="GenAI, DevOps & Tools" names={GROUP_GENAI_DEVOPS_TOOLS} />
+            <div className="falling-groups-row">
+              <FallingIconsBox title="Languages & Full-Stack" names={GROUP_LANGUAGES_FULLSTACK} />
+              <FallingIconsBox title="GenAI, DevOps & Tools" names={GROUP_GENAI_DEVOPS_TOOLS} />
+            </div>
           </div>
         </div>
       </section>
