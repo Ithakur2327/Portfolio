@@ -270,7 +270,7 @@ export function SkillsSection() {
         .falling-icons-box {
           position: relative;
           overflow: hidden;
-          border: 1px dashed ${TIFFANY};
+          border: .7px dashed ${TIFFANY};
           border-radius: 14px;
           background: #000;
           min-height: 420px;
