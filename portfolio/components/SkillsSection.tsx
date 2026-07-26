@@ -1,17 +1,13 @@
 "use client";
 
-import { useRef, memo, forwardRef, useEffect, useState } from "react";
+import { useRef, memo, forwardRef, useEffect, useState, useCallback } from "react";
 import Matter from "matter-js";
 import { useReveal } from "./useReveal";
-import { useTheme } from "./ThemeProvider";
 import { SectionTitleIcon } from "./SectionIcon";
 import { BP, cond, mq } from "@/lib/breakpoints";
 
 const MONO = "'Geist Mono', 'SF Mono', monospace";
 const SF   = "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', sans-serif";
-
-/* Tiffany & Co. blue — Pantone 1837, the box's dashed border color */
-const TIFFANY = "#ffffff";
 
 /* Tech definitions */
 type TechDef = { color: string; logo: string; bright?: boolean; invert?: boolean; keepInLight?: boolean };
@@ -38,7 +34,7 @@ const TECH: Record<string, TechDef> = {
   FastAPI:        { color: "#009688", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/fastapi/fastapi-original.svg" },
   GraphQL:        { color: "#E10098", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/graphql/graphql-plain.svg" },
   // GenAI / AI
-  "AI":           { color: "#10a37f", logo: "https://cdn.simpleicons.org/openai/10a37f", invert: false },
+  "AI":           { color: "#10a37f", logo: "https://cdn.simpleicons.org/openai/10a37f" },
   LangChain:      { color: "#1C9E6E", logo: "https://registry.npmmirror.com/@lobehub/icons-static-png/latest/files/dark/langchain-color.png" },
   LangGraph:      { color: "#2ecc71", logo: "https://registry.npmmirror.com/@lobehub/icons-static-png/latest/files/dark/langgraph-color.png" },
   RAG:            { color: "#ee4c2c", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/pytorch/pytorch-original.svg" },
@@ -59,7 +55,11 @@ const TECH: Record<string, TechDef> = {
   "VS Code":      { color: "#007ACC", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/vscode/vscode-original.svg" },
 };
 
-/* Every skill in TECH falls into the box — nothing is grouped anymore */
+/* Every skill in TECH falls into the box — nothing is grouped anymore.
+   Note: the old invert/bright/keepInLight flags above are no longer read
+   for image filtering (see FallingIcon) — every chip now sits on its own
+   light card regardless of site theme, so every logo shows in its real,
+   unfiltered brand color without needing per-icon color hacks. */
 const ALL_TECH = Object.keys(TECH);
 
 /* View-based reveal hook — the box only "wakes up" (starts the physics
@@ -80,65 +80,83 @@ function useBoxInView() {
   return { ref, inView };
 }
 
-/* Single falling icon chip. Position/rotation are written directly to the
-   DOM node by the physics loop in FallingIconsBox (see the rAF `tick`
-   below) — not through React state — so this stays a plain forwarded-ref
-   element instead of re-rendering every frame. */
-const FallingIcon = memo(forwardRef<HTMLDivElement, { name: string; isDark: boolean }>(
-  function FallingIcon({ name, isDark }, ref) {
-    const tech = TECH[name] ?? { color: "#71717a", logo: "" };
+/* Single falling icon card: logo + a permanently-visible name label below
+   it, plus a "thought bubble" tooltip that pops up above on hover (desktop)
+   or tap (mobile/touch). Position is written directly to the DOM node by
+   the physics loop in FallingIconsBox — never rotation, only translate —
+   so the card (and therefore its tooltip) always stays upright. */
+const FallingIcon = memo(forwardRef<HTMLDivElement, {
+  name: string;
+  active: boolean;
+  onTap: (name: string) => void;
+}>(function FallingIcon({ name, active, onTap }, ref) {
+  const tech = TECH[name] ?? { color: "#8a8a8a", logo: "" };
 
-    const filter = isDark
-      ? tech.invert ? "invert(1) brightness(0.92)" : tech.bright ? "brightness(1.8) contrast(1.1)" : "none"
-      : tech.bright && !tech.keepInLight ? "brightness(0.1) saturate(0)" : "none";
+  return (
+    <div
+      ref={ref}
+      className={`falling-icon-chip${active ? " tip-active" : ""}`}
+      style={{
+        background: `linear-gradient(155deg, #ffffff 0%, #ffffff 52%, ${tech.color}22 100%)`,
+        borderColor: `${tech.color}4d`,
+      }}
+      onClick={() => onTap(name)}
+    >
+      {tech.logo && (
+        // eslint-disable-next-line @next/next/no-img-element -- tiny physics-driven skill icon, real brand colors, unfiltered
+        <img
+          src={tech.logo}
+          alt={name}
+          draggable={false}
+          onError={e => { (e.target as HTMLImageElement).style.display = "none"; }}
+        />
+      )}
+      <span className="falling-icon-name">{name}</span>
 
-    return (
-      <div
-        ref={ref}
-        className="falling-icon-chip"
-        style={{ background: `${tech.color}18`, borderColor: `${tech.color}40` }}
-      >
-        {tech.logo && (
-          // eslint-disable-next-line @next/next/no-img-element -- tiny physics-driven skill icon
-          <img
-            src={tech.logo}
-            alt={name}
-            draggable={false}
-            style={{ filter }}
-            onError={e => { (e.target as HTMLImageElement).style.display = "none"; }}
-          />
-        )}
-        <span className="falling-icon-tip">{name}</span>
+      <div className="falling-icon-tip">
+        <span className="tip-bubble">{name}</span>
+        <i className="tip-dot tip-dot-a" />
+        <i className="tip-dot tip-dot-b" />
       </div>
-    );
-  }
-));
+    </div>
+  );
+}));
 FallingIcon.displayName = "FallingIcon";
 
-/* The falling-icons box: every skill icon starts laid out in a tidy grid,
+/* The falling-icons box: every skill card starts laid out in a tidy grid,
    then — once scrolled into view — drops into a physics-driven pile inside
    the dashed box, exactly like the FallingText word-drop effect but with
-   skill icons instead of words. Pieces stay mouse/touch-draggable after
-   settling. */
+   skill icons instead of words. Cards stay mouse/touch-draggable after
+   settling, never rotate, and use a transform-only render loop (no
+   Matter.Render, no Matter.Runner) to stay light on mobile. */
 function FallingIconsBox() {
   const { ref: boxRef, inView } = useBoxInView();
-  const canvasHostRef = useRef<HTMLDivElement>(null);
   const iconRefs = useRef<(HTMLDivElement | null)[]>([]);
-  const { theme } = useTheme();
-  const isDark = theme === "dark";
 
   // Icons drop in once on first scroll into view; they don't re-drop on
   // subsequent scroll passes.
   const [hasAppeared, setHasAppeared] = useState(false);
   useEffect(() => { if (inView) setHasAppeared(true); }, [inView]);
 
+  // Tap/click-to-show tooltip (for touch devices, where :hover doesn't
+  // apply). Tapping the same card again dismisses it early; otherwise it
+  // auto-hides after a couple of seconds.
+  const [activeTip, setActiveTip] = useState<string | null>(null);
+  const handleTap = useCallback((name: string) => {
+    setActiveTip(prev => (prev === name ? null : name));
+  }, []);
+  useEffect(() => {
+    if (!activeTip) return;
+    const t = setTimeout(() => setActiveTip(null), 2200);
+    return () => clearTimeout(t);
+  }, [activeTip]);
+
   useEffect(() => {
     if (!hasAppeared) return;
     const box = boxRef.current;
-    const canvasHost = canvasHostRef.current;
-    if (!box || !canvasHost) return;
+    if (!box) return;
 
-    const { Engine, Render, World, Bodies, Body, Runner, Mouse, MouseConstraint } = Matter;
+    const { Engine, World, Bodies, Body, Mouse, MouseConstraint } = Matter;
 
     let rect = box.getBoundingClientRect();
     if (rect.width <= 0 || rect.height <= 0) return;
@@ -146,17 +164,7 @@ function FallingIconsBox() {
     const engine = Engine.create();
     engine.world.gravity.y = 0.85;
 
-    // Invisible render target — only needed so MouseConstraint has a
-    // canvas to hang off of. Nothing is actually drawn (fillStyle is
-    // transparent everywhere); the icon chips are real DOM elements whose
-    // position/rotation the rAF loop below copies from the physics bodies.
-    const render = Render.create({
-      element: canvasHost,
-      engine,
-      options: { width: rect.width, height: rect.height, background: "transparent", wireframes: false },
-    });
-
-    const wallOpts = { isStatic: true, friction: 0.4, render: { fillStyle: "transparent" } };
+    const wallOpts = { isStatic: true, friction: 0.4 };
     let floor      = Bodies.rectangle(rect.width / 2, rect.height + 24, rect.width, 48, wallOpts);
     let leftWall   = Bodies.rectangle(-24, rect.height / 2, 48, rect.height, wallOpts);
     let rightWall  = Bodies.rectangle(rect.width + 24, rect.height / 2, 48, rect.height, wallOpts);
@@ -168,48 +176,49 @@ function FallingIconsBox() {
       const x = r.left - rect.left + r.width / 2;
       const y = r.top - rect.top + r.height / 2;
       const body = Bodies.rectangle(x, y, r.width, r.height, {
-        render: { fillStyle: "transparent" },
         restitution: 0.5,
         frictionAir: 0.02,
         friction: 0.3,
-        chamfer: { radius: 8 },
+        chamfer: { radius: 10 },
+        inertia: Infinity, // never rotate — cards (and their tooltips) always stay upright
       });
       Body.setVelocity(body, { x: (Math.random() - 0.5) * 3, y: 0 });
-      Body.setAngularVelocity(body, (Math.random() - 0.5) * 0.05);
       return { el, body };
     });
 
-    pieces.forEach(({ el, body }) => {
-      el.style.position  = "absolute";
-      el.style.left      = `${body.position.x}px`;
-      el.style.top        = `${body.position.y}px`;
-      el.style.margin     = "0";
-      el.style.transform  = "translate(-50%,-50%)";
+    // Base offset is set once; every frame after this only `transform`
+    // changes (GPU-composited), never `left`/`top` — keeps this smooth
+    // on mobile instead of forcing a layout reflow 30+ times a frame.
+    pieces.forEach(({ el }) => {
+      el.style.position = "absolute";
+      el.style.left = "0px";
+      el.style.top = "0px";
+      el.style.margin = "0";
     });
 
+    // Mouse/touch input for dragging — no Matter.Render/canvas needed at
+    // all, Mouse.create() works directly against any DOM element and
+    // recomputes its bounding rect on every event.
     const mouse = Mouse.create(box);
     const mouseConstraint = MouseConstraint.create(engine, {
       mouse,
       constraint: { stiffness: 0.2, render: { visible: false } },
     });
-    render.mouse = mouse;
 
     World.add(engine.world, [floor, leftWall, rightWall, ceiling, mouseConstraint, ...pieces.map(p => p.body)]);
 
-    const runner = Runner.create();
-    Runner.run(runner, engine);
-    Render.run(render);
-
     let rafId = 0;
-    const tick = () => {
+    let lastTime = performance.now();
+    const tick = (time: number) => {
+      const delta = Math.min(time - lastTime, 1000 / 30);
+      lastTime = time;
+      Engine.update(engine, delta);
       pieces.forEach(({ el, body }) => {
-        el.style.left      = `${body.position.x}px`;
-        el.style.top       = `${body.position.y}px`;
-        el.style.transform = `translate(-50%,-50%) rotate(${body.angle}rad)`;
+        el.style.transform = `translate3d(${body.position.x}px, ${body.position.y}px, 0) translate(-50%, -50%)`;
       });
       rafId = requestAnimationFrame(tick);
     };
-    tick();
+    rafId = requestAnimationFrame(tick);
 
     // Keep the box's walls in sync if the viewport is resized/rotated.
     // The pieces themselves are left alone so a settled pile isn't
@@ -234,9 +243,6 @@ function FallingIconsBox() {
       window.removeEventListener("resize", handleResize);
       clearTimeout(resizeTimer);
       cancelAnimationFrame(rafId);
-      Render.stop(render);
-      Runner.stop(runner);
-      if (render.canvas && canvasHost) canvasHost.removeChild(render.canvas);
       World.clear(engine.world, false);
       Engine.clear(engine);
     };
@@ -250,12 +256,12 @@ function FallingIconsBox() {
           <FallingIcon
             key={name}
             name={name}
-            isDark={isDark}
+            active={activeTip === name}
+            onTap={handleTap}
             ref={el => { iconRefs.current[i] = el; }}
           />
         ))}
       </div>
-      <div className="falling-icons-canvas-host" ref={canvasHostRef} aria-hidden />
     </div>
   );
 }
@@ -270,10 +276,14 @@ export function SkillsSection() {
         .falling-icons-box {
           position: relative;
           overflow: hidden;
-          border: .5px dashed ${TIFFANY};
+          border: 0.7px dashed #000000;
           border-radius: 14px;
-          background: #000;
+          background: #ffffff;
           min-height: 420px;
+        }
+        .dark .falling-icons-box {
+          border-color: #ffffff;
+          background: #000000;
         }
         .falling-icons-flow {
           position: relative;
@@ -282,11 +292,9 @@ export function SkillsSection() {
           flex-wrap: wrap;
           align-content: flex-start;
           justify-content: center;
-          gap: 12px;
-          padding: 46px 24px 24px;
+          gap: 14px;
+          padding: 46px 24px 28px;
         }
-        .falling-icons-canvas-host { position: absolute; inset: 0; z-index: 0; pointer-events: none; }
-        .falling-icons-canvas-host canvas { display: block; }
         .falling-icons-hint {
           position: absolute; top: 14px; right: 16px; z-index: 2;
           font-family: ${MONO}; font-size: 10.5px; letter-spacing: 0.02em;
@@ -294,44 +302,81 @@ export function SkillsSection() {
         }
 
         .falling-icon-chip {
-          width: 54px; height: 54px;
-          display: flex; align-items: center; justify-content: center;
-          border-radius: 12px; border: 1px solid;
+          width: 68px; height: 76px;
+          padding: 9px 5px 8px;
+          display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
+          gap: 6px;
+          border-radius: 15px; border: 1px solid;
           position: relative; z-index: 1;
           cursor: grab; touch-action: none;
           user-select: none; -webkit-user-select: none;
-          transition: border-color 0.3s ease;
+          will-change: transform;
+          box-shadow:
+            0 10px 18px -8px rgba(0,0,0,0.35),
+            0 2px 5px rgba(0,0,0,0.16),
+            inset 0 1px 0 rgba(255,255,255,0.65);
+        }
+        .falling-icon-chip::before {
+          content: "";
+          position: absolute; inset: 0; z-index: 0;
+          border-radius: 15px;
+          background: linear-gradient(165deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.2) 32%, transparent 55%);
+          pointer-events: none;
         }
         .falling-icon-chip:active { cursor: grabbing; }
         .falling-icon-chip img {
-          width: 26px; height: 26px; object-fit: contain;
+          width: 30px; height: 30px; object-fit: contain;
           pointer-events: none; -webkit-user-drag: none;
+          position: relative; z-index: 1;
+          filter: drop-shadow(0 2px 3px rgba(0,0,0,0.28));
         }
+        .falling-icon-name {
+          position: relative; z-index: 1;
+          font-family: ${MONO}; font-size: 8.5px; font-weight: 600; letter-spacing: 0.01em;
+          color: #333333; text-align: center; line-height: 1.15;
+          display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+          overflow: hidden; max-width: 100%;
+        }
+
         .falling-icon-tip {
-          position: absolute; bottom: calc(100% + 8px); left: 50%;
-          transform: translateX(-50%) translateY(4px);
-          padding: 4px 9px; border-radius: 6px;
-          background: var(--bg-secondary); border: 1px solid var(--border);
-          color: var(--text-primary); font-size: 11px; font-weight: 500;
-          font-family: ${MONO}; white-space: nowrap;
-          opacity: 0; pointer-events: none;
-          transition: opacity 0.15s ease, transform 0.15s ease;
-          z-index: 5;
+          position: absolute; bottom: calc(100% + 12px); left: 50%;
+          transform: translateX(-50%) translateY(6px) scale(0.85);
+          display: flex; flex-direction: column; align-items: center; gap: 4px;
+          opacity: 0; pointer-events: none; z-index: 6;
+          transition: opacity 0.18s cubic-bezier(.34,1.56,.64,1), transform 0.18s cubic-bezier(.34,1.56,.64,1);
         }
-        .falling-icon-chip:hover .falling-icon-tip { opacity: 1; transform: translateX(-50%) translateY(0); }
+        .tip-bubble {
+          padding: 5px 11px; border-radius: 999px;
+          background: var(--bg-secondary); border: 1px solid var(--border);
+          color: var(--text-primary); font-family: ${MONO}; font-size: 11px; font-weight: 600;
+          white-space: nowrap; box-shadow: 0 6px 14px rgba(0,0,0,0.18);
+        }
+        .tip-dot {
+          border-radius: 50%;
+          background: var(--bg-secondary); border: 1px solid var(--border);
+          box-shadow: 0 3px 6px rgba(0,0,0,0.14);
+        }
+        .tip-dot-a { width: 8px; height: 8px; }
+        .tip-dot-b { width: 5px; height: 5px; }
+        .falling-icon-chip:hover .falling-icon-tip,
+        .falling-icon-chip.tip-active .falling-icon-tip {
+          opacity: 1; transform: translateX(-50%) translateY(0) scale(1);
+        }
 
         ${mq.mobile} {
           .skills-inner { padding: 0 16px 28px !important; }
-          .falling-icons-box { border-radius: 12px; min-height: 340px; }
-          .falling-icons-flow { padding: 40px 16px 18px; gap: 9px; }
-          .falling-icon-chip { width: 44px; height: 44px; border-radius: 10px; }
-          .falling-icon-chip img { width: 21px; height: 21px; }
+          .falling-icons-box { border-radius: 12px; min-height: 400px; }
+          .falling-icons-flow { padding: 40px 14px 20px; gap: 10px; }
+          .falling-icon-chip { width: 58px; height: 66px; border-radius: 13px; gap: 5px; padding: 8px 4px 6px; }
+          .falling-icon-chip img { width: 25px; height: 25px; }
+          .falling-icon-name { font-size: 7.5px; }
         }
 
         @media ${cond.down(BP.mobileXsMax)} {
-          .falling-icons-box { min-height: 300px; }
-          .falling-icon-chip { width: 38px; height: 38px; border-radius: 9px; }
-          .falling-icon-chip img { width: 18px; height: 18px; }
+          .falling-icons-box { min-height: 360px; }
+          .falling-icon-chip { width: 50px; height: 58px; border-radius: 12px; }
+          .falling-icon-chip img { width: 21px; height: 21px; }
+          .falling-icon-name { font-size: 7px; }
           .falling-icons-hint { font-size: 9.5px; top: 10px; right: 12px; }
         }
       `}</style>

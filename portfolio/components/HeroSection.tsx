@@ -195,11 +195,13 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
             var(--text-muted) 68%
           );
           background-size: 220% auto;
+          background-repeat: no-repeat;
+          background-color: var(--text-muted);
           -webkit-background-clip: text;
           background-clip: text;
           color: transparent;
           font-weight: 600;
-          animation: shimmer 2s linear 1 reverse forwards;
+          animation: shimmer 2.6s ease-in-out 1 reverse forwards;
         }
         @media (prefers-reduced-motion: reduce) {
           .subtitle-shine { animation: none; }
@@ -213,10 +215,10 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
         }
 
         .h-avatar {
-          width: 198px;
-          min-width: 198px;
-          height: 188px;
-          min-height: 188px;
+          width: 170px;
+          min-width: 170px;
+          height: 156px;
+          min-height: 156px;
           flex-shrink: 0;
           border-right: 1px solid var(--border);
           overflow: hidden;
@@ -254,7 +256,7 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
         }
 
         .h-info-pad {
-          position: relative; /* anchors the vertical partition line below */
+          position: relative;
         }
         .h-grid {
           display: grid;
@@ -264,9 +266,12 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
           align-items: center;
           column-gap: 44px;
           row-gap: 12px;
-          position: relative;
+          position: relative; /* anchors the vertical partition line below — scoped
+            to the grid's own box only, so it never bleeds into the button row
+            beneath it (previously anchored to .h-info-pad, which also wraps the
+            Resume/Get in touch buttons, causing the line to cut through them) */
         }
-        .h-info-pad::before {
+        .h-grid::before {
           content: "";
           position: absolute;
           top: 0; bottom: 0; left: 50%;
@@ -303,13 +308,13 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
             letter-spacing: 0.02em !important;
           }
           .h-name-row { gap: 14px !important; }
-          .h-verified-badge { width: 40px !important; height: 40px !important; }
+          .h-verified-badge { width: clamp(28px, 5.5vw, 40px) !important; height: clamp(28px, 5.5vw, 40px) !important; }
           .h-nameblock {
             padding: 0 8px !important;
           }
           .h-nameblock > div:nth-child(2) {
             padding-top: 26px !important;
-            margin-bottom: -4px !important;
+            margin-bottom: -3px !important;
           }
           .h-nameblock .fs-in,
           .h-nameblock .fs-out {
@@ -343,10 +348,10 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
 
         ${mq.laptopNarrow} {
           .h-avatar {
-            width: clamp(260px, 28vw, 300px) !important;
-            min-width: clamp(260px, 28vw, 300px) !important;
-            height: calc(clamp(260px, 28vw, 300px) - 14px) !important;
-            min-height: calc(clamp(260px, 28vw, 300px) - 14px) !important;
+            width: clamp(220px, 24vw, 250px) !important;
+            min-width: clamp(220px, 24vw, 250px) !important;
+            height: calc(clamp(220px, 24vw, 250px) - 14px) !important;
+            min-height: calc(clamp(220px, 24vw, 250px) - 14px) !important;
           }
           .h-nameblock h1 {
             font-size: clamp(40px, 5vw, 72px) !important;
@@ -436,7 +441,7 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
             grid-auto-flow: row !important;
             gap: 8px 0 !important;
           }
-          .h-info-pad::before { display: none !important; }
+          .h-grid::before { display: none !important; }
           .h-grid > :nth-child(n+4) { padding-left: 0 !important; }
           .h-social { justify-content: center !important; padding: 14px 16px !important; }
           .hero-actions { justify-content: center !important; }
