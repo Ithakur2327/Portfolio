@@ -3,13 +3,17 @@
 import { useRef, memo, forwardRef, useEffect, useState } from "react";
 import Matter from "matter-js";
 import { useReveal } from "./useReveal";
+import { useTheme } from "./ThemeProvider";
 import { SectionTitleIcon } from "./SectionIcon";
 import { BP, cond, mq } from "@/lib/breakpoints";
 
 const MONO = "'Geist Mono', 'SF Mono', monospace";
 const SF   = "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', sans-serif";
 
-/* Tech definitions */
+/* Tech definitions. `invert` marks logos that are basically monochrome
+   black marks (GitHub, Vercel, Express, shadcn/ui...) — in dark mode these
+   get flipped to white so they stay visible on a dark glass card; every
+   other logo keeps its real, unfiltered brand color in both themes. */
 type TechDef = { color: string; logo: string; bright?: boolean; invert?: boolean; keepInLight?: boolean };
 
 const TECH: Record<string, TechDef> = {
@@ -21,15 +25,15 @@ const TECH: Record<string, TechDef> = {
   JavaScript:     { color: "#F7DF1E", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/javascript/javascript-original.svg" },
   // Frontend
   "React.js":     { color: "#61DAFB", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/react/react-original.svg" },
-  "Next.js":      { color: "#555555", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nextjs/nextjs-original.svg", bright: true, keepInLight: true },
+  "Next.js":      { color: "#8a8a8a", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nextjs/nextjs-original.svg", invert: true },
   "Tailwind CSS": { color: "#38BDF8", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/tailwindcss/tailwindcss-original.svg" },
   HTML5:          { color: "#E34F26", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/html5/html5-original.svg" },
   CSS3:           { color: "#1572B6", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/css3/css3-original.svg" },
   "Framer Motion": { color: "#0055FF", logo: "https://cdn.simpleicons.org/framer/0055FF" },
-  "shadcn/ui":    { color: "#555555", logo: "https://avatars.githubusercontent.com/u/139895814?s=200&v=4", invert: true },
+  "shadcn/ui":    { color: "#8a8a8a", logo: "https://avatars.githubusercontent.com/u/139895814?s=200&v=4", invert: true },
   // Backend
   "Node.js":      { color: "#339933", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/nodejs/nodejs-plain-wordmark.svg" },
-  "Express.js":   { color: "#555555", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/express/express-original.svg", invert: true },
+  "Express.js":   { color: "#8a8a8a", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/express/express-original.svg", invert: true },
   "REST APIs":    { color: "#85EA2D", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/swagger/swagger-original.svg" },
   FastAPI:        { color: "#009688", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/fastapi/fastapi-original.svg" },
   GraphQL:        { color: "#E10098", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/graphql/graphql-plain.svg" },
@@ -40,17 +44,17 @@ const TECH: Record<string, TechDef> = {
   RAG:            { color: "#ee4c2c", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/pytorch/pytorch-original.svg" },
   "Vector DB":    { color: "#FF6333", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/redis/redis-original.svg" },
   // Cloud & DevOps
-  AWS:            { color: "#FF9900", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/amazonwebservices/amazonwebservices-plain-wordmark.svg", bright: true },
+  AWS:            { color: "#FF9900", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/amazonwebservices/amazonwebservices-plain-wordmark.svg" },
   Kubernetes:     { color: "#326CE5", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/kubernetes/kubernetes-plain.svg" },
   Docker:         { color: "#2496ED", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/docker/docker-original.svg" },
   "CI/CD":        { color: "#f05032", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/githubactions/githubactions-original.svg" },
-  Vercel:         { color: "#555555", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/vercel/vercel-original.svg", invert: true },
+  Vercel:         { color: "#8a8a8a", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/vercel/vercel-original.svg", invert: true },
   // Tools & Database
   MongoDB:        { color: "#47A248", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/mongodb/mongodb-original.svg" },
   MySQL:          { color: "#4479A1", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/mysql/mysql-original.svg" },
   PostgreSQL:     { color: "#4169E1", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/postgresql/postgresql-original.svg" },
   Git:            { color: "#F05032", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/git/git-original.svg" },
-  GitHub:         { color: "#555555", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/github/github-original.svg", invert: true },
+  GitHub:         { color: "#8a8a8a", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/github/github-original.svg", invert: true },
   Postman:        { color: "#FF6C37", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/postman/postman-original.svg" },
   "VS Code":      { color: "#007ACC", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/vscode/vscode-original.svg" },
 };
@@ -85,22 +89,29 @@ function useBoxInView() {
   return { ref, inView };
 }
 
-/* Single falling icon card: logo + a permanently-visible name label below
-   it. Position is written directly to the DOM node by the physics loop in
-   FallingIconsBox — only ever translate, never rotate — so the card stays
-   upright at all times. */
+/* Single falling icon card: a frosted-glass chip with the logo + a
+   permanently-visible name label below it. Position is written directly to
+   the DOM node by the physics loop in FallingIconsBox — only ever
+   translate, never rotate — so the card stays upright at all times. */
 const FallingIcon = memo(forwardRef<HTMLDivElement, { name: string }>(
   function FallingIcon({ name }, ref) {
     const tech = TECH[name] ?? { color: "#8a8a8a", logo: "" };
+    const { theme } = useTheme();
+    const isDark = theme === "dark";
+
+    const background = isDark
+      ? `linear-gradient(155deg, rgba(255,255,255,0.16) 0%, rgba(255,255,255,0.04) 55%, ${tech.color}40 100%)`
+      : `linear-gradient(155deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.5) 55%, ${tech.color}30 100%)`;
+    const borderColor = isDark ? `${tech.color}70` : `${tech.color}55`;
+    const filter = isDark && tech.invert
+      ? "invert(1) brightness(1.6) drop-shadow(0 3px 4px rgba(0,0,0,0.45))"
+      : "drop-shadow(0 3px 4px rgba(0,0,0,0.32))";
 
     return (
       <div
         ref={ref}
-        className="falling-icon-chip"
-        style={{
-          background: `linear-gradient(155deg, #fbfbfa 0%, #f6f6f4 55%, ${tech.color}2a 100%)`,
-          borderColor: `${tech.color}55`,
-        }}
+        className={`falling-icon-chip${isDark ? " is-dark" : ""}`}
+        style={{ background, borderColor }}
       >
         {tech.logo && (
           // eslint-disable-next-line @next/next/no-img-element -- tiny physics-driven skill icon, real brand colors, unfiltered
@@ -108,6 +119,7 @@ const FallingIcon = memo(forwardRef<HTMLDivElement, { name: string }>(
             src={tech.logo}
             alt={name}
             draggable={false}
+            style={{ filter }}
             onError={e => { (e.target as HTMLImageElement).style.display = "none"; }}
           />
         )}
@@ -124,21 +136,19 @@ FallingIcon.displayName = "FallingIcon";
    word-drop effect but with skill icons instead of words. Cards stay
    mouse/touch-draggable after settling, never rotate, and use a
    transform-only render loop (no Matter.Render, no Matter.Runner) to stay
-   light on mobile.
+   smooth on mobile.
 
-   Two things this guards against:
-   1) Touch handling is custom: Matter's own touch listeners would call
-      preventDefault() for ANY touch inside the box, which blocks normal
-      page scrolling. Instead we only take over (and block scroll) when a
-      touch actually starts on a card — everywhere else in the box, the
-      page keeps scrolling normally.
-   2) The box's height is locked the instant physics starts. Before that,
-      the box is only `min-height` and grows taller to fit the tidy grid of
-      cards. The moment cards go `position:absolute` that grid collapses,
-      which would otherwise shrink the box out from under the physics
-      floor — leaving cards to "fall through" past the dashed border on
-      narrower screens. Locking the height first keeps the box and the
-      physics boundaries in permanent agreement, on every device. */
+   Three things this guards against:
+   1) Scroll vs. drag: a touch only becomes a "drag" once it's held mostly
+      still on a card for a short moment. A quick swipe anywhere — even
+      starting on a card — is left alone and scrolls the page normally,
+      exactly like the rest of the page.
+   2) The box's height is locked the instant physics starts, so cards can
+      never fall out past the dashed border once the pre-fall grid layout
+      (which can be taller than min-height) collapses.
+   3) Physics is tuned for a soft, controlled settle rather than a bouncy
+      one, and mouse/touch position is read on every animation frame for
+      a smooth drag feel. */
 function FallingIconsBox({ title, names }: { title: string; names: string[] }) {
   const { ref: boxRef, inView } = useBoxInView();
   const iconRefs = useRef<(HTMLDivElement | null)[]>([]);
@@ -163,9 +173,9 @@ function FallingIconsBox({ title, names }: { title: string; names: string[] }) {
     box.style.height = `${rect.height}px`;
 
     const engine = Engine.create();
-    engine.world.gravity.y = 0.85;
+    engine.world.gravity.y = 0.78;
 
-    const wallOpts = { isStatic: true, friction: 0.4 };
+    const wallOpts = { isStatic: true, friction: 0.5 };
     let floor      = Bodies.rectangle(rect.width / 2, rect.height + 24, rect.width, 48, wallOpts);
     let leftWall   = Bodies.rectangle(-24, rect.height / 2, 48, rect.height, wallOpts);
     let rightWall  = Bodies.rectangle(rect.width + 24, rect.height / 2, 48, rect.height, wallOpts);
@@ -177,13 +187,13 @@ function FallingIconsBox({ title, names }: { title: string; names: string[] }) {
       const x = r.left - rect.left + r.width / 2;
       const y = r.top - rect.top + r.height / 2;
       const body = Bodies.rectangle(x, y, r.width, r.height, {
-        restitution: 0.5,
-        frictionAir: 0.02,
-        friction: 0.3,
+        restitution: 0.35,
+        frictionAir: 0.028,
+        friction: 0.35,
         chamfer: { radius: 10 },
         inertia: Infinity, // never rotate — cards always stay upright
       });
-      Body.setVelocity(body, { x: (Math.random() - 0.5) * 3, y: 0 });
+      Body.setVelocity(body, { x: (Math.random() - 0.5) * 2, y: 0 });
       return { el, body };
     });
 
@@ -210,30 +220,58 @@ function FallingIconsBox({ title, names }: { title: string; names: string[] }) {
     });
 
     // Matter attaches its own touchstart/touchmove/touchend to `box` that
-    // unconditionally preventDefault() — swap them for versions that only
-    // engage when the touch actually starts on a card, so scrolling the
-    // rest of the box works normally.
+    // unconditionally preventDefault() on every touch — remove them and
+    // use our own hold-to-drag logic instead (see note (1) above).
     box.removeEventListener("touchstart", mouse.mousedown);
     box.removeEventListener("touchmove", mouse.mousemove);
     box.removeEventListener("touchend", mouse.mouseup);
 
-    let draggingTouch = false;
+    const HOLD_MS = 160;
+    const MOVE_TOLERANCE = 9;
+    let dragging = false;
+    let startX = 0;
+    let startY = 0;
+    let holdTimer: ReturnType<typeof setTimeout> | null = null;
+
+    const clearHold = () => {
+      if (holdTimer) { clearTimeout(holdTimer); holdTimer = null; }
+    };
+
     const onTouchStart = (e: TouchEvent) => {
       const target = e.target as HTMLElement;
-      if (!target.closest(".falling-icon-chip")) return; // let the page scroll
-      draggingTouch = true;
-      mouse.mousedown(e as unknown as Event);
+      if (!target.closest(".falling-icon-chip")) return; // not a card — let the page scroll
+      const t = e.touches[0];
+      startX = t.clientX;
+      startY = t.clientY;
+      dragging = false;
+      clearHold();
+      holdTimer = setTimeout(() => {
+        dragging = true;
+        mouse.mousedown(e as unknown as Event);
+      }, HOLD_MS);
     };
     const onTouchMove = (e: TouchEvent) => {
-      if (!draggingTouch) return;
-      mouse.mousemove(e as unknown as Event);
+      if (dragging) {
+        e.preventDefault();
+        mouse.mousemove(e as unknown as Event);
+        return;
+      }
+      if (holdTimer) {
+        const t = e.touches[0];
+        if (Math.abs(t.clientX - startX) > MOVE_TOLERANCE || Math.abs(t.clientY - startY) > MOVE_TOLERANCE) {
+          clearHold(); // moved too fast/far — this is a scroll, not a drag
+        }
+      }
+      // not dragging yet => don't preventDefault, the page scrolls normally
     };
     const onTouchEnd = (e: TouchEvent) => {
-      if (!draggingTouch) return;
-      draggingTouch = false;
-      mouse.mouseup(e as unknown as Event);
+      clearHold();
+      if (dragging) {
+        dragging = false;
+        mouse.mouseup(e as unknown as Event);
+      }
     };
-    box.addEventListener("touchstart", onTouchStart, { passive: false });
+    box.addEventListener("touchstart", onTouchStart, { passive: true });
     box.addEventListener("touchmove", onTouchMove, { passive: false });
     box.addEventListener("touchend", onTouchEnd, { passive: false });
 
@@ -277,6 +315,7 @@ function FallingIconsBox({ title, names }: { title: string; names: string[] }) {
       box.removeEventListener("touchstart", onTouchStart);
       box.removeEventListener("touchmove", onTouchMove);
       box.removeEventListener("touchend", onTouchEnd);
+      clearHold();
       clearTimeout(resizeTimer);
       cancelAnimationFrame(rafId);
       World.clear(engine.world, false);
@@ -354,37 +393,50 @@ export function SkillsSection() {
           padding: 8px 4px 7px;
           display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
           gap: 5px;
-          border-radius: 14px; border: 1px solid;
+          border-radius: 15px; border: 1px solid;
           position: relative; z-index: 1;
-          cursor: grab; touch-action: none;
+          cursor: grab;
           user-select: none; -webkit-user-select: none;
           will-change: transform;
+          backdrop-filter: blur(10px) saturate(160%);
+          -webkit-backdrop-filter: blur(10px) saturate(160%);
           box-shadow:
-            0 14px 22px -9px rgba(0,0,0,0.5),
-            0 3px 6px rgba(0,0,0,0.22),
-            inset 0 1px 0 rgba(255,255,255,0.75);
+            0 18px 26px -10px rgba(0,0,0,0.55),
+            0 4px 8px rgba(0,0,0,0.25),
+            inset 0 1px 0 rgba(255,255,255,0.55),
+            inset 0 -8px 14px -10px rgba(0,0,0,0.3);
+        }
+        .falling-icon-chip.is-dark {
+          box-shadow:
+            0 18px 26px -10px rgba(0,0,0,0.7),
+            0 4px 10px rgba(0,0,0,0.4),
+            inset 0 1px 0 rgba(255,255,255,0.18),
+            inset 0 -8px 14px -10px rgba(0,0,0,0.5);
         }
         .falling-icon-chip::before {
           content: "";
           position: absolute; inset: 0; z-index: 0;
-          border-radius: 14px;
-          background: linear-gradient(165deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.22) 32%, transparent 55%);
+          border-radius: 15px;
+          background: linear-gradient(165deg, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.1) 32%, transparent 55%);
           pointer-events: none;
+        }
+        .falling-icon-chip.is-dark::before {
+          background: linear-gradient(165deg, rgba(255,255,255,0.22) 0%, rgba(255,255,255,0.03) 32%, transparent 55%);
         }
         .falling-icon-chip:active { cursor: grabbing; }
         .falling-icon-chip img {
           width: 26px; height: 26px; object-fit: contain;
           pointer-events: none; -webkit-user-drag: none;
           position: relative; z-index: 1;
-          filter: drop-shadow(0 3px 4px rgba(0,0,0,0.32));
         }
         .falling-icon-name {
           position: relative; z-index: 1;
           font-family: ${MONO}; font-size: 8px; font-weight: 600; letter-spacing: 0.01em;
-          color: #333333; text-align: center; line-height: 1.15;
+          color: #2a2a2a; text-align: center; line-height: 1.15;
           display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
           overflow: hidden; max-width: 100%;
         }
+        .falling-icon-chip.is-dark .falling-icon-name { color: #f2f2f2; }
 
         ${mq.mobile} {
           .skills-inner { padding: 0 16px 28px !important; }
