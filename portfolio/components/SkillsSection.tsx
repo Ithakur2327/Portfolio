@@ -1,6 +1,7 @@
 "use client";
 
-import { useRef, memo, useEffect, useState } from "react";
+import { useRef, memo, forwardRef, useEffect, useState } from "react";
+import Matter from "matter-js";
 import { useReveal } from "./useReveal";
 import { useTheme } from "./ThemeProvider";
 import { SectionTitleIcon } from "./SectionIcon";
@@ -9,8 +10,13 @@ import { BP, cond, mq } from "@/lib/breakpoints";
 const MONO = "'Geist Mono', 'SF Mono', monospace";
 const SF   = "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', sans-serif";
 
+/* Tiffany & Co. blue — Pantone 1837, the box's dashed border color */
+const TIFFANY = "#0ABAB5";
+
 /* Tech definitions */
-const TECH: Record<string, { color: string; logo: string; bright?: boolean; invert?: boolean; keepInLight?: boolean }> = {
+type TechDef = { color: string; logo: string; bright?: boolean; invert?: boolean; keepInLight?: boolean };
+
+const TECH: Record<string, TechDef> = {
   // Languages
   Python:         { color: "#3776AB", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg" },
   Java:           { color: "#ED8B00", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/java/java-original.svg" },
@@ -53,23 +59,11 @@ const TECH: Record<string, { color: string; logo: string; bright?: boolean; inve
   "VS Code":      { color: "#007ACC", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/vscode/vscode-original.svg" },
 };
 
-/* Skill groups */
-const LAMP_GROUPS = [
-  { title: "LANGUAGES",        glowColor: "#3776AB", items: ["Python", "Java", "C++", "TypeScript", "JavaScript"] },
-  { title: "FRONTEND",         glowColor: "#61DAFB", items: ["React.js", "Next.js", "Tailwind CSS", "HTML5", "CSS3", "shadcn/ui", "Framer Motion"] },
-  { title: "BACKEND",          glowColor: "#339933", items: ["Node.js", "Express.js", "REST APIs", "FastAPI", "GraphQL"] },
-  { title: "CLOUD & DEVOPS",   glowColor: "#FF9900", items: ["AWS", "Kubernetes", "Docker", "CI/CD", "Vercel"] },
-  { title: "GENAI / AI",       glowColor: "#10a37f", items: ["LangChain", "LangGraph", "RAG", "Vector DB"] },
-  { title: "TOOLS & DATABASE", glowColor: "#47A248", items: ["MongoDB", "MySQL", "PostgreSQL", "Git", "GitHub", "Postman"] },
-];
+/* Every skill in TECH falls into the box — nothing is grouped anymore */
+const ALL_TECH = Object.keys(TECH);
 
-const STRIP_NAMES = [
-  "Python", "TypeScript", "React.js", "Next.js", "Node.js",
-  "FastAPI", "GraphQL", "MongoDB", "PostgreSQL", "Docker",
-  "AWS", "Kubernetes", "Git", "VS Code", "Postman",
-];
-
-/* View-based reveal hook */
+/* View-based reveal hook — the box only "wakes up" (starts the physics
+   simulation) once it's scrolled into view, not on page load. */
 function useBoxInView() {
   const ref = useRef<HTMLDivElement>(null);
   const [inView, setInView] = useState(false);
@@ -86,268 +80,185 @@ function useBoxInView() {
   return { ref, inView };
 }
 
-/* Skill row */
-const SkillRow = memo(function SkillRow({
-  name, visible, delay = 0,
-}: { name: string; visible: boolean; delay?: number }) {
-  const tech   = TECH[name] ?? { color: "#71717a", logo: "" };
-  const { theme } = useTheme();
-  const isDark = theme === "dark";
-  const [hovered, setHovered] = useState(false);
+/* Single falling icon chip. Position/rotation are written directly to the
+   DOM node by the physics loop in FallingIconsBox (see the rAF `tick`
+   below) — not through React state — so this stays a plain forwarded-ref
+   element instead of re-rendering every frame. */
+const FallingIcon = memo(forwardRef<HTMLDivElement, { name: string; isDark: boolean }>(
+  function FallingIcon({ name, isDark }, ref) {
+    const tech = TECH[name] ?? { color: "#71717a", logo: "" };
 
-  const getImgFilter = () => {
-    if (!visible) return "grayscale(1) opacity(.3)";
-    if (isDark) {
-      if (tech.invert) return "invert(1) brightness(0.92)";
-      if (tech.bright) return "brightness(1.8) contrast(1.1)";
-    } else {
-      // keepInLight: logo already reads fine on a light background (e.g. a
-      // dark glyph with internal contrast) — darkening it further would
-      // crush that internal contrast and make it disappear.
-      if (tech.bright && !tech.keepInLight) return "brightness(0.1) saturate(0)";
-    }
-    return "none";
-  };
+    const filter = isDark
+      ? tech.invert ? "invert(1) brightness(0.92)" : tech.bright ? "brightness(1.8) contrast(1.1)" : "none"
+      : tech.bright && !tech.keepInLight ? "brightness(0.1) saturate(0)" : "none";
 
-  return (
-    <div
-      className="skill-row-item"
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      style={{
-        display: "flex", alignItems: "center", gap: 8,
-        padding: "6px 22px",
-        borderRadius: 7,
-        background: hovered
-          ? isDark ? `${tech.color}14` : `${tech.color}10`
-          : "transparent",
-        opacity: visible ? 1 : 0,
-        transform: visible ? "scale(1)" : "scale(0.9)",
-        transition: visible
-          ? `opacity 0.3s ease-out ${delay}s, transform 0.3s ease-out ${delay}s, background 0.18s ease`
-          : "opacity 0.2s ease, transform 0.2s ease, background 0.18s ease",
-        cursor: "default",
-      }}
-    >
-      {/* Icon box */}
-      <div className="skill-row-icon" style={{
-        width: 26, height: 26, borderRadius: 6, flexShrink: 0,
-        background: `${tech.color}18`,
-        border: `1px solid ${tech.color}${visible ? "40" : "18"}`,
-        display: "flex", alignItems: "center", justifyContent: "center",
-        transition: "border-color 0.35s ease, transform 0.22s cubic-bezier(0.34,1.56,0.64,1)",
-        transform: hovered ? "scale(1.08)" : "scale(1)",
-        marginLeft: 8,
-      }}>
+    return (
+      <div
+        ref={ref}
+        className="falling-icon-chip"
+        style={{ background: `${tech.color}18`, borderColor: `${tech.color}40` }}
+      >
         {tech.logo && (
-          // eslint-disable-next-line @next/next/no-img-element -- tiny (15px) external SVG skill icon; dangerouslyAllowSVG is intentionally off
+          // eslint-disable-next-line @next/next/no-img-element -- tiny physics-driven skill icon
           <img
-            src={tech.logo} alt={name}
-            width={15} height={15}
-            loading="lazy" draggable={false}
-            style={{
-              objectFit: "contain", userSelect: "none", pointerEvents: "none",
-              filter: getImgFilter(),
-              transition: "filter 0.35s ease",
-            }}
+            src={tech.logo}
+            alt={name}
+            draggable={false}
+            style={{ filter }}
             onError={e => { (e.target as HTMLImageElement).style.display = "none"; }}
           />
         )}
+        <span className="falling-icon-tip">{name}</span>
       </div>
-      {/* Name */}
-      <span className="skill-name-txt" style={{
-        fontWeight: 500,
-        color: visible
-          ? hovered ? "var(--text-primary)" : "var(--text-secondary)"
-          : "var(--text-muted)",
-        fontFamily: MONO,
-        whiteSpace: "nowrap",
-        transition: "color 0.18s ease",
-        userSelect: "none",
-      }}>
-        {name}
-      </span>
-    </div>
-  );
-});
+    );
+  }
+));
+FallingIcon.displayName = "FallingIcon";
 
-/* Lamp beam */
-const LampBeam = memo(function LampBeam({ glowColor, visible, lampOn }: { glowColor: string; visible: boolean; lampOn: boolean }) {
+/* The falling-icons box: every skill icon starts laid out in a tidy grid,
+   then — once scrolled into view — drops into a physics-driven pile inside
+   the dashed box, exactly like the FallingText word-drop effect but with
+   skill icons instead of words. Pieces stay mouse/touch-draggable after
+   settling. */
+function FallingIconsBox() {
+  const { ref: boxRef, inView } = useBoxInView();
+  const canvasHostRef = useRef<HTMLDivElement>(null);
+  const iconRefs = useRef<(HTMLDivElement | null)[]>([]);
   const { theme } = useTheme();
-  const isDark    = theme === "dark";
-  const active    = visible && lampOn;
+  const isDark = theme === "dark";
 
-  // Dark mode: white lamp; Light mode: colored lamp
-  const effectiveColor   = isDark ? "#ffffff" : glowColor;
-  const glowIntensity    = isDark ? "0c" : "28";
-  const innerIntensity   = isDark ? "1a" : "3a";
-
-  return (
-    <div
-      aria-hidden
-      className={active ? "lamp-beam-blink" : undefined}
-      style={{ position:"absolute", inset:0, overflow:"hidden", pointerEvents:"none", zIndex:0, transform:"translateZ(0)", willChange:"opacity" }}
-    >
-      {/* Top line beam */}
-      <div style={{
-        position:"absolute", top:0, left:"50%", transform:"translateX(-50%)",
-        width:"74%", height:1.5, borderRadius:999,
-        background:`linear-gradient(90deg,transparent 0%,${effectiveColor} 18%,${effectiveColor} 82%,transparent 100%)`,
-        boxShadow: active
-          ? isDark
-            ? `0 0 6px ${effectiveColor}60,0 0 14px ${effectiveColor}38`
-            : `0 0 9px ${effectiveColor},0 0 20px ${effectiveColor}60`
-          : "0 0 0px transparent",
-        opacity: active ? (isDark ? 0.55 : 0.9) : 0,
-        transition:"opacity 0.72s cubic-bezier(0.22,1,0.36,1), box-shadow 0.72s ease",
-      }} />
-      {/* Wide glow cone */}
-      <div style={{
-        position:"absolute", left:"50%", top:0, transform:"translate3d(-50%,0,0)",
-        width:"180%", height:"145%",
-        background:`radial-gradient(ellipse 60% 70% at 50% 0%,${effectiveColor}${glowIntensity} 0%,${effectiveColor}0a 25%,${effectiveColor}06 45%,${effectiveColor}03 60%,transparent 82%)`,
-        opacity: active ? 0.85 : 0,
-        transition:"opacity 0.90s cubic-bezier(0.22,1,0.36,1)",
-      }} />
-      {/* Inner tight glow */}
-      <div style={{
-        position:"absolute", left:"50%", top:0, transform:"translateX(-50%)",
-        width:"120%", height:"100%",
-        background:`radial-gradient(ellipse 42% 38% at 50% 0%,${effectiveColor}${innerIntensity} 0%,${effectiveColor}0a 35%,${effectiveColor}04 55%,transparent 78%)`,
-        opacity: active ? 0.85 : 0,
-        transition:`opacity 0.78s cubic-bezier(0.22,1,0.36,1) ${active?"0.06s":"0s"}`,
-      }} />
-    </div>
-  );
-});
-
-/* Skill box */
-function LampSkillBox({ title, glowColor, items }: { title: string; glowColor: string; items: string[] }) {
-  const lampOn = true;
-  const { ref, inView } = useBoxInView();
-  const { theme }     = useTheme();
-  const isDark        = theme === "dark";
-
-  // Icons pop in once on first scroll into view; the lamp itself (inView)
-  // keeps relighting on every subsequent scroll pass.
+  // Icons drop in once on first scroll into view; they don't re-drop on
+  // subsequent scroll passes.
   const [hasAppeared, setHasAppeared] = useState(false);
+  useEffect(() => { if (inView) setHasAppeared(true); }, [inView]);
+
   useEffect(() => {
-    if (inView) setHasAppeared(true);
-  }, [inView]);
+    if (!hasAppeared) return;
+    const box = boxRef.current;
+    const canvasHost = canvasHostRef.current;
+    if (!box || !canvasHost) return;
+
+    const { Engine, Render, World, Bodies, Body, Runner, Mouse, MouseConstraint } = Matter;
+
+    let rect = box.getBoundingClientRect();
+    if (rect.width <= 0 || rect.height <= 0) return;
+
+    const engine = Engine.create();
+    engine.world.gravity.y = 0.85;
+
+    // Invisible render target — only needed so MouseConstraint has a
+    // canvas to hang off of. Nothing is actually drawn (fillStyle is
+    // transparent everywhere); the icon chips are real DOM elements whose
+    // position/rotation the rAF loop below copies from the physics bodies.
+    const render = Render.create({
+      element: canvasHost,
+      engine,
+      options: { width: rect.width, height: rect.height, background: "transparent", wireframes: false },
+    });
+
+    const wallOpts = { isStatic: true, friction: 0.4, render: { fillStyle: "transparent" } };
+    let floor      = Bodies.rectangle(rect.width / 2, rect.height + 24, rect.width, 48, wallOpts);
+    let leftWall   = Bodies.rectangle(-24, rect.height / 2, 48, rect.height, wallOpts);
+    let rightWall  = Bodies.rectangle(rect.width + 24, rect.height / 2, 48, rect.height, wallOpts);
+    let ceiling    = Bodies.rectangle(rect.width / 2, -24, rect.width, 48, wallOpts);
+
+    const nodes = iconRefs.current.filter((el): el is HTMLDivElement => !!el);
+    const pieces = nodes.map(el => {
+      const r = el.getBoundingClientRect();
+      const x = r.left - rect.left + r.width / 2;
+      const y = r.top - rect.top + r.height / 2;
+      const body = Bodies.rectangle(x, y, r.width, r.height, {
+        render: { fillStyle: "transparent" },
+        restitution: 0.5,
+        frictionAir: 0.02,
+        friction: 0.3,
+        chamfer: { radius: 8 },
+      });
+      Body.setVelocity(body, { x: (Math.random() - 0.5) * 3, y: 0 });
+      Body.setAngularVelocity(body, (Math.random() - 0.5) * 0.05);
+      return { el, body };
+    });
+
+    pieces.forEach(({ el, body }) => {
+      el.style.position  = "absolute";
+      el.style.left      = `${body.position.x}px`;
+      el.style.top        = `${body.position.y}px`;
+      el.style.margin     = "0";
+      el.style.transform  = "translate(-50%,-50%)";
+    });
+
+    const mouse = Mouse.create(box);
+    const mouseConstraint = MouseConstraint.create(engine, {
+      mouse,
+      constraint: { stiffness: 0.2, render: { visible: false } },
+    });
+    render.mouse = mouse;
+
+    World.add(engine.world, [floor, leftWall, rightWall, ceiling, mouseConstraint, ...pieces.map(p => p.body)]);
+
+    const runner = Runner.create();
+    Runner.run(runner, engine);
+    Render.run(render);
+
+    let rafId = 0;
+    const tick = () => {
+      pieces.forEach(({ el, body }) => {
+        el.style.left      = `${body.position.x}px`;
+        el.style.top       = `${body.position.y}px`;
+        el.style.transform = `translate(-50%,-50%) rotate(${body.angle}rad)`;
+      });
+      rafId = requestAnimationFrame(tick);
+    };
+    tick();
+
+    // Keep the box's walls in sync if the viewport is resized/rotated.
+    // The pieces themselves are left alone so a settled pile isn't
+    // disturbed — only the boundaries around it move.
+    let resizeTimer: ReturnType<typeof setTimeout>;
+    const handleResize = () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => {
+        if (!box) return;
+        rect = box.getBoundingClientRect();
+        World.remove(engine.world, [floor, leftWall, rightWall, ceiling]);
+        floor      = Bodies.rectangle(rect.width / 2, rect.height + 24, rect.width, 48, wallOpts);
+        leftWall   = Bodies.rectangle(-24, rect.height / 2, 48, rect.height, wallOpts);
+        rightWall  = Bodies.rectangle(rect.width + 24, rect.height / 2, 48, rect.height, wallOpts);
+        ceiling    = Bodies.rectangle(rect.width / 2, -24, rect.width, 48, wallOpts);
+        World.add(engine.world, [floor, leftWall, rightWall, ceiling]);
+      }, 150);
+    };
+    window.addEventListener("resize", handleResize);
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+      clearTimeout(resizeTimer);
+      cancelAnimationFrame(rafId);
+      Render.stop(render);
+      Runner.stop(runner);
+      if (render.canvas && canvasHost) canvasHost.removeChild(render.canvas);
+      World.clear(engine.world, false);
+      Engine.clear(engine);
+    };
+  }, [hasAppeared, boxRef]);
 
   return (
-    <div
-      ref={ref}
-      className="lamp-skill-box"
-      style={{
-        overflow: "hidden",
-        display: "flex", flexDirection: "column",
-        position: "relative",
-        transform: "translateZ(0)", backfaceVisibility: "hidden",
-      }}
-    >
-      <LampBeam glowColor={glowColor} visible={inView} lampOn={lampOn} />
-
-      <div style={{ position:"relative", zIndex:1, paddingTop:12, display:"flex", flexDirection:"column", height:"100%" }}>
-
-        {/* Title — single centered element, no per-card button to throw it off-center */}
-        <div style={{ padding:"0 12px", marginBottom:10 }}>
-          <span style={{
-            display: "block", textAlign: "center",
-            fontSize: 9.5, fontWeight: 800, letterSpacing: "0.13em",
-            textTransform: "uppercase",
-            color: inView && lampOn ? glowColor : "var(--text-muted)",
-            fontFamily: MONO,
-            opacity: inView ? 1 : 0.22,
-            transform: inView ? "none" : "translateY(4px)",
-            transition: "opacity 0.48s cubic-bezier(0.22,1,0.36,1), transform 0.48s cubic-bezier(0.22,1,0.36,1), color 0.42s ease",
-          }}>
-            {title}
-          </span>
-        </div>
-
-        {/* Separator */}
-        <div style={{
-          height: 1, margin: "0 12px 10px",
-          background: `linear-gradient(to right,transparent,${glowColor}${inView && lampOn ? "35" : "08"},transparent)`,
-          transition: "background 0.5s ease",
-        }} />
-
-        {/* Skill rows — CSS grid so column count can respond per breakpoint */}
-        <div className="skill-cols-wrap" style={{ position: "relative", padding: "0 12px 12px", flex: 1 }}>
-          <div className="skill-item-grid">
-            {items.map((name, i) => (
-              <SkillRow key={name} name={name} visible={hasAppeared} delay={hasAppeared ? 0.06 + i * 0.05 : 0} />
-            ))}
-          </div>
-
-          {/* Centered partition line — pinned to the true horizontal center */}
-          <div aria-hidden className="skill-cols-sep" style={{
-            position: "absolute", left: "50%", top: 4, bottom: 4, width: 1,
-            transform: "translateX(-50%)",
-            background: `linear-gradient(to bottom, transparent, ${isDark ? "rgba(255,255,255,0.10)" : glowColor + "28"}, transparent)`,
-          }} />
-        </div>
+    <div ref={boxRef} className="falling-icons-box">
+      <span className="falling-icons-hint">{"// drag the icons"}</span>
+      <div className="falling-icons-flow">
+        {ALL_TECH.map((name, i) => (
+          <FallingIcon
+            key={name}
+            name={name}
+            isDark={isDark}
+            ref={el => { iconRefs.current[i] = el; }}
+          />
+        ))}
       </div>
+      <div className="falling-icons-canvas-host" ref={canvasHostRef} aria-hidden />
     </div>
   );
 }
-
-/* Moving strip */
-const STRIP_ALL = [...STRIP_NAMES, ...STRIP_NAMES, ...STRIP_NAMES];
-
-const MovingStrip = memo(function MovingStrip() {
-  const { theme } = useTheme();
-  const isDark    = theme === "dark";
-
-  return (
-    <div
-      className="skills-strip-outer"
-      style={{
-        overflowX: "hidden",
-        overflowY: "visible",
-        paddingTop: 42,
-        marginTop: -42,
-        maskImage: "linear-gradient(to right,transparent,black 8%,black 92%,transparent)",
-        WebkitMaskImage: "linear-gradient(to right,transparent,black 8%,black 92%,transparent)",
-      }}
-    >
-      <div
-        className="skills-strip"
-        style={{
-          display:"flex", gap:14, width:"max-content",
-          animation:"skills-scroll-left 32s linear infinite",
-          willChange:"transform", transform:"translateZ(0)",
-        }}
-      >
-        {STRIP_ALL.map((name, idx) => {
-          const tech = TECH[name] ?? { color:"#71717a", logo:"" };
-          const stripFilter = isDark
-            ? tech.invert ? "invert(1) brightness(0.92)" : tech.bright ? "brightness(1.8) contrast(1.1)" : "none"
-            : tech.bright && !tech.keepInLight ? "brightness(0.1) saturate(0)" : "none";
-          return (
-            <div key={idx} className="skill-icon-only" style={{
-              display:"flex", alignItems:"center", justifyContent:"center",
-              width:36, height:36, borderRadius:8, flexShrink:0,
-              background:`${tech.color}18`, border:`1px solid ${tech.color}35`,
-              position:"relative",
-            }}>
-              {tech.logo && (
-                // eslint-disable-next-line @next/next/no-img-element -- tiny (21px) external SVG skill icon; dangerouslyAllowSVG is intentionally off
-                <img src={tech.logo} alt={name} width={21} height={21}
-                  loading="lazy" draggable={false}
-                  style={{ objectFit:"contain", filter:stripFilter, pointerEvents:"none" }}
-                  onError={e => { (e.target as HTMLImageElement).style.display = "none"; }}
-                />
-              )}
-              <span className="skill-icon-tip">{name}</span>
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-});
 
 /* Main export */
 export function SkillsSection() {
@@ -356,101 +267,72 @@ export function SkillsSection() {
   return (
     <>
       <style suppressHydrationWarning>{`
-        .skills-strip-outer:hover .skills-strip { animation-play-state: paused !important; }
+        .falling-icons-box {
+          position: relative;
+          overflow: hidden;
+          border: 1px dashed ${TIFFANY};
+          border-radius: 14px;
+          background: var(--bg-base-edge);
+          min-height: 420px;
+        }
+        .falling-icons-flow {
+          position: relative;
+          z-index: 1;
+          display: flex;
+          flex-wrap: wrap;
+          align-content: flex-start;
+          justify-content: center;
+          gap: 12px;
+          padding: 46px 24px 24px;
+        }
+        .falling-icons-canvas-host { position: absolute; inset: 0; z-index: 0; pointer-events: none; }
+        .falling-icons-canvas-host canvas { display: block; }
+        .falling-icons-hint {
+          position: absolute; top: 14px; right: 16px; z-index: 2;
+          font-family: ${MONO}; font-size: 10.5px; letter-spacing: 0.02em;
+          color: var(--text-muted); pointer-events: none; user-select: none;
+        }
 
-        /* Icon-only strip items — name shows as a tooltip on hover */
-        .skill-icon-only { cursor: default; transition: transform 0.18s ease; }
-        .skill-icon-only:hover { transform: translateY(-2px); }
-        .skill-icon-tip {
-          position: absolute;
-          bottom: calc(100% + 8px);
-          left: 50%;
+        .falling-icon-chip {
+          width: 54px; height: 54px;
+          display: flex; align-items: center; justify-content: center;
+          border-radius: 12px; border: 1px solid;
+          position: relative; z-index: 1;
+          cursor: grab; touch-action: none;
+          user-select: none; -webkit-user-select: none;
+          transition: border-color 0.3s ease;
+        }
+        .falling-icon-chip:active { cursor: grabbing; }
+        .falling-icon-chip img {
+          width: 26px; height: 26px; object-fit: contain;
+          pointer-events: none; -webkit-user-drag: none;
+        }
+        .falling-icon-tip {
+          position: absolute; bottom: calc(100% + 8px); left: 50%;
           transform: translateX(-50%) translateY(4px);
-          padding: 4px 9px;
-          border-radius: 6px;
-          background: var(--bg-secondary);
-          border: 1px solid var(--border);
-          color: var(--text-primary);
-          font-size: 11px;
-          font-weight: 500;
-          font-family: ${MONO};
-          white-space: nowrap;
-          opacity: 0;
-          pointer-events: none;
+          padding: 4px 9px; border-radius: 6px;
+          background: var(--bg-secondary); border: 1px solid var(--border);
+          color: var(--text-primary); font-size: 11px; font-weight: 500;
+          font-family: ${MONO}; white-space: nowrap;
+          opacity: 0; pointer-events: none;
           transition: opacity 0.15s ease, transform 0.15s ease;
           z-index: 5;
         }
-        .skill-icon-only:hover .skill-icon-tip {
-          opacity: 1;
-          transform: translateX(-50%) translateY(0);
-        }
-
-        /* Lamp beam flicker */
-        @keyframes lampBeamBlink {
-          0%, 89%, 94%, 100% { opacity: 1; }
-          91%                { opacity: 0.55; }
-          96%                { opacity: 0.75; }
-        }
-        .lamp-beam-blink {
-          animation: lampBeamBlink 6.5s ease-in-out infinite;
-        }
-
-        /* Shared skill grid */
-        .skills-grid {
-          display: grid;
-          grid-template-columns: repeat(2, 1fr);
-          gap: 1px;
-          background: color-mix(in oklab, var(--border) 62%, transparent);
-          border: 1px solid color-mix(in oklab, var(--border) 62%, transparent);
-          border-radius: 10px;
-          overflow: hidden;
-          box-shadow: 0 1px 0 0 color-mix(in oklab, var(--border) 40%, transparent) inset;
-        }
-
-        .lamp-skill-box {
-          background: var(--bg-base);
-          min-height: 184px;
-          min-width: 0;
-          overflow: hidden;
-        }
-
-        .skill-name-txt {
-          font-size: 12px;
-          overflow: hidden;
-          text-overflow: ellipsis;
-        }
-
-        .skill-item-grid {
-          display: grid;
-          grid-template-columns: repeat(2, 1fr);
-          column-gap: 20px;
-          row-gap: 2px;
-          padding: 0 6px;
-        }
-
-        /* Mobile layout fix */
-        ${mq.mobile} {
-          .skills-grid { border-radius: 8px; grid-template-columns: 1fr; }
-          .lamp-skill-box { min-height: 168px; }
-          .skill-cols-wrap { gap: 10px !important; padding: 0 10px 10px !important; }
-        }
-
-        @media ${cond.down(BP.mobileXsMax)} {
-          .lamp-skill-box { min-height: 158px; }
-          .skill-name-txt { font-size: 10.5px !important; }
-          .skill-row-item { gap: 6px !important; padding: 5px 16px !important; }
-          .skill-row-icon { width: 22px !important; height: 22px !important; margin-left: 6px !important; }
-        }
-
-        @media ${cond.down(BP.mobileTinyMax)} {
-          .lamp-skill-box { min-height: 150px; }
-          .skill-name-txt { font-size: 9.5px !important; }
-          .skill-row-item { gap: 6px !important; padding: 4px 14px !important; }
-          .skill-row-icon { width: 20px !important; height: 20px !important; margin-left: 4px !important; }
-        }
+        .falling-icon-chip:hover .falling-icon-tip { opacity: 1; transform: translateX(-50%) translateY(0); }
 
         ${mq.mobile} {
           .skills-inner { padding: 0 16px 28px !important; }
+          .falling-icons-box { border-radius: 12px; min-height: 340px; }
+          .falling-icons-flow { padding: 40px 16px 18px; gap: 9px; }
+          .falling-icon-chip { width: 44px; height: 44px; border-radius: 10px; }
+          .falling-icon-chip img { width: 21px; height: 21px; }
+        }
+
+        @media ${cond.down(BP.mobileXsMax)} {
+          .falling-icons-box { min-height: 300px; }
+          .falling-icon-chip { width: 38px; height: 38px; border-radius: 9px; }
+          .falling-icon-chip img { width: 18px; height: 18px; }
+          .falling-icons-hint { font-size: 9.5px; top: 10px; right: 12px; }
         }
       `}</style>
 
@@ -475,13 +357,7 @@ export function SkillsSection() {
             </div>
             <div style={{ height:1, background:"var(--border)", margin:"18px 0 18px" }} />
 
-            <div className="skills-grid">
-              {LAMP_GROUPS.map(g => <LampSkillBox key={g.title} {...g} />)}
-            </div>
-
-            <div style={{ marginTop:28 }}>
-              <MovingStrip />
-            </div>
+            <FallingIconsBox />
           </div>
         </div>
       </section>
