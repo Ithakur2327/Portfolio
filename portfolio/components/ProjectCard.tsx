@@ -6,8 +6,7 @@ import Image from "next/image";
 import type { Project } from "@/lib/projects-data";
 import { TECH_MAP } from "@/lib/projects-data";
 import { useTheme } from "./ThemeProvider";
-import { mq } from "@/lib/breakpoints";
-import { useIsMobile } from "@/lib/useBreakpoint";
+import { BP, mq } from "@/lib/breakpoints";
 
 const MONO = "'Geist Mono', 'SF Mono', monospace";
 const SF   = "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', sans-serif";
@@ -296,7 +295,20 @@ export function ProjectModal({ proj, onClose, index = 0 }: { proj: Project; onCl
   // card-morphing shared-layout animation used everywhere else — so
   // layoutId is intentionally omitted below on mobile (a plain
   // initial/animate/exit drives the sheet instead).
-  const isMobile = useIsMobile();
+  // Mobile gets a simple slide-up-from-bottom open/close instead of the
+  // card-morphing shared-layout animation used everywhere else — so
+  // layoutId is intentionally omitted below on mobile (a plain
+  // initial/animate/exit drives the sheet instead).
+  //
+  // Computed synchronously (not via the shared useIsMobile() hook, which
+  // deliberately starts `false` for SSR-safety and only updates a tick
+  // later). ProjectModal only ever mounts client-side, right when a card
+  // is tapped, so `window` is always available here — reading it eagerly
+  // means Framer Motion sees the correct `initial` position on the very
+  // first render instead of missing it and popping in with no animation.
+  const [isMobile] = useState(
+    () => typeof window !== "undefined" && window.innerWidth <= BP.mobileMax
+  );
   // A plain tween (fixed duration, no per-frame spring integration) is
   // noticeably lighter on low-end phones than a spring, so mobile gets
   // this instead of the desktop SPRING.
