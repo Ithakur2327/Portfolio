@@ -1,5 +1,6 @@
 "use client";
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
+import { BP } from "@/lib/breakpoints";
 
 type PdfModalState = { src: string; title: string; downloadSrc: string } | null;
 type PdfModalContextValue = {
@@ -31,7 +32,7 @@ export function PdfModalProvider({ children }: { children: React.ReactNode }) {
 
   // Detect mobile layout on the client.
   useEffect(() => {
-    setIsMobile(window.innerWidth <= 768);
+    setIsMobile(window.innerWidth <= BP.tabletSplitMax);
     setOrigin(window.location.origin);
   }, []);
 

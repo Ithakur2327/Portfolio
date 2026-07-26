@@ -3,7 +3,8 @@ import { useState } from "react";
 import { AnimatePresence, LayoutGroup } from "motion/react";
 import type { Project } from "@/lib/projects-data";
 import { ProjectCard, ProjectModal } from "./ProjectCard";
-import { useMediaQuery } from "@/lib/breakpoints";
+import { BP, mq } from "@/lib/breakpoints";
+import { useIsLaptopUp } from "@/lib/useBreakpoint";
 
 export function ProjectsGrid({ projects, visible = true, mobileMax, wide }: {
   projects: Project[];
@@ -17,20 +18,9 @@ export function ProjectsGrid({ projects, visible = true, mobileMax, wide }: {
 }) {
   const [active, setActive] = useState<Project | null>(null);
   const [activeIndex, setActiveIndex] = useState(0);
-  // Desktop/laptop (has a mouse/trackpad — hover + fine pointer) gets the
-  // hover-driven image reveal and the full card-to-modal morph. Touch
-  // devices (no hover, coarse pointer) get the scroll-triggered reveal and
-  // a plain bottom-sheet open instead (see ProjectCard).
-  //
-  // This used to be checked by viewport width (first a hardcoded 900px,
-  // then the app's 1025px laptopMin breakpoint) — but width is the wrong
-  // signal here. OS display scaling and browser zoom can shrink a real
-  // laptop's CSS viewport well below any width threshold (e.g. a 14"
-  // laptop reporting ~980px), while a touchscreen tablet in landscape can
-  // easily exceed 1024px. hover/pointer capability tracks the actual
-  // thing that matters — whether the device has a mouse — regardless of
-  // screen size or scaling.
-  const isDesktop = useMediaQuery("(hover: hover) and (pointer: fine)");
+  // Desktop/laptop gets the hover-driven image reveal; tablet and mobile
+  // get the scroll-triggered version instead (see ProjectCard).
+  const isDesktop = useIsLaptopUp();
 
   return (
     <>
@@ -40,15 +30,15 @@ export function ProjectsGrid({ projects, visible = true, mobileMax, wide }: {
           grid-template-columns: 1fr;
           gap: 14px;
         }
-        @media (min-width: 601px) {
+        @media (min-width: ${BP.tabletMin}px) {
           .proj-grid2 { grid-template-columns: repeat(2, 1fr); }
         }
         ${wide ? `
-        @media (min-width: 1300px) {
+        ${mq.wideGridUp} {
           .proj-grid2 { grid-template-columns: repeat(3, 1fr); gap: 18px; }
         }` : ""}
         ${mobileMax ? `
-        @media (max-width: 600px) {
+        ${mq.mobile} {
           .proj-grid2 > *:nth-child(n + ${mobileMax + 1}) { display: none; }
         }` : ""}
       `}</style>
@@ -68,7 +58,7 @@ export function ProjectsGrid({ projects, visible = true, mobileMax, wide }: {
         </div>
 
         <AnimatePresence>
-          {active && <ProjectModal key="modal" proj={active} index={activeIndex} isDesktop={isDesktop} onClose={() => setActive(null)} />}
+          {active && <ProjectModal key="modal" proj={active} index={activeIndex} onClose={() => setActive(null)} />}
         </AnimatePresence>
       </LayoutGroup>
     </>

@@ -4,6 +4,7 @@ import { Navbar } from "@/components/Navbar";
 import { SectionTitleIcon } from "@/components/SectionIcon";
 import { ProjectsGrid } from "@/components/ProjectsGrid";
 import { PROJECTS } from "@/lib/projects-data";
+import { mq } from "@/lib/breakpoints";
 
 export const metadata: Metadata = {
   title: "All Projects — Indresh Thakur",
@@ -39,10 +40,10 @@ export default function ProjectsPage() {
         .all-projects-title { font-size: clamp(22px, 4.5vw, 28px); }
         .all-projects-sub { font-size: 13.5px; }
 
-        @media (max-width: 860px) {
+        ${mq.navCollapse} {
           .all-projects-wrap { padding: 34px 22px 48px; }
         }
-        @media (max-width: 599px) {
+        ${mq.mobile} {
           .all-projects-wrap { padding: 26px 16px 36px; }
           .all-projects-sub  { font-size: 12.5px; }
         }

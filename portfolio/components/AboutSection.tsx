@@ -11,6 +11,7 @@ import {
 
 import { useReveal } from "./useReveal";
 import { SectionTitleIcon } from "./SectionIcon";
+import { mq } from "@/lib/breakpoints";
 
 const SF = "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', sans-serif";
 
@@ -114,8 +115,8 @@ export function AboutSection() {
         .about-content {
           max-width: var(--content-width); margin: 0 auto; padding: 0 20px 64px;
         }
-        @media (max-width: 860px) { .about-content { padding: 0 22px 34px; } }
-        @media (max-width: 599px) {
+        ${mq.navCollapse} { .about-content { padding: 0 22px 34px; } }
+        ${mq.mobile} {
           .about-content { padding: 0 14px 28px; }
           .about-para    { font-size: 14px !important; }
         }
@@ -130,10 +131,10 @@ export function AboutSection() {
           padding: 18px 18px;
         }
         html.light .about-box { border-color: rgba(0,0,0,0.30); }
-        @media (max-width: 860px) {
+        ${mq.navCollapse} {
           .about-box { padding: 16px 16px; }
         }
-        @media (max-width: 599px) {
+        ${mq.mobile} {
           .about-box { padding: 14px 12px; border-radius: 8px; }
         }
       `}</style>

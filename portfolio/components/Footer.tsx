@@ -4,7 +4,8 @@ import { useTheme } from "./ThemeProvider";
 import { motion, useMotionValue, useSpring, useTransform, animate } from "motion/react";
 import { SocialRow } from "./ui/SocialRow";
 import { SolidMagneticButton, SendIcon } from "./HeroActionButtons";
-import { BP, mq as MQ, useIsMobile } from "@/lib/breakpoints";
+import { BP, mq as MQ } from "@/lib/breakpoints";
+import { useIsMobile } from "@/lib/useBreakpoint";
 
 const MONO = "'Geist Mono', monospace";
 

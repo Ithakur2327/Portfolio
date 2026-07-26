@@ -6,7 +6,8 @@ import { createPortal } from "react-dom";
 import { useReveal } from "./useReveal";
 import { useTheme } from "./ThemeProvider";
 import { SectionTitleIcon } from "./SectionIcon";
-import { mq, useIsTablet } from "@/lib/breakpoints";
+import { mq } from "@/lib/breakpoints";
+import { useIsTablet } from "@/lib/useBreakpoint";
 
 const SF = "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', sans-serif";
 const MONO = "'SF Mono', 'Geist Mono', monospace";
