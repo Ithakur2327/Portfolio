@@ -248,10 +248,11 @@ export function HeroActionButtons({
     <>
       <style suppressHydrationWarning>{`
         .hero-actions {
-          display: flex;
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          column-gap: 14px;
           align-items: center;
-          gap: 14px;
-          flex-wrap: wrap;
+          justify-items: start;
         }
         .hero-liquid-btn {
           display: inline-flex;

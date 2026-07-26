@@ -201,7 +201,7 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
           background-clip: text;
           color: transparent;
           font-weight: 600;
-          animation: shimmer 2.6s ease-in-out 1 reverse forwards;
+          animation: shimmer 3.4s ease-in-out 1 reverse forwards;
         }
         @media (prefers-reduced-motion: reduce) {
           .subtitle-shine { animation: none; }
@@ -256,7 +256,20 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
         }
 
         .h-info-pad {
-          position: relative;
+          position: relative; /* anchors the vertical partition line — spans the
+            grid AND the button row below it (stops before .h-social, which has
+            its own border-top). Safe because .hero-actions now mirrors .h-grid's
+            two-column structure (see HeroActionButtons.tsx), so Resume sits in
+            the left half and Get in touch sits in the right half — neither
+            button ever crosses the line in the gap between them. */
+        }
+        .h-info-pad::before {
+          content: "";
+          position: absolute;
+          top: 0; bottom: 0; left: 50%;
+          transform: translateX(-50%);
+          border-left: 1px dashed var(--border);
+          pointer-events: none;
         }
         .h-grid {
           display: grid;
@@ -266,18 +279,6 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
           align-items: center;
           column-gap: 44px;
           row-gap: 12px;
-          position: relative; /* anchors the vertical partition line below — scoped
-            to the grid's own box only, so it never bleeds into the button row
-            beneath it (previously anchored to .h-info-pad, which also wraps the
-            Resume/Get in touch buttons, causing the line to cut through them) */
-        }
-        .h-grid::before {
-          content: "";
-          position: absolute;
-          top: 0; bottom: 0; left: 50%;
-          transform: translateX(-50%);
-          border-left: 1px dashed var(--border);
-          pointer-events: none;
         }
         /* "right column" = items 4-6 in the column-major flow */
         .h-grid > :nth-child(n+4) { padding-left: 6px; }
@@ -285,6 +286,7 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
         .h-social {
           display: flex;
           flex-direction: row;
+          justify-content: center;
           padding: 14px 22px;
         }
 
@@ -342,11 +344,14 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
           }
           .h-social { padding: 16px 26px !important; }
           .h-profile {
-            min-height: clamp(220px, 32vw, 300px) !important;
+            min-height: calc(clamp(220px, 32vw, 300px) - 14px) !important;
           }
         }
 
         ${mq.laptopNarrow} {
+          .h-profile {
+            min-height: calc(clamp(220px, 24vw, 250px) - 14px) !important;
+          }
           .h-avatar {
             width: clamp(220px, 24vw, 250px) !important;
             min-width: clamp(220px, 24vw, 250px) !important;
@@ -354,11 +359,11 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
             min-height: calc(clamp(220px, 24vw, 250px) - 14px) !important;
           }
           .h-nameblock h1 {
-            font-size: clamp(40px, 5vw, 72px) !important;
+            font-size: clamp(34px, 4.2vw, 50px) !important;
             font-weight: 800 !important;
             line-height: 1 !important;
           }
-          .h-verified-badge { width: 46px !important; height: 46px !important; }
+          .h-verified-badge { width: 40px !important; height: 40px !important; }
           .h-name-row { gap: 16px !important; }
           .h-nameblock > div:nth-child(2) {
             margin-bottom: -1px !important;
@@ -381,12 +386,12 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
             min-height: clamp(156px, calc(461.5px - 19.093vw), 236px) !important;
           }
           .h-nameblock h1 {
-            font-size: clamp(36px, calc(124px - 5.5012vw), 59.05px) !important;
+            font-size: clamp(30px, calc(106.36px - 4.7733vw), 50px) !important;
             font-weight: 900 !important;
           }
           .h-verified-badge {
-            width: clamp(26px, calc(102.4px - 4.7733vw), 46px) !important;
-            height: clamp(26px, calc(102.4px - 4.7733vw), 46px) !important;
+            width: clamp(26px, calc(79.46px - 3.341vw), 40px) !important;
+            height: clamp(26px, calc(79.46px - 3.341vw), 40px) !important;
           }
           .h-name-row { gap: clamp(10px, calc(32.9px - 1.432vw), 16px) !important; }
         }
@@ -441,11 +446,9 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
             grid-auto-flow: row !important;
             gap: 8px 0 !important;
           }
-          .h-grid::before { display: none !important; }
+          .h-info-pad::before { display: none !important; }
           .h-grid > :nth-child(n+4) { padding-left: 0 !important; }
-          .h-social { justify-content: center !important; padding: 14px 16px !important; }
-          .hero-actions { justify-content: center !important; }
-          .hero-actions .hero-liquid-btn, .hero-actions .hero-contact-btn { flex: 1 1 0 !important; min-width: 0 !important; justify-content: center !important; }
+          .h-social { padding: 14px 16px !important; }
         }
 
         @media ${cond.down(BP.mobileXxsMax)} {
@@ -507,7 +510,7 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
               <div style={{flex:1}}/>
               <div className="h-name-row" style={{padding:"28px 20px 0", marginBottom:"-3px"}}>
                 <h1 style={{
-                  fontSize:"clamp(24px,3.8vw,36px)", fontWeight:900,
+                  fontSize:"clamp(22px,3.2vw,30px)", fontWeight:900,
                   letterSpacing:"0.02em", color:"var(--text-primary)",
                   lineHeight:1, margin:0,
                   fontFamily:"'Geist Pixel Square','Geist Mono',monospace", display:"inline-block",
