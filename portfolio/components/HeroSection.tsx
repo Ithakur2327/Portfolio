@@ -88,7 +88,7 @@ function VerifiedBadge({ className }: { className?: string }) {
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 24 24"
       className={className}
-      fill="#2db6f0"
+      fill="#0abab5"
       aria-label="Verified"
       role="img"
     >
@@ -217,10 +217,10 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
         }
 
         .h-avatar {
-          width: 170px;
-          min-width: 170px;
-          height: 156px;
-          min-height: 156px;
+          width: 150px;
+          min-width: 150px;
+          height: 138px;
+          min-height: 138px;
           flex-shrink: 0;
           border-right: 1px solid var(--border);
           overflow: hidden;
@@ -228,7 +228,7 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
           display: flex;
           align-items: flex-start;
           justify-content: stretch;
-          border-radius: 26px;
+          border-radius: 22px;
           background: var(--bg-base);
         }
         .h-nameblock {
@@ -243,13 +243,17 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
           gap: 10px;
         }
         .h-verified-badge {
-          width: 26px;
-          height: 26px;
+          width: 20px;
+          height: 20px;
           flex-shrink: 0;
           cursor: default;
-          transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+          filter: drop-shadow(0 0 5px rgba(10,186,181,0.45));
+          transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.25s ease;
         }
-        .h-verified-badge:hover { transform: rotate(360deg); }
+        .h-verified-badge:hover {
+          transform: rotate(360deg);
+          filter: drop-shadow(0 0 8px rgba(10,186,181,0.7));
+        }
 
         .h-info-wrap {
           max-width: ${CW};
@@ -264,6 +268,16 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
             two-column structure (see HeroActionButtons.tsx), so Resume sits in
             the left half and Get in touch sits in the right half — neither
             button ever crosses the line in the gap between them. */
+
+          /* Single source of truth for the two-column layout below, shared
+             with HeroActionButtons.tsx's .hero-actions via CSS variable
+             inheritance (it's a DOM descendant of this element). Both grids
+             now use the identical column-gap and inner left-padding, so the
+             icons, the dashed divider, and the Resume/Get-in-touch buttons
+             all line up on the same vertical guides instead of drifting. */
+          --info-col-gap: 44px;
+          --info-pad-l: 10px;
+          --info-pad-r: 16px;
         }
         .h-info-pad::before {
           content: "";
@@ -279,11 +293,13 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
           grid-template-rows: repeat(3, auto);
           grid-auto-flow: column;
           align-items: center;
-          column-gap: 44px;
+          column-gap: var(--info-col-gap);
           row-gap: 12px;
         }
-        /* "right column" = items 4-6 in the column-major flow */
-        .h-grid > :nth-child(n+4) { padding-left: 6px; }
+        /* Left column (items 1-3): nudged right, off the edge, toward center. */
+        .h-grid > :nth-child(-n+3) { padding-left: var(--info-pad-l); }
+        /* Right column (items 4-6): nudged further right, off the divider. */
+        .h-grid > :nth-child(n+4) { padding-left: var(--info-pad-r); }
 
         .h-social {
           display: flex;
@@ -525,7 +541,7 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
               <div style={{flex:1}}/>
               <div className="h-name-row" style={{padding:"28px 20px 0", marginBottom:"-3px"}}>
                 <h1 style={{
-                  fontSize:"clamp(22px,3.2vw,30px)", fontWeight:900,
+                  fontSize:"clamp(19px,2.7vw,26px)", fontWeight:900,
                   letterSpacing:"0.02em", color:"var(--text-primary)",
                   lineHeight:1, margin:0,
                   fontFamily:"'Geist Pixel Square','Geist Mono',monospace", display:"inline-block",

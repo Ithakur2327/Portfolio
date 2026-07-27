@@ -56,7 +56,7 @@ export function Avatar({ version }: { version?: string } = {}) {
     const DPR = Math.min(window.devicePixelRatio || 1, 3);
     const rect0 = canvas.getBoundingClientRect();
     const displayed = Math.round(Math.max(rect0.width, rect0.height)) || 300;
-    let SIZE = Math.min(1024, Math.max(560, displayed) * DPR);
+    let SIZE = Math.min(1400, Math.max(720, displayed) * DPR);
     canvas.width  = SIZE;
     canvas.height = SIZE;
 
@@ -223,7 +223,12 @@ export function Avatar({ version }: { version?: string } = {}) {
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-      if (mipmapped && anisoExt) gl.texParameterf(gl.TEXTURE_2D, anisoExt.TEXTURE_MAX_ANISOTROPY_EXT, Math.min(4, maxAniso));
+      // Bumped from 4 -> maxAniso (usually 8-16 on modern GPUs). Trilinear
+      // mipmapping alone over-blurs fine detail (hair strands) once the
+      // 1024px texture is minified down to the hero's small on-screen size;
+      // higher anisotropy keeps those edges sharp instead of mushy without
+      // reintroducing the shimmer/moire the mipmaps are there to prevent.
+      if (mipmapped && anisoExt) gl.texParameterf(gl.TEXTURE_2D, anisoExt.TEXTURE_MAX_ANISOTROPY_EXT, maxAniso);
       return tx;
     };
 
