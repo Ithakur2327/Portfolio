@@ -151,6 +151,13 @@ function FallingIconsBox({ title, items }: { title: string; items: string[] }) {
   const [hasAppeared, setHasAppeared] = useState(false);
   useEffect(() => { if (inView) setHasAppeared(true); }, [inView]);
 
+  // Read inside the tick loop via a ref (not React state) so the physics
+  // effect below doesn't need to re-run on every visibility change — it
+  // just skips all work while the box is scrolled off-screen, which is
+  // the single biggest win for keeping this lag-free on mobile.
+  const inViewRef = useRef(inView);
+  useEffect(() => { inViewRef.current = inView; }, [inView]);
+
   useEffect(() => {
     if (!hasAppeared) return;
     const box = boxRef.current;
@@ -161,11 +168,10 @@ function FallingIconsBox({ title, items }: { title: string; items: string[] }) {
     let rect = box.getBoundingClientRect();
     if (rect.width <= 0 || rect.height <= 0) return;
 
-    const engine = Engine.create({
-      positionIterations: 10,
-      velocityIterations: 8,
-      constraintIterations: 4,
-    });
+    // Default solver quality is enough — containment is guaranteed by the
+    // hard position clamp in the tick loop below, not by solver iteration
+    // count, so we keep this cheap for low-powered/mobile devices.
+    const engine = Engine.create();
     engine.world.gravity.y = 0.85;
 
     const wallOpts = { isStatic: true, friction: 0.4 };
@@ -217,6 +223,9 @@ function FallingIconsBox({ title, items }: { title: string; items: string[] }) {
 
     // Strip Matter's own wheel + touch listeners (see note above), then
     // rewire touch so only an in-progress chip-drag blocks page scroll.
+    // Covering both the modern ("wheel") and legacy event names here since
+    // it costs nothing to remove a listener that was never attached.
+    box.removeEventListener("wheel", mouse.mousewheel);
     box.removeEventListener("mousewheel", mouse.mousewheel);
     box.removeEventListener("DOMMouseScroll", mouse.mousewheel);
     box.removeEventListener("touchstart", mouse.mousedown);
@@ -244,13 +253,44 @@ function FallingIconsBox({ title, items }: { title: string; items: string[] }) {
 
     World.add(engine.world, [floor, leftWall, rightWall, ceiling, mouseConstraint, ...pieces.map(p => p.body)]);
 
+    // Scrolling the page gives every icon a little bounce. Each scroll
+    // event just accumulates a clamped delta (cheap); the tick loop below
+    // consumes it once per frame as a velocity kick, so the actual physics
+    // work stays on the rAF cadence instead of piling up inside scroll
+    // event handlers.
+    let lastScrollY = window.scrollY;
+    let scrollImpulse = 0;
+    const handleScroll = () => {
+      const currentY = window.scrollY;
+      const delta = Math.max(-80, Math.min(80, currentY - lastScrollY));
+      lastScrollY = currentY;
+      scrollImpulse += delta;
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+
     let rafId = 0;
     let lastTime = performance.now();
     const tick = (time: number) => {
+      // Off-screen: keep the loop alive (cheap) but skip all physics and
+      // DOM writes entirely, and keep lastTime fresh so there's no big
+      // delta jump the moment it scrolls back into view.
+      if (!inViewRef.current) {
+        lastTime = time;
+        rafId = requestAnimationFrame(tick);
+        return;
+      }
+
       const delta = Math.min(time - lastTime, 1000 / 30);
       lastTime = time;
       Engine.update(engine, delta);
+
+      const kick = scrollImpulse !== 0 ? Math.max(-7, Math.min(7, -scrollImpulse * 0.12)) : 0;
+      scrollImpulse = 0;
+
       pieces.forEach(({ el, body, hw, hh }) => {
+        if (kick !== 0) {
+          Body.setVelocity(body, { x: body.velocity.x, y: body.velocity.y + kick });
+        }
         // Hard containment backstop: whatever the collision solver does,
         // a chip's center can never end up outside the box's interior —
         // this is what stops drags/piling from ever poking past the
