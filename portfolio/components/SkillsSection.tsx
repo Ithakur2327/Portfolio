@@ -55,7 +55,7 @@ const TECH: Record<string, TechDef> = {
   "VS Code":      { color: "#007ACC", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/vscode/vscode-original.svg" },
 };
 
-/* Skills are now split into two themed boxes: languages/full-stack, and
+/* Skills are split into two themed boxes: languages/full-stack, and
    genai/devops/tools. Note: the old invert/bright/keepInLight flags above
    are still not read for image filtering (see FallingIcon) — each chip's
    card background follows the site theme (via --bg-secondary) instead of
@@ -127,7 +127,21 @@ FallingIcon.displayName = "FallingIcon";
    skill icons instead of words. Cards stay mouse/touch-draggable after
    settling, never rotate, and use a transform-only render loop (no
    Matter.Render, no Matter.Runner) to stay light on mobile. Each instance
-   is self-contained (own engine/refs), so two can run side by side. */
+   is self-contained (own engine/refs), so two can run side by side.
+
+   Containment + scroll handling:
+   - Every body's center is hard-clamped every frame to stay strictly
+     inside the box (using each chip's own half-width/half-height), so
+     dragging or piling up can never push a card past the dashed border,
+     regardless of drag speed or stacking.
+   - Matter's own Mouse module unconditionally calls preventDefault() on
+     every touchmove (blocking page scroll anywhere over the box) and on
+     every wheel event (blocking desktop scroll while hovering the box).
+     Both of those default listeners are removed and replaced: wheel
+     scrolling is left completely alone, and touch scrolling is only
+     intercepted while a chip is actively being dragged — everywhere else
+     in the box, a swipe scrolls the page normally, on both touch and
+     desktop trackpads/mice. */
 function FallingIconsBox({ title, items }: { title: string; items: string[] }) {
   const { ref: boxRef, inView } = useBoxInView();
   const iconRefs = useRef<(HTMLDivElement | null)[]>([]);
@@ -147,7 +161,11 @@ function FallingIconsBox({ title, items }: { title: string; items: string[] }) {
     let rect = box.getBoundingClientRect();
     if (rect.width <= 0 || rect.height <= 0) return;
 
-    const engine = Engine.create();
+    const engine = Engine.create({
+      positionIterations: 10,
+      velocityIterations: 8,
+      constraintIterations: 4,
+    });
     engine.world.gravity.y = 0.85;
 
     const wallOpts = { isStatic: true, friction: 0.4 };
@@ -162,14 +180,14 @@ function FallingIconsBox({ title, items }: { title: string; items: string[] }) {
       const x = r.left - rect.left + r.width / 2;
       const y = r.top - rect.top + r.height / 2;
       const body = Bodies.rectangle(x, y, r.width, r.height, {
-        restitution: 0.5,
+        restitution: 0.4,
         frictionAir: 0.02,
         friction: 0.3,
         chamfer: { radius: 10 },
         inertia: Infinity, // never rotate — cards always stay upright
       });
       Body.setVelocity(body, { x: (Math.random() - 0.5) * 3, y: 0 });
-      return { el, body };
+      return { el, body, hw: r.width / 2, hh: r.height / 2 };
     });
 
     // Base offset is set once; every frame after this only `transform`
@@ -185,11 +203,44 @@ function FallingIconsBox({ title, items }: { title: string; items: string[] }) {
     // Mouse/touch input for dragging — no Matter.Render/canvas needed at
     // all, Mouse.create() works directly against any DOM element and
     // recomputes its bounding rect on every event.
-    const mouse = Mouse.create(box);
+    // Matter's TS defs don't declare these handler properties on Mouse,
+    // even though they exist at runtime (that's how Matter wires up its
+    // own DOM listeners internally) — this local type just lets us refer
+    // to them without `any` scattered everywhere below.
+    type MouseHandlers = Matter.Mouse & {
+      mousewheel: (event: Event) => void;
+      mousedown: (event: Event) => void;
+      mousemove: (event: Event) => void;
+      mouseup: (event: Event) => void;
+    };
+    const mouse = Mouse.create(box) as MouseHandlers;
+
+    // Strip Matter's own wheel + touch listeners (see note above), then
+    // rewire touch so only an in-progress chip-drag blocks page scroll.
+    box.removeEventListener("mousewheel", mouse.mousewheel);
+    box.removeEventListener("DOMMouseScroll", mouse.mousewheel);
+    box.removeEventListener("touchstart", mouse.mousedown);
+    box.removeEventListener("touchmove", mouse.mousemove);
+    box.removeEventListener("touchend", mouse.mouseup);
+
     const mouseConstraint = MouseConstraint.create(engine, {
       mouse,
       constraint: { stiffness: 0.2, render: { visible: false } },
     });
+
+    const handleTouchStart = (e: TouchEvent) => mouse.mousedown(e);
+    const handleTouchMove = (e: TouchEvent) => {
+      // Nothing grabbed yet -> this is just a page swipe, let it scroll.
+      if (!mouseConstraint.body) return;
+      e.preventDefault();
+      mouse.mousemove(e);
+    };
+    const handleTouchEnd = (e: TouchEvent) => mouse.mouseup(e);
+
+    box.addEventListener("touchstart", handleTouchStart, { passive: true });
+    box.addEventListener("touchmove", handleTouchMove, { passive: false });
+    box.addEventListener("touchend", handleTouchEnd, { passive: true });
+    box.addEventListener("touchcancel", handleTouchEnd, { passive: true });
 
     World.add(engine.world, [floor, leftWall, rightWall, ceiling, mouseConstraint, ...pieces.map(p => p.body)]);
 
@@ -199,7 +250,19 @@ function FallingIconsBox({ title, items }: { title: string; items: string[] }) {
       const delta = Math.min(time - lastTime, 1000 / 30);
       lastTime = time;
       Engine.update(engine, delta);
-      pieces.forEach(({ el, body }) => {
+      pieces.forEach(({ el, body, hw, hh }) => {
+        // Hard containment backstop: whatever the collision solver does,
+        // a chip's center can never end up outside the box's interior —
+        // this is what stops drags/piling from ever poking past the
+        // dashed border.
+        const maxX = Math.max(hw, rect.width - hw);
+        const maxY = Math.max(hh, rect.height - hh);
+        const clampedX = Math.min(Math.max(body.position.x, hw), maxX);
+        const clampedY = Math.min(Math.max(body.position.y, hh), maxY);
+        if (clampedX !== body.position.x || clampedY !== body.position.y) {
+          Body.setPosition(body, { x: clampedX, y: clampedY });
+          Body.setVelocity(body, { x: body.velocity.x * 0.3, y: Math.min(body.velocity.y, 0) });
+        }
         el.style.transform = `translate3d(${body.position.x}px, ${body.position.y}px, 0) translate(-50%, -50%)`;
       });
       rafId = requestAnimationFrame(tick);
@@ -225,6 +288,10 @@ function FallingIconsBox({ title, items }: { title: string; items: string[] }) {
 
     return () => {
       window.removeEventListener("resize", handleResize);
+      box.removeEventListener("touchstart", handleTouchStart);
+      box.removeEventListener("touchmove", handleTouchMove);
+      box.removeEventListener("touchend", handleTouchEnd);
+      box.removeEventListener("touchcancel", handleTouchEnd);
       clearTimeout(resizeTimer);
       cancelAnimationFrame(rafId);
       World.clear(engine.world, false);
@@ -270,11 +337,11 @@ export function SkillsSection() {
           flex-direction: column;
         }
         .falling-icons-title {
-          font-family: ${MONO};
-          font-size: 11.5px;
+          font-family: ${SF};
+          font-size: 14px;
           font-weight: 600;
-          letter-spacing: 0.02em;
-          color: var(--text-muted);
+          letter-spacing: -0.01em;
+          color: var(--text-primary);
           text-align: center;
           margin-bottom: 10px;
         }
@@ -285,8 +352,9 @@ export function SkillsSection() {
           border: 0.7px dashed rgba(0,0,0,0.32);
           border-radius: 14px;
           background: #ffffff;
-          min-height: 340px;
+          min-height: 300px;
           flex: 1;
+          touch-action: pan-y;
         }
         .dark .falling-icons-box {
           border-color: rgba(255,255,255,0.32);
@@ -299,8 +367,8 @@ export function SkillsSection() {
           flex-wrap: wrap;
           align-content: flex-start;
           justify-content: center;
-          gap: 12px;
-          padding: 42px 22px 26px;
+          gap: 10px;
+          padding: 38px 20px 22px;
         }
         .falling-icons-hint {
           position: absolute; top: 14px; right: 16px; z-index: 2;
@@ -309,11 +377,11 @@ export function SkillsSection() {
         }
 
         .falling-icon-chip {
-          width: 58px; height: 66px;
-          padding: 8px 4px 7px;
+          width: 50px; height: 58px;
+          padding: 7px 3px 6px;
           display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
-          gap: 5px;
-          border-radius: 13px; border: 1px solid;
+          gap: 4px;
+          border-radius: 12px; border: 1px solid;
           position: relative; z-index: 1;
           cursor: grab; touch-action: none;
           user-select: none; -webkit-user-select: none;
@@ -326,7 +394,7 @@ export function SkillsSection() {
         .falling-icon-chip::before {
           content: "";
           position: absolute; inset: 0; z-index: 0;
-          border-radius: 13px;
+          border-radius: 12px;
           background: linear-gradient(165deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.2) 32%, transparent 55%);
           pointer-events: none;
         }
@@ -341,14 +409,14 @@ export function SkillsSection() {
         }
         .falling-icon-chip:active { cursor: grabbing; }
         .falling-icon-chip img {
-          width: 25px; height: 25px; object-fit: contain;
+          width: 21px; height: 21px; object-fit: contain;
           pointer-events: none; -webkit-user-drag: none;
           position: relative; z-index: 1;
           filter: drop-shadow(0 2px 3px rgba(0,0,0,0.28));
         }
         .falling-icon-name {
           position: relative; z-index: 1;
-          font-family: ${MONO}; font-size: 8px; font-weight: 600; letter-spacing: 0.01em;
+          font-family: ${MONO}; font-size: 7.5px; font-weight: 600; letter-spacing: 0.01em;
           color: var(--text-primary); text-align: center; line-height: 1.15;
           display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
           overflow: hidden; max-width: 100%;
@@ -357,21 +425,21 @@ export function SkillsSection() {
         ${mq.mobile} {
           .skills-inner { padding: 0 16px 28px !important; }
           .falling-icons-row { flex-direction: column; gap: 16px; }
-          .falling-icons-box { border-radius: 12px; min-height: 300px; }
-          .falling-icons-flow { padding: 38px 14px 18px; gap: 9px; }
-          .falling-icon-chip { width: 50px; height: 58px; border-radius: 12px; gap: 4px; padding: 7px 3px 6px; }
-          .falling-icon-chip img { width: 21px; height: 21px; }
+          .falling-icons-box { border-radius: 12px; min-height: 260px; }
+          .falling-icons-flow { padding: 34px 12px 16px; gap: 8px; }
+          .falling-icon-chip { width: 44px; height: 50px; border-radius: 11px; gap: 4px; padding: 6px 3px 5px; }
+          .falling-icon-chip img { width: 18px; height: 18px; }
           .falling-icon-name { font-size: 7px; }
-          .falling-icons-title { font-size: 10px; margin-bottom: 8px; }
+          .falling-icons-title { font-size: 12.5px; margin-bottom: 8px; }
         }
 
         @media ${cond.down(BP.mobileXsMax)} {
-          .falling-icons-box { min-height: 260px; }
-          .falling-icon-chip { width: 44px; height: 50px; border-radius: 11px; }
-          .falling-icon-chip img { width: 18px; height: 18px; }
-          .falling-icon-name { font-size: 6.5px; }
-          .falling-icons-hint { font-size: 9px; top: 9px; right: 10px; }
-          .falling-icons-title { font-size: 9.5px; }
+          .falling-icons-box { min-height: 220px; }
+          .falling-icon-chip { width: 38px; height: 44px; border-radius: 10px; }
+          .falling-icon-chip img { width: 15px; height: 15px; }
+          .falling-icon-name { font-size: 6.2px; }
+          .falling-icons-hint { font-size: 8.5px; top: 8px; right: 9px; }
+          .falling-icons-title { font-size: 11.5px; }
         }
       `}</style>
 
@@ -397,8 +465,8 @@ export function SkillsSection() {
             <div style={{ height:1, background:"var(--border)", margin:"18px 0 18px" }} />
 
             <div className="falling-icons-row">
-              <FallingIconsBox title="// Languages & Full Stack" items={LANG_FULLSTACK_TECH} />
-              <FallingIconsBox title="// GenAI, DevOps & Tools" items={GENAI_DEVOPS_TOOLS_TECH} />
+              <FallingIconsBox title="Languages & Full Stack" items={LANG_FULLSTACK_TECH} />
+              <FallingIconsBox title="GenAI, DevOps & Tools" items={GENAI_DEVOPS_TOOLS_TECH} />
             </div>
           </div>
         </div>
