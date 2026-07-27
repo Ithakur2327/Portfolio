@@ -1,18 +1,6 @@
 "use client";
 import { useState } from "react";
 
-/* ════════════════════════════════════════════════════════════
-   Canonical social links — single source of truth shared by
-   the Hero info box and the Footer, so both always match.
-
-   NOTE: your project previously had two different GitHub
-   usernames on file (Navbar/Hero used "Ithakur2327", Footer used
-   "IndreshThakur"). I standardized on "Ithakur2327" since it's
-   the one used in two places — flag me if that's the wrong one.
-
-   Instagram has no link on file anywhere in the project, so
-   href is left empty below — drop your handle in and it's live.
-═══════════════════════════════════════════════════════════ */
 export const SOCIAL_LINKS = [
   {
     key: "mail", label: "Mail", href: "mailto:ithakur2327@gmail.com",
@@ -59,12 +47,6 @@ export const SOCIAL_LINKS = [
   },
 ];
 
-/* ── Tooltip — single active-item model shared across the whole row,
-   so switching from one icon straight to another swaps instantly with
-   zero overlap (no two tooltips ever visible at once, no per-icon
-   linger delay). Pure presentational — SocialRow above owns which key
-   is active. Animation uses a bouncy spring-style cubic-bezier so it
-   pops in with a touch of overshoot rather than a flat ease. ── */
 function SocialTooltip({
   label,
   show,
