@@ -6,6 +6,7 @@ import { useReveal } from "./useReveal";
 import { useTheme } from "./ThemeProvider";
 import { SectionTitleIcon } from "./SectionIcon";
 import { BP, cond, mq } from "@/lib/breakpoints";
+import { useMediaQuery } from "@/lib/useBreakpoint";
 
 const MONO = "'Geist Mono', 'SF Mono', monospace";
 const SF   = "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', sans-serif";
@@ -159,185 +160,273 @@ function FallingIconsBox({ title, names }: { title: string; names: string[] }) {
   const [hasAppeared, setHasAppeared] = useState(false);
   useEffect(() => { if (inView) setHasAppeared(true); }, [inView]);
 
+  // Live (non-sticky) in-view flag read inside the render loop — this is
+  // what lets the physics tick pause itself the moment the box scrolls
+  // off-screen and resume the instant it's back, instead of quietly
+  // grinding away below the fold and stealing frame budget from the rest
+  // of the page (a big source of the mobile/tablet lag).
+  const inViewRef = useRef(inView);
+  useEffect(() => { inViewRef.current = inView; }, [inView]);
+
+  // Snapshot of the phone/tablet perf tier, read once when physics boots
+  // up (kept in a ref, not a dependency, so an orientation change never
+  // tears down and re-drops an already-settled pile).
+  const isTabletDown = useMediaQuery(cond.tabletDown);
+  const isTabletDownRef = useRef(isTabletDown);
+  useEffect(() => { isTabletDownRef.current = isTabletDown; }, [isTabletDown]);
+
   useEffect(() => {
     if (!hasAppeared) return;
     const box = boxRef.current;
     if (!box) return;
 
-    const { Engine, World, Bodies, Body, Mouse, MouseConstraint } = Matter;
+    const { Engine, World, Bodies, Body, Mouse, MouseConstraint, Events, Sleeping } = Matter;
 
-    let rect = box.getBoundingClientRect();
-    if (rect.width <= 0 || rect.height <= 0) return;
-
-    // Lock the box's height NOW, while it still reflects the full tidy
-    // grid of cards — see note (2) above.
-    box.style.height = `${rect.height}px`;
-
-    const engine = Engine.create();
-    engine.world.gravity.y = 0.78;
-
-    const wallOpts = { isStatic: true, friction: 0.5 };
-    let floor      = Bodies.rectangle(rect.width / 2, rect.height + 24, rect.width, 48, wallOpts);
-    let leftWall   = Bodies.rectangle(-24, rect.height / 2, 48, rect.height, wallOpts);
-    let rightWall  = Bodies.rectangle(rect.width + 24, rect.height / 2, 48, rect.height, wallOpts);
-    let ceiling    = Bodies.rectangle(rect.width / 2, -24, rect.width, 48, wallOpts);
-
-    const nodes = iconRefs.current.filter((el): el is HTMLDivElement => !!el);
-    const pieces = nodes.map(el => {
-      const r = el.getBoundingClientRect();
-      const x = r.left - rect.left + r.width / 2;
-      const y = r.top - rect.top + r.height / 2;
-      const body = Bodies.rectangle(x, y, r.width, r.height, {
-        restitution: 0.35,
-        frictionAir: 0.028,
-        friction: 0.35,
-        chamfer: { radius: 10 },
-        inertia: Infinity, // never rotate — cards always stay upright
-      });
-      Body.setVelocity(body, { x: (Math.random() - 0.5) * 2, y: 0 });
-      return { el, body, halfW: r.width / 2, halfH: r.height / 2 };
-    });
-
-    // Base offset is set once; every frame after this only `transform`
-    // changes (GPU-composited), never `left`/`top` — keeps this smooth
-    // on mobile instead of forcing a layout reflow every frame.
-    pieces.forEach(({ el }) => {
-      el.style.position = "absolute";
-      el.style.left = "0px";
-      el.style.top = "0px";
-      el.style.margin = "0";
-    });
-
-    // Mouse input for dragging — no Matter.Render/canvas needed at all,
-    // Mouse.create() works directly against any DOM element.
-    const mouse = Mouse.create(box) as Matter.Mouse & {
-      mousedown: (event: Event) => void;
-      mousemove: (event: Event) => void;
-      mouseup: (event: Event) => void;
-      mousewheel: (event: Event) => void;
-    };
-    const mouseConstraint = MouseConstraint.create(engine, {
-      mouse,
-      constraint: { stiffness: 0.2, render: { visible: false } },
-    });
-
-    // Matter attaches its own touchstart/touchmove/touchend to `box` that
-    // unconditionally preventDefault() on every touch — remove them and
-    // use our own hold-to-drag logic instead (see note (1) above).
-    box.removeEventListener("touchstart", mouse.mousedown);
-    box.removeEventListener("touchmove", mouse.mousemove);
-    box.removeEventListener("touchend", mouse.mouseup);
-    box.removeEventListener("wheel", mouse.mousewheel);
-
-    const HOLD_MS = 160;
-    const MOVE_TOLERANCE = 9;
-    let dragging = false;
-    let startX = 0;
-    let startY = 0;
-    let holdTimer: ReturnType<typeof setTimeout> | null = null;
-
-    const clearHold = () => {
-      if (holdTimer) { clearTimeout(holdTimer); holdTimer = null; }
-    };
-
-    const onTouchStart = (e: TouchEvent) => {
-      const target = e.target as HTMLElement;
-      if (!target.closest(".falling-icon-chip")) return; // not a card — let the page scroll
-      const t = e.touches[0];
-      startX = t.clientX;
-      startY = t.clientY;
-      dragging = false;
-      clearHold();
-      holdTimer = setTimeout(() => {
-        dragging = true;
-        mouse.mousedown(e as unknown as Event);
-      }, HOLD_MS);
-    };
-    const onTouchMove = (e: TouchEvent) => {
-      if (dragging) {
-        e.preventDefault();
-        mouse.mousemove(e as unknown as Event);
-        return;
-      }
-      if (holdTimer) {
-        const t = e.touches[0];
-        if (Math.abs(t.clientX - startX) > MOVE_TOLERANCE || Math.abs(t.clientY - startY) > MOVE_TOLERANCE) {
-          clearHold(); // moved too fast/far — this is a scroll, not a drag
-        }
-      }
-      // not dragging yet => don't preventDefault, the page scrolls normally
-    };
-    const onTouchEnd = (e: TouchEvent) => {
-      clearHold();
-      if (dragging) {
-        dragging = false;
-        mouse.mouseup(e as unknown as Event);
-      }
-    };
-    box.addEventListener("touchstart", onTouchStart, { passive: true });
-    box.addEventListener("touchmove", onTouchMove, { passive: false });
-    box.addEventListener("touchend", onTouchEnd, { passive: false });
-
-    World.add(engine.world, [floor, leftWall, rightWall, ceiling, mouseConstraint, ...pieces.map(p => p.body)]);
-
+    let cancelled = false;
+    let engine: Matter.Engine | null = null;
     let rafId = 0;
-    let lastTime = performance.now();
-    const tick = (time: number) => {
-      const delta = Math.min(time - lastTime, 1000 / 30);
-      lastTime = time;
-      Engine.update(engine, delta);
-      const w = rect.width, h = rect.height;
-      pieces.forEach(({ el, body, halfW, halfH }) => {
-        // Strict containment: no matter how fast a card is flicked/dragged,
-        // its center can never leave the box's interior. This is a hard
-        // clamp on top of the wall bodies, not a replacement for them.
-        const hitX = body.position.x < halfW || body.position.x > w - halfW;
-        const hitY = body.position.y < halfH || body.position.y > h - halfH;
-        if (hitX || hitY) {
-          const cx = Math.min(Math.max(body.position.x, halfW), w - halfW);
-          const cy = Math.min(Math.max(body.position.y, halfH), h - halfH);
-          Body.setPosition(body, { x: cx, y: cy });
-          Body.setVelocity(body, {
-            x: hitX ? 0 : body.velocity.x,
-            y: hitY ? 0 : body.velocity.y,
-          });
-        }
-        el.style.transform = `translate3d(${body.position.x}px, ${body.position.y}px, 0) translate(-50%, -50%)`;
-      });
-      rafId = requestAnimationFrame(tick);
-    };
-    rafId = requestAnimationFrame(tick);
-
-    // Keep the box's walls in sync if the viewport is resized/rotated.
-    // The pieces themselves are left alone so a settled pile isn't
-    // disturbed — only the boundaries around it move. (Height stays
-    // locked; only width-driven wall positions need to move.)
     let resizeTimer: ReturnType<typeof setTimeout>;
-    const handleResize = () => {
-      clearTimeout(resizeTimer);
-      resizeTimer = setTimeout(() => {
-        if (!box) return;
-        rect = box.getBoundingClientRect();
-        World.remove(engine.world, [floor, leftWall, rightWall, ceiling]);
-        floor      = Bodies.rectangle(rect.width / 2, rect.height + 24, rect.width, 48, wallOpts);
-        leftWall   = Bodies.rectangle(-24, rect.height / 2, 48, rect.height, wallOpts);
-        rightWall  = Bodies.rectangle(rect.width + 24, rect.height / 2, 48, rect.height, wallOpts);
-        ceiling    = Bodies.rectangle(rect.width / 2, -24, rect.width, 48, wallOpts);
-        World.add(engine.world, [floor, leftWall, rightWall, ceiling]);
-      }, 150);
-    };
-    window.addEventListener("resize", handleResize);
+    let handleResize: (() => void) | null = null;
+    let onTouchStart: ((e: TouchEvent) => void) | null = null;
+    let onTouchMove: ((e: TouchEvent) => void) | null = null;
+    let onTouchEnd: ((e: TouchEvent) => void) | null = null;
+    let clearHold: (() => void) | null = null;
+
+    // Wait for every logo image (and the mono font the labels use) to
+    // actually finish loading before measuring anything. This is what
+    // fixes the "squished" mobile box: measuring too early — while an
+    // icon was still 0px tall mid-load — used to lock the box to a
+    // shorter height than the fully-loaded grid really needs, silently
+    // clipping the last row(s) against `overflow: hidden`.
+    const imgs = Array.from(box.querySelectorAll("img"));
+    const imgsReady = imgs.map(img =>
+      img.complete
+        ? Promise.resolve()
+        : new Promise<void>(resolve => {
+            img.addEventListener("load", () => resolve(), { once: true });
+            img.addEventListener("error", () => resolve(), { once: true });
+          })
+    );
+    const fontsReady = document.fonts?.ready ?? Promise.resolve();
+    // Never let one slow/blocked CDN icon hold the whole section hostage —
+    // fall back to whatever's loaded after a short cap either way.
+    const safetyTimeout = new Promise<void>(resolve => setTimeout(resolve, 500));
+
+    Promise.race([Promise.all([fontsReady, ...imgsReady]), safetyTimeout]).then(() => {
+      if (cancelled) return;
+      // One more paint cycle so layout is fully committed before measuring.
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        if (cancelled) return;
+        setup();
+      }));
+    });
+
+    function setup() {
+      if (!box) return;
+      let rect = box.getBoundingClientRect();
+      if (rect.width <= 0 || rect.height <= 0) return;
+
+      // Lock the box's height now that the grid is truly, fully laid
+      // out — plus a tiny buffer so no row can ever brush the clipped
+      // edge.
+      box.style.height = `${Math.ceil(rect.height) + 3}px`;
+
+      engine = Engine.create();
+      engine.world.gravity.y = 0.78;
+      // Cards that have settled stop costing CPU instead of being
+      // re-solved forever — this is the other big piece of the mobile
+      // lag fix.
+      engine.enableSleeping = true;
+      if (isTabletDownRef.current) {
+        // Fewer solver passes per step — same soft settle, cheaper to
+        // compute on the phones/tablets where this section felt laggiest.
+        engine.positionIterations = 4;
+        engine.velocityIterations = 3;
+      }
+
+      const wallOpts = { isStatic: true, friction: 0.5 };
+      let floor      = Bodies.rectangle(rect.width / 2, rect.height + 24, rect.width, 48, wallOpts);
+      let leftWall   = Bodies.rectangle(-24, rect.height / 2, 48, rect.height, wallOpts);
+      let rightWall  = Bodies.rectangle(rect.width + 24, rect.height / 2, 48, rect.height, wallOpts);
+      let ceiling    = Bodies.rectangle(rect.width / 2, -24, rect.width, 48, wallOpts);
+
+      const nodes = iconRefs.current.filter((el): el is HTMLDivElement => !!el);
+      const pieces = nodes.map(el => {
+        const r = el.getBoundingClientRect();
+        const x = r.left - rect.left + r.width / 2;
+        const y = r.top - rect.top + r.height / 2;
+        const body = Bodies.rectangle(x, y, r.width, r.height, {
+          restitution: 0.35,
+          frictionAir: 0.028,
+          friction: 0.35,
+          chamfer: { radius: 10 },
+          inertia: Infinity, // never rotate — cards always stay upright
+          sleepThreshold: 40, // settles into sleep a little sooner
+        });
+        Body.setVelocity(body, { x: (Math.random() - 0.5) * 2, y: 0 });
+        return { el, body, halfW: r.width / 2, halfH: r.height / 2 };
+      });
+
+      // Base offset is set once; every frame after this only `transform`
+      // changes (GPU-composited), never `left`/`top` — keeps this smooth
+      // on mobile instead of forcing a layout reflow every frame.
+      pieces.forEach(({ el }) => {
+        el.style.position = "absolute";
+        el.style.left = "0px";
+        el.style.top = "0px";
+        el.style.margin = "0";
+      });
+
+      // Mouse input for dragging — no Matter.Render/canvas needed at all,
+      // Mouse.create() works directly against any DOM element.
+      const mouse = Mouse.create(box) as Matter.Mouse & {
+        mousedown: (event: Event) => void;
+        mousemove: (event: Event) => void;
+        mouseup: (event: Event) => void;
+        mousewheel: (event: Event) => void;
+      };
+      const mouseConstraint = MouseConstraint.create(engine, {
+        mouse,
+        constraint: { stiffness: 0.2, render: { visible: false } },
+      });
+      // A sleeping card should wake the instant it's grabbed, not sit
+      // frozen under the cursor/finger. (@types/matter-js doesn't type
+      // this event's `body` field, so it's read via a narrow cast.)
+      Events.on(mouseConstraint, "startdrag", (event: Matter.IEvent<Matter.MouseConstraint>) => {
+        const body = (event as unknown as { body?: Matter.Body }).body;
+        if (body) Sleeping.set(body, false);
+      });
+
+      // Matter attaches its own touchstart/touchmove/touchend to `box` that
+      // unconditionally preventDefault() on every touch — remove them and
+      // use our own hold-to-drag logic instead (see note (1) above).
+      box.removeEventListener("touchstart", mouse.mousedown);
+      box.removeEventListener("touchmove", mouse.mousemove);
+      box.removeEventListener("touchend", mouse.mouseup);
+      box.removeEventListener("wheel", mouse.mousewheel);
+
+      const HOLD_MS = 160;
+      const MOVE_TOLERANCE = 9;
+      let dragging = false;
+      let startX = 0;
+      let startY = 0;
+      let holdTimer: ReturnType<typeof setTimeout> | null = null;
+
+      clearHold = () => {
+        if (holdTimer) { clearTimeout(holdTimer); holdTimer = null; }
+      };
+
+      onTouchStart = (e: TouchEvent) => {
+        const target = e.target as HTMLElement;
+        if (!target.closest(".falling-icon-chip")) return; // not a card — let the page scroll
+        const t = e.touches[0];
+        startX = t.clientX;
+        startY = t.clientY;
+        dragging = false;
+        clearHold?.();
+        holdTimer = setTimeout(() => {
+          dragging = true;
+          mouse.mousedown(e as unknown as Event);
+        }, HOLD_MS);
+      };
+      onTouchMove = (e: TouchEvent) => {
+        if (dragging) {
+          e.preventDefault();
+          mouse.mousemove(e as unknown as Event);
+          return;
+        }
+        if (holdTimer) {
+          const t = e.touches[0];
+          if (Math.abs(t.clientX - startX) > MOVE_TOLERANCE || Math.abs(t.clientY - startY) > MOVE_TOLERANCE) {
+            clearHold?.(); // moved too fast/far — this is a scroll, not a drag
+          }
+        }
+        // not dragging yet => don't preventDefault, the page scrolls normally
+      };
+      onTouchEnd = (e: TouchEvent) => {
+        clearHold?.();
+        if (dragging) {
+          dragging = false;
+          mouse.mouseup(e as unknown as Event);
+        }
+      };
+      box.addEventListener("touchstart", onTouchStart, { passive: true });
+      box.addEventListener("touchmove", onTouchMove, { passive: false });
+      box.addEventListener("touchend", onTouchEnd, { passive: false });
+
+      World.add(engine.world, [floor, leftWall, rightWall, ceiling, mouseConstraint, ...pieces.map(p => p.body)]);
+
+      let lastTime = performance.now();
+      const tick = (time: number) => {
+        // Scrolled out of view — skip all physics/DOM work this frame.
+        // The loop itself stays alive (just one cheap boolean check) so
+        // it can resume instantly once the box is back in view, but the
+        // rest of the page never has to compete with an invisible
+        // simulation for frame budget.
+        if (!inViewRef.current) {
+          lastTime = time;
+          rafId = requestAnimationFrame(tick);
+          return;
+        }
+        const delta = Math.min(time - lastTime, 1000 / 30);
+        lastTime = time;
+        Engine.update(engine!, delta);
+        const w = rect.width, h = rect.height;
+        pieces.forEach(({ el, body, halfW, halfH }) => {
+          if (body.isSleeping) return; // resting — nothing changed, skip the DOM write
+          // Strict containment: no matter how fast a card is flicked/dragged,
+          // its center can never leave the box's interior. This is a hard
+          // clamp on top of the wall bodies, not a replacement for them.
+          const hitX = body.position.x < halfW || body.position.x > w - halfW;
+          const hitY = body.position.y < halfH || body.position.y > h - halfH;
+          if (hitX || hitY) {
+            const cx = Math.min(Math.max(body.position.x, halfW), w - halfW);
+            const cy = Math.min(Math.max(body.position.y, halfH), h - halfH);
+            Body.setPosition(body, { x: cx, y: cy });
+            Body.setVelocity(body, {
+              x: hitX ? 0 : body.velocity.x,
+              y: hitY ? 0 : body.velocity.y,
+            });
+          }
+          el.style.transform = `translate3d(${body.position.x}px, ${body.position.y}px, 0) translate(-50%, -50%)`;
+        });
+        rafId = requestAnimationFrame(tick);
+      };
+      rafId = requestAnimationFrame(tick);
+
+      // Keep the box's walls in sync if the viewport is resized/rotated.
+      // The pieces themselves are left alone so a settled pile isn't
+      // disturbed — only the boundaries around it move. (Height stays
+      // locked; only width-driven wall positions need to move.)
+      handleResize = () => {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(() => {
+          if (!box || !engine) return;
+          rect = box.getBoundingClientRect();
+          World.remove(engine.world, [floor, leftWall, rightWall, ceiling]);
+          floor      = Bodies.rectangle(rect.width / 2, rect.height + 24, rect.width, 48, wallOpts);
+          leftWall   = Bodies.rectangle(-24, rect.height / 2, 48, rect.height, wallOpts);
+          rightWall  = Bodies.rectangle(rect.width + 24, rect.height / 2, 48, rect.height, wallOpts);
+          ceiling    = Bodies.rectangle(rect.width / 2, -24, rect.width, 48, wallOpts);
+          World.add(engine.world, [floor, leftWall, rightWall, ceiling]);
+        }, 150);
+      };
+      window.addEventListener("resize", handleResize);
+    }
 
     return () => {
-      window.removeEventListener("resize", handleResize);
-      box.removeEventListener("touchstart", onTouchStart);
-      box.removeEventListener("touchmove", onTouchMove);
-      box.removeEventListener("touchend", onTouchEnd);
-      clearHold();
+      cancelled = true;
+      if (handleResize) window.removeEventListener("resize", handleResize);
+      if (onTouchStart) box.removeEventListener("touchstart", onTouchStart);
+      if (onTouchMove) box.removeEventListener("touchmove", onTouchMove);
+      if (onTouchEnd) box.removeEventListener("touchend", onTouchEnd);
+      clearHold?.();
       clearTimeout(resizeTimer);
       cancelAnimationFrame(rafId);
-      World.clear(engine.world, false);
-      Engine.clear(engine);
+      if (engine) {
+        World.clear(engine.world, false);
+        Engine.clear(engine);
+      }
     };
   }, [hasAppeared, boxRef]);
 
@@ -407,7 +496,7 @@ export function SkillsSection() {
           flex-wrap: wrap;
           align-content: flex-start;
           justify-content: center;
-          gap: 12px;
+          gap: 10px;
           padding: 42px 22px 24px;
         }
         .falling-icons-hint {
@@ -417,16 +506,17 @@ export function SkillsSection() {
         }
 
         .falling-icon-chip {
-          width: 64px; height: 72px;
-          padding: 9px 4px 7px;
+          width: 58px; height: 65px;
+          padding: 8px 4px 6px;
           display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
-          gap: 6px;
-          border-radius: 16px;
+          gap: 5px;
+          border-radius: 15px;
           border: 1px solid rgba(0,0,0,0.10);
           position: relative; z-index: 1;
           cursor: grab;
           user-select: none; -webkit-user-select: none;
           will-change: transform;
+          contain: layout style;
           backdrop-filter: blur(12px) saturate(170%);
           -webkit-backdrop-filter: blur(12px) saturate(170%);
           box-shadow:
@@ -446,7 +536,7 @@ export function SkillsSection() {
         .falling-icon-chip::before {
           content: "";
           position: absolute; inset: 0; z-index: 0;
-          border-radius: 16px;
+          border-radius: 15px;
           background: linear-gradient(165deg, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.1) 32%, transparent 55%);
           pointer-events: none;
         }
@@ -455,7 +545,7 @@ export function SkillsSection() {
         }
         .falling-icon-chip:active { cursor: grabbing; }
         .falling-icon-chip img {
-          width: 28px; height: 28px; object-fit: contain;
+          width: 25px; height: 25px; object-fit: contain;
           pointer-events: none; -webkit-user-drag: none;
           position: relative; z-index: 1;
         }
@@ -474,26 +564,49 @@ export function SkillsSection() {
           .falling-groups-row > .falling-group:first-child { margin-top: 0; }
           .falling-group { margin-top: 22px; }
           .falling-group-title { font-size: 14px; }
-          .falling-icons-box { border-radius: 12px; min-height: 220px; }
+          .falling-icons-box { border-radius: 12px; min-height: 210px; }
           .falling-icons-flow {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
             justify-items: center;
-            padding: 34px 10px 14px;
-            gap: 8px;
+            padding: 32px 10px 14px;
+            gap: 7px;
           }
-          .falling-icon-chip { width: 100%; max-width: 62px; height: 62px; border-radius: 13px; gap: 4px; padding: 7px 3px 6px; }
-          .falling-icon-chip img { width: 22px; height: 22px; }
-          .falling-icon-name { font-size: 7.5px; }
+          .falling-icon-chip { width: 100%; max-width: 54px; height: 54px; border-radius: 12px; gap: 3px; padding: 6px 3px 5px; }
+          .falling-icon-chip img { width: 19px; height: 19px; }
+          .falling-icon-name { font-size: 7px; }
         }
 
         @media ${cond.down(BP.mobileXsMax)} {
-          .falling-icons-box { min-height: 200px; }
+          .falling-icons-box { min-height: 190px; }
           .falling-icons-flow { grid-template-columns: repeat(3, 1fr); }
-          .falling-icon-chip { max-width: 58px; height: 58px; border-radius: 12px; }
-          .falling-icon-chip img { width: 20px; height: 20px; }
-          .falling-icon-name { font-size: 7px; }
+          .falling-icon-chip { max-width: 50px; height: 50px; border-radius: 11px; }
+          .falling-icon-chip img { width: 17px; height: 17px; }
+          .falling-icon-name { font-size: 6.5px; }
           .falling-icons-hint { font-size: 9.5px; top: 10px; right: 12px; }
+        }
+
+        /* Phones + tablets: the frosted-glass look costs real GPU
+           compositing every single frame while a card is moving (each
+           blurred, moving layer needs its own recomposite pass) — with up
+           to 17 cards animating at once this was the single biggest
+           source of the reported mobile/tablet lag. Trimming the blur
+           radius and shadow layer count here keeps the same glassy look
+           at a much cheaper render cost; the physics/animation itself is
+           untouched. Laptop/desktop keep the full effect. */
+        ${mq.tabletDown} {
+          .falling-icon-chip {
+            backdrop-filter: blur(6px) saturate(140%);
+            -webkit-backdrop-filter: blur(6px) saturate(140%);
+            box-shadow:
+              0 10px 16px -8px rgba(0,0,0,0.4),
+              inset 0 1px 0 rgba(255,255,255,0.5);
+          }
+          .falling-icon-chip.is-dark {
+            box-shadow:
+              0 10px 16px -8px rgba(0,0,0,0.55),
+              inset 0 1px 0 rgba(255,255,255,0.14);
+          }
         }
       `}</style>
 
