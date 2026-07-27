@@ -81,7 +81,6 @@ function Row({icon, href, newTab, onClick, children}:{icon:React.ReactNode; href
   return <div style={{...s}}>{icon}<span>{children}</span></div>;
 }
 
-/* ── Verified badge — matches the reference portfolio's blue checkmark ── */
 function VerifiedBadge({ className }: { className?: string }) {
   return (
     <svg
@@ -140,12 +139,10 @@ function HoverBorderGradient({ children, radius = 10 }: { children: React.ReactN
         }
       `}</style>
 
-      {/* Clipping wrapper + spinning gradient */}
       <div className="hbg-outer">
         <div className="hbg-rotor" />
       </div>
 
-      {/* Static hairline border on top */}
       <div aria-hidden style={{
         position: "absolute", inset: 0, zIndex: 0, pointerEvents: "none", borderRadius: radius,
         border: isDark ? "1px solid rgba(255,255,255,0.10)" : "1px solid rgba(0,0,0,0.08)",
@@ -158,9 +155,6 @@ function HoverBorderGradient({ children, radius = 10 }: { children: React.ReactN
   );
 }
 
-// Was hardcoded to 928px (matching an old --content-width of 960px minus
-// .page-wrapper's 16px side padding). Now references the shared CSS variable
-// directly so changing --content-width in globals.css updates Hero too.
 const CW = "var(--content-width-inset)";
 
 export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) {
@@ -182,11 +176,6 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
         .fs-in  { animation: fsIn  0.28s cubic-bezier(0.16,1,0.3,1) forwards }
         .fs-out { animation: fsOut 0.22s ease-in forwards }
 
-        /* Subtitle — right-to-left shine sweep, fired once per flip so it
-           starts the instant the new text flips in. This element's class
-           never changes for the lifetime of the node (only the outer
-           fs-in/fs-out wrapper toggles), so the shimmer animation can only
-           ever restart when the sentence itself remounts — never mid-flip. */
         .subtitle-shine {
           background: linear-gradient(
             100deg,
@@ -213,7 +202,7 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
           display: flex;
           flex-direction: row;
           align-items: stretch;
-          overflow: hidden; /* clips the nameblock's bottom-right corner into the curve below */
+          overflow: hidden;
         }
 
         .h-avatar {
@@ -236,23 +225,20 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
           justify-content: flex-end; min-width: 0;
         }
 
-        /* Name row — name + verified badge */
         .h-name-row {
           display: flex;
           align-items: center;
           gap: 10px;
         }
         .h-verified-badge {
-          width: 20px;
-          height: 20px;
+          width: 16px;
+          height: 16px;
           flex-shrink: 0;
           cursor: default;
-          filter: drop-shadow(0 0 5px rgba(10,186,181,0.45));
-          transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.25s ease;
+          transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
         .h-verified-badge:hover {
           transform: rotate(360deg);
-          filter: drop-shadow(0 0 8px rgba(10,186,181,0.7));
         }
 
         .h-info-wrap {
@@ -262,22 +248,10 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
         }
 
         .h-info-pad {
-          position: relative; /* anchors the vertical partition line — spans the
-            grid AND the button row below it (stops before .h-social, which has
-            its own border-top). Safe because .hero-actions now mirrors .h-grid's
-            two-column structure (see HeroActionButtons.tsx), so Resume sits in
-            the left half and Get in touch sits in the right half — neither
-            button ever crosses the line in the gap between them. */
-
-          /* Single source of truth for the two-column layout below, shared
-             with HeroActionButtons.tsx's .hero-actions via CSS variable
-             inheritance (it's a DOM descendant of this element). Both grids
-             now use the identical column-gap and inner left-padding, so the
-             icons, the dashed divider, and the Resume/Get-in-touch buttons
-             all line up on the same vertical guides instead of drifting. */
+          position: relative;
           --info-col-gap: 44px;
-          --info-pad-l: 10px;
-          --info-pad-r: 16px;
+          --info-pad-l: 18px;
+          --info-pad-r: 18px;
         }
         .h-info-pad::before {
           content: "";
@@ -296,9 +270,7 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
           column-gap: var(--info-col-gap);
           row-gap: 12px;
         }
-        /* Left column (items 1-3): nudged right, off the edge, toward center. */
         .h-grid > :nth-child(-n+3) { padding-left: var(--info-pad-l); }
-        /* Right column (items 4-6): nudged further right, off the divider. */
         .h-grid > :nth-child(n+4) { padding-left: var(--info-pad-r); }
 
         .h-social {
@@ -308,7 +280,6 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
           padding: 14px 22px;
         }
 
-        /* Resume / Get in touch row — lives inside the info box now */
         .h-info-actions {
           margin-top: 16px;
         }
@@ -328,7 +299,7 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
             letter-spacing: 0.02em !important;
           }
           .h-name-row { gap: 14px !important; }
-          .h-verified-badge { width: clamp(28px, 5.5vw, 40px) !important; height: clamp(28px, 5.5vw, 40px) !important; }
+          .h-verified-badge { width: clamp(20px, 4vw, 28px) !important; height: clamp(20px, 4vw, 28px) !important; }
           .h-nameblock {
             padding: 0 8px !important;
           }
@@ -381,7 +352,7 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
             font-weight: 800 !important;
             line-height: 1 !important;
           }
-          .h-verified-badge { width: 40px !important; height: 40px !important; }
+          .h-verified-badge { width: 28px !important; height: 28px !important; }
           .h-name-row { gap: 16px !important; }
           .h-nameblock > div:nth-child(2) {
             margin-bottom: -1px !important;
@@ -391,11 +362,6 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
           }
         }
 
-        /* Bridges the gap between the tablet-scaled design (maxes out at
-           1180px) and the fixed compact desktop design, so wide tablets
-           (iPad Air/Pro landscape, ~1180-1366px) never hit a hard cliff —
-           avatar/badge/name-font/gap linearly taper down to their exact
-           desktop-base values by 1600px instead of snapping instantly. */
         ${mq.laptopWide} {
           .h-avatar {
             width: clamp(170px, calc(475.5px - 19.093vw), 250px) !important;
@@ -408,8 +374,8 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
             font-weight: 900 !important;
           }
           .h-verified-badge {
-            width: clamp(26px, calc(79.46px - 3.341vw), 40px) !important;
-            height: clamp(26px, calc(79.46px - 3.341vw), 40px) !important;
+            width: clamp(18px, calc(55px - 2.3vw), 28px) !important;
+            height: clamp(18px, calc(55px - 2.3vw), 28px) !important;
           }
           .h-name-row { gap: clamp(10px, calc(32.9px - 1.432vw), 16px) !important; }
         }
@@ -445,7 +411,7 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
             line-height: 1 !important;
             white-space: nowrap !important;
           }
-          .h-verified-badge { width: 22px !important; height: 22px !important; }
+          .h-verified-badge { width: 16px !important; height: 16px !important; }
           .h-name-row { gap: 6px !important; }
           .h-nameblock > div:nth-child(4) {
             padding: clamp(5px, 1.8vw, 8px) clamp(10px, 3.5vw, 16px) clamp(8px, 2.6vw, 12px) !important;
@@ -483,7 +449,7 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
             letter-spacing: 0.015em !important;
             line-height: 1 !important;
           }
-          .h-verified-badge { width: 20px !important; height: 20px !important; }
+          .h-verified-badge { width: 15px !important; height: 15px !important; }
           .h-name-row { gap: 5px !important; }
           .h-nameblock > div:nth-child(2) {
             margin-bottom: 0 !important;
@@ -522,11 +488,6 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
               className="h-avatar"
               id="hero-avatar-anchor"
               style={{
-                // Same photo the WebGL canvas will paint over, shown as a
-                // plain background first — so if the canvas hasn't rendered
-                // its first frame yet when the intro crossfade reveals this
-                // element (slow network/device), there's never a blank flash,
-                // just the same avatar underneath either way.
                 backgroundImage: `url(${isDark ? "/avatar-dark.jpg" : "/avatar-light.jpg"}${avatarVersion ? `?v=${avatarVersion}` : ""})`,
                 backgroundSize: "cover",
                 backgroundPosition: "center",
@@ -550,7 +511,6 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
                 }}>Indresh Thakur</h1>
                 <VerifiedBadge className="h-verified-badge" />
               </div>
-              {/* Line at full nameblock width — connects left partition to right border */}
               <div style={{height:1, background:"var(--border)", width:"100%"}}/>
               <div style={{padding:"8px 20px 12px", height:36, display:"flex", alignItems:"center", overflow:"hidden"}}>
                 <FlipSentences/>
@@ -563,7 +523,6 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
 
         <div style={{height:22, maxWidth:CW, margin:"0 auto"}}/>
 
-        {/* ── INFO + SOCIAL ── */}
         <div className="h-info-wrap">
           <HoverBorderGradient>
             <div className="h-info-box" style={{background:BG, border:B, borderRadius:8.5, overflow:"hidden"}}>
@@ -595,7 +554,6 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
                   </Row>
                 </div>
 
-                {/* ── Resume / Get in touch — inside the info box ── */}
                 <div className="h-info-actions">
                   <HeroActionButtons
                     onResumeClick={() => openPdf("/resume.pdf", "Resume", "/resume.pdf")}

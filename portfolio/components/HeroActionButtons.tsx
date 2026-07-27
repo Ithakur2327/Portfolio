@@ -130,7 +130,7 @@ export function LiquidButton({
    in the portfolio — the info-box "Resume" row and the Contact page) ── */
 function ResumeIcon() {
   return (
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
       <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7z" />
       <polyline points="14 2 14 7 19 7" />
       <circle cx="9" cy="13.5" r="2" />
@@ -157,6 +157,21 @@ function ArrowUpRightIcon() {
       <line x1="7" y1="17" x2="17" y2="7" />
       <polyline points="7 7 17 7 17 17" />
     </svg>
+  );
+}
+
+/* Same rounded, tinted icon-square used by the info-box rows above,
+   duplicated locally (rather than imported from HeroSection) so this
+   file has no import back into the component that imports it. */
+function IconBox({ color, children }: { color: string; children: React.ReactNode }) {
+  return (
+    <div style={{
+      width: 32, height: 32, borderRadius: 8,
+      background: `${color}18`,
+      border: `1px solid ${color}40`,
+      display: "flex", alignItems: "center", justifyContent: "center",
+      color, flexShrink: 0,
+    }}>{children}</div>
   );
 }
 
@@ -235,7 +250,12 @@ export function SolidMagneticButton({
 }
 
 /* ════════════════════════════════════════════════════════════
-   HeroActionButtons — Resume (liquid-fill) + Contact (magnetic)
+   HeroActionButtons — Resume (icon outside, liquid-fill button) +
+   Contact (magnetic). Both columns inherit --info-col-gap /
+   --info-pad-l / --info-pad-r from .h-info-pad above (CSS custom
+   properties cascade down the DOM), so the icon, the Resume button,
+   and the Get-in-touch button all land on the same vertical guides
+   as the info-grid icons above them.
 ═══════════════════════════════════════════════════════════ */
 export function HeroActionButtons({
   onResumeClick,
@@ -250,17 +270,27 @@ export function HeroActionButtons({
         .hero-actions {
           display: grid;
           grid-template-columns: 1fr 1fr;
-          column-gap: 14px;
+          column-gap: var(--info-col-gap, 14px);
           align-items: center;
           justify-items: start;
         }
+        .hero-actions > *:first-child { margin-left: var(--info-pad-l, 0px); }
+        .hero-actions > *:last-child  { margin-left: var(--info-pad-r, 0px); }
+
+        .hero-resume-group {
+          display: inline-flex;
+          align-items: center;
+          gap: 14px;
+          min-width: 0;
+        }
+
         .hero-liquid-btn {
           display: inline-flex;
           align-items: center;
-          gap: 8px;
+          justify-content: center;
           height: 38px;
           min-width: 148px;
-          padding: 0 16px 0 9px;
+          padding: 0 16px;
           border-radius: 10px;
           border: 1px solid var(--border);
           font-family: 'Geist Mono', monospace;
@@ -269,16 +299,14 @@ export function HeroActionButtons({
           cursor: pointer;
           white-space: nowrap;
         }
-        .hero-liquid-btn svg { flex-shrink: 0; }
 
         /* Get in touch — matched to the Resume button's size (same min-width,
            same height) at every breakpoint, with a true translucent glass
            treatment (var(--bg-secondary) is already a theme-adaptive
-           translucent token: dark + glassy in dark mode, light + glassy in
-           light mode) so it never flattens into a solid block that merges
-           with the page background. Scoped to .hero-actions so the shared
-           .hero-contact-btn used by the Footer and Contact page keeps its
-           own (solid, larger) style. */
+           translucent token) so it never flattens into a solid block that
+           merges with the page background. Scoped to .hero-actions so the
+           shared .hero-contact-btn used by the Footer and Contact page
+           keeps its own (solid, larger) style. */
         .hero-actions .hero-contact-btn {
           height: 38px !important;
           min-width: 148px !important;
@@ -292,27 +320,28 @@ export function HeroActionButtons({
           color: var(--text-primary) !important;
         }
 
-        ${mq.tabletThroughLaptopNarrow} {
-          .hero-liquid-btn { padding-left: 10px !important; }
-        }
-
         ${mq.mobile} {
-          .hero-liquid-btn { height: 38px; padding: 0 16px 0 9px; font-size: 12.5px; }
+          .hero-liquid-btn { height: 38px; padding: 0 16px; font-size: 12.5px; }
           /* Equal-width pair on mobile via CSS Grid (1fr 1fr) rather than
-             flex-grow — with white-space:nowrap content, flex-basis:0 +
-             equal flex-grow can still let one item's min-content float
-             above the naive 50/50 split while the other stays pinned to
-             its own min-content, leaving them visibly unequal. Grid's
-             1fr 1fr guarantees identical column widths regardless of
-             content. Declared here (not in HeroSection's stylesheet)
-             because this component's own <style> tag renders later in
-             the DOM and needs to win the cascade tie against the base
-             rules above. */
+             flex-grow, so both columns stay identical regardless of
+             content width. The icon column becomes a flex row (icon +
+             button) filling its own grid cell; the button inside it
+             flexes to take the remaining width next to the fixed-size
+             icon square. */
           .hero-actions {
             display: grid !important;
             grid-template-columns: 1fr 1fr !important;
           }
-          .hero-actions .hero-liquid-btn,
+          .hero-actions > *:first-child,
+          .hero-actions > *:last-child {
+            margin-left: 0 !important;
+          }
+          .hero-resume-group { width: 100% !important; }
+          .hero-actions .hero-resume-group .hero-liquid-btn {
+            flex: 1 !important;
+            width: auto !important;
+            min-width: 0 !important;
+          }
           .hero-actions .hero-contact-btn {
             width: 100% !important;
             min-width: 0 !important;
@@ -324,17 +353,21 @@ export function HeroActionButtons({
       `}</style>
 
       <div className="hero-actions">
-        <LiquidButton
-          onClick={onResumeClick}
-          fillColor="var(--text-primary)"
-          baseColor="var(--bg-secondary)"
-          borderColor="var(--border)"
-          textColor="var(--text-primary)"
-          hoverTextColor="var(--bg-base)"
-        >
-          <ResumeIcon />
-          Resume
-        </LiquidButton>
+        <div className="hero-resume-group">
+          <IconBox color="#0abab5">
+            <ResumeIcon />
+          </IconBox>
+          <LiquidButton
+            onClick={onResumeClick}
+            fillColor="var(--text-primary)"
+            baseColor="var(--bg-secondary)"
+            borderColor="var(--border)"
+            textColor="var(--text-primary)"
+            hoverTextColor="var(--bg-base)"
+          >
+            Resume
+          </LiquidButton>
+        </div>
 
         <SolidMagneticButton as="a" href={contactHref}>
           Get in touch
