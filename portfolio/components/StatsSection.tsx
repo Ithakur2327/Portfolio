@@ -22,7 +22,16 @@ interface LC {
 }
 interface LCCalDay { date: number; count: number; }
 interface HoveredCell { date: string; count: number; x: number; y: number; }
+interface StatHover { label: string; solved: number; total: number; x: number; y: number; }
 
+// Keeps popover tooltips from getting clipped off the left/right edge of the
+// viewport on narrow (mobile) screens.
+function clampTooltipX(x: number, halfWidth = 70) {
+  if (typeof window === "undefined") return x;
+  const min = halfWidth + 8;
+  const max = window.innerWidth - halfWidth - 8;
+  return Math.min(Math.max(x, min), max);
+}
 
 function useDismissTooltipOnScroll(setHovered: (v: null) => void, active: boolean) {
   useEffect(() => {
@@ -86,75 +95,7 @@ function GitHubLogo({ size = 34, isDark }: { size?: number; isDark: boolean }) {
   );
 }
 
-function DonutChart({ easy, medium, hard, totalSolved, totalProblems, totalEasy, totalMedium, totalHard }: {
-  easy: number; medium: number; hard: number; totalSolved: number; totalProblems: number;
-  totalEasy: number; totalMedium: number; totalHard: number;
-}) {
-  const size = 100, CX = 50, CY = 50, R = 38, STROKE = 8, gap = 3;
-  const [hoverKey, setHoverKey] = useState<string | null>(null);
-  const easyFrac = easy / totalProblems, medFrac = medium / totalProblems, hardFrac = hard / totalProblems;
-  const restFrac = Math.max(0, 1 - easyFrac - medFrac - hardFrac);
-  
-  const segments = [
-    { key: "Easy",   frac: easyFrac, color: "#00b8a3", solved: easy,   total: totalEasy },
-    { key: "Medium", frac: medFrac,  color: "#ffc01e", solved: medium, total: totalMedium },
-    { key: "Hard",   frac: hardFrac, color: "#ef4743", solved: hard,   total: totalHard },
-    { key: "rest",   frac: restFrac, color: "var(--line)", solved: 0,  total: 0 },
-  ];
-  let offset = -90;
-  const paths = segments.map((seg) => {
-    const degrees = Math.max(0, seg.frac * 360 - gap);
-    const startRad = (offset * Math.PI) / 180;
-    const x1 = CX + R * Math.cos(startRad), y1 = CY + R * Math.sin(startRad);
-    const endDeg = offset + degrees, endRad = (endDeg * Math.PI) / 180;
-    const x2 = CX + R * Math.cos(endRad), y2 = CY + R * Math.sin(endRad);
-    const largeArc = degrees > 180 ? 1 : 0;
-    offset += seg.frac * 360;
-    return { ...seg, d: `M ${x1} ${y1} A ${R} ${R} 0 ${largeArc} 1 ${x2} ${y2}`, degrees };
-  });
-  const hovered = paths.find(p => p.key === hoverKey && p.key !== "rest");
-
-  return (
-    <div style={{ position: "relative", width: size, height: size, flexShrink: 0 }}>
-      {/* Hover tooltip — distinctly indicates what each donut color means */}
-      {hovered && (
-        <div
-          style={{
-            position: "absolute", top: -6, left: "50%", transform: "translate(-50%,-100%)",
-            padding: "4px 8px", borderRadius: 7, whiteSpace: "nowrap", pointerEvents: "none",
-            background: "var(--bg-card)", border: `1px solid ${hovered.color}55`,
-            boxShadow: "0 6px 16px rgba(0,0,0,0.25)", zIndex: 5,
-          }}
-        >
-          <span style={{ fontFamily: MONO, fontSize: 10, fontWeight: 800, color: hovered.color }}>{hovered.key}</span>
-          <span style={{ fontFamily: MONO, fontSize: 10, fontWeight: 700, color: "var(--text-primary)", marginLeft: 5 }}>
-            {hovered.solved}<span style={{ color: "var(--text-muted)", fontWeight: 400 }}>/{hovered.total}</span>
-          </span>
-        </div>
-      )}
-      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
-        <circle cx={CX} cy={CY} r={R} fill="none" stroke="var(--line)" strokeWidth={STROKE} />
-        {paths.map(p => p.degrees > 0 && (
-          <path
-            key={p.key} d={p.d} fill="none" stroke={p.color} strokeWidth={STROKE} strokeLinecap="round"
-            style={{
-              cursor: p.key === "rest" ? "default" : "pointer",
-              transition: "opacity 0.15s ease",
-              opacity: hoverKey && hoverKey !== p.key && p.key !== "rest" ? 0.35 : 1,
-            }}
-            onMouseEnter={() => p.key !== "rest" && setHoverKey(p.key)}
-            onMouseLeave={() => setHoverKey(null)}
-          />
-        ))}
-        <text x={CX} y={CY - 9} textAnchor="middle" fill="var(--text-primary)" style={{ fontFamily: MONO, fontSize: 16, fontWeight: 800, letterSpacing: "-0.04em" }}>{totalSolved}</text>
-        <text x={CX} y={CY + 4} textAnchor="middle" fill="var(--text-muted)" style={{ fontFamily: MONO, fontSize: 8 }}>/{totalProblems}</text>
-        <text x={CX} y={CY + 16} textAnchor="middle" fill="#4ade80" style={{ fontFamily: SF, fontSize: 8, fontWeight: 600 }}>✓ Solved</text>
-      </svg>
-    </div>
-  );
-}
-
-/* Portal tooltip */
+/* Portal tooltip (used for heatmap cell hover) */
 function PortalTooltip({ hovered, accentColor, label }: {
   hovered: HoveredCell | null;
   accentColor: string;
@@ -164,11 +105,13 @@ function PortalTooltip({ hovered, accentColor, label }: {
   useEffect(() => { setMounted(true); }, []);
   if (!mounted || !hovered) return null;
 
+  const left = clampTooltipX(hovered.x, 60);
+
   return createPortal(
     <div
       style={{
         position: "fixed",
-        left: hovered.x,
+        left,
         top: hovered.y,
         transform: "translate(-50%, calc(-100% - 10px))",
         pointerEvents: "none",
@@ -180,7 +123,7 @@ function PortalTooltip({ hovered, accentColor, label }: {
         whiteSpace: "nowrap",
         width: "max-content",
         boxShadow: "0 4px 16px rgba(0,0,0,0.22)",
-        animation: "statTooltipPop 0.08s cubic-bezier(0.16,1,0.3,1) forwards",
+        animation: "statTooltipPop 0.16s cubic-bezier(0.19,1,0.22,1) forwards",
         textAlign: "center",
       }}
     >
@@ -193,6 +136,82 @@ function PortalTooltip({ hovered, accentColor, label }: {
       </div>
     </div>,
     document.body
+  );
+}
+
+/* Ghost-card tooltip used for the LeetCode "solved" stat chips */
+function StatTooltip({ hovered, accentColor }: { hovered: StatHover | null; accentColor: string }) {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { setMounted(true); }, []);
+  if (!mounted || !hovered) return null;
+
+  const left = clampTooltipX(hovered.x, 74);
+
+  return createPortal(
+    <div
+      style={{
+        position: "fixed",
+        left,
+        top: hovered.y,
+        transform: "translate(-50%, calc(-100% - 12px))",
+        pointerEvents: "none",
+        zIndex: 2147483647,
+        background: "var(--bg-card)",
+        backdropFilter: "blur(12px)",
+        WebkitBackdropFilter: "blur(12px)",
+        border: `1px solid ${accentColor}40`,
+        borderRadius: 11,
+        padding: "8px 13px",
+        minWidth: 66,
+        boxShadow: `0 12px 32px rgba(0,0,0,0.38), 0 0 0 1px ${accentColor}12`,
+        animation: "statChipTooltipPop 0.16s cubic-bezier(0.19,1,0.22,1) forwards",
+        textAlign: "center",
+      }}
+    >
+      <span className="stat-chip-tooltip-arrow" style={{ borderTopColor: "var(--bg-card)" }} />
+      <span
+        className="stat-chip-tooltip-arrow-border"
+        style={{ borderTopColor: `${accentColor}40` }}
+      />
+      <div style={{ fontSize: 9, fontWeight: 700, color: accentColor, fontFamily: MONO, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 3 }}>
+        {hovered.label}
+      </div>
+      <div style={{ fontSize: 14, fontWeight: 800, color: "var(--text-primary)", fontFamily: MONO, letterSpacing: "-0.03em" }}>
+        {hovered.solved}<span style={{ color: "var(--text-muted)", fontWeight: 500 }}>/{hovered.total}</span>
+      </div>
+    </div>,
+    document.body
+  );
+}
+
+/* Small pill showing a solved/total stat; hover reveals the ghost-card tooltip */
+function StatChip({ label, solved, color, bold, onEnter, onLeave }: {
+  label: string;
+  solved: number;
+  color: string;
+  bold?: boolean;
+  onEnter: (e: React.MouseEvent<HTMLDivElement>) => void;
+  onLeave: () => void;
+}) {
+  return (
+    <div
+      onMouseEnter={onEnter}
+      onMouseLeave={onLeave}
+      style={{
+        display: "flex",
+        alignItems: "baseline",
+        gap: 4,
+        padding: bold ? "3px 9px" : "3px 8px",
+        borderRadius: 6,
+        background: "var(--bg-secondary)",
+        border: `1px solid ${bold ? `${color}55` : "var(--border)"}`,
+        cursor: "default",
+        transition: "border-color 0.15s ease, transform 0.15s cubic-bezier(0.19,1,0.22,1)",
+      }}
+    >
+      <span style={{ fontSize: 9, fontWeight: 700, color, fontFamily: MONO, letterSpacing: "-0.02em" }}>{label}</span>
+      <span style={{ fontSize: bold ? 12 : 10, fontWeight: 800, color: "var(--text-primary)", fontFamily: MONO, letterSpacing: "-0.03em" }}>{solved}</span>
+    </div>
   );
 }
 
@@ -209,8 +228,10 @@ function LeetCodeStats({ username = "IThakur09" }: { username?: string }) {
   const [loading, setLoading] = useState(true);
   const [calData, setCalData] = useState<LCCalDay[]>([]);
   const [hovered, setHovered] = useState<HoveredCell | null>(null);
+  const [statHover, setStatHover] = useState<StatHover | null>(null);
   const [mounted, setMounted] = useState(false);
   useDismissTooltipOnScroll(setHovered, hovered !== null);
+  useDismissTooltipOnScroll(setStatHover, statHover !== null);
 
   useEffect(() => { setMounted(true); }, []);
 
@@ -288,6 +309,7 @@ function LeetCodeStats({ username = "IThakur09" }: { username?: string }) {
   c <= 11 ? 3 :
   4;
   const diffColors = { Easy: "#00b8a3", Medium: "#ffc01e", Hard: "#ef4743" };
+  const solvedColor = isDark ? "#FFA116" : "#C77600";
 
   const handleCellEnter = useCallback((e: React.MouseEvent<HTMLDivElement>, date: string, count: number) => {
     const el = e.currentTarget as HTMLElement;
@@ -301,15 +323,21 @@ function LeetCodeStats({ username = "IThakur09" }: { username?: string }) {
     setHovered(null);
   }, []);
 
+  const handleStatEnter = useCallback((e: React.MouseEvent<HTMLDivElement>, label: string, solved: number, total: number) => {
+    const cr = (e.currentTarget as HTMLElement).getBoundingClientRect();
+    setStatHover({ label, solved, total, x: cr.left + cr.width / 2, y: cr.top });
+  }, []);
+  const handleStatLeave = useCallback(() => setStatHover(null), []);
+
   const gridContent = (
     <div style={{ display: "inline-flex", flexDirection: "column", paddingBottom: 4, minWidth: "max-content" }}>
       {/* Month labels */}
-      <div style={{ display: "flex", marginBottom: 3, paddingLeft: 24 }}>
+      <div style={{ display: "flex", marginBottom: 4, paddingLeft: 26 }}>
         {lcMonthLabels.map((m, i) => {
           const nextCol = lcMonthLabels[i + 1]?.col ?? lcWeeks.length;
           const w = (nextCol - m.col) * STEP;
           return (
-            <div key={i} style={{ width: w, flexShrink: 0, fontSize: 8, color: "var(--text-muted)", fontFamily: MONO, overflow: "visible", whiteSpace: "nowrap" }}>
+            <div key={i} style={{ width: w, flexShrink: 0, fontSize: 9, color: "var(--text-muted)", fontFamily: MONO, overflow: "visible", whiteSpace: "nowrap", lineHeight: "16px" }}>
               {m.label}
             </div>
           );
@@ -319,7 +347,7 @@ function LeetCodeStats({ username = "IThakur09" }: { username?: string }) {
         {/* Day labels */}
         <div style={{ display: "flex", flexDirection: "column", gap: GAP, marginRight: 4 }}>
           {DAY_LABELS_LC.map((lbl, i) => (
-            <div key={i} style={{ height: CELL, fontSize: 8, color: "var(--text-muted)", fontFamily: MONO, lineHeight: `${CELL}px`, width: 20 }}>{lbl}</div>
+            <div key={i} style={{ height: CELL, fontSize: 9, color: "var(--text-muted)", fontFamily: MONO, lineHeight: `${CELL}px`, userSelect: "none", width: 22 }}>{lbl}</div>
           ))}
         </div>
         {/* Cells */}
@@ -343,18 +371,19 @@ function LeetCodeStats({ username = "IThakur09" }: { username?: string }) {
         </div>
       </div>
       {/* Legend */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 3, marginTop: 5 }}>
-        <span style={{ fontSize: 8, color: "var(--text-muted)", fontFamily: MONO, marginRight: 3 }}>Less</span>
-        {[0,1,2,3,4].map(l => <div key={l} className={`lc-cell lc-cell-${l}`} style={{ width: 9, height: 9, borderRadius: 2 }} />)}
-        <span style={{ fontSize: 8, color: "var(--text-muted)", fontFamily: MONO, marginLeft: 3 }}>More</span>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 3, marginTop: 8 }}>
+        <span style={{ fontSize: 9, color: "var(--text-muted)", fontFamily: MONO, marginRight: 3 }}>Less</span>
+        {[0,1,2,3,4].map(l => <div key={l} className={`lc-cell lc-cell-${l}`} style={{ width: 10, height: 10, borderRadius: 2 }} />)}
+        <span style={{ fontSize: 9, color: "var(--text-muted)", fontFamily: MONO, marginLeft: 3 }}>More</span>
       </div>
     </div>
   );
 
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
-      {/* Portal tooltip — renders into body, no stacking context issues */}
-      <PortalTooltip hovered={hovered} accentColor={isDark ? "#FFA116" : "#C77600"} label="submissions" />
+      {/* Portal tooltips — render into body, no stacking context issues */}
+      <PortalTooltip hovered={hovered} accentColor={solvedColor} label="submissions" />
+      <StatTooltip hovered={statHover} accentColor={statHover?.label === "Total Solved" ? solvedColor : (diffColors as Record<string, string>)[statHover?.label ?? ""] ?? solvedColor} />
 
       {/* Header */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10, flexWrap: "wrap", gap: 8 }}>
@@ -372,73 +401,41 @@ function LeetCodeStats({ username = "IThakur09" }: { username?: string }) {
       </div>
       <div style={{ height: 1, background: "var(--border)", marginBottom: 10 }} />
 
-      {/* Desktop layout */}
-      <div className="lc-body-desktop" style={{ display: "flex", gap: 0, flex: 1, minHeight: 0 }}>
-        {/* Left: donut + bars */}
-        <div style={{ width: "33%", flexShrink: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 5 }}>
-          {loading ? <Spin color="#FFA116" /> : (
-            <>
-              <DonutChart easy={d.easySolved} medium={d.mediumSolved} hard={d.hardSolved} totalSolved={d.totalSolved} totalProblems={LC_TOTAL} totalEasy={d.totalEasy} totalMedium={d.totalMedium} totalHard={d.totalHard} />
-              <div style={{ display: "flex", flexDirection: "column", gap: 3, width: "100%", padding: "0 2px" }}>
-                {[
-                  { label: "Easy", solved: d.easySolved, total: d.totalEasy, color: diffColors.Easy },
-                  { label: "Med.", solved: d.mediumSolved, total: d.totalMedium, color: diffColors.Medium },
-                  { label: "Hard", solved: d.hardSolved, total: d.totalHard, color: diffColors.Hard },
-                ].map(row => (
-                  <div key={row.label} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "2px 6px", borderRadius: 5, background: "var(--bg-secondary)", border: "1px solid var(--border)" }}>
-                    <span style={{ fontSize: 9, fontWeight: 700, color: row.color, fontFamily: MONO }}>{row.label}</span>
-                    <span style={{ fontSize: 9, fontWeight: 700, color: "var(--text-primary)", fontFamily: MONO }}>{row.solved}<span style={{ color: "var(--text-muted)", fontWeight: 400 }}>/{row.total}</span></span>
-                  </div>
-                ))}
-              </div>
-            </>
-          )}
-        </div>
-        <div style={{ width: 1, background: "var(--border)", flexShrink: 0, margin: "0 8px" }} />
-        {/* Right: grid */}
-        <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column" }}>
-          <div style={{ fontSize: 9, color: "var(--text-muted)", fontFamily: MONO, marginBottom: 4 }}>2026 activity</div>
+      {loading ? <Spin color="#FFA116" /> : (
+        <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 8, marginBottom: 4 }}>
+            <span style={{ fontSize: 9, color: "var(--text-muted)", fontFamily: MONO }}>2026 activity</span>
+            <div style={{ display: "flex", alignItems: "center", gap: 5, flexWrap: "wrap" }}>
+              <StatChip
+                label="Solved" solved={d.totalSolved} color={solvedColor} bold
+                onEnter={e => handleStatEnter(e, "Total Solved", d.totalSolved, LC_TOTAL)}
+                onLeave={handleStatLeave}
+              />
+              <StatChip
+                label="E" solved={d.easySolved} color={diffColors.Easy}
+                onEnter={e => handleStatEnter(e, "Easy", d.easySolved, d.totalEasy)}
+                onLeave={handleStatLeave}
+              />
+              <StatChip
+                label="M" solved={d.mediumSolved} color={diffColors.Medium}
+                onEnter={e => handleStatEnter(e, "Medium", d.mediumSolved, d.totalMedium)}
+                onLeave={handleStatLeave}
+              />
+              <StatChip
+                label="H" solved={d.hardSolved} color={diffColors.Hard}
+                onEnter={e => handleStatEnter(e, "Hard", d.hardSolved, d.totalHard)}
+                onLeave={handleStatLeave}
+              />
+            </div>
+          </div>
           <div
-            style={{ width: "100%", overflowX: "auto", overflowY: "visible", WebkitOverflowScrolling: "touch", scrollbarWidth: "thin", scrollbarColor: "rgba(255,161,22,0.3) transparent" }}
+            style={{ flex: 1, width: "100%", overflowX: "auto", overflowY: "visible", WebkitOverflowScrolling: "touch", scrollbarWidth: "thin", scrollbarColor: "rgba(255,161,22,0.3) transparent" }}
             onMouseLeave={() => setHovered(null)}
           >
             {gridContent}
           </div>
         </div>
-      </div>
-
-      {/* Mobile layout */}
-      <div className="lc-body-mobile" style={{ display: "none", flexDirection: "column", gap: 12 }}>
-        <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-          {loading ? <Spin color="#FFA116" /> : (
-            <>
-              <DonutChart easy={d.easySolved} medium={d.mediumSolved} hard={d.hardSolved} totalSolved={d.totalSolved} totalProblems={LC_TOTAL} totalEasy={d.totalEasy} totalMedium={d.totalMedium} totalHard={d.totalHard} />
-              <div style={{ display: "flex", flexDirection: "column", gap: 4, flex: 1 }}>
-                {[
-                  { label: "Easy", solved: d.easySolved, total: d.totalEasy, color: diffColors.Easy },
-                  { label: "Med.", solved: d.mediumSolved, total: d.totalMedium, color: diffColors.Medium },
-                  { label: "Hard", solved: d.hardSolved, total: d.totalHard, color: diffColors.Hard },
-                ].map(row => (
-                  <div key={row.label} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "3px 7px", borderRadius: 6, background: "var(--bg-secondary)", border: "1px solid var(--border)" }}>
-                    <span style={{ fontSize: 10, fontWeight: 700, color: row.color, fontFamily: MONO }}>{row.label}</span>
-                    <span style={{ fontSize: 10, fontWeight: 700, color: "var(--text-primary)", fontFamily: MONO }}>{row.solved}<span style={{ color: "var(--text-muted)", fontWeight: 400 }}>/{row.total}</span></span>
-                  </div>
-                ))}
-              </div>
-            </>
-          )}
-        </div>
-        <div style={{ height: 1, background: "var(--border)" }} />
-        <div>
-          <div style={{ fontSize: 9, color: "var(--text-muted)", fontFamily: MONO, marginBottom: 4 }}>2026 activity</div>
-          <div
-            style={{ overflowX: "auto", WebkitOverflowScrolling: "touch", scrollbarWidth: "thin" }}
-            onMouseLeave={() => setHovered(null)}
-          >
-            {gridContent}
-          </div>
-        </div>
-      </div>
+      )}
     </div>
   );
 }
@@ -650,11 +647,29 @@ export function StatsSection() {
           from { opacity: 0; transform: translate(-50%, calc(-100% - 6px)) scale(0.94); }
           to   { opacity: 1; transform: translate(-50%, calc(-100% - 10px)) scale(1); }
         }
+        @keyframes statChipTooltipPop {
+          from { opacity: 0; transform: translate(-50%, calc(-100% - 8px)) scale(0.92); }
+          to   { opacity: 1; transform: translate(-50%, calc(-100% - 12px)) scale(1); }
+        }
         .stat-tooltip-arrow {
           position: absolute; top: 100%; left: 50%; transform: translateX(-50%);
           width: 0; height: 0;
           border-left: 5px solid transparent; border-right: 5px solid transparent;
           border-top: 5px solid var(--text-primary);
+        }
+        .stat-chip-tooltip-arrow {
+          position: absolute; top: 100%; left: 50%; transform: translateX(-50%);
+          width: 0; height: 0;
+          border-left: 6px solid transparent; border-right: 6px solid transparent;
+          border-top: 6px solid var(--bg-card);
+          z-index: 1;
+        }
+        .stat-chip-tooltip-arrow-border {
+          position: absolute; top: calc(100% + 1px); left: 50%; transform: translateX(-50%);
+          width: 0; height: 0;
+          border-left: 7px solid transparent; border-right: 7px solid transparent;
+          border-top: 7px solid;
+          z-index: 0;
         }
         @keyframes lcPulse { 0%,100%{opacity:1} 50%{opacity:0.7} }
         .lc-logo-outer { animation: lcPulse 2.4s ease-in-out infinite; }
@@ -772,10 +787,6 @@ export function StatsSection() {
         ${mq.mobile} {
           .about-content  { padding: 0 14px 28px; }
           .stat-card-3d   { width: 100% !important; min-width: 0 !important; }
-        }
-        ${mq.mobile} {
-          .lc-body-desktop { display: none !important; }
-          .lc-body-mobile  { display: flex !important; }
         }
 
         .stat-card-3d ::-webkit-scrollbar { height: 4px; }
