@@ -1,5 +1,20 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
+
+// useEffect fires *after* the browser has already painted, which left a
+// window — small, but very real on a page this heavy (WebGL avatar canvas,
+// hero layout, fonts) — between "#intro-shell gets removed" and "this
+// component's own overlay actually commits to the DOM". The browser would
+// paint whatever landed in that gap, which was the real hero flashing
+// unblurred for a frame or few. That flash is what made the intro look like
+// it played twice: the static pre-hydration shell, then a glimpse of the
+// live page, then this component's animated hub starting fresh on top.
+// useLayoutEffect runs synchronously before paint, so the shell's removal
+// and this component's first real render land in the exact same frame —
+// no gap for the browser to paint in between. (SSR has no DOM/paint to
+// worry about, so it just falls back to the ordinary effect there.)
+const useIsomorphicLayoutEffect =
+  typeof window !== "undefined" ? useLayoutEffect : useEffect;
 
 /**
  * IntroLoader — one-time landing sequence.
@@ -16,17 +31,22 @@ import { useEffect, useRef, useState } from "react";
  *              below) — FLIGHT_MS below is kept just slightly ahead of that
  *              so the "landed" swap fires the instant it actually arrives,
  *              never after a dead, stuck-looking pause.
- *   2200ms   — avatar has landed: the real WebGL hero avatar (which was
- *              hidden under `html.intro-active`, see globals.css) crossfades
- *              in, and the nav's corner avatar is revealed via the
- *              `intro:complete` event
+ *   2200ms   — avatar has landed: the flying clone snaps out and the real
+ *              WebGL hero avatar (which was hidden under `html.intro-active`,
+ *              see globals.css) snaps in at the exact same instant — an
+ *              instant swap, not a crossfade, since by then they occupy the
+ *              identical rect. The nav's corner avatar is revealed via the
+ *              `intro:complete` event at the same moment.
  *   2600ms   — overlay fully unmounts
  *
  * A tiny inline script in layout.tsx paints a static placeholder version of
  * this same hub (behind id="intro-shell") the instant HTML parsing reaches
  * <body>, before React/JS has hydrated — that's what stops the real hero
  * section from ever flashing on screen first. This component hands off from
- * that placeholder to itself on mount (see the `intro-shell` removal below).
+ * that placeholder to itself on mount (see the `intro-shell` removal below),
+ * synchronously (useLayoutEffect, not useEffect) so the swap lands in the
+ * same painted frame as the shell's removal — otherwise the hero peeks
+ * through for a frame in between and the hand-off reads as two intros.
  *
  * Runs once per browser session (sessionStorage) and is skipped instantly
  * for prefers-reduced-motion. `introHasRunThisPageLoad` below is an extra,
@@ -67,10 +87,12 @@ export function IntroLoader() {
   const isDarkRef = useRef(true);
   const hubAvatarRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
+  useIsomorphicLayoutEffect(() => {
     // Hand off from (and remove) the synchronous pre-hydration placeholder
     // painted by the inline script in layout.tsx — from this point on, this
-    // component owns the overlay.
+    // component owns the overlay. Doing this in a layout effect means the
+    // removal below and the setMounted(true) further down commit together,
+    // before the browser paints either change.
     document.getElementById("intro-shell")?.remove();
 
     // Drops the scroll lock, tells the rest of the app the intro is over,
@@ -211,12 +233,13 @@ export function IntroLoader() {
         .intro-hub-avatar {
           width: 84px; height: 84px; border-radius: 22px;
           position: relative;
-          animation: intro-avatar-in 0.4s cubic-bezier(0.16,1,0.3,1) both,
-                     intro-breathe 1.8s ease-in-out 0.4s infinite;
-        }
-        @keyframes intro-avatar-in {
-          from { opacity: 0; transform: scale(0.8) translateY(6px); }
-          to   { opacity: 1; transform: scale(1)   translateY(0); }
+          /* No entrance pop here on purpose — by the time this mounts, the
+             avatar was already sitting on screen via #intro-shell (see
+             globals.css), so popping it in again would look like the intro
+             restarting. Only the continuous breathing carries over — no
+             delay, so it doesn't visibly freeze for a beat right after the
+             hand-off (the shell's own breathing has no delay either). */
+          animation: intro-breathe 1.8s ease-in-out infinite;
         }
         @keyframes intro-breathe {
           0%, 100% { transform: scale(1); }
@@ -251,7 +274,8 @@ export function IntroLoader() {
         .intro-dots {
           display: flex; align-items: center; gap: 6px;
           opacity: 1; transition: opacity 0.2s ease, transform 0.25s ease;
-          animation: intro-avatar-in 0.4s cubic-bezier(0.16,1,0.3,1) 0.08s both;
+          /* Same reasoning as .intro-hub-avatar above — no entrance pop,
+             the dots were already visible and pulsing in #intro-shell. */
         }
         .intro-overlay--exit .intro-dots {
           opacity: 0; transform: translateX(4px);
@@ -281,11 +305,18 @@ export function IntroLoader() {
             width 0.8s cubic-bezier(0.16,1,0.3,1),
             height 0.8s cubic-bezier(0.16,1,0.3,1),
             border-radius 0.8s cubic-bezier(0.16,1,0.3,1),
-            box-shadow 0.8s ease,
-            opacity 0.35s ease;
+            box-shadow 0.8s ease;
+          /* opacity is intentionally NOT in the list above — it only ever
+             changes once, at landing, and that change is meant to be an
+             instant swap (see --landed below), not a fade. */
         }
         .intro-flip-avatar--landed {
           box-shadow: none;
+          /* Snaps to 0 the instant it lands (no transition = instant),
+             at the exact rect of the real hero avatar underneath, which
+             uncovers at opacity 1 in the very same tick (see
+             #hero-avatar-anchor in globals.css) — a direct swap, not a
+             crossfade/dissolve between the two. */
           opacity: 0;
         }
         .intro-flip-avatar img {

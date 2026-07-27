@@ -196,8 +196,16 @@ export default function RootLayout({
                 var src = isDark ? '/avatar-dark.jpg' : '/avatar-light.jpg';
                 var shell = document.createElement('div');
                 shell.id = 'intro-shell';
+                // Ring + imgwrap split mirrors IntroLoader's own
+                // .intro-hub-avatar markup exactly (see components/
+                // IntroLoader.tsx) — same structure, same class-name
+                // pattern, so when that component takes over on mount
+                // there is no visual delta to pop into place.
                 shell.innerHTML =
-                  '<div class="intro-shell-avatar"><img src="' + src + '" alt=""/></div>' +
+                  '<div class="intro-shell-avatar">' +
+                    '<div class="intro-shell-ring"></div>' +
+                    '<div class="intro-shell-imgwrap"><img src="' + src + '" alt=""/></div>' +
+                  '</div>' +
                   '<div class="intro-shell-dots"><span></span><span></span><span></span></div>';
                 document.body.appendChild(shell);
               })();
