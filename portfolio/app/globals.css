@@ -141,6 +141,13 @@ html {
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
   -webkit-overflow-scrolling: touch;
+  /* Keeps the scrollbar's gutter reserved at all times, even while
+     `html.intro-active` switches overflow to `hidden` during the intro.
+     Without this, the scrollbar disappears for the intro's duration and
+     then pops back in the instant the intro ends — the "scroll icon
+     appearing late" glitch. Supported browsers just always reserve the
+     space; unsupported ones silently ignore it (same as today). */
+  scrollbar-gutter: stable;
 }
 
 body {

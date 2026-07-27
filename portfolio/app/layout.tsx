@@ -181,7 +181,18 @@ export default function RootLayout({
                 if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
                 var d = document.documentElement;
                 d.classList.add('intro-active');
-                var isDark = d.classList.contains('dark');
+                // Resolve the theme ourselves instead of reading
+                // d.classList.contains('dark') — next-themes' own
+                // theme-setting script (rendered inside <ThemeProvider>,
+                // i.e. AFTER this script in document order) hasn't run
+                // yet at this point, so that class is never present here
+                // and this always picked the light avatar/background
+                // regardless of the visitor's actual theme. Mirrors
+                // next-themes' own algorithm exactly (storageKey="theme",
+                // defaultTheme="dark") so the two never disagree.
+                var stored = null;
+                try { stored = localStorage.getItem('theme'); } catch (e) {}
+                var isDark = stored ? stored === 'dark' : true;
                 var src = isDark ? '/avatar-dark.jpg' : '/avatar-light.jpg';
                 var shell = document.createElement('div');
                 shell.id = 'intro-shell';

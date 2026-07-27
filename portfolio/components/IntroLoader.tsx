@@ -73,11 +73,25 @@ export function IntroLoader() {
     // component owns the overlay.
     document.getElementById("intro-shell")?.remove();
 
+    // Drops the scroll lock, tells the rest of the app the intro is over,
+    // and — critically — forces phase to "done" so this component's own
+    // render can never keep showing a stray overlay. Without that last
+    // step, an instance whose earlier invocation had already set
+    // mounted=true (e.g. Strict Mode's dev-only mount→cleanup→mount
+    // replay, or a Fast Refresh remount while developing) would bail out
+    // of *scheduling new timers* here but keep rendering its last-known
+    // phase forever — the exact "intro flashes and then comes back/gets
+    // stuck" glitch this guards against.
+    const bail = () => {
+      document.documentElement.classList.remove("intro-active");
+      window.dispatchEvent(new Event("intro:complete"));
+      setPhase("done");
+    };
+
     if (introHasRunThisPageLoad) {
       // The full sequence already ran once during this page's lifetime —
       // never replay it, no matter why this effect fired again.
-      document.documentElement.classList.remove("intro-active");
-      window.dispatchEvent(new Event("intro:complete"));
+      bail();
       return;
     }
 
@@ -94,8 +108,7 @@ export function IntroLoader() {
       try {
         sessionStorage.setItem(SESSION_KEY, "1");
       } catch {}
-      document.documentElement.classList.remove("intro-active");
-      window.dispatchEvent(new Event("intro:complete"));
+      bail();
       return;
     }
 
@@ -148,6 +161,12 @@ export function IntroLoader() {
       clearTimeout(t1);
       clearTimeout(t2);
       clearTimeout(t3);
+      // If this effect is torn down before the sequence actually reached
+      // "landed" (a genuine unmount mid-flight, not just Strict Mode's
+      // replay — that case already called bail() above), never leave the
+      // page stuck with scroll locked and the hero avatar hidden
+      // underneath a dead overlay.
+      document.documentElement.classList.remove("intro-active");
     };
   }, []);
 
@@ -270,7 +289,7 @@ export function IntroLoader() {
           opacity: 0;
         }
         .intro-flip-avatar img {
-          width: 100%; height: 100%; object-fit: cover; display: block;
+          width: 100%; height: 100%; object-fit: cover; object-position: center top; display: block;
         }
 
         @media (prefers-reduced-motion: reduce) {

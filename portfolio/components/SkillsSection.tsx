@@ -6,6 +6,7 @@ import { useReveal } from "./useReveal";
 import { useTheme } from "./ThemeProvider";
 import { SectionTitleIcon } from "./SectionIcon";
 import { BP, cond, mq } from "@/lib/breakpoints";
+import { useMediaQuery } from "@/lib/useBreakpoint";
 
 const MONO = "'Geist Mono', 'SF Mono', monospace";
 const SF   = "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', sans-serif";
@@ -150,7 +151,7 @@ FallingIcon.displayName = "FallingIcon";
    3) Physics is tuned for a soft, controlled settle rather than a bouncy
       one, and mouse/touch position is read on every animation frame for
       a smooth drag feel. */
-function FallingIconsBox({ title, names }: { title: string; names: string[] }) {
+function FallingIconsBox({ title, names, isCompact }: { title: string; names: string[]; isCompact: boolean }) {
   const { ref: boxRef, inView } = useBoxInView();
   const iconRefs = useRef<(HTMLDivElement | null)[]>([]);
 
@@ -160,6 +161,11 @@ function FallingIconsBox({ title, names }: { title: string; names: string[] }) {
   useEffect(() => { if (inView) setHasAppeared(true); }, [inView]);
 
   useEffect(() => {
+    // Phones & tablets render the static-grid branch below instead (see
+    // "is-compact" in the JSX) — never even create the physics engine
+    // for them, so there's no RAF loop, no per-frame DOM writes, nothing
+    // to drain battery or lag, ever, on those devices.
+    if (isCompact) return;
     if (!hasAppeared) return;
     const box = boxRef.current;
     if (!box) return;
@@ -175,6 +181,10 @@ function FallingIconsBox({ title, names }: { title: string; names: string[] }) {
 
     const engine = Engine.create();
     engine.world.gravity.y = 0.78;
+    // Settled bodies stop costing any real per-frame compute once asleep
+    // — MouseConstraint wakes a body automatically the instant it's
+    // grabbed, so dragging still feels instant.
+    engine.enableSleeping = true;
 
     const wallOpts = { isStatic: true, friction: 0.5 };
     let floor      = Bodies.rectangle(rect.width / 2, rect.height + 24, rect.width, 48, wallOpts);
@@ -339,22 +349,36 @@ function FallingIconsBox({ title, names }: { title: string; names: string[] }) {
       World.clear(engine.world, false);
       Engine.clear(engine);
     };
-  }, [hasAppeared, boxRef]);
+  }, [hasAppeared, boxRef, isCompact]);
 
   return (
     <div className="falling-group">
       <div className="falling-group-title">{title}</div>
-      <div ref={boxRef} className="falling-icons-box">
-        <span className="falling-icons-hint">{"// drag the icons"}</span>
-        <div className="falling-icons-flow">
-          {names.map((name, i) => (
-            <FallingIcon
-              key={name}
-              name={name}
-              ref={el => { iconRefs.current[i] = el; }}
-            />
-          ))}
-        </div>
+      <div ref={boxRef} className={`falling-icons-box${isCompact ? " is-compact" : ""}`}>
+        {!isCompact && <span className="falling-icons-hint">{"// drag the icons"}</span>}
+        {isCompact ? (
+          <div className="static-icons-grid">
+            {names.map((name, i) => (
+              <div
+                key={name}
+                className={`static-icon-cell${hasAppeared ? " is-in" : ""}`}
+                style={{ transitionDelay: `${Math.min(i * 26, 380)}ms` }}
+              >
+                <FallingIcon name={name} />
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="falling-icons-flow">
+            {names.map((name, i) => (
+              <FallingIcon
+                key={name}
+                name={name}
+                ref={el => { iconRefs.current[i] = el; }}
+              />
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
@@ -363,6 +387,10 @@ function FallingIconsBox({ title, names }: { title: string; names: string[] }) {
 /* Main export */
 export function SkillsSection() {
   const { ref, revealClass } = useReveal();
+  // Phones + tablets (≤1024px, same boundary used everywhere else in the
+  // app) get the static grid instead of the physics engine — see
+  // FallingIconsBox for why.
+  const isCompact = useMediaQuery(cond.tabletDown);
 
   return (
     <>
