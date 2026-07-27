@@ -19,11 +19,11 @@ const useIsomorphicLayoutEffect =
 /**
  * IntroLoader — one-time landing sequence.
  *
- * Timeline (total = 2.6s):
+ * Timeline (total = 4.6s):
  *   0ms      — centered squircle avatar + 3 loading dots fade/scale in,
  *              over a frosted glass-blur backdrop
- *   0-1300ms — "loading" hold (dots pulse, avatar breathes)
- *   1300ms   — dots + hub fade out, avatar detaches and FLIES from its
+ *   0-3300ms — "loading" hold (dots pulse, avatar breathes)
+ *   3300ms   — dots + hub fade out, avatar detaches and FLIES from its
  *              centered spot to the exact rect of the real hero avatar
  *              (position/size/radius captured live via getBoundingClientRect,
  *              so it lands pixel-perfect regardless of viewport size). The
@@ -31,13 +31,13 @@ const useIsomorphicLayoutEffect =
  *              below) — FLIGHT_MS below is kept just slightly ahead of that
  *              so the "landed" swap fires the instant it actually arrives,
  *              never after a dead, stuck-looking pause.
- *   2200ms   — avatar has landed: the flying clone snaps out and the real
+ *   4200ms   — avatar has landed: the flying clone snaps out and the real
  *              WebGL hero avatar (which was hidden under `html.intro-active`,
  *              see globals.css) snaps in at the exact same instant — an
  *              instant swap, not a crossfade, since by then they occupy the
  *              identical rect. The nav's corner avatar is revealed via the
  *              `intro:complete` event at the same moment.
- *   2600ms   — overlay fully unmounts
+ *   4600ms   — overlay fully unmounts
  *
  * A tiny inline script in layout.tsx paints a static placeholder version of
  * this same hub (behind id="intro-shell") the instant HTML parsing reaches
@@ -57,7 +57,7 @@ const useIsomorphicLayoutEffect =
  */
 
 const SESSION_KEY = "introPlayed:v1";
-const LOADING_MS = 1300;
+const LOADING_MS = 3300; // was 1300 — held 2s longer per request
 const FLIGHT_MS = 900; // must stay just ahead of the 0.8s CSS flight transition, not far past it
 const SETTLE_MS = 400;
 
@@ -254,10 +254,15 @@ export function IntroLoader() {
           content: ""; position: absolute; inset: -50%;
           background: conic-gradient(
             from 0deg,
-            transparent 0deg, transparent 240deg,
-            var(--text-primary) 300deg, transparent 360deg
+            transparent 0deg, transparent 200deg,
+            #0abab5 240deg, #d4af37 320deg, transparent 360deg
           );
           animation: intro-ring-spin 1.1s linear infinite;
+          /* Promotes this to its own compositor layer ahead of time so the
+             very first frame of the spin doesn't have to wait on the
+             browser creating that layer mid-animation — that wait is what
+             read as the ring "sticking" right at the start. */
+          will-change: transform;
         }
         @keyframes intro-ring-spin { to { transform: rotate(360deg); } }
 
