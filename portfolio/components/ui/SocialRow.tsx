@@ -1,5 +1,5 @@
 "use client";
-import { useRef, useState } from "react";
+import { useState } from "react";
 
 /* ════════════════════════════════════════════════════════════
    Canonical social links — single source of truth shared by
@@ -59,31 +59,32 @@ export const SOCIAL_LINKS = [
   },
 ];
 
-/* ── Tooltip — mirrors the reference portfolio's animate-ui tooltip:
-   shows instantly on hover, lingers ~300ms after the pointer leaves,
-   fades/scales in above the trigger with a small arrow. Always mounted
-   and driven by a CSS transition (rather than a mount/unmount + one-shot
-   keyframe) so rapid hovering between icons interrupts and reverses
-   smoothly instead of popping/flickering. ── */
-function SocialTooltip({ label, children }: { label: string; children: React.ReactNode }) {
-  const [show, setShow] = useState(false);
-  const hideTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  const handleEnter = () => {
-    if (hideTimer.current) { clearTimeout(hideTimer.current); hideTimer.current = null; }
-    setShow(true);
-  };
-  const handleLeave = () => {
-    hideTimer.current = setTimeout(() => setShow(false), 300);
-  };
-
+/* ── Tooltip — single active-item model shared across the whole row,
+   so switching from one icon straight to another swaps instantly with
+   zero overlap (no two tooltips ever visible at once, no per-icon
+   linger delay). Pure presentational — SocialRow above owns which key
+   is active. Animation uses a bouncy spring-style cubic-bezier so it
+   pops in with a touch of overshoot rather than a flat ease. ── */
+function SocialTooltip({
+  label,
+  show,
+  onEnter,
+  onLeave,
+  children,
+}: {
+  label: string;
+  show: boolean;
+  onEnter: () => void;
+  onLeave: () => void;
+  children: React.ReactNode;
+}) {
   return (
     <span
       className="rt-wrap"
-      onMouseEnter={handleEnter}
-      onMouseLeave={handleLeave}
-      onFocus={handleEnter}
-      onBlur={handleLeave}
+      onMouseEnter={onEnter}
+      onMouseLeave={onLeave}
+      onFocus={onEnter}
+      onBlur={onLeave}
     >
       {children}
       <span
@@ -98,7 +99,9 @@ function SocialTooltip({ label, children }: { label: string; children: React.Rea
   );
 }
 
-export function SocialRow({ size = 22, gap = 16, bright = false }: { size?: number; gap?: number; bright?: boolean }) {
+export function SocialRow({ size = 22, gap = 16, bright = false, leftAlign = false }: { size?: number; gap?: number; bright?: boolean; leftAlign?: boolean }) {
+  const [active, setActive] = useState<string | null>(null);
+
   return (
     <>
       <style suppressHydrationWarning>{`
@@ -133,12 +136,13 @@ export function SocialRow({ size = 22, gap = 16, bright = false }: { size?: numb
           pointer-events: none;
           z-index: 50;
           opacity: 0;
-          transform: translateX(-50%) translateY(4px) scale(0.9);
-          transition: opacity 0.18s cubic-bezier(0.16,1,0.3,1), transform 0.18s cubic-bezier(0.16,1,0.3,1);
+          transform: translateX(-50%) translateY(5px) scale(0.82);
+          transition: opacity 0.16s cubic-bezier(0.34,1.56,0.64,1), transform 0.32s cubic-bezier(0.34,1.56,0.64,1);
         }
         .rt-tip--visible {
           opacity: 1;
           transform: translateX(-50%) translateY(0) scale(1);
+          transition: opacity 0.12s ease-out, transform 0.32s cubic-bezier(0.34,1.56,0.64,1);
         }
         .rt-arrow {
           position: absolute;
@@ -158,9 +162,15 @@ export function SocialRow({ size = 22, gap = 16, bright = false }: { size?: numb
         }
       `}</style>
 
-      <div className="rt-row" style={{ gap }}>
+      <div className="rt-row" style={{ gap, justifyContent: leftAlign ? "flex-start" : undefined }}>
         {SOCIAL_LINKS.map(s => (
-          <SocialTooltip key={s.key} label={s.label}>
+          <SocialTooltip
+            key={s.key}
+            label={s.label}
+            show={active === s.key}
+            onEnter={() => setActive(s.key)}
+            onLeave={() => setActive(cur => (cur === s.key ? null : cur))}
+          >
             <a
               href={s.href || undefined}
               target={s.key === "mail" ? undefined : "_blank"}

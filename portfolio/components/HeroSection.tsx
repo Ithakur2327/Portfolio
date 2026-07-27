@@ -276,8 +276,8 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
         .h-social {
           display: flex;
           flex-direction: row;
-          justify-content: center;
-          padding: 14px 22px;
+          justify-content: flex-start;
+          padding: 14px 22px 14px 40px;
         }
 
         .h-info-actions {
@@ -331,7 +331,7 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
             font-size: 15px !important;
             gap: 16px !important;
           }
-          .h-social { padding: 16px 26px !important; }
+          .h-social { padding: 16px 26px 16px 46px !important; justify-content: flex-start !important; }
           .h-profile {
             min-height: calc(clamp(220px, 32vw, 300px) - 14px) !important;
           }
@@ -432,7 +432,7 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
           }
           .h-info-pad::before { display: none !important; }
           .h-grid > :nth-child(n+4) { padding-left: 0 !important; }
-          .h-social { padding: 14px 16px !important; }
+          .h-social { padding: 14px 16px !important; justify-content: center !important; }
         }
 
         @media ${cond.down(BP.mobileXxsMax)} {
@@ -563,7 +563,7 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
               </div>
 
               <div className="h-social" style={{borderTop:B}}>
-                <SocialRow size={26} gap={22} bright />
+                <SocialRow size={26} gap={22} bright leftAlign />
               </div>
             </div>
           </HoverBorderGradient>
