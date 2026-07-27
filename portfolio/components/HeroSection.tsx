@@ -500,7 +500,7 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
 
             <div className="h-nameblock">
               <div style={{flex:1}}/>
-              <div className="h-name-row" style={{padding:"28px 20px 0", marginBottom:"-3px"}}>
+              <div className="h-name-row" style={{padding:"20px 20px 0", marginBottom:"0px", gap:6}}>
                 <h1 style={{
                   fontSize:"clamp(19px,2.7vw,26px)", fontWeight:900,
                   letterSpacing:"0.02em", color:"var(--text-primary)",

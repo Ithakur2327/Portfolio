@@ -3,12 +3,6 @@ import { useEffect, useRef } from "react";
 import { motion, useMotionValue, useSpring, type SpringOptions } from "motion/react";
 import { mq } from "@/lib/breakpoints";
 
-/* ════════════════════════════════════════════════════════════
-   Magnetic — subtle cursor-attraction wrapper.
-   Ported from the reference portfolio's Magnetic component;
-   tracks the pointer globally and nudges its child toward it
-   within `range`, eased back with a spring on release.
-═══════════════════════════════════════════════════════════ */
 const MAGNETIC_SPRING: SpringOptions = { stiffness: 150, damping: 15, mass: 0.15 };
 
 export function Magnetic({
@@ -64,11 +58,6 @@ export function Magnetic({
   );
 }
 
-/* ════════════════════════════════════════════════════════════
-   LiquidButton — outline button whose background "fills in"
-   from the bottom on hover (CSS custom-property + background-
-   position trick), same technique as the reference portfolio.
-═══════════════════════════════════════════════════════════ */
 export function LiquidButton({
   children,
   onClick,
@@ -126,8 +115,6 @@ export function LiquidButton({
   );
 }
 
-/* ── Icons (kept visually consistent with icons already used elsewhere
-   in the portfolio — the info-box "Resume" row and the Contact page) ── */
 function ResumeIcon() {
   return (
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -148,9 +135,6 @@ function SendIcon() {
   );
 }
 
-/* Small, clean arrow for the Hero's "Get in touch" button only —
-   kept separate from SendIcon so the Footer/Contact page CTA (which
-   uses SendIcon) is unaffected. */
 function ArrowUpRightIcon() {
   return (
     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
@@ -160,28 +144,8 @@ function ArrowUpRightIcon() {
   );
 }
 
-/* Same rounded, tinted icon-square used by the info-box rows above,
-   duplicated locally (rather than imported from HeroSection) so this
-   file has no import back into the component that imports it. */
-function IconBox({ color, children }: { color: string; children: React.ReactNode }) {
-  return (
-    <div style={{
-      width: 32, height: 32, borderRadius: 8,
-      background: `${color}18`,
-      border: `1px solid ${color}40`,
-      display: "flex", alignItems: "center", justifyContent: "center",
-      color, flexShrink: 0,
-    }}>{children}</div>
-  );
-}
-
 export { SendIcon, ResumeIcon };
 
-/* ════════════════════════════════════════════════════════════
-   SolidMagneticButton — solid, magnetically-pulled button.
-   Self-contained (ships its own styles), so it renders correctly
-   anywhere it's used: Hero, Footer, or the standalone Contact page.
-═══════════════════════════════════════════════════════════ */
 export function SolidMagneticButton({
   as = "button",
   href,
@@ -249,14 +213,6 @@ export function SolidMagneticButton({
   );
 }
 
-/* ════════════════════════════════════════════════════════════
-   HeroActionButtons — Resume (icon outside, liquid-fill button) +
-   Contact (magnetic). Both columns inherit --info-col-gap /
-   --info-pad-l / --info-pad-r from .h-info-pad above (CSS custom
-   properties cascade down the DOM), so the icon, the Resume button,
-   and the Get-in-touch button all land on the same vertical guides
-   as the info-grid icons above them.
-═══════════════════════════════════════════════════════════ */
 export function HeroActionButtons({
   onResumeClick,
   contactHref = "/contact",
@@ -282,13 +238,16 @@ export function HeroActionButtons({
           align-items: center;
           gap: 14px;
           min-width: 0;
+          width: 100%;
         }
 
         .hero-liquid-btn {
           display: inline-flex;
           align-items: center;
           justify-content: center;
+          gap: 8px;
           height: 38px;
+          width: 100%;
           min-width: 148px;
           padding: 0 16px;
           border-radius: 10px;
@@ -297,18 +256,11 @@ export function HeroActionButtons({
           font-size: 12.5px;
           font-weight: 600;
           cursor: pointer;
-          white-space: nowrap;
         }
 
-        /* Get in touch — matched to the Resume button's size (same min-width,
-           same height) at every breakpoint, with a true translucent glass
-           treatment (var(--bg-secondary) is already a theme-adaptive
-           translucent token) so it never flattens into a solid block that
-           merges with the page background. Scoped to .hero-actions so the
-           shared .hero-contact-btn used by the Footer and Contact page
-           keeps its own (solid, larger) style. */
         .hero-actions .hero-contact-btn {
           height: 38px !important;
+          width: 100% !important;
           min-width: 148px !important;
           justify-content: center !important;
           padding: 0 16px !important;
@@ -322,12 +274,6 @@ export function HeroActionButtons({
 
         ${mq.mobile} {
           .hero-liquid-btn { height: 38px; padding: 0 16px; font-size: 12.5px; }
-          /* Equal-width pair on mobile via CSS Grid (1fr 1fr) rather than
-             flex-grow, so both columns stay identical regardless of
-             content width. The icon column becomes a flex row (icon +
-             button) filling its own grid cell; the button inside it
-             flexes to take the remaining width next to the fixed-size
-             icon square. */
           .hero-actions {
             display: grid !important;
             grid-template-columns: 1fr 1fr !important;
@@ -337,11 +283,6 @@ export function HeroActionButtons({
             margin-left: 0 !important;
           }
           .hero-resume-group { width: 100% !important; }
-          .hero-actions .hero-resume-group .hero-liquid-btn {
-            flex: 1 !important;
-            width: auto !important;
-            min-width: 0 !important;
-          }
           .hero-actions .hero-contact-btn {
             width: 100% !important;
             min-width: 0 !important;
@@ -354,9 +295,6 @@ export function HeroActionButtons({
 
       <div className="hero-actions">
         <div className="hero-resume-group">
-          <IconBox color="#0abab5">
-            <ResumeIcon />
-          </IconBox>
           <LiquidButton
             onClick={onResumeClick}
             fillColor="var(--text-primary)"
@@ -365,6 +303,7 @@ export function HeroActionButtons({
             textColor="var(--text-primary)"
             hoverTextColor="var(--bg-base)"
           >
+            <ResumeIcon />
             Resume
           </LiquidButton>
         </div>
