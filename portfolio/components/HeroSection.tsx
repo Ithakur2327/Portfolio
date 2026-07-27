@@ -298,13 +298,13 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
             line-height: 1 !important;
             letter-spacing: 0.02em !important;
           }
-          .h-name-row { gap: 14px !important; }
+          .h-name-row { gap: 8px !important; }
           .h-verified-badge { width: clamp(20px, 4vw, 28px) !important; height: clamp(20px, 4vw, 28px) !important; }
           .h-nameblock {
             padding: 0 8px !important;
           }
           .h-nameblock > div:nth-child(2) {
-            padding-top: 26px !important;
+            padding-top: 14px !important;
             margin-bottom: 0 !important;
           }
           .h-nameblock .fs-in,
@@ -353,7 +353,7 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
             line-height: 1 !important;
           }
           .h-verified-badge { width: 28px !important; height: 28px !important; }
-          .h-name-row { gap: 16px !important; }
+          .h-name-row { gap: 8px !important; }
           .h-nameblock > div:nth-child(2) {
             margin-bottom: -1px !important;
           }
@@ -377,7 +377,7 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
             width: clamp(18px, calc(55px - 2.3vw), 28px) !important;
             height: clamp(18px, calc(55px - 2.3vw), 28px) !important;
           }
-          .h-name-row { gap: clamp(10px, calc(32.9px - 1.432vw), 16px) !important; }
+          .h-name-row { gap: clamp(6px, calc(16.45px - 0.716vw), 8px) !important; }
         }
 
         ${mq.mobile} {
@@ -401,7 +401,7 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
           }
 
           .h-nameblock > div:nth-child(2) {
-            padding: clamp(18px, 5.5vw, 26px) clamp(10px, 3.5vw, 16px) 0 !important;
+            padding: clamp(8px, 2.5vw, 14px) clamp(10px, 3.5vw, 16px) 0 !important;
             margin-bottom: 0 !important;
           }
           .h-nameblock h1 {
@@ -412,7 +412,7 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
             white-space: nowrap !important;
           }
           .h-verified-badge { width: 16px !important; height: 16px !important; }
-          .h-name-row { gap: 6px !important; }
+          .h-name-row { gap: 4px !important; }
           .h-nameblock > div:nth-child(4) {
             padding: clamp(5px, 1.8vw, 8px) clamp(10px, 3.5vw, 16px) clamp(8px, 2.6vw, 12px) !important;
           }
@@ -450,7 +450,7 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
             line-height: 1 !important;
           }
           .h-verified-badge { width: 15px !important; height: 15px !important; }
-          .h-name-row { gap: 5px !important; }
+          .h-name-row { gap: 4px !important; }
           .h-nameblock > div:nth-child(2) {
             margin-bottom: 0 !important;
           }
@@ -534,11 +534,11 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
                     AI Software Engineer
                   </Row>
                   <Row href="https://maps.google.com/?q=Greater+Noida+India" newTab
-                    icon={<IBox color="#f87171"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></IBox>}>
+                    icon={<IBox color="#f87171"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" style={{transform:"translateY(2px)"}}><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></IBox>}>
                     Noida, India
                   </Row>
                   <Row href="tel:+917859096326"
-                    icon={<IBox color="#4ade80"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.35 2 2 0 0 1 3.6 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.6a16 16 0 0 0 6 6l.96-.96a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg></IBox>}>
+                    icon={<IBox color="#4ade80"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" style={{transform:"translateY(-1px)"}}><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.35 2 2 0 0 1 3.6 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.6a16 16 0 0 0 6 6l.96-.96a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg></IBox>}>
                     +91 7859096326
                   </Row>
 
