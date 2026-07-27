@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from "react";
 
 // useEffect fires *after* the browser has already painted, which left a
 // window — small, but very real on a page this heavy (WebGL avatar canvas,
@@ -79,10 +79,29 @@ function readRect(el: Element, radius?: string): Rect {
   };
 }
 
+// FLIP-style transform, computed once start+end are both known. The box
+// itself is laid out ONCE at the END rect and never touched again — only
+// `transform` (translate + scale) and `border-radius` change over the
+// course of the flight. transform is compositor-only (no layout, no
+// repaint of surrounding content), which is what actually buys the
+// smooth/120fps feel; animating top/left/width/height directly (the old
+// approach) forces a full layout recalculation on every single frame,
+// which is what read as choppy — especially on a page this heavy.
+function flipTransform(from: Rect, to: Rect): string {
+  const scaleX = from.width / to.width;
+  const scaleY = from.height / to.height;
+  const dx = from.left - to.left;
+  const dy = from.top - to.top;
+  return `translate3d(${dx}px, ${dy}px, 0) scale(${scaleX}, ${scaleY})`;
+}
+
 export function IntroLoader() {
   const [mounted, setMounted] = useState(false);
   const [phase, setPhase] = useState<Phase>("loading");
-  const [flightRect, setFlightRect] = useState<Rect | null>(null);
+  const [endRect, setEndRect] = useState<Rect | null>(null);
+  const [transform, setTransform] = useState<string | null>(null);
+  const [radius, setRadius] = useState<string | null>(null);
+  const [imgCounterScale, setImgCounterScale] = useState<string | null>(null);
   const [noTarget, setNoTarget] = useState(false);
   const isDarkRef = useRef(true);
   const hubAvatarRef = useRef<HTMLDivElement>(null);
@@ -154,17 +173,27 @@ export function IntroLoader() {
         return;
       }
 
+      // Read both ends of the flight up front — the box is laid out ONCE
+      // at `end` and never re-laid-out again; everything in between is
+      // just a transform, computed from these two fixed rects.
       const start = readRect(hubAvatar);
-      setFlightRect(start);
+      const end = readRect(target);
+      const scaleX = start.width / end.width;
+      const scaleY = start.height / end.height;
+      setEndRect(end);
+      setTransform(flipTransform(start, end));
+      setRadius(start.radius);
+      setImgCounterScale(`scale(${1 / scaleX}, ${1 / scaleY})`);
       setPhase("opening");
 
-      // Double rAF so the browser commits the "start" rect as a real frame
-      // before we change the target values — this is what makes the
-      // transition actually animate instead of snapping straight there.
+      // Double rAF so the browser commits the "start" transform as a real
+      // painted frame before we change it to identity — this is what makes
+      // the transition actually animate instead of snapping straight there.
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
-          const end = readRect(target);
-          setFlightRect(end);
+          setTransform("translate3d(0, 0, 0) scale(1, 1)");
+          setRadius(end.radius);
+          setImgCounterScale("scale(1, 1)");
         });
       });
     }, LOADING_MS);
@@ -303,29 +332,43 @@ export function IntroLoader() {
           border: 1.5px solid var(--border);
           background: var(--bg-base);
           box-shadow: 0 12px 40px -8px rgba(0,0,0,0.35);
-          will-change: top, left, width, height, border-radius;
+          transform-origin: top left;
+          /* Only transform + border-radius animate during the flight —
+             both are compositor/paint-only, never layout — so the browser
+             never has to re-run layout on this heavy a page mid-flight.
+             That's what buys the smooth/120fps feel; the box's actual
+             top/left/width/height are set once (to the END rect) and
+             never change again. */
+          will-change: transform, border-radius;
           transition:
-            top 0.8s cubic-bezier(0.16,1,0.3,1),
-            left 0.8s cubic-bezier(0.16,1,0.3,1),
-            width 0.8s cubic-bezier(0.16,1,0.3,1),
-            height 0.8s cubic-bezier(0.16,1,0.3,1),
+            transform 0.8s cubic-bezier(0.16,1,0.3,1),
             border-radius 0.8s cubic-bezier(0.16,1,0.3,1),
-            box-shadow 0.8s ease;
-          /* opacity is intentionally NOT in the list above — it only ever
-             changes once, at landing, and that change is meant to be an
-             instant swap (see --landed below), not a fade. */
+            box-shadow 0.8s ease,
+            opacity 0.16s linear;
         }
         .intro-flip-avatar--landed {
           box-shadow: none;
-          /* Snaps to 0 the instant it lands (no transition = instant),
-             at the exact rect of the real hero avatar underneath, which
-             uncovers at opacity 1 in the very same tick (see
-             #hero-avatar-anchor in globals.css) — a direct swap, not a
-             crossfade/dissolve between the two. */
+          /* A very short (160ms) crossfade rather than an instant cut.
+             Rects match exactly, so there's no travel/mismatch to hide —
+             this purely smooths over the fact that the flying clone is a
+             flat photo and the real hero avatar underneath is a live
+             WebGL render, which can differ enough in shading/highlights
+             that an instant swap reads as a visible "pop". The real hero
+             avatar fades in over the same 0.16s (see #hero-avatar-anchor
+             in globals.css) so the two cross rather than one cutting to
+             the other. */
           opacity: 0;
         }
         .intro-flip-avatar img {
           width: 100%; height: 100%; object-fit: cover; object-position: center top; display: block;
+          /* The box itself scales anisotropically (start/end aspect
+             ratios can differ), so the image gets an inverse scale to
+             counter that — otherwise the photo would visibly stretch/
+             squash mid-flight instead of just resizing cleanly. */
+          transform: var(--img-counter-scale, none);
+          transform-origin: top left;
+          will-change: transform;
+          transition: transform 0.8s cubic-bezier(0.16,1,0.3,1);
         }
 
         @media (prefers-reduced-motion: reduce) {
@@ -353,16 +396,18 @@ export function IntroLoader() {
         </div>
       )}
 
-      {!noTarget && flightRect && (phase === "opening" || phase === "landed") && (
+      {!noTarget && endRect && (phase === "opening" || phase === "landed") && (
         <div
           className={`intro-flip-avatar${phase === "landed" ? " intro-flip-avatar--landed" : ""}`}
           style={{
-            top: flightRect.top,
-            left: flightRect.left,
-            width: flightRect.width,
-            height: flightRect.height,
-            borderRadius: flightRect.radius,
-          }}
+            top: endRect.top,
+            left: endRect.left,
+            width: endRect.width,
+            height: endRect.height,
+            borderRadius: radius ?? undefined,
+            transform: transform ?? undefined,
+            "--img-counter-scale": imgCounterScale ?? undefined,
+          } as CSSProperties}
         >
           {/* eslint-disable-next-line @next/next/no-img-element -- same reasoning as above */}
           <img src={src} alt="" />

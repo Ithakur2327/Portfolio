@@ -342,15 +342,17 @@ html.light .nav-root.scrolled {
    getBoundingClientRect, hence opacity/pointer-events and not display:none)
    so there's never a duplicate/mismatched avatar showing through the glass
    blur. Scroll is locked so the page can't shift under the overlay.
-   No transition here — the reveal is an instant swap timed to the exact
-   moment the flying clone in IntroLoader.tsx snaps out (see
-   .intro-flip-avatar--landed), not a crossfade. At that instant both
-   elements occupy the identical rect, so the swap reads as the avatar
-   simply "arriving", never as a dissolve/fade. */
+   The reveal is a short 0.16s crossfade, timed to start the exact instant
+   the flying clone in IntroLoader.tsx begins its own fade-out (see
+   .intro-flip-avatar--landed). Both elements occupy the identical rect at
+   that point, so this isn't hiding any travel — it only smooths over the
+   fact that the flying clone is a flat photo and the real hero avatar is
+   a live WebGL render, which can differ enough in shading to read as a
+   visible "pop" on an instant cut. */
 html.intro-active { overflow: hidden; }
 html.intro-active body { overflow: hidden; }
-#hero-avatar-anchor { opacity: 1; }
-html.intro-active #hero-avatar-anchor { opacity: 0; pointer-events: none; }
+#hero-avatar-anchor { opacity: 1; transition: opacity 0.16s linear; }
+html.intro-active #hero-avatar-anchor { opacity: 0; pointer-events: none; transition: none; }
 
 /* Static placeholder painted synchronously (before React hydrates) by the
    inline script in app/layout.tsx — this is what actually stops the hero
@@ -384,10 +386,15 @@ html.intro-active #hero-avatar-anchor { opacity: 0; pointer-events: none; }
   content: ""; position: absolute; inset: -50%;
   background: conic-gradient(
     from 0deg,
-    transparent 0deg, transparent 240deg,
-    var(--text-primary) 300deg, transparent 360deg
+    transparent 0deg, transparent 200deg,
+    #0abab5 240deg, #d4af37 320deg, transparent 360deg
   );
   animation: intro-shell-ring-spin 1.1s linear infinite;
+  /* Promote to its own layer up front (matches IntroLoader.tsx's own
+     .intro-hub-ring::before) — without this the very first spin frame
+     pays the cost of layer creation, which is what read as the ring
+     "sticking" for a beat right at the very start of the page. */
+  will-change: transform;
 }
 @keyframes intro-shell-ring-spin { to { transform: rotate(360deg); } }
 .intro-shell-imgwrap {
