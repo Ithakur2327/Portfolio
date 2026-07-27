@@ -1,63 +1,11 @@
 "use client";
 import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from "react";
-
-// useEffect fires *after* the browser has already painted, which left a
-// window — small, but very real on a page this heavy (WebGL avatar canvas,
-// hero layout, fonts) — between "#intro-shell gets removed" and "this
-// component's own overlay actually commits to the DOM". The browser would
-// paint whatever landed in that gap, which was the real hero flashing
-// unblurred for a frame or few. That flash is what made the intro look like
-// it played twice: the static pre-hydration shell, then a glimpse of the
-// live page, then this component's animated hub starting fresh on top.
-// useLayoutEffect runs synchronously before paint, so the shell's removal
-// and this component's first real render land in the exact same frame —
-// no gap for the browser to paint in between. (SSR has no DOM/paint to
-// worry about, so it just falls back to the ordinary effect there.)
 const useIsomorphicLayoutEffect =
   typeof window !== "undefined" ? useLayoutEffect : useEffect;
 
-/**
- * IntroLoader — one-time landing sequence.
- *
- * Timeline (total = 4.6s):
- *   0ms      — centered squircle avatar + 3 loading dots fade/scale in,
- *              over a frosted glass-blur backdrop
- *   0-3300ms — "loading" hold (dots pulse, avatar breathes)
- *   3300ms   — dots + hub fade out, avatar detaches and FLIES from its
- *              centered spot to the exact rect of the real hero avatar
- *              (position/size/radius captured live via getBoundingClientRect,
- *              so it lands pixel-perfect regardless of viewport size). The
- *              flight itself is a 0.8s CSS transition (see .intro-flip-avatar
- *              below) — FLIGHT_MS below is kept just slightly ahead of that
- *              so the "landed" swap fires the instant it actually arrives,
- *              never after a dead, stuck-looking pause.
- *   4200ms   — avatar has landed: the flying clone snaps out and the real
- *              WebGL hero avatar (which was hidden under `html.intro-active`,
- *              see globals.css) snaps in at the exact same instant — an
- *              instant swap, not a crossfade, since by then they occupy the
- *              identical rect. The nav's corner avatar is revealed via the
- *              `intro:complete` event at the same moment.
- *   4600ms   — overlay fully unmounts
- *
- * A tiny inline script in layout.tsx paints a static placeholder version of
- * this same hub (behind id="intro-shell") the instant HTML parsing reaches
- * <body>, before React/JS has hydrated — that's what stops the real hero
- * section from ever flashing on screen first. This component hands off from
- * that placeholder to itself on mount (see the `intro-shell` removal below),
- * synchronously (useLayoutEffect, not useEffect) so the swap lands in the
- * same painted frame as the shell's removal — otherwise the hero peeks
- * through for a frame in between and the hand-off reads as two intros.
- *
- * Runs once per browser session (sessionStorage) and is skipped instantly
- * for prefers-reduced-motion. `introHasRunThisPageLoad` below is an extra,
- * in-memory guard on top of sessionStorage: it guarantees the animated
- * sequence can only ever execute once per page load no matter why this
- * effect happens to fire again (belt-and-suspenders against the "intro
- * plays a second time" glitch).
- */
 
 const SESSION_KEY = "introPlayed:v1";
-const LOADING_MS = 3300; // was 1300 — held 2s longer per request
+const LOADING_MS = 1300; // was 1300 — held 2s longer per request
 const FLIGHT_MS = 900; // must stay just ahead of the 0.8s CSS flight transition, not far past it
 const SETTLE_MS = 400;
 
@@ -79,14 +27,6 @@ function readRect(el: Element, radius?: string): Rect {
   };
 }
 
-// FLIP-style transform, computed once start+end are both known. The box
-// itself is laid out ONCE at the END rect and never touched again — only
-// `transform` (translate + scale) and `border-radius` change over the
-// course of the flight. transform is compositor-only (no layout, no
-// repaint of surrounding content), which is what actually buys the
-// smooth/120fps feel; animating top/left/width/height directly (the old
-// approach) forces a full layout recalculation on every single frame,
-// which is what read as choppy — especially on a page this heavy.
 function flipTransform(from: Rect, to: Rect): string {
   const scaleX = from.width / to.width;
   const scaleY = from.height / to.height;
@@ -107,22 +47,8 @@ export function IntroLoader() {
   const hubAvatarRef = useRef<HTMLDivElement>(null);
 
   useIsomorphicLayoutEffect(() => {
-    // Hand off from (and remove) the synchronous pre-hydration placeholder
-    // painted by the inline script in layout.tsx — from this point on, this
-    // component owns the overlay. Doing this in a layout effect means the
-    // removal below and the setMounted(true) further down commit together,
-    // before the browser paints either change.
     document.getElementById("intro-shell")?.remove();
 
-    // Drops the scroll lock, tells the rest of the app the intro is over,
-    // and — critically — forces phase to "done" so this component's own
-    // render can never keep showing a stray overlay. Without that last
-    // step, an instance whose earlier invocation had already set
-    // mounted=true (e.g. Strict Mode's dev-only mount→cleanup→mount
-    // replay, or a Fast Refresh remount while developing) would bail out
-    // of *scheduling new timers* here but keep rendering its last-known
-    // phase forever — the exact "intro flashes and then comes back/gets
-    // stuck" glitch this guards against.
     const bail = () => {
       document.documentElement.classList.remove("intro-active");
       window.dispatchEvent(new Event("intro:complete"));
@@ -130,8 +56,6 @@ export function IntroLoader() {
     };
 
     if (introHasRunThisPageLoad) {
-      // The full sequence already ran once during this page's lifetime —
-      // never replay it, no matter why this effect fired again.
       bail();
       return;
     }
@@ -173,9 +97,6 @@ export function IntroLoader() {
         return;
       }
 
-      // Read both ends of the flight up front — the box is laid out ONCE
-      // at `end` and never re-laid-out again; everything in between is
-      // just a transform, computed from these two fixed rects.
       const start = readRect(hubAvatar);
       const end = readRect(target);
       const scaleX = start.width / end.width;
@@ -186,9 +107,6 @@ export function IntroLoader() {
       setImgCounterScale(`scale(${1 / scaleX}, ${1 / scaleY})`);
       setPhase("opening");
 
-      // Double rAF so the browser commits the "start" transform as a real
-      // painted frame before we change it to identity — this is what makes
-      // the transition actually animate instead of snapping straight there.
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
           setTransform("translate3d(0, 0, 0) scale(1, 1)");
@@ -212,11 +130,6 @@ export function IntroLoader() {
       clearTimeout(t1);
       clearTimeout(t2);
       clearTimeout(t3);
-      // If this effect is torn down before the sequence actually reached
-      // "landed" (a genuine unmount mid-flight, not just Strict Mode's
-      // replay — that case already called bail() above), never leave the
-      // page stuck with scroll locked and the hero avatar hidden
-      // underneath a dead overlay.
       document.documentElement.classList.remove("intro-active");
     };
   }, []);
