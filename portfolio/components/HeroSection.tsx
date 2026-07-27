@@ -604,7 +604,6 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
                 </div>
               </div>
 
-              {/* ── Social row — identical icons + tooltip everywhere on the site ── */}
               <div className="h-social" style={{borderTop:B}}>
                 <SocialRow size={26} gap={22} bright />
               </div>
