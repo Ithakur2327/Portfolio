@@ -220,9 +220,7 @@ function FallingIconsBox() {
     };
     rafId = requestAnimationFrame(tick);
 
-    // Keep the box's walls in sync if the viewport is resized/rotated.
-    // The pieces themselves are left alone so a settled pile isn't
-    // disturbed — only the boundaries around it move.
+
     let resizeTimer: ReturnType<typeof setTimeout>;
     const handleResize = () => {
       clearTimeout(resizeTimer);
