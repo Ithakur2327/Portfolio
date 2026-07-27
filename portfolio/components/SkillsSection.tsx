@@ -112,6 +112,7 @@ const FallingIcon = memo(forwardRef<HTMLDivElement, { name: string }>(function F
           src={tech.logo}
           alt={name}
           draggable={false}
+          className={tech.invert ? "invert-in-dark" : undefined}
           onError={e => { (e.target as HTMLImageElement).style.display = "none"; }}
         />
       )}
@@ -284,7 +285,7 @@ function FallingIconsBox({ title, items }: { title: string; items: string[] }) {
       lastTime = time;
       Engine.update(engine, delta);
 
-      const kick = scrollImpulse !== 0 ? Math.max(-7, Math.min(7, -scrollImpulse * 0.12)) : 0;
+      const kick = scrollImpulse !== 0 ? Math.max(-2.5, Math.min(2.5, -scrollImpulse * 0.045)) : 0;
       scrollImpulse = 0;
 
       pieces.forEach(({ el, body, hw, hh }) => {
@@ -328,6 +329,7 @@ function FallingIconsBox({ title, items }: { title: string; items: string[] }) {
 
     return () => {
       window.removeEventListener("resize", handleResize);
+      window.removeEventListener("scroll", handleScroll);
       box.removeEventListener("touchstart", handleTouchStart);
       box.removeEventListener("touchmove", handleTouchMove);
       box.removeEventListener("touchend", handleTouchEnd);
@@ -343,7 +345,6 @@ function FallingIconsBox({ title, items }: { title: string; items: string[] }) {
     <div className="falling-icons-panel">
       <div className="falling-icons-title">{title}</div>
       <div ref={boxRef} className="falling-icons-box">
-        <span className="falling-icons-hint">{"// drag the icons"}</span>
         <div className="falling-icons-flow">
           {items.map((name, i) => (
             <FallingIcon
@@ -368,7 +369,7 @@ export function SkillsSection() {
         .falling-icons-row {
           display: flex;
           align-items: stretch;
-          gap: 20px;
+          gap: 14px;
         }
         .falling-icons-panel {
           flex: 1 1 0;
@@ -392,9 +393,10 @@ export function SkillsSection() {
           border: 0.7px dashed rgba(0,0,0,0.32);
           border-radius: 14px;
           background: #ffffff;
-          min-height: 300px;
+          min-height: 280px;
           flex: 1;
-          touch-action: pan-y;
+          user-select: none;
+          -webkit-user-select: none;
         }
         .dark .falling-icons-box {
           border-color: rgba(255,255,255,0.32);
@@ -407,21 +409,16 @@ export function SkillsSection() {
           flex-wrap: wrap;
           align-content: flex-start;
           justify-content: center;
-          gap: 10px;
-          padding: 38px 20px 22px;
-        }
-        .falling-icons-hint {
-          position: absolute; top: 14px; right: 16px; z-index: 2;
-          font-family: ${MONO}; font-size: 10.5px; letter-spacing: 0.02em;
-          color: var(--text-muted); pointer-events: none; user-select: none;
+          gap: 9px;
+          padding: 20px 18px;
         }
 
         .falling-icon-chip {
-          width: 50px; height: 58px;
-          padding: 7px 3px 6px;
+          width: 44px; height: 52px;
+          padding: 6px 3px 5px;
           display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
           gap: 4px;
-          border-radius: 12px; border: 1px solid;
+          border-radius: 11px; border: 1px solid;
           position: relative; z-index: 1;
           cursor: grab; touch-action: none;
           user-select: none; -webkit-user-select: none;
@@ -434,7 +431,7 @@ export function SkillsSection() {
         .falling-icon-chip::before {
           content: "";
           position: absolute; inset: 0; z-index: 0;
-          border-radius: 12px;
+          border-radius: 11px;
           background: linear-gradient(165deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.2) 32%, transparent 55%);
           pointer-events: none;
         }
@@ -449,36 +446,44 @@ export function SkillsSection() {
         }
         .falling-icon-chip:active { cursor: grabbing; }
         .falling-icon-chip img {
-          width: 21px; height: 21px; object-fit: contain;
+          width: 18px; height: 18px; object-fit: contain;
           pointer-events: none; -webkit-user-drag: none;
           position: relative; z-index: 1;
           filter: drop-shadow(0 2px 3px rgba(0,0,0,0.28));
         }
+        /* Some brand marks (Express.js, GitHub, Vercel, shadcn/ui) are
+           near-black and disappear on the black card background used in
+           dark mode — invert them so they read as white instead. */
+        .dark .falling-icon-chip img.invert-in-dark {
+          filter: invert(1) drop-shadow(0 2px 3px rgba(0,0,0,0.4));
+        }
         .falling-icon-name {
           position: relative; z-index: 1;
-          font-family: ${MONO}; font-size: 7.5px; font-weight: 600; letter-spacing: 0.01em;
-          color: var(--text-primary); text-align: center; line-height: 1.15;
+          font-family: ${MONO}; font-size: 7px; font-weight: 700; letter-spacing: 0.01em;
+          color: #161616; text-align: center; line-height: 1.15;
           display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
           overflow: hidden; max-width: 100%;
+        }
+        .dark .falling-icon-name {
+          color: #f7f7f7;
         }
 
         ${mq.mobile} {
           .skills-inner { padding: 0 16px 28px !important; }
           .falling-icons-row { flex-direction: column; gap: 16px; }
-          .falling-icons-box { border-radius: 12px; min-height: 260px; }
-          .falling-icons-flow { padding: 34px 12px 16px; gap: 8px; }
-          .falling-icon-chip { width: 44px; height: 50px; border-radius: 11px; gap: 4px; padding: 6px 3px 5px; }
-          .falling-icon-chip img { width: 18px; height: 18px; }
-          .falling-icon-name { font-size: 7px; }
+          .falling-icons-box { border-radius: 12px; min-height: 250px; }
+          .falling-icons-flow { padding: 18px 12px; gap: 8px; }
+          .falling-icon-chip { width: 40px; height: 46px; border-radius: 10px; gap: 3px; padding: 5px 3px 4px; }
+          .falling-icon-chip img { width: 16px; height: 16px; }
+          .falling-icon-name { font-size: 6.5px; }
           .falling-icons-title { font-size: 12.5px; margin-bottom: 8px; }
         }
 
         @media ${cond.down(BP.mobileXsMax)} {
-          .falling-icons-box { min-height: 220px; }
-          .falling-icon-chip { width: 38px; height: 44px; border-radius: 10px; }
-          .falling-icon-chip img { width: 15px; height: 15px; }
+          .falling-icons-box { min-height: 210px; }
+          .falling-icon-chip { width: 34px; height: 40px; border-radius: 9px; }
+          .falling-icon-chip img { width: 13px; height: 13px; }
           .falling-icon-name { font-size: 6.2px; }
-          .falling-icons-hint { font-size: 8.5px; top: 8px; right: 9px; }
           .falling-icons-title { font-size: 11.5px; }
         }
       `}</style>
