@@ -9,8 +9,6 @@ import { readFileSync } from "fs";
 import path from "path";
 import "./globals.css";
 
-// Same content-hash approach as app/page.tsx — kept in sync so the
-// preloaded URL is byte-identical to what Avatar.tsx actually requests.
 function getAvatarVersion(): string {
   try {
     const dark = readFileSync(path.join(process.cwd(), "public", "avatar-dark.jpg"));
@@ -21,7 +19,7 @@ function getAvatarVersion(): string {
   }
 }
 
-// ─── Viewport ─────────────────────────────────────────────
+// ─── Viewport ──────
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
@@ -32,7 +30,7 @@ export const viewport: Viewport = {
   ],
 };
 
-// ─── Metadata ─────────────────────────────────────────────
+// ─── Metadata ───────
 export const metadata: Metadata = {
   metadataBase: new URL("https://ithakur.vercel.app"),
 
@@ -92,7 +90,7 @@ export const metadata: Metadata = {
   },
 };
 
-// ─── Root Layout ──────────────────────────────────────────
+// ─── Root Layout ───
 export default function RootLayout({
   children,
 }: {
@@ -101,42 +99,15 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        {/* DNS prefetch for external logo CDNs used in Skills/Projects */}
         <link rel="dns-prefetch" href="https://cdn.jsdelivr.net" />
         <link rel="dns-prefetch" href="https://registry.npmmirror.com" />
         <link rel="dns-prefetch" href="https://upload.wikimedia.org" />
-        {/* Preconnect for the actual project card photos — bigger payload than the logo icons */}
-        <link rel="preconnect" href="https://images.unsplash.com" crossOrigin="anonymous" />
 
-        {/* Avatar photos — preloaded so the browser starts fetching them the
-            instant HTML parsing begins, in parallel with JS download/parse/
-            hydration. Without this, the WebGL avatar component only starts
-            requesting these images after it mounts and its effect runs,
-            which is the actual source of the visible render delay on
-            refresh (network round-trip + decode, on top of hydration time,
-            all happening serially instead of in parallel). */}
+        <link rel="preconnect" href="https://images.unsplash.com" crossOrigin="anonymous" />
         <link rel="preload" as="image" href={`/avatar-dark.jpg?v=${getAvatarVersion()}`} fetchPriority="high" crossOrigin="anonymous" />
         <link rel="preload" as="image" href={`/avatar-light.jpg?v=${getAvatarVersion()}`} fetchPriority="high" crossOrigin="anonymous" />
-
-        {/* Fonts — the site references 'Geist' and 'Geist Mono' by name
-            throughout its components, but neither was ever actually loaded,
-            so every browser silently fell back to a generic system font.
-            That mismatch is what made text look fuzzy/inconsistent. Loading
-            the real families here fixes it everywhere without touching
-            each component. The pixel-style name heading uses the
-            self-hosted 'Geist Pixel Square' family (see globals.css
-            @font-face) instead of a Google Fonts request. */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        {/* Loaded as non-blocking: preload the stylesheet, then swap its
-            media to "all" once it's fetched. This removes the render-blocking
-            round trip to Google Fonts that was stalling first paint — the
-            fonts, weights, and fallback behavior are identical, just applied
-            a beat sooner instead of holding up the page. */}
-        {/* eslint-disable @next/next/no-page-custom-font -- that rule targets
-            Pages Router per-page `_document.js` overrides, which only load
-            fonts on one route; it doesn't apply to the App Router root
-            layout, which already wraps every route by definition. */}
         <link
           rel="preload"
           as="style"
@@ -160,17 +131,9 @@ export default function RootLayout({
             href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap"
           />
         </noscript>
-        {/* eslint-enable @next/next/no-page-custom-font */}
       </head>
 
       <body suppressHydrationWarning>
-        {/* Runs synchronously as soon as the parser reaches <body>, i.e.
-            before any hero markup below is parsed/painted and long before
-            React hydrates. Paints a static stand-in for IntroLoader's
-            "loading" phase (see components/IntroLoader.tsx, which removes
-            #intro-shell and takes over the instant it mounts) so the intro
-            screen is always what the person sees first — never the hero
-            section flashing underneath it. */}
         <script
           dangerouslySetInnerHTML={{
             __html: `
@@ -181,35 +144,13 @@ export default function RootLayout({
                 if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
                 var d = document.documentElement;
                 d.classList.add('intro-active');
-                // Resolve the theme ourselves instead of reading
-                // d.classList.contains('dark') — next-themes' own
-                // theme-setting script (rendered inside <ThemeProvider>,
-                // i.e. AFTER this script in document order) hasn't run
-                // yet at this point, so that class is never present here
-                // and this always picked the light avatar/background
-                // regardless of the visitor's actual theme. Mirrors
-                // next-themes' own algorithm exactly (storageKey="theme",
-                // defaultTheme="dark") so the two never disagree.
                 var stored = null;
                 try { stored = localStorage.getItem('theme'); } catch (e) {}
                 var isDark = stored ? stored === 'dark' : true;
                 var src = isDark ? '/avatar-dark.jpg' : '/avatar-light.jpg';
                 var shell = document.createElement('div');
                 shell.id = 'intro-shell';
-                // Timestamp the exact moment these CSS animations began.
-                // IntroLoader.tsx reads this on mount to give its own
-                // (separate DOM element's) ring/breathe/dot animations a
-                // negative animation-delay that picks up in the same
-                // phase — without this, swapping shell -> React element
-                // restarts each animation from 0, which shows up as a
-                // visible snap-back (looked like the ring "sticking" then
-                // spinning a second time from scratch).
                 window.__introAnimStart = performance.now();
-                // Ring + imgwrap split mirrors IntroLoader's own
-                // .intro-hub-avatar markup exactly (see components/
-                // IntroLoader.tsx) — same structure, same class-name
-                // pattern, so when that component takes over on mount
-                // there is no visual delta to pop into place.
                 shell.innerHTML =
                   '<div class="intro-shell-avatar">' +
                     '<div class="intro-shell-ring"></div>' +
@@ -227,12 +168,7 @@ export default function RootLayout({
             <div style={{ position: "relative", zIndex: 1 }}>
               {children}
             </div>
-
-            {/* 🐱 Pixel cat — client-only, loaded after hydration */}
             <OnekoCatLoader />
-
-            {/* One-time landing sequence: avatar + dots → flies into the
-                hero section and settles. See components/IntroLoader.tsx */}
             <IntroLoader />
           </PdfModalProvider>
         </ThemeProvider>

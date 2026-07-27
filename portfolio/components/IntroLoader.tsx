@@ -19,11 +19,11 @@ const useIsomorphicLayoutEffect =
 /**
  * IntroLoader — one-time landing sequence.
  *
- * Timeline (total = 4.6s):
+ * Timeline (total = 2.8s):
  *   0ms      — centered squircle avatar + 3 loading dots fade/scale in,
  *              over a frosted glass-blur backdrop
- *   0-3300ms — "loading" hold (dots pulse, avatar breathes)
- *   3300ms   — dots + hub fade out, avatar detaches and FLIES from its
+ *   0-1500ms — "loading" hold (dots pulse, avatar breathes)
+ *   1500ms   — dots + hub fade out, avatar detaches and FLIES from its
  *              centered spot to the exact rect of the real hero avatar
  *              (position/size/radius captured live via getBoundingClientRect,
  *              so it lands pixel-perfect regardless of viewport size). The
@@ -31,13 +31,13 @@ const useIsomorphicLayoutEffect =
  *              below) — FLIGHT_MS below is kept just slightly ahead of that
  *              so the "landed" swap fires the instant it actually arrives,
  *              never after a dead, stuck-looking pause.
- *   4200ms   — avatar has landed: the flying clone snaps out and the real
+ *   2400ms   — avatar has landed: the flying clone snaps out and the real
  *              WebGL hero avatar (which was hidden under `html.intro-active`,
  *              see globals.css) snaps in at the exact same instant — an
  *              instant swap, not a crossfade, since by then they occupy the
  *              identical rect. The nav's corner avatar is revealed via the
  *              `intro:complete` event at the same moment.
- *   4600ms   — overlay fully unmounts
+ *   2800ms   — overlay fully unmounts
  *
  * A tiny inline script in layout.tsx paints a static placeholder version of
  * this same hub (behind id="intro-shell") the instant HTML parsing reaches
@@ -57,7 +57,7 @@ const useIsomorphicLayoutEffect =
  */
 
 const SESSION_KEY = "introPlayed:v1";
-const LOADING_MS = 3300; // was 1300 — held 2s longer per request
+const LOADING_MS = 1500; // shortened per request (was 3300, itself up from an original 1300)
 const FLIGHT_MS = 900; // must stay just ahead of the 0.8s CSS flight transition, not far past it
 const SETTLE_MS = 400;
 
@@ -191,6 +191,14 @@ export function IntroLoader() {
     setMounted(true);
 
     const t1 = setTimeout(() => {
+      // Fired here rather than at landing — gives Avatar.tsx (see its own
+      // introDone gate) a full FLIGHT_MS/SETTLE_MS head start to compile
+      // its shader and load textures before it's actually revealed, while
+      // still not running during the loading hold above, which is where
+      // that work was contending with the ring's spin for main-thread
+      // frames.
+      window.dispatchEvent(new Event("intro:flightStart"));
+
       const target = document.getElementById("hero-avatar-anchor");
       const hubAvatar = hubAvatarRef.current;
 

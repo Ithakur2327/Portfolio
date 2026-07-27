@@ -1,5 +1,5 @@
 ﻿"use client";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTheme } from "./ThemeProvider";
 
 export function Avatar({ version }: { version?: string } = {}) {
@@ -42,7 +42,26 @@ export function Avatar({ version }: { version?: string } = {}) {
     return () => clearTimeout(t);
   }, [isDark]);
 
+  // Waits for the intro overlay to finish before doing ANY of the heavy
+  // work below (shader compile, texture upload, starting the render
+  // loop). This mounts at the same time as the intro overlay, and all of
+  // that setup running on the main thread right as the intro's ring is
+  // trying to spin is what was causing the ring to visibly stutter mid-
+  // animation — moving it here removes the contention entirely instead
+  // of trying to out-optimize it.
+  const [introDone, setIntroDone] = useState(
+    typeof document === "undefined" ||
+      !document.documentElement.classList.contains("intro-active"),
+  );
   useEffect(() => {
+    if (introDone) return;
+    const onDone = () => setIntroDone(true);
+    window.addEventListener("intro:flightStart", onDone, { once: true });
+    return () => window.removeEventListener("intro:flightStart", onDone);
+  }, [introDone]);
+
+  useEffect(() => {
+    if (!introDone) return;
     const canvas = canvasRef.current;
     if (!canvas) return;
 
@@ -56,7 +75,7 @@ export function Avatar({ version }: { version?: string } = {}) {
     const DPR = Math.min(window.devicePixelRatio || 1, 3);
     const rect0 = canvas.getBoundingClientRect();
     const displayed = Math.round(Math.max(rect0.width, rect0.height)) || 300;
-    let SIZE = Math.min(1400, Math.max(720, displayed) * DPR);
+    let SIZE = Math.min(1024, Math.max(560, displayed) * DPR);
     canvas.width  = SIZE;
     canvas.height = SIZE;
 
@@ -223,12 +242,7 @@ export function Avatar({ version }: { version?: string } = {}) {
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-      // Bumped from 4 -> maxAniso (usually 8-16 on modern GPUs). Trilinear
-      // mipmapping alone over-blurs fine detail (hair strands) once the
-      // 1024px texture is minified down to the hero's small on-screen size;
-      // higher anisotropy keeps those edges sharp instead of mushy without
-      // reintroducing the shimmer/moire the mipmaps are there to prevent.
-      if (mipmapped && anisoExt) gl.texParameterf(gl.TEXTURE_2D, anisoExt.TEXTURE_MAX_ANISOTROPY_EXT, maxAniso);
+      if (mipmapped && anisoExt) gl.texParameterf(gl.TEXTURE_2D, anisoExt.TEXTURE_MAX_ANISOTROPY_EXT, Math.min(4, maxAniso));
       return tx;
     };
 
@@ -385,8 +399,8 @@ export function Avatar({ version }: { version?: string } = {}) {
       gl.deleteBuffer(buf);
       gl.deleteProgram(prog);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional one-time WebGL setup; `version` is a stable build-time value and re-running this effect would tear down and rebuild the whole WebGL scene unnecessarily
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional one-time WebGL setup (gated on introDone); `version` is a stable build-time value and re-running this effect would tear down and rebuild the whole WebGL scene unnecessarily
+  }, [introDone]);
 
   return (
     <div style={{
