@@ -212,11 +212,12 @@ a, button, [role="button"] {
   --content-width-inset: calc(var(--content-width) - 32px);
   --dot-spacing: 4.5px;
   --content-rail-width: calc(var(--dot-spacing) * 2);
+  --page-pad: 16px;
 }
 .page-wrapper {
   max-width: var(--content-width);
   margin: 0 auto;
-  padding: 0 16px;
+  padding: 0 var(--page-pad);
   min-height: 100vh;
   position: relative;
   z-index: 1;
@@ -260,7 +261,7 @@ a, button, [role="button"] {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  z-index: -1;
+  z-index: 0;
 }
 .content-rail {
   position: absolute;
@@ -269,11 +270,15 @@ a, button, [role="button"] {
   width: var(--content-rail-width);
   overflow: hidden;
 }
-.content-rail-left  { left: 0; }
-.content-rail-right { right: 0; }
+.content-rail-left  { left: max(0px, calc(var(--page-pad) - var(--content-rail-width))); }
+.content-rail-right { right: max(0px, calc(var(--page-pad) - var(--content-rail-width))); }
 
 @media (--tablet-down) {
   :root { --content-rail-width: var(--dot-spacing); }
+}
+
+@media (--nav-collapse) {
+  .content-rails { display: none; }
 }
 
 .screen-line-top    { position: relative; }

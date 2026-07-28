@@ -474,7 +474,7 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
       <section id="home"
         className={vis === "ssr" ? "" : "reveal visible"}
       >
-        <div style={{ position: "relative", left: "50%", marginLeft: "-50vw", width: "100vw" }}>
+        <div style={{ position: "relative" }}>
           <div style={{ position: "absolute", inset: 0, zIndex: 0 }}>
             <DotField />
           </div>

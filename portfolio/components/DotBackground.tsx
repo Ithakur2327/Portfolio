@@ -18,11 +18,13 @@ function DotCanvas({
   activeDotColor,
   interactive,
   excludeSelector,
+  maxCols,
 }: {
   dotColor: string;
   activeDotColor: string;
   interactive: boolean;
   excludeSelector?: string;
+  maxCols?: number;
 }) {
   const ref = useRef<HTMLCanvasElement>(null);
   const dotColorRef = useRef(dotColor);
@@ -83,13 +85,25 @@ function DotCanvas({
 
     const bakeDots = () => {
       const bands = getExcludeBands();
-      const ox = (w % SPACING) / 2;
       const oy = (h % SPACING) / 2;
-      const cols = Math.ceil(w / SPACING) + 2;
       const rows = Math.ceil(h / SPACING) + 2;
-      const arr = new Float32Array(cols * rows * 2);
+
+      let xs: number[];
+      if (maxCols && maxCols > 0) {
+        // Exact, centered column count for narrow rails (no overscan).
+        const totalSpan = (maxCols - 1) * SPACING;
+        const startX = (w - totalSpan) / 2;
+        xs = Array.from({ length: maxCols }, (_, c) => startX + c * SPACING);
+      } else {
+        const ox = (w % SPACING) / 2;
+        const cols = Math.ceil(w / SPACING) + 2;
+        xs = [];
+        for (let x = ox; x <= w + SPACING; x += SPACING) xs.push(x);
+      }
+
+      const arr = new Float32Array(xs.length * rows * 2);
       let i = 0;
-      for (let x = ox; x <= w + SPACING; x += SPACING) {
+      for (const x of xs) {
         for (let y = oy; y <= h + SPACING; y += SPACING) {
           if (inBand(y, bands)) continue;
           arr[i++] = x;
@@ -239,7 +253,7 @@ function DotCanvas({
       if (raf)       cancelAnimationFrame(raf);
       if (idleTimer) clearTimeout(idleTimer);
     };
-  }, [interactive, excludeSelector]);
+  }, [interactive, excludeSelector, maxCols]);
 
   return (
     <canvas
@@ -266,6 +280,15 @@ function useDotColors() {
   };
 }
 
+function useRailDotColors() {
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
+  return {
+    dotColor: isDark ? "rgba(255,255,255,0.22)" : "rgba(0,0,0,0.26)",
+    activeDotColor: isDark ? "rgba(255,255,255,0.36)" : "rgba(0,0,0,0.42)",
+  };
+}
+
 export function DotField({ interactive = true }: { interactive?: boolean }) {
   const { dotColor, activeDotColor } = useDotColors();
   return (
@@ -283,8 +306,8 @@ export function DotDivider({ height = 38 }: { height?: number }) {
       aria-hidden="true"
       className="dot-divider"
       style={{
-        position: "relative", left: "50%", marginLeft: "-50vw",
-        width: "100vw", height,
+        position: "relative",
+        width: "100%", height,
         overflow: "hidden",
       }}
     >
@@ -294,7 +317,7 @@ export function DotDivider({ height = 38 }: { height?: number }) {
 }
 
 export function ContentRails() {
-  const { dotColor, activeDotColor } = useDotColors();
+  const { dotColor, activeDotColor } = useRailDotColors();
   return (
     <div className="content-rails" aria-hidden="true">
       <div className="content-rail content-rail-left">
@@ -303,6 +326,7 @@ export function ContentRails() {
           dotColor={dotColor}
           activeDotColor={activeDotColor}
           excludeSelector=".dot-divider"
+          maxCols={2}
         />
       </div>
       <div className="content-rail content-rail-right">
@@ -311,6 +335,7 @@ export function ContentRails() {
           dotColor={dotColor}
           activeDotColor={activeDotColor}
           excludeSelector=".dot-divider"
+          maxCols={2}
         />
       </div>
     </div>
