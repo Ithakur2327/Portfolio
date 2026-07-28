@@ -565,7 +565,7 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
               </div>
 
               <div className="h-social" style={{borderTop:B}}>
-                <SocialRow size={26} gap={22} bright leftAlign />
+                <SocialRow size={27} gap={22} bright leftAlign />
               </div>
             </div>
           </HoverBorderGradient>
