@@ -2,8 +2,27 @@
 import { useEffect, useRef } from "react";
 import { useTheme } from "./ThemeProvider";
 
-function DotCanvas({ dotColor, activeDotColor, interactive }: {
-  dotColor: string; activeDotColor: string; interactive: boolean;
+const SPACING = 4.5;
+const RADIUS = 110;
+const RADIUS2 = RADIUS * RADIUS;
+const DOT_R = 1;
+const TAU = Math.PI * 2;
+
+function smoothstep(t: number) {
+  const c = t < 0 ? 0 : t > 1 ? 1 : t;
+  return c * c * (3 - 2 * c);
+}
+
+function DotCanvas({
+  dotColor,
+  activeDotColor,
+  interactive,
+  excludeSelector,
+}: {
+  dotColor: string;
+  activeDotColor: string;
+  interactive: boolean;
+  excludeSelector?: string;
 }) {
   const ref = useRef<HTMLCanvasElement>(null);
   const dotColorRef = useRef(dotColor);
@@ -26,11 +45,6 @@ function DotCanvas({ dotColor, activeDotColor, interactive }: {
     const ctx = canvas.getContext("2d", { willReadFrequently: false, colorSpace: "srgb" });
     if (!ctx) return;
 
-    const SPACING = 4.5;
-    const RADIUS  = 110;
-    const RADIUS2 = RADIUS * RADIUS;
-    const DOT_R   = 1;
-
     let w = 0, h = 0, dpr = 1;
     let dotPositions: Float32Array | null = null;
     let staticCanvas: OffscreenCanvas | null = null;
@@ -38,13 +52,37 @@ function DotCanvas({ dotColor, activeDotColor, interactive }: {
     let raf: number | null = null;
     let needsDraw = false;
     let isVisible = true;
-    // Skip repaint work for off-screen canvases.
     let inViewport = true;
     let colorDirty = false;
     let idleTimer: ReturnType<typeof setTimeout> | null = null;
     const mouse = { x: -9999, y: -9999, active: false };
 
+    const getExcludeBands = (): Array<[number, number]> => {
+      if (!excludeSelector) return [];
+      const host = container.closest(".page-wrapper");
+      if (!host) return [];
+      const nodes = host.querySelectorAll(excludeSelector);
+      if (!nodes.length) return [];
+      const hostRect = container.getBoundingClientRect();
+      const bands: Array<[number, number]> = [];
+      nodes.forEach((node) => {
+        const r = node.getBoundingClientRect();
+        const top = r.top - hostRect.top;
+        const bottom = r.bottom - hostRect.top;
+        if (bottom >= -SPACING && top <= h + SPACING) bands.push([top, bottom]);
+      });
+      return bands;
+    };
+
+    const inBand = (y: number, bands: Array<[number, number]>) => {
+      for (let i = 0; i < bands.length; i++) {
+        if (y >= bands[i][0] && y <= bands[i][1]) return true;
+      }
+      return false;
+    };
+
     const bakeDots = () => {
+      const bands = getExcludeBands();
       const ox = (w % SPACING) / 2;
       const oy = (h % SPACING) / 2;
       const cols = Math.ceil(w / SPACING) + 2;
@@ -53,6 +91,7 @@ function DotCanvas({ dotColor, activeDotColor, interactive }: {
       let i = 0;
       for (let x = ox; x <= w + SPACING; x += SPACING) {
         for (let y = oy; y <= h + SPACING; y += SPACING) {
+          if (inBand(y, bands)) continue;
           arr[i++] = x;
           arr[i++] = y;
         }
@@ -68,7 +107,7 @@ function DotCanvas({ dotColor, activeDotColor, interactive }: {
       for (let i = 0; i < dotPositions.length; i += 2) {
         const x = dotPositions[i], y = dotPositions[i + 1];
         staticCtx.moveTo(x + DOT_R, y);
-        staticCtx.arc(x, y, DOT_R, 0, Math.PI * 2);
+        staticCtx.arc(x, y, DOT_R, 0, TAU);
       }
       staticCtx.fill();
     };
@@ -87,37 +126,25 @@ function DotCanvas({ dotColor, activeDotColor, interactive }: {
       ctx.drawImage(staticCanvas, 0, 0, w, h);
 
       if (interactive && mouse.active) {
-        const pad = RADIUS + 2;
-        const bx0 = mouse.x - pad, by0 = mouse.y - pad;
-        const bw  = pad * 2,       bh  = pad * 2;
-        ctx.clearRect(bx0, by0, bw, bh);
+        const pad = RADIUS;
+        const ix0 = Math.max(0, mouse.x - pad);
+        const iy0 = Math.max(0, mouse.y - pad);
+        const ix1 = Math.min(w, mouse.x + pad);
+        const iy1 = Math.min(h, mouse.y + pad);
 
-        const ix0 = Math.max(0, bx0), iy0 = Math.max(0, by0);
-        const ix1 = Math.min(w, bx0 + bw), iy1 = Math.min(h, by0 + bh);
-
-        ctx.fillStyle = dotColorRef.current;
-        ctx.beginPath();
-        for (let i = 0; i < dotPositions.length; i += 2) {
-          const x = dotPositions[i], y = dotPositions[i + 1];
-          if (x < ix0 || x > ix1 || y < iy0 || y > iy1) continue;
-          const dx = x - mouse.x, dy = y - mouse.y;
-          if (dx * dx + dy * dy < RADIUS2) continue;
-          ctx.moveTo(x + DOT_R, y);
-          ctx.arc(x, y, DOT_R, 0, Math.PI * 2);
-        }
-        ctx.fill();
-
+        ctx.fillStyle = activeDotColorRef.current;
         for (let i = 0; i < dotPositions.length; i += 2) {
           const x = dotPositions[i], y = dotPositions[i + 1];
           if (x < ix0 || x > ix1 || y < iy0 || y > iy1) continue;
           const dx = x - mouse.x, dy = y - mouse.y;
           const d2 = dx * dx + dy * dy;
           if (d2 >= RADIUS2) continue;
-          const f = 1 - Math.sqrt(d2) / RADIUS;
-          ctx.globalAlpha = 0.35 + 0.65 * f;
-          ctx.fillStyle = activeDotColorRef.current;
+          const t = 1 - Math.sqrt(d2) / RADIUS;
+          const f = smoothstep(t);
+          if (f <= 0.001) continue;
+          ctx.globalAlpha = f;
           ctx.beginPath();
-          ctx.arc(x, y, DOT_R + f, 0, Math.PI * 2);
+          ctx.arc(x, y, DOT_R + f, 0, TAU);
           ctx.fill();
         }
         ctx.globalAlpha = 1;
@@ -212,7 +239,7 @@ function DotCanvas({ dotColor, activeDotColor, interactive }: {
       if (raf)       cancelAnimationFrame(raf);
       if (idleTimer) clearTimeout(idleTimer);
     };
-  }, [interactive]);
+  }, [interactive, excludeSelector]);
 
   return (
     <canvas
@@ -230,30 +257,26 @@ function DotCanvas({ dotColor, activeDotColor, interactive }: {
   );
 }
 
-/**
- * DotField — drop this inside any `position: relative` (or absolute/fixed)
- * container and it fills that container edge-to-edge with the dot grid.
- * Used (a) behind the hero — from the avatar down to where About begins —
- * and (b) inside `DotDivider` as a thin partition strip between sections.
- */
-export function DotField({ interactive = true }: { interactive?: boolean }) {
+function useDotColors() {
   const { theme } = useTheme();
   const isDark = theme === "dark";
+  return {
+    dotColor: isDark ? "rgba(255,255,255,0.09)" : "rgba(0,0,0,0.12)",
+    activeDotColor: isDark ? "rgba(255,255,255,0.18)" : "rgba(0,0,0,0.24)",
+  };
+}
 
+export function DotField({ interactive = true }: { interactive?: boolean }) {
+  const { dotColor, activeDotColor } = useDotColors();
   return (
     <DotCanvas
       interactive={interactive}
-      dotColor={isDark ? "rgba(255,255,255,0.09)" : "rgba(0,0,0,0.12)"}
-      activeDotColor={isDark ? "rgba(255,255,255,0.18)" : "rgba(0,0,0,0.24)"}
+      dotColor={dotColor}
+      activeDotColor={activeDotColor}
     />
   );
 }
 
-/**
- * DotDivider — a thin, full-bleed horizontal strip used as a *partition
- * indicator* between two sections (same convention as SparklesBridge):
- * a bounded-height band, not a page-covering background.
- */
 export function DotDivider({ height = 38 }: { height?: number }) {
   return (
     <div
@@ -266,6 +289,30 @@ export function DotDivider({ height = 38 }: { height?: number }) {
       }}
     >
       <DotField interactive />
+    </div>
+  );
+}
+
+export function ContentRails() {
+  const { dotColor, activeDotColor } = useDotColors();
+  return (
+    <div className="content-rails" aria-hidden="true">
+      <div className="content-rail content-rail-left">
+        <DotCanvas
+          interactive
+          dotColor={dotColor}
+          activeDotColor={activeDotColor}
+          excludeSelector=".dot-divider"
+        />
+      </div>
+      <div className="content-rail content-rail-right">
+        <DotCanvas
+          interactive
+          dotColor={dotColor}
+          activeDotColor={activeDotColor}
+          excludeSelector=".dot-divider"
+        />
+      </div>
     </div>
   );
 }

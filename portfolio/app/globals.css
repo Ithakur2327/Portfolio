@@ -210,6 +210,8 @@ a, button, [role="button"] {
 :root {
   --content-width: 900px;
   --content-width-inset: calc(var(--content-width) - 32px);
+  --dot-spacing: 4.5px;
+  --content-rail-width: calc(var(--dot-spacing) * 2);
 }
 .page-wrapper {
   max-width: var(--content-width);
@@ -249,6 +251,29 @@ a, button, [role="button"] {
 }
 .page-wrapper > .dot-divider + style + * {
   margin-top: 0 !important;
+}
+.page-wrapper > .content-rails {
+  margin-top: 0 !important;
+}
+
+.content-rails {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: -1;
+}
+.content-rail {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: var(--content-rail-width);
+  overflow: hidden;
+}
+.content-rail-left  { left: 0; }
+.content-rail-right { right: 0; }
+
+@media (--tablet-down) {
+  :root { --content-rail-width: var(--dot-spacing); }
 }
 
 .screen-line-top    { position: relative; }
@@ -373,7 +398,7 @@ html.intro-active #hero-avatar-anchor { opacity: 0; pointer-events: none; }
 }
 @keyframes intro-shell-breathe {
   0%, 100% { transform: scale(1); }
-  50%      { transform: scale(1.035); }
+  50%       { transform: scale(1.035); }
 }
 .intro-shell-ring {
   position: absolute; inset: -4px; border-radius: 26px;
