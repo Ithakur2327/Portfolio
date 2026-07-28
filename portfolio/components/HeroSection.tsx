@@ -227,7 +227,7 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
 
         .h-name-row {
           display: flex;
-          align-items: center;
+          align-items: baseline;
           gap: 10px;
         }
         .h-verified-badge {
@@ -342,10 +342,10 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
             min-height: calc(clamp(220px, 24vw, 250px) - 14px) !important;
           }
           .h-avatar {
-            width: clamp(220px, 24vw, 250px) !important;
-            min-width: clamp(220px, 24vw, 250px) !important;
-            height: calc(clamp(220px, 24vw, 250px) - 14px) !important;
-            min-height: calc(clamp(220px, 24vw, 250px) - 14px) !important;
+            width: clamp(190px, 21vw, 213px) !important;
+            min-width: clamp(190px, 21vw, 213px) !important;
+            height: calc(clamp(190px, 21vw, 213px) - 14px) !important;
+            min-height: calc(clamp(190px, 21vw, 213px) - 14px) !important;
           }
           .h-nameblock h1 {
             font-size: clamp(34px, 4.2vw, 50px) !important;
@@ -364,10 +364,10 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
 
         ${mq.laptopWide} {
           .h-avatar {
-            width: clamp(170px, calc(475.5px - 19.093vw), 250px) !important;
-            min-width: clamp(170px, calc(475.5px - 19.093vw), 250px) !important;
-            height: clamp(156px, calc(461.5px - 19.093vw), 236px) !important;
-            min-height: clamp(156px, calc(461.5px - 19.093vw), 236px) !important;
+            width: clamp(148px, calc(404.6px - 16.23vw), 213px) !important;
+            min-width: clamp(148px, calc(404.6px - 16.23vw), 213px) !important;
+            height: clamp(134px, calc(390.6px - 16.23vw), 199px) !important;
+            min-height: clamp(134px, calc(390.6px - 16.23vw), 199px) !important;
           }
           .h-nameblock h1 {
             font-size: clamp(30px, calc(106.36px - 4.7733vw), 50px) !important;
@@ -431,7 +431,9 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
             gap: 8px 0 !important;
           }
           .h-info-pad::before { display: none !important; }
+          .h-grid > :nth-child(-n+3) { padding-left: 0 !important; }
           .h-grid > :nth-child(n+4) { padding-left: 0 !important; }
+          .h-info-pad { padding: 14px 16px 12px 12px !important; }
           .h-social { padding: 14px 16px !important; justify-content: center !important; }
         }
 
@@ -530,26 +532,26 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
               <div className="h-info-pad" style={{padding:"18px 22px 16px"}}>
                 <div className="h-grid">
 
-                  <Row icon={<IBox color="#38bdf8"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><polyline points="18 16 22 12 18 8"/><polyline points="6 8 2 12 6 16"/><line x1="14" y1="4" x2="10" y2="20"/></svg></IBox>}>
+                  <Row icon={<IBox color="#0abab5"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><polyline points="18 16 22 12 18 8"/><polyline points="6 8 2 12 6 16"/><line x1="14" y1="4" x2="10" y2="20"/></svg></IBox>}>
                     AI Software Engineer
                   </Row>
                   <Row href="https://maps.google.com/?q=Greater+Noida+India" newTab
-                    icon={<IBox color="#f87171"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" style={{transform:"translateY(2px)"}}><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></IBox>}>
+                    icon={<IBox color="#d4af37"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></IBox>}>
                     Noida, India
                   </Row>
                   <Row href="tel:+917859096326"
-                    icon={<IBox color="#4ade80"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" style={{transform:"translateY(-1px)"}}><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.35 2 2 0 0 1 3.6 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.6a16 16 0 0 0 6 6l.96-.96a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg></IBox>}>
+                    icon={<IBox color="#0abab5"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.35 2 2 0 0 1 3.6 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.6a16 16 0 0 0 6 6l.96-.96a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg></IBox>}>
                     +91 7859096326
                   </Row>
 
-                  <Row icon={<IBox color="#fbbf24"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></IBox>}>
+                  <Row icon={<IBox color="#d4af37"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></IBox>}>
                     <LiveClock/>
                   </Row>
                   <Row href="https://ithakur.vercel.app" newTab
-                    icon={<IBox color="#a78bfa"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></IBox>}>
+                    icon={<IBox color="#0abab5"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></IBox>}>
                     indreshthakur.dev
                   </Row>
-                  <Row icon={<IBox color="#f472b6"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 1 0-16 0"/></svg></IBox>}>
+                  <Row icon={<IBox color="#d4af37"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M16 3h5v5"/><path d="m21 3-6.75 6.75"/><circle cx="10" cy="14" r="6"/></svg></IBox>}>
                     he/him
                   </Row>
                 </div>

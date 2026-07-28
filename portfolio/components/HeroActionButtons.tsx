@@ -118,10 +118,11 @@ export function LiquidButton({
 function ResumeIcon() {
   return (
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7z" />
-      <polyline points="14 2 14 7 19 7" />
-      <circle cx="9" cy="13.5" r="2" />
-      <path d="M5.5 20a3.5 3.5 0 0 1 7 0" />
+      <rect x="2" y="4" width="20" height="16" rx="2.5" />
+      <circle cx="8" cy="10.5" r="2" />
+      <path d="M5 16c0-1.66 1.34-3 3-3s3 1.34 3 3" />
+      <line x1="13.5" y1="8.5" x2="19" y2="8.5" />
+      <line x1="13.5" y1="12" x2="19" y2="12" />
     </svg>
   );
 }
@@ -225,7 +226,7 @@ export function HeroActionButtons({
       <style suppressHydrationWarning>{`
         .hero-actions {
           display: grid;
-          grid-template-columns: 1fr 1fr;
+          grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
           column-gap: var(--info-col-gap, 14px);
           align-items: center;
           justify-items: start;
@@ -238,7 +239,6 @@ export function HeroActionButtons({
           align-items: center;
           gap: 14px;
           min-width: 0;
-          width: 100%;
         }
 
         .hero-liquid-btn {
@@ -247,8 +247,7 @@ export function HeroActionButtons({
           justify-content: center;
           gap: 8px;
           height: 38px;
-          width: 100%;
-          min-width: 148px;
+          width: 160px;
           padding: 0 16px;
           border-radius: 10px;
           border: 1px solid var(--border);
@@ -260,8 +259,8 @@ export function HeroActionButtons({
 
         .hero-actions .hero-contact-btn {
           height: 38px !important;
-          width: 100% !important;
-          min-width: 148px !important;
+          width: 160px !important;
+          min-width: 0 !important;
           justify-content: center !important;
           padding: 0 16px !important;
           font-size: 12.5px !important;
@@ -273,10 +272,11 @@ export function HeroActionButtons({
         }
 
         ${mq.mobile} {
-          .hero-liquid-btn { height: 38px; padding: 0 16px; font-size: 12.5px; }
+          .hero-liquid-btn { height: 38px; padding: 0 16px; font-size: 12.5px; width: 100%; }
           .hero-actions {
             display: grid !important;
-            grid-template-columns: 1fr 1fr !important;
+            grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important;
+            justify-items: stretch !important;
           }
           .hero-actions > *:first-child,
           .hero-actions > *:last-child {

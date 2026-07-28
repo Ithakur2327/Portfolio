@@ -25,12 +25,17 @@ interface HoveredCell { date: string; count: number; x: number; y: number; }
 interface StatHover { label: string; solved: number; total: number; x: number; y: number; }
 
 // Keeps popover tooltips from getting clipped off the left/right edge of the
-// viewport on narrow (mobile) screens.
-function clampTooltipX(x: number, halfWidth = 70) {
-  if (typeof window === "undefined") return x;
+// viewport on narrow (mobile) screens, while nudging the little arrow back
+// toward the hovered element so it still visibly "points" at it.
+function computeTooltipPosition(x: number, halfWidth: number) {
+  if (typeof window === "undefined") return { left: x, arrowOffset: 0 };
   const min = halfWidth + 8;
   const max = window.innerWidth - halfWidth - 8;
-  return Math.min(Math.max(x, min), max);
+  const left = Math.min(Math.max(x, min), max);
+  const rawOffset = x - left;
+  const maxArrowOffset = halfWidth - 14;
+  const arrowOffset = Math.min(Math.max(rawOffset, -maxArrowOffset), maxArrowOffset);
+  return { left, arrowOffset };
 }
 
 function useDismissTooltipOnScroll(setHovered: (v: null) => void, active: boolean) {
@@ -105,7 +110,7 @@ function PortalTooltip({ hovered, accentColor, label }: {
   useEffect(() => { setMounted(true); }, []);
   if (!mounted || !hovered) return null;
 
-  const left = clampTooltipX(hovered.x, 60);
+  const { left, arrowOffset } = computeTooltipPosition(hovered.x, 52);
 
   return createPortal(
     <div
@@ -113,25 +118,25 @@ function PortalTooltip({ hovered, accentColor, label }: {
         position: "fixed",
         left,
         top: hovered.y,
-        transform: "translate(-50%, calc(-100% - 10px))",
+        transform: "translate(-50%, calc(-100% - 9px))",
         pointerEvents: "none",
         zIndex: 2147483647,
         background: "var(--text-primary)",
         color: "var(--bg-base)",
-        padding: "6px 10px",
-        borderRadius: 8,
+        padding: "5px 8px",
+        borderRadius: 7,
         whiteSpace: "nowrap",
         width: "max-content",
-        boxShadow: "0 4px 16px rgba(0,0,0,0.22)",
-        animation: "statTooltipPop 0.16s cubic-bezier(0.19,1,0.22,1) forwards",
+        boxShadow: "0 4px 14px rgba(0,0,0,0.22)",
+        animation: "statTooltipPop 0.14s cubic-bezier(0.19,1,0.22,1) forwards",
         textAlign: "center",
       }}
     >
-      <span className="stat-tooltip-arrow" />
-      <div style={{ fontSize: 12.5, fontWeight: 700, fontFamily: MONO, letterSpacing: "-0.02em", lineHeight: 1.25, color: accentColor }}>
+      <span className="stat-tooltip-arrow" style={{ left: `calc(50% + ${arrowOffset}px)` }} />
+      <div style={{ fontSize: 11, fontWeight: 700, fontFamily: MONO, letterSpacing: "-0.02em", lineHeight: 1.2, color: accentColor }}>
         {hovered.count}
       </div>
-      <div style={{ fontSize: 10, fontWeight: 500, fontFamily: "-apple-system,'SF Pro Display','Helvetica Neue',sans-serif", opacity: 0.7, marginTop: 1 }}>
+      <div style={{ fontSize: 9, fontWeight: 500, fontFamily: "-apple-system,'SF Pro Display','Helvetica Neue',sans-serif", opacity: 0.7, marginTop: 1 }}>
         {label} · {hovered.date}
       </div>
     </div>,
@@ -145,7 +150,7 @@ function StatTooltip({ hovered, accentColor }: { hovered: StatHover | null; acce
   useEffect(() => { setMounted(true); }, []);
   if (!mounted || !hovered) return null;
 
-  const left = clampTooltipX(hovered.x, 74);
+  const { left, arrowOffset } = computeTooltipPosition(hovered.x, 74);
 
   return createPortal(
     <div
@@ -168,10 +173,13 @@ function StatTooltip({ hovered, accentColor }: { hovered: StatHover | null; acce
         textAlign: "center",
       }}
     >
-      <span className="stat-chip-tooltip-arrow" style={{ borderTopColor: "var(--bg-card)" }} />
+      <span
+        className="stat-chip-tooltip-arrow"
+        style={{ left: `calc(50% + ${arrowOffset}px)`, borderTopColor: "var(--bg-card)" }}
+      />
       <span
         className="stat-chip-tooltip-arrow-border"
-        style={{ borderTopColor: `${accentColor}40` }}
+        style={{ left: `calc(50% + ${arrowOffset}px)`, borderTopColor: `${accentColor}40` }}
       />
       <div style={{ fontSize: 9, fontWeight: 700, color: accentColor, fontFamily: MONO, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 3 }}>
         {hovered.label}
@@ -184,9 +192,11 @@ function StatTooltip({ hovered, accentColor }: { hovered: StatHover | null; acce
   );
 }
 
-/* Small pill showing a solved/total stat; hover reveals the ghost-card tooltip */
-function StatChip({ label, solved, color, bold, onEnter, onLeave }: {
+/* Small pill showing a solved/total stat; hover reveals the ghost-card tooltip.
+   Shows the full word ("Easy") on desktop/tablet and an abbreviation ("E") on mobile. */
+function StatChip({ label, shortLabel, solved, color, bold, onEnter, onLeave }: {
   label: string;
+  shortLabel?: string;
   solved: number;
   color: string;
   bold?: boolean;
@@ -209,7 +219,14 @@ function StatChip({ label, solved, color, bold, onEnter, onLeave }: {
         transition: "border-color 0.15s ease, transform 0.15s cubic-bezier(0.19,1,0.22,1)",
       }}
     >
-      <span style={{ fontSize: 9, fontWeight: 700, color, fontFamily: MONO, letterSpacing: "-0.02em" }}>{label}</span>
+      <span style={{ fontSize: 9, fontWeight: 700, color, fontFamily: MONO, letterSpacing: "-0.02em" }}>
+        {shortLabel ? (
+          <>
+            <span className="stat-chip-label-full">{label}</span>
+            <span className="stat-chip-label-short">{shortLabel}</span>
+          </>
+        ) : label}
+      </span>
       <span style={{ fontSize: bold ? 12 : 10, fontWeight: 800, color: "var(--text-primary)", fontFamily: MONO, letterSpacing: "-0.03em" }}>{solved}</span>
     </div>
   );
@@ -403,29 +420,41 @@ function LeetCodeStats({ username = "IThakur09" }: { username?: string }) {
 
       {loading ? <Spin color="#FFA116" /> : (
         <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 8, marginBottom: 4 }}>
-            <span style={{ fontSize: 9, color: "var(--text-muted)", fontFamily: MONO }}>2026 activity</span>
+          <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: 8, marginBottom: 4 }}>
+            <span style={{ fontSize: 11, fontWeight: 700, color: "var(--text-primary)", fontFamily: MONO, flexShrink: 0 }}>2026 activity <span style={{ color: "var(--text-muted)", fontWeight: 500 }}>—</span></span>
             <div style={{ display: "flex", alignItems: "center", gap: 5, flexWrap: "wrap" }}>
               <StatChip
                 label="Solved" solved={d.totalSolved} color={solvedColor} bold
                 onEnter={e => handleStatEnter(e, "Total Solved", d.totalSolved, LC_TOTAL)}
                 onLeave={handleStatLeave}
               />
-              <StatChip
-                label="E" solved={d.easySolved} color={diffColors.Easy}
-                onEnter={e => handleStatEnter(e, "Easy", d.easySolved, d.totalEasy)}
-                onLeave={handleStatLeave}
-              />
-              <StatChip
-                label="M" solved={d.mediumSolved} color={diffColors.Medium}
-                onEnter={e => handleStatEnter(e, "Medium", d.mediumSolved, d.totalMedium)}
-                onLeave={handleStatLeave}
-              />
-              <StatChip
-                label="H" solved={d.hardSolved} color={diffColors.Hard}
-                onEnter={e => handleStatEnter(e, "Hard", d.hardSolved, d.totalHard)}
-                onLeave={handleStatLeave}
-              />
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 5,
+                  flexWrap: "wrap",
+                  padding: "3px 6px",
+                  borderRadius: 7,
+                  border: "1px dashed var(--border)",
+                }}
+              >
+                <StatChip
+                  label="Easy" shortLabel="E" solved={d.easySolved} color={diffColors.Easy}
+                  onEnter={e => handleStatEnter(e, "Easy", d.easySolved, d.totalEasy)}
+                  onLeave={handleStatLeave}
+                />
+                <StatChip
+                  label="Medium" shortLabel="M" solved={d.mediumSolved} color={diffColors.Medium}
+                  onEnter={e => handleStatEnter(e, "Medium", d.mediumSolved, d.totalMedium)}
+                  onLeave={handleStatLeave}
+                />
+                <StatChip
+                  label="Hard" shortLabel="H" solved={d.hardSolved} color={diffColors.Hard}
+                  onEnter={e => handleStatEnter(e, "Hard", d.hardSolved, d.totalHard)}
+                  onLeave={handleStatLeave}
+                />
+              </div>
             </div>
           </div>
           <div
@@ -574,7 +603,7 @@ function GitHubGraph({ username = "Ithakur2327" }: { username?: string }) {
 
       {loading ? <Spin color="#FFA116" /> : (
         <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
-          <div style={{ fontSize: 9, color: "var(--text-muted)", fontFamily: MONO, marginBottom: 4 }}>
+          <div style={{ fontSize: 11, fontWeight: 700, color: "var(--text-primary)", fontFamily: MONO, marginBottom: 4 }}>
             {isLive ? "2026 contributions" : "2026 activity (preview)"}
           </div>
           <div
@@ -652,25 +681,32 @@ export function StatsSection() {
           to   { opacity: 1; transform: translate(-50%, calc(-100% - 12px)) scale(1); }
         }
         .stat-tooltip-arrow {
-          position: absolute; top: 100%; left: 50%; transform: translateX(-50%);
+          position: absolute; top: 100%; transform: translateX(-50%);
           width: 0; height: 0;
-          border-left: 5px solid transparent; border-right: 5px solid transparent;
-          border-top: 5px solid var(--text-primary);
+          border-left: 4px solid transparent; border-right: 4px solid transparent;
+          border-top: 4px solid var(--text-primary);
         }
         .stat-chip-tooltip-arrow {
-          position: absolute; top: 100%; left: 50%; transform: translateX(-50%);
+          position: absolute; top: 100%; transform: translateX(-50%);
           width: 0; height: 0;
           border-left: 6px solid transparent; border-right: 6px solid transparent;
           border-top: 6px solid var(--bg-card);
           z-index: 1;
         }
         .stat-chip-tooltip-arrow-border {
-          position: absolute; top: calc(100% + 1px); left: 50%; transform: translateX(-50%);
+          position: absolute; top: calc(100% + 1px); transform: translateX(-50%);
           width: 0; height: 0;
           border-left: 7px solid transparent; border-right: 7px solid transparent;
           border-top: 7px solid;
           z-index: 0;
         }
+        .stat-chip-label-short { display: none; }
+        .stat-chip-label-full { display: inline; }
+        ${mq.mobile} {
+          .stat-chip-label-short { display: inline; }
+          .stat-chip-label-full { display: none; }
+        }
+
         @keyframes lcPulse { 0%,100%{opacity:1} 50%{opacity:0.7} }
         .lc-logo-outer { animation: lcPulse 2.4s ease-in-out infinite; }
         .lc-logo-bar   { animation: lcPulse 2.4s ease-in-out infinite 0.6s; }
@@ -695,13 +731,13 @@ export function StatsSection() {
         html.light .gh-cell-0 { background: #e8eaec; outline: 1px solid rgba(0,0,0,0.08); outline-offset: -1px; }
         html.light .gh-cell-1 { background: #fac68f; }
         html.light .gh-cell-2 { background: #c46212; }
-        html.light .gh-cell-3 { background: #fb3640; }
-        html.light .gh-cell-4 { background: #000f08; }
+        html.light .gh-cell-3 { background: #984b10; }
+        html.light .gh-cell-4 { background: #000000; }
         html.light .lc-cell-0 { background: #e8eaec; outline: 1px solid rgba(0,0,0,0.08); outline-offset: -1px; }
         html.light .lc-cell-1 { background: #fac68f; }
         html.light .lc-cell-2 { background: #c46212; }
-        html.light .lc-cell-3 { background: #fb3640; }
-        html.light .lc-cell-4 { background: #000f08; }
+        html.light .lc-cell-3 { background: #984b10; }
+        html.light .lc-cell-4 { background: #000000; }
 
         /* Stats panels — no box, content sits directly on black background */
         .stat-card-3d {

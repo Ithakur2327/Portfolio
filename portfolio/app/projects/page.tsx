@@ -36,15 +36,15 @@ export default function ProjectsPage() {
         }
         .back-home-link:hover { color: var(--text-primary); }
 
-        .all-projects-wrap { padding: 44px 20px 70px; }
+        .all-projects-wrap { padding: 44px 0 70px; }
         .all-projects-title { font-size: clamp(22px, 4.5vw, 28px); }
         .all-projects-sub { font-size: 13.5px; }
 
         ${mq.navCollapse} {
-          .all-projects-wrap { padding: 34px 22px 48px; }
+          .all-projects-wrap { padding: 34px 0 48px; }
         }
         ${mq.mobile} {
-          .all-projects-wrap { padding: 26px 16px 36px; }
+          .all-projects-wrap { padding: 26px 0 36px; }
           .all-projects-sub  { font-size: 12.5px; }
         }
       `}</style>
