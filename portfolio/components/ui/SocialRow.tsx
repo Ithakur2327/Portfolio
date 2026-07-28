@@ -1,31 +1,7 @@
 "use client";
 import { useState } from "react";
 
-/* ════════════════════════════════════════════════════════════
-   Canonical social links — single source of truth shared by
-   the Hero info box and the Footer, so both always match.
-
-   NOTE: your project previously had two different GitHub
-   usernames on file (Navbar/Hero used "Ithakur2327", Footer used
-   "IndreshThakur"). I standardized on "Ithakur2327" since it's
-   the one used in two places — flag me if that's the wrong one.
-
-   Instagram has no link on file anywhere in the project, so
-   href is left empty below — drop your handle in and it's live.
-═══════════════════════════════════════════════════════════ */
 export const SOCIAL_LINKS = [
-  {
-    key: "mail", label: "Mail", href: "mailto:ithakur2327@gmail.com",
-    icon: (
-      <svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-        <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
-        <g transform="translate(12,12) scale(0.7) translate(-12,-12)">
-          <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
-          <polyline points="22,6 12,13 2,6"/>
-        </g>
-      </svg>
-    ),
-  },
   {
     key: "github", label: "GitHub", href: "https://github.com/Ithakur2327",
     icon: (
@@ -38,6 +14,19 @@ export const SOCIAL_LINKS = [
     ),
   },
   {
+    key: "mail", label: "Mail", href: "mailto:ithakur2327@gmail.com",
+    icon: (
+      <svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
+        <g transform="translate(12,12) scale(0.7) translate(-12,-12)">
+          <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+          <polyline points="22,6 12,13 2,6"/>
+        </g>
+      </svg>
+    ),
+  },
+
+  {
     key: "linkedin", label: "LinkedIn", href: "https://www.linkedin.com/in/indresh-thakur",
     icon: (
       <svg width="1em" height="1em" viewBox="0 0 24 24" fill="currentColor">
@@ -46,7 +35,7 @@ export const SOCIAL_LINKS = [
     ),
   },
   {
-    key: "twitter", label: "X / Twitter", href: "https://x.com/indresh_dev",
+    key: "twitter", label: "X / Twitter", href: "https://x.com/ithakur__",
     icon: (
       <svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
         <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
@@ -68,12 +57,6 @@ export const SOCIAL_LINKS = [
   },
 ];
 
-/* ── Tooltip — single active-item model shared across the whole row,
-   so switching from one icon straight to another swaps instantly with
-   zero overlap (no two tooltips ever visible at once, no per-icon
-   linger delay). Pure presentational — SocialRow above owns which key
-   is active. Animation uses a bouncy spring-style cubic-bezier so it
-   pops in with a touch of overshoot rather than a flat ease. ── */
 function SocialTooltip({
   label,
   show,
@@ -108,7 +91,7 @@ function SocialTooltip({
   );
 }
 
-export function SocialRow({ size = 22, gap = 16, bright = false, leftAlign = false }: { size?: number; gap?: number; bright?: boolean; leftAlign?: boolean }) {
+export function SocialRow({ size = 28, gap = 16, bright = false, leftAlign = false }: { size?: number; gap?: number; bright?: boolean; leftAlign?: boolean }) {
   const [active, setActive] = useState<string | null>(null);
 
   return (
