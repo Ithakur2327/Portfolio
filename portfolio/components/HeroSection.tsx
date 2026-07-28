@@ -521,6 +521,9 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
           </div>
         </div>
 
+          </div>
+        </div>
+
         <div style={{height:22, maxWidth:CW, margin:"0 auto"}}/>
 
         <div style={{height:22, maxWidth:CW, margin:"0 auto"}}/>
@@ -573,8 +576,6 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
 
         <div style={{ height: 38, maxWidth: CW, margin: "0 auto" }} />
 
-          </div>
-        </div>
       </section>
     </>
   );

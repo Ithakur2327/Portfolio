@@ -17,14 +17,16 @@ function DotCanvas({
   dotColor,
   activeDotColor,
   interactive,
-  excludeSelector,
   maxCols,
+  colGap,
+  stopBeforeSelector,
 }: {
   dotColor: string;
   activeDotColor: string;
   interactive: boolean;
-  excludeSelector?: string;
   maxCols?: number;
+  colGap?: number;
+  stopBeforeSelector?: string;
 }) {
   const ref = useRef<HTMLCanvasElement>(null);
   const dotColorRef = useRef(dotColor);
@@ -48,6 +50,7 @@ function DotCanvas({
     if (!ctx) return;
 
     let w = 0, h = 0, dpr = 1;
+    let drawH = 0; // vertical extent actually filled with dots (may stop before container's full height)
     let dotPositions: Float32Array | null = null;
     let staticCanvas: OffscreenCanvas | null = null;
     let staticCtx: OffscreenCanvasRenderingContext2D | null = null;
@@ -59,44 +62,33 @@ function DotCanvas({
     let idleTimer: ReturnType<typeof setTimeout> | null = null;
     const mouse = { x: -9999, y: -9999, active: false };
 
-    const getExcludeBands = (): Array<[number, number]> => {
-      if (!excludeSelector) return [];
+    const getStopY = (): number => {
+      if (!stopBeforeSelector) return h;
       const host = container.closest(".page-wrapper");
-      if (!host) return [];
-      const nodes = host.querySelectorAll(excludeSelector);
-      if (!nodes.length) return [];
-      const hostRect = container.getBoundingClientRect();
-      const bands: Array<[number, number]> = [];
-      nodes.forEach((node) => {
-        const r = node.getBoundingClientRect();
-        const top = r.top - hostRect.top;
-        const bottom = r.bottom - hostRect.top;
-        if (bottom >= -SPACING && top <= h + SPACING) bands.push([top, bottom]);
-      });
-      return bands;
-    };
-
-    const inBand = (y: number, bands: Array<[number, number]>) => {
-      for (let i = 0; i < bands.length; i++) {
-        if (y >= bands[i][0] && y <= bands[i][1]) return true;
-      }
-      return false;
+      if (!host) return h;
+      const node = host.querySelector(stopBeforeSelector);
+      if (!node) return h;
+      const containerRect = container.getBoundingClientRect();
+      const nodeRect = node.getBoundingClientRect();
+      const y = nodeRect.top - containerRect.top;
+      return y > 0 ? Math.min(y, h) : h;
     };
 
     const bakeDots = () => {
-      const bands = getExcludeBands();
-      const oy = (h % SPACING) / 2;
-      const rows = Math.ceil(h / SPACING) + 2;
+      drawH = getStopY();
+      const oy = (drawH % SPACING) / 2;
+      const rows = Math.ceil(drawH / SPACING) + 2;
 
       let xs: number[];
       if (maxCols && maxCols > 0) {
-        // Exact, centered column count for narrow rails (no overscan).
-        const totalSpan = (maxCols - 1) * SPACING;
+        // Exact, centered column count for narrow rails (no overscan),
+        // with its own tighter gap independent of the row spacing.
+        const gap = colGap ?? SPACING;
+        const totalSpan = (maxCols - 1) * gap;
         const startX = (w - totalSpan) / 2;
-        xs = Array.from({ length: maxCols }, (_, c) => startX + c * SPACING);
+        xs = Array.from({ length: maxCols }, (_, c) => startX + c * gap);
       } else {
         const ox = (w % SPACING) / 2;
-        const cols = Math.ceil(w / SPACING) + 2;
         xs = [];
         for (let x = ox; x <= w + SPACING; x += SPACING) xs.push(x);
       }
@@ -104,8 +96,7 @@ function DotCanvas({
       const arr = new Float32Array(xs.length * rows * 2);
       let i = 0;
       for (const x of xs) {
-        for (let y = oy; y <= h + SPACING; y += SPACING) {
-          if (inBand(y, bands)) continue;
+        for (let y = oy; y <= drawH + SPACING; y += SPACING) {
           arr[i++] = x;
           arr[i++] = y;
         }
@@ -191,6 +182,16 @@ function DotCanvas({
       schedule();
     };
 
+    // Scrolling moves the page under a stationary cursor, so the glow
+    // would otherwise stay frozen at stale coordinates. Clear it as soon
+    // as the page scrolls; it'll reappear on the next real mousemove.
+    const onScroll = () => {
+      if (!mouse.active) return;
+      mouse.active = false;
+      needsDraw = true;
+      schedule();
+    };
+
     const onVisibilityChange = () => {
       isVisible = !document.hidden;
       if (isVisible) { needsDraw = true; schedule(); }
@@ -241,6 +242,7 @@ function DotCanvas({
       window.addEventListener("mousemove",  onMove,  { passive: true });
       window.addEventListener("mouseleave", onLeave, { passive: true });
     }
+    window.addEventListener("scroll", onScroll, { passive: true, capture: true });
     document.addEventListener("visibilitychange", onVisibilityChange, { passive: true });
 
     return () => {
@@ -249,11 +251,12 @@ function DotCanvas({
       io.disconnect();
       window.removeEventListener("mousemove",  onMove);
       window.removeEventListener("mouseleave", onLeave);
+      window.removeEventListener("scroll", onScroll, true);
       document.removeEventListener("visibilitychange", onVisibilityChange);
       if (raf)       cancelAnimationFrame(raf);
       if (idleTimer) clearTimeout(idleTimer);
     };
-  }, [interactive, excludeSelector, maxCols]);
+  }, [interactive, maxCols, colGap, stopBeforeSelector]);
 
   return (
     <canvas
@@ -272,15 +275,6 @@ function DotCanvas({
 }
 
 function useDotColors() {
-  const { theme } = useTheme();
-  const isDark = theme === "dark";
-  return {
-    dotColor: isDark ? "rgba(255,255,255,0.09)" : "rgba(0,0,0,0.12)",
-    activeDotColor: isDark ? "rgba(255,255,255,0.18)" : "rgba(0,0,0,0.24)",
-  };
-}
-
-function useRailDotColors() {
   const { theme } = useTheme();
   const isDark = theme === "dark";
   return {
@@ -317,7 +311,7 @@ export function DotDivider({ height = 38 }: { height?: number }) {
 }
 
 export function ContentRails() {
-  const { dotColor, activeDotColor } = useRailDotColors();
+  const { dotColor, activeDotColor } = useDotColors();
   return (
     <div className="content-rails" aria-hidden="true">
       <div className="content-rail content-rail-left">
@@ -325,8 +319,9 @@ export function ContentRails() {
           interactive
           dotColor={dotColor}
           activeDotColor={activeDotColor}
-          excludeSelector=".dot-divider"
           maxCols={2}
+          colGap={2.5}
+          stopBeforeSelector="footer, .site-footer"
         />
       </div>
       <div className="content-rail content-rail-right">
@@ -334,8 +329,9 @@ export function ContentRails() {
           interactive
           dotColor={dotColor}
           activeDotColor={activeDotColor}
-          excludeSelector=".dot-divider"
           maxCols={2}
+          colGap={2.5}
+          stopBeforeSelector="footer, .site-footer"
         />
       </div>
     </div>
