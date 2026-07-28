@@ -22,32 +22,61 @@ const useIsomorphicLayoutEffect =
  * breathing squircle avatar, its spinning gold/tiffany ring, and the
  * pulsing dots — for the full length of the loading hold. It's plain DOM
  * with plain CSS animations; this component doesn't render any copy of it
- * and never touches it until the very moment flight begins. That's a
- * deliberate change from an earlier version, which had React re-create an
- * identical-looking hub on mount and hand off from the shell to that copy
- * immediately — meaning the ring/avatar/dots got recreated (and their CSS
- * animations restarted, phase-synced or not) right as this heavy page was
- * doing the bulk of its hydration work, which is what was actually causing
- * the ring to visibly stutter. Now that hand-off happens exactly once, at
- * flight time, by which point hydration has had the whole loading hold to
- * finish — much less main-thread contention at the one moment it matters.
+ * and never touches it until the very moment flight begins.
  *
- * Timeline (total ≈ 1.85s):
- *   0ms     — shell's breathing avatar + spinning ring + pulsing dots are
- *             already on screen (painted before React even hydrates)
- *   0-900ms — loading hold; untouched shell animations only
- *   900ms   — this component reads the shell avatar's live rect, removes
- *             the shell, and mounts a flying clone at that exact rect —
- *             synchronously, same frame, so there's no gap where the shell
- *             is gone but nothing has replaced it. The clone then
- *             transitions (top/left/width/height/border-radius, a plain
- *             0.6s CSS transition) to the real hero avatar's rect.
- *   1600ms  — landed: the flying clone fades out (~160ms) as the real
- *             WebGL hero avatar fades in at the exact same rect — a very
- *             short crossfade, not an instant cut, since a flat photo and
- *             a live WebGL render can differ enough in shading to "pop"
- *             on a hard swap. `intro:complete` fires here too.
- *   1850ms  — overlay fully unmounts
+ * Timeline:
+ *   0ms        — shell's breathing avatar + spinning ring + pulsing dots
+ *                are already on screen (painted before React hydrates)
+ *   0-900ms    — loading hold; untouched shell animations only
+ *   900ms      — this component reads the shell avatar's live rect, removes
+ *                the shell, and mounts a flying clone at that exact rect —
+ *                synchronously, same frame, so there's no gap where the
+ *                shell is gone but nothing has replaced it. The clone then
+ *                flies to the real hero avatar's rect.
+ *   900+~550ms — landed: the instant the flight animation reports
+ *                "finished", the clone is torn down and the real hero
+ *                avatar is revealed in the SAME synchronous block — a hard
+ *                cut, not a fade. `intro:complete` fires here too.
+ *
+ * ── Why the flight is animated the way it is (read this before touching it) ──
+ * The flying clone's box is sized/positioned at its FINAL (hero) rect from
+ * the moment it mounts, and NEVER changes size or position after that. All
+ * the "movement" is a single CSS `transform: translate() scale()` that
+ * starts at a value which makes the box *look* like it's still at the
+ * shell's rect, then animates to `translate(0,0) scale(1,1)` — i.e. a
+ * classic FLIP (First-Last-Invert-Play), driven by the Web Animations API
+ * (`element.animate()`), not a CSS transition.
+ *
+ * Two very deliberate choices here, both fixing real production bugs:
+ *
+ * 1. ONLY `transform` is ever animated — never top/left/width/height/
+ *    border-radius. Those are layout properties: animating them forces the
+ *    browser to recompute layout and repaint on every single frame, which
+ *    is what made the old version feel heavy, especially on mid/low-end
+ *    phones. `transform` runs entirely on the compositor thread, so this
+ *    is a genuinely free 60fps animation on any device. Border-radius is
+ *    set once, statically, to the hero avatar's own radius — since the box
+ *    is always hero-sized pre-transform, the corner rounding scales
+ *    naturally as a side effect of the transform, with zero extra
+ *    animation cost.
+ *
+ * 2. The animation is driven by `element.animate()`, not a CSS transition
+ *    triggered by the old "set start state → double requestAnimationFrame
+ *    → set end state" trick. That trick only works if the browser actually
+ *    *paints* the start-state frame before the second rAF fires — under
+ *    real conditions (low-end phones, backgrounded/throttled tabs, Android
+ *    WebViews, Safari under load) that isn't reliable. When it silently
+ *    failed, the element would just jump straight to its end state with no
+ *    visible animation at all — which is exactly the "works on some
+ *    devices, glitches/breaks on others" symptom. `element.animate()` is
+ *    handed both keyframes up front; the browser guarantees it
+ *    interpolates between them regardless of paint timing, so this now
+ *    behaves identically everywhere.
+ *
+ * Landing is an intentional hard cut, not a crossfade: the flying clone
+ * (a flat photo) is torn down and `intro-active` is removed (revealing the
+ * real, un-transitioned `#hero-avatar-anchor` — see globals.css) inside the
+ * exact same synchronous callback, so nothing fades in or out.
  *
  * Runs once per browser session (sessionStorage) and is skipped instantly
  * for prefers-reduced-motion. `introHasRunThisPageLoad` below is an extra,
@@ -58,13 +87,13 @@ const useIsomorphicLayoutEffect =
  */
 
 const SESSION_KEY = "introPlayed:v1";
-const LOADING_MS = 900; // shortened per request, across all devices — was 1500/3300/1300 over earlier iterations
-const FLIGHT_MS = 700; // must stay just ahead of the 0.6s CSS flight transition, not far past it
-const SETTLE_MS = 250;
+const LOADING_MS = 900; // loading hold before flight begins
+const FLIGHT_MS = 550; // duration of the transform-only WAAPI flight
+const BACKDROP_FADE_MS = 480; // overlay blur fade-out; finishes just before FLIGHT_MS so there's nothing left to abruptly cut when we unmount
 
 let introHasRunThisPageLoad = false;
 
-type Phase = "loading" | "opening" | "landed" | "done";
+type Phase = "loading" | "flying" | "done";
 type Rect = { top: number; left: number; width: number; height: number; radius: string };
 
 function readRect(el: Element): Rect {
@@ -76,10 +105,11 @@ function readRect(el: Element): Rect {
 export function IntroLoader() {
   const [mounted, setMounted] = useState(false);
   const [phase, setPhase] = useState<Phase>("loading");
-  const [flightRect, setFlightRect] = useState<Rect | null>(null);
+  const [rects, setRects] = useState<{ start: Rect; target: Rect } | null>(null);
   const [exiting, setExiting] = useState(false);
   const [noTarget, setNoTarget] = useState(false);
   const isDarkRef = useRef(true);
+  const animatedRef = useRef(false); // guards against re-triggering the flight (Strict Mode double-invoke, Fast Refresh, ref re-attach)
 
   useIsomorphicLayoutEffect(() => {
     // Drops the scroll lock, tells the rest of the app the intro is over,
@@ -151,59 +181,93 @@ export function IntroLoader() {
 
       if (!shellAvatar || !target) {
         // No hero to fly to (e.g. deep-linked route), or the shell was
-        // somehow already gone — just dissolve.
+        // somehow already gone — just dissolve the overlay.
         document.getElementById("intro-shell")?.remove();
         setNoTarget(true);
-        setPhase("opening");
-        requestAnimationFrame(() => requestAnimationFrame(() => setExiting(true)));
+        setPhase("flying");
+        setExiting(true);
+        setTimeout(() => {
+          document.documentElement.classList.remove("intro-active");
+          window.dispatchEvent(new Event("intro:complete"));
+          setPhase("done");
+        }, BACKDROP_FADE_MS);
         return;
       }
 
-      // Read the shell avatar's live rect, THEN remove the shell — both
-      // in this same synchronous tick, so there's no frame where neither
-      // the shell nor its replacement is on screen.
+      // Read both rects, THEN remove the shell — all in this same
+      // synchronous tick, so there's no frame where neither the shell nor
+      // its replacement is on screen. The target rect is captured now too
+      // (not re-measured later) since nothing about the hero's layout
+      // changes during the flight.
       const start = readRect(shellAvatar);
+      const targetRect = readRect(target);
       document.getElementById("intro-shell")?.remove();
-      setFlightRect(start);
-      setPhase("opening");
-
-      // Double rAF so the browser commits the "start" rect as a real
-      // painted frame before we change it to the target values — this is
-      // what makes the transition actually animate instead of snapping
-      // straight there. The overlay's backdrop-fade (`exiting`) rides the
-      // same two frames so it starts fading exactly as the flight starts,
-      // not before — the first frame needs to still look identical to the
-      // shell's own opaque blur, or the hand-off itself would flash.
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          setFlightRect(readRect(target));
-          setExiting(true);
-        });
-      });
+      setRects({ start, target: targetRect });
+      setPhase("flying");
+      // Backdrop fade-out rides the same tick the flight starts on, so the
+      // glass blur is gone well before the avatar lands instead of being
+      // abruptly cut when the overlay unmounts.
+      setExiting(true);
     }, LOADING_MS);
-
-    const t2 = setTimeout(() => {
-      document.documentElement.classList.remove("intro-active");
-      window.dispatchEvent(new Event("intro:complete"));
-      setPhase("landed");
-    }, LOADING_MS + FLIGHT_MS);
-
-    const t3 = setTimeout(() => {
-      setPhase("done");
-    }, LOADING_MS + FLIGHT_MS + SETTLE_MS);
 
     return () => {
       clearTimeout(t1);
-      clearTimeout(t2);
-      clearTimeout(t3);
-      // If this effect is torn down before the sequence actually reached
-      // "landed" (a genuine unmount mid-flight, not just Strict Mode's
-      // replay — that case already called bail() above), never leave the
-      // page stuck with scroll locked and the hero avatar hidden
-      // underneath a dead overlay.
+      // If this effect is torn down before the sequence actually landed (a
+      // genuine unmount mid-flight, not just Strict Mode's replay — that
+      // case already called bail() above), never leave the page stuck
+      // with scroll locked and the hero avatar hidden underneath a dead
+      // overlay.
       document.documentElement.classList.remove("intro-active");
     };
   }, []);
+
+  // Imperative flight — see the big comment block at the top of this file
+  // for why this is transform-only and WAAPI-driven rather than a CSS
+  // transition on layout properties.
+  const flightRef = (el: HTMLDivElement | null) => {
+    if (!el || !rects || animatedRef.current) return;
+    animatedRef.current = true;
+
+    const { start, target } = rects;
+    const dx = start.left - target.left;
+    const dy = start.top - target.top;
+    const sx = start.width / target.width;
+    const sy = start.height / target.height;
+
+    const fromTransform = `translate(${dx}px, ${dy}px) scale(${sx}, ${sy})`;
+    const toTransform = "translate(0px, 0px) scale(1, 1)";
+
+    const land = () => {
+      // Hard cut, deliberately: the flying clone (a flat photo) is removed
+      // and the real hero avatar is revealed by dropping `intro-active`
+      // (see globals.css — that rule has no transition) inside this one
+      // synchronous callback, so the two happen on the exact same frame.
+      // No opacity fade, no crossfade.
+      document.documentElement.classList.remove("intro-active");
+      window.dispatchEvent(new Event("intro:complete"));
+      setPhase("done");
+    };
+
+    if (typeof el.animate !== "function") {
+      // No Web Animations API support (only extremely old browsers) — skip
+      // straight to landed rather than risk a broken/unsupported animation.
+      land();
+      return;
+    }
+
+    // Set the starting transform synchronously, in the same commit as the
+    // element being inserted into the DOM (React ref callbacks fire before
+    // the browser's next paint) — so the very first painted frame already
+    // shows the clone at the shell's rect, never at its full hero size.
+    el.style.transform = fromTransform;
+
+    const anim = el.animate(
+      [{ transform: fromTransform }, { transform: toTransform }],
+      { duration: FLIGHT_MS, easing: "cubic-bezier(0.16, 1, 0.3, 1)", fill: "forwards" },
+    );
+    anim.addEventListener("finish", land);
+    anim.addEventListener("cancel", land);
+  };
 
   if (!mounted || phase === "done" || phase === "loading") return null;
 
@@ -219,12 +283,12 @@ export function IntroLoader() {
              so the very first frame this renders is visually identical to
              what the shell was already showing — the fade to transparent
              only starts once "exiting" flips true a frame later. */
-          background: color-mix(in srgb, var(--bg-base) 55%, transparent);
-          backdrop-filter: blur(28px) saturate(160%);
-          -webkit-backdrop-filter: blur(28px) saturate(160%);
+          background: color-mix(in srgb, var(--bg-base) 45%, transparent);
+          backdrop-filter: blur(14px) saturate(130%);
+          -webkit-backdrop-filter: blur(14px) saturate(130%);
           pointer-events: none;
-          transition: background-color 0.5s ease, backdrop-filter 0.5s ease,
-                      -webkit-backdrop-filter 0.5s ease;
+          transition: background-color ${BACKDROP_FADE_MS}ms ease, backdrop-filter ${BACKDROP_FADE_MS}ms ease,
+                      -webkit-backdrop-filter ${BACKDROP_FADE_MS}ms ease;
         }
         .intro-overlay--exit {
           background: transparent;
@@ -238,64 +302,35 @@ export function IntroLoader() {
           border: 1.5px solid var(--border);
           background: var(--bg-base);
           box-shadow: 0 12px 40px -8px rgba(0,0,0,0.35);
-          /* Deliberately simple: animates top/left/width/height/border-
-             radius directly. An earlier version tried to do this purely
-             via "transform: scale()" for GPU purity, with an inverse
-             scale on the inner <img> to stop it stretching — but nested
-             transforms compose multiplicatively, and that inverse ended
-             up cancelling the *entire* resize, not just the aspect
-             distortion, so the photo rendered at ~full natural size the
-             whole time it was supposed to be shrinking/growing (the
-             "balloons up" bug). This version can't have that bug: the
-             image is always literally 100% of a box whose real
-             width/height is what's animating, so it's never anything but
-             the correct size at every point in the flight.
-             will-change primes the compositor layer ahead of time so the
-             very first frame of the transition doesn't pay a mid-
-             animation layer-creation cost. */
-          will-change: top, left, width, height, border-radius;
-          transition:
-            top 0.6s cubic-bezier(0.16,1,0.3,1),
-            left 0.6s cubic-bezier(0.16,1,0.3,1),
-            width 0.6s cubic-bezier(0.16,1,0.3,1),
-            height 0.6s cubic-bezier(0.16,1,0.3,1),
-            border-radius 0.6s cubic-bezier(0.16,1,0.3,1),
-            box-shadow 0.6s ease,
-            opacity 0.16s linear;
-        }
-        .intro-flip-avatar--landed {
-          box-shadow: none;
-          /* A very short (160ms) crossfade rather than an instant cut.
-             Rects match exactly, so there's no travel/mismatch to hide —
-             this purely smooths over the fact that the flying clone is a
-             flat photo and the real hero avatar underneath is a live
-             WebGL render, which can differ enough in shading/highlights
-             that an instant swap reads as a visible "pop". The real hero
-             avatar fades in over the same 0.16s (see #hero-avatar-anchor
-             in globals.css) so the two cross rather than one cutting to
-             the other. */
-          opacity: 0;
+          /* Only transform ever animates (see the file-level comment for
+             why) — top/left/width/height/border-radius are all set once,
+             statically, to the hero avatar's own final rect and never
+             touched again. transform-origin 0 0 matches how the
+             translate/scale values below are computed. will-change primes
+             the compositor layer ahead of time so the very first frame
+             doesn't pay a mid-animation layer-creation cost. */
+          transform-origin: 0 0;
+          will-change: transform;
         }
         .intro-flip-avatar img {
           width: 100%; height: 100%; object-fit: cover; object-position: center top; display: block;
         }
 
         @media (prefers-reduced-motion: reduce) {
-          .intro-overlay, .intro-flip-avatar {
-            transition: none !important;
-          }
+          .intro-overlay { transition: none !important; }
         }
       `}</style>
 
-      {!noTarget && flightRect && (phase === "opening" || phase === "landed") && (
+      {!noTarget && rects && phase === "flying" && (
         <div
-          className={`intro-flip-avatar${phase === "landed" ? " intro-flip-avatar--landed" : ""}`}
+          ref={flightRef}
+          className="intro-flip-avatar"
           style={{
-            top: flightRect.top,
-            left: flightRect.left,
-            width: flightRect.width,
-            height: flightRect.height,
-            borderRadius: flightRect.radius,
+            top: rects.target.top,
+            left: rects.target.left,
+            width: rects.target.width,
+            height: rects.target.height,
+            borderRadius: rects.target.radius,
           }}
         >
           {/* eslint-disable-next-line @next/next/no-img-element -- reuses the already-preloaded avatar URL from layout.tsx */}

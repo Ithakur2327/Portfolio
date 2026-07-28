@@ -342,17 +342,14 @@ html.light .nav-root.scrolled {
    getBoundingClientRect, hence opacity/pointer-events and not display:none)
    so there's never a duplicate/mismatched avatar showing through the glass
    blur. Scroll is locked so the page can't shift under the overlay.
-   The reveal is a short 0.16s crossfade, timed to start the exact instant
-   the flying clone in IntroLoader.tsx begins its own fade-out (see
-   .intro-flip-avatar--landed). Both elements occupy the identical rect at
-   that point, so this isn't hiding any travel — it only smooths over the
-   fact that the flying clone is a flat photo and the real hero avatar is
-   a live WebGL render, which can differ enough in shading to read as a
-   visible "pop" on an instant cut. */
+   Deliberately NO transition here: the flying clone in IntroLoader.tsx
+   lands and is removed in the exact same synchronous block that removes
+   `intro-active`, so this flips from 0 to 1 on the very same frame the
+   clone disappears — a hard, instant cut, not a crossfade. */
 html.intro-active { overflow: hidden; }
 html.intro-active body { overflow: hidden; }
-#hero-avatar-anchor { opacity: 1; transition: opacity 0.16s linear; }
-html.intro-active #hero-avatar-anchor { opacity: 0; pointer-events: none; transition: none; }
+#hero-avatar-anchor { opacity: 1; }
+html.intro-active #hero-avatar-anchor { opacity: 0; pointer-events: none; }
 
 /* Static placeholder painted synchronously (before React hydrates) by the
    inline script in app/layout.tsx — this is what actually stops the hero
@@ -365,9 +362,9 @@ html.intro-active #hero-avatar-anchor { opacity: 0; pointer-events: none; transi
 #intro-shell {
   position: fixed; inset: 0; z-index: 100000;
   display: flex; align-items: center; justify-content: center; gap: 16px;
-  background: color-mix(in srgb, var(--bg-base) 55%, transparent);
-  backdrop-filter: blur(28px) saturate(160%);
-  -webkit-backdrop-filter: blur(28px) saturate(160%);
+  background: color-mix(in srgb, var(--bg-base) 45%, transparent);
+  backdrop-filter: blur(14px) saturate(130%);
+  -webkit-backdrop-filter: blur(14px) saturate(130%);
 }
 .intro-shell-avatar {
   width: 84px; height: 84px; border-radius: 22px;

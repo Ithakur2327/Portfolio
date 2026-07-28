@@ -85,7 +85,35 @@ export function Avatar({ version }: { version?: string } = {}) {
       premultipliedAlpha: false,
       powerPreference: "high-performance",
     });
-    if (!gl) return;
+    if (!gl) {
+      // No WebGL on this device/browser (disabled GPU acceleration, some
+      // older or locked-down mobile browsers, certain in-app webviews,
+      // etc.) — without a fallback this canvas just stays blank forever,
+      // which is exactly the "avatar works on some devices, not others"
+      // report. Draw the plain photo with plain 2D canvas instead: no
+      // shader warp effect, but never an empty avatar.
+      const ctx2d = canvas.getContext("2d");
+      if (!ctx2d) return;
+      const draw = (src: string) => {
+        const img = new window.Image();
+        img.crossOrigin = "anonymous";
+        img.onload = () => {
+          const size = canvas.width || 512;
+          canvas.height = size;
+          ctx2d.clearRect(0, 0, size, size);
+          ctx2d.drawImage(img, 0, 0, size, size);
+        };
+        img.src = version ? `${src}?v=${version}` : src;
+      };
+      canvas.width = canvas.height = 512;
+      draw(isDarkRef.current ? "/avatar-dark.jpg" : "/avatar-light.jpg");
+      const onThemeChange = () => draw(isDarkRef.current ? "/avatar-dark.jpg" : "/avatar-light.jpg");
+      // Re-draw on theme toggle so the fallback still tracks dark/light,
+      // same as the WebGL path does via texD/texL.
+      const mo = new MutationObserver(onThemeChange);
+      mo.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
+      return () => mo.disconnect();
+    }
 
     gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
     gl.enable(gl.BLEND);
