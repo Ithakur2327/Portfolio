@@ -125,20 +125,17 @@ export function AboutSection() {
           width: 100%;
           max-width: 100%;
           box-sizing: border-box;
-          border: 0.7px dashed rgba(0,0,0,0.32);
-          border-radius: 4px;
-          background: #ffffff;
+          border: 1px dashed rgba(255,255,255,0.35);
+          border-radius: 10px;
+          background: var(--bg-base);
           padding: 18px 18px;
         }
-        .dark .about-box {
-          border-color: rgba(255,255,255,0.32);
-          background: #000000;
-        }
+        html.light .about-box { border-color: rgba(0,0,0,0.30); }
         ${mq.navCollapse} {
           .about-box { padding: 16px 16px; }
         }
         ${mq.mobile} {
-          .about-box { padding: 14px 12px; }
+          .about-box { padding: 14px 12px; border-radius: 8px; }
         }
       `}</style>
 
