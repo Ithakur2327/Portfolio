@@ -68,7 +68,7 @@ export function SparklesBridge() {
     const particleCount = canvasH > 72 ? 55 : 30;
     const dots: Dot[] = Array.from({ length: particleCount }, spawn);
 
-    let bgColor  = themeRef.current === "dark" ? "#040404" : "#edf1f5";
+    let bgColor  = themeRef.current === "dark" ? "#000000" : "#edf1f5";
     let dotColor = themeRef.current === "dark" ? "255,255,255" : "0,0,0";
     let lastTheme = themeRef.current;
 
