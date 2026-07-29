@@ -785,14 +785,14 @@ export function StatsSection() {
 
         ${mq.tablet} {
           .about-panels { grid-template-columns: 1fr !important; }
-          .stat-card-3d { width: 100% !important; min-width: 0 !important; min-height: 220px; }
+          .stat-card-3d { width: 100% !important; min-width: 0 !important; min-height: 220px; padding: 14px; }
           /* Graph cells scale up so graph fills card width */
           .gh-cell { width: 14px !important; height: 14px !important; border-radius: 3px !important; }
           .lc-cell { width: 14px !important; height: 14px !important; border-radius: 3px !important; }
         }
         ${mq.mobile} {
           .about-panels { grid-template-columns: 1fr; }
-          .stat-card-3d { padding: 16px; }
+          .stat-card-3d { padding: 8px; }
         }
 
         .about-content {
