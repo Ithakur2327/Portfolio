@@ -217,7 +217,7 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
           display: flex;
           align-items: flex-start;
           justify-content: stretch;
-          border-radius: 0;
+          border-radius: 22px;
           background: var(--bg-base);
         }
         .h-nameblock {
@@ -290,7 +290,7 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
             min-width: clamp(220px, 32vw, 300px) !important;
             height: calc(clamp(220px, 32vw, 300px) - 14px) !important;
             min-height: calc(clamp(220px, 32vw, 300px) - 14px) !important;
-            border-radius: 0 !important;
+            border-radius: 28px !important;
           }
           .h-nameblock h1 {
             font-size: clamp(36px, 6vw, 64px) !important;
@@ -392,7 +392,7 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
             border-bottom: none !important;
             overflow: hidden !important;
             padding: 0 !important;
-            border-radius: 0 !important;
+            border-radius: 18px !important;
           }
           .h-nameblock {
             flex: 1 !important;
@@ -443,7 +443,7 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
             min-width: clamp(105px, 30vw, 135px) !important;
             height: calc(clamp(105px, 30vw, 135px) - 6px) !important;
             min-height: calc(clamp(105px, 30vw, 135px) - 6px) !important;
-            border-radius: 0 !important;
+            border-radius: 16px !important;
           }
           .h-nameblock h1 {
             font-size: clamp(19px, 6.5vw, 22px) !important;
@@ -481,6 +481,7 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
           <div style={{ position: "relative", zIndex: 1 }}>
 
         <div style={{
+          position:"relative", left:"50%", marginLeft:"-50vw", width:"100vw",
           background:BG, borderTop:B,
         }}>
           <div className="h-profile" style={{maxWidth:CW, margin:"0 auto", borderLeft:B, borderRight:B, borderBottom:B, borderTop:"none", borderRadius:8.5}}>
@@ -491,7 +492,7 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
               style={{
                 backgroundImage: `url(${isDark ? "/avatar-dark.jpg" : "/avatar-light.jpg"}${avatarVersion ? `?v=${avatarVersion}` : ""})`,
                 backgroundSize: "cover",
-                backgroundPosition: "58% 40%",
+                backgroundPosition: "center",
               }}
             >
               <div style={{width:"100%", aspectRatio:"1 / 1", flexShrink:0}}>
@@ -520,7 +521,12 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
           </div>
         </div>
 
-        <div style={{height:38, maxWidth:CW, margin:"0 auto"}}/>
+          </div>
+        </div>
+
+        <div style={{height:22, maxWidth:CW, margin:"0 auto"}}/>
+
+        <div style={{height:22, maxWidth:CW, margin:"0 auto"}}/>
 
         <div className="h-info-wrap">
           <HoverBorderGradient>
@@ -569,9 +575,6 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
         </div>
 
         <div style={{ height: 38, maxWidth: CW, margin: "0 auto" }} />
-
-          </div>
-        </div>
 
       </section>
     </>
