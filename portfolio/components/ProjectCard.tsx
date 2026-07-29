@@ -139,12 +139,12 @@ export function ProjectCard({ proj, index, visible, isDesktop, onOpen }: {
       >
         <svg width="100%" height="100%" aria-hidden="true" style={{ position: "absolute", inset: 0, pointerEvents: "none" }}>
           <rect
-            x="0.6" y="0.6"
-            width="calc(100% - 1.2px)" height="calc(100% - 1.2px)"
+            x="0.75" y="0.75"
+            width="calc(100% - 1.5px)" height="calc(100% - 1.5px)"
             rx="8" ry="8"
             fill="none"
-            stroke={index % 2 === 0 ? "rgba(10,186,181,0.32)" : "rgba(212,175,55,0.32)"}
-            strokeWidth="0.7"
+            stroke={index % 2 === 0 ? "rgba(10,186,181,0.6)" : "rgba(212,175,55,0.6)"}
+            strokeWidth="1"
             strokeDasharray="3 2"
           />
         </svg>
@@ -165,7 +165,7 @@ export function ProjectCard({ proj, index, visible, isDesktop, onOpen }: {
             animate={{ y: shown ? "0%" : "55%", rotate: shown ? 0 : -8 }}
             transition={isDesktop
               ? { type: "spring", stiffness: 210, damping: 24, mass: 0.85 }
-              : { type: "tween", duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+              : { type: "tween", duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
             style={{ position: "absolute", inset: 0, willChange: "transform" }}
           >
             <motion.div
