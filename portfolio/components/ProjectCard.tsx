@@ -336,6 +336,150 @@ export function ProjectModal({ proj, onClose, isDesktop }: { proj: Project; onCl
     };
   }, [onClose]);
 
+  const imageBlock = (
+    <motion.div
+      layoutId={lid(`card-banner-${proj.name}`)}
+      transition={SPRING}
+      className="pm-image-frame"
+      style={sheet ? { position: "sticky", top: 0 } : { position: "relative" }}
+    >
+      <motion.div
+        layoutId={lid(`card-banner-image-${proj.name}`)}
+        transition={SPRING}
+        style={{ position: "absolute", inset: 0 }}
+      >
+        <Image
+          src={proj.img}
+          alt={proj.name}
+          fill
+          quality={100}
+          sizes="(max-width: 767px) 100vw, 45vw"
+          unoptimized={proj.img.endsWith(".svg")}
+          style={{ objectFit: "cover" }}
+        />
+      </motion.div>
+    </motion.div>
+  );
+
+  const linksAndStackBlock = (
+    <div className="pm-media-links">
+      <motion.div layoutId={lid(`card-links-${proj.name}`)} layout="position" transition={SPRING}>
+        <ProjectLinkButtons proj={proj} />
+      </motion.div>
+
+      {/* Full stack list — shown only here, below the image and links */}
+      <motion.div
+        layoutId={lid(`card-tech-section-${proj.name}`)}
+        layout="position"
+        transition={SPRING}
+        style={{ display: "flex", flexDirection: "column", gap: 8 }}
+      >
+        <span style={{ fontSize: 14, fontWeight: 600, color: "var(--text-primary)", fontFamily: SF }}>
+          Stack
+        </span>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+          {proj.tags.map((tag, ti) => {
+            const tech = TECH_MAP[tag];
+            return (
+              <motion.span
+                key={tag}
+                initial={sheet ? false : { opacity: 0, y: 4 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={sheet ? { duration: 0 } : { delay: 0.05 + ti * 0.02, duration: 0.2 }}
+                className="pm-tag"
+                style={{ color: "var(--tag-text)", background: "var(--tag-bg)", border: "1px solid var(--tag-border)" }}
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element -- tiny external SVG icon */}
+                {tech && <img src={techLogoSrc(tech, isDark)} alt={tag} width={15} height={15} decoding="async" style={{ objectFit: "contain", flexShrink: 0 }} />}
+                {tag}
+              </motion.span>
+            );
+          })}
+        </div>
+      </motion.div>
+    </div>
+  );
+
+  const infoBlock = (
+    <div className="pm-info-col" style={{ padding: 20, display: "flex", flexDirection: "column", gap: 16 }}>
+      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16 }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+          <motion.h2
+            layoutId={lid(`card-title-${proj.name}`)}
+            layout="position"
+            transition={SPRING}
+            style={{ fontSize: 24, fontWeight: 700, color: "var(--text-primary)", letterSpacing: "-0.02em", fontFamily: SF, margin: 0, lineHeight: 1.25 }}
+          >
+            {proj.name}
+          </motion.h2>
+          <motion.span
+            initial={sheet ? false : { opacity: 0, y: 5 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={sheet ? { duration: 0 } : { delay: 0.15 }}
+            style={{ fontSize: 14, color: "var(--text-muted)", fontFamily: SF }}
+          >
+            Created: {proj.year}
+          </motion.span>
+        </div>
+
+        <button
+          ref={closeBtnRef}
+          onClick={onClose}
+          aria-label="Close"
+          style={{
+            flexShrink: 0,
+            width: 30, height: 30, borderRadius: "50%",
+            background: "var(--bg-secondary)", border: "1px solid var(--border)",
+            color: "var(--text-secondary)", display: "flex", alignItems: "center", justifyContent: "center",
+            cursor: "pointer",
+          }}
+        >
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+
+      {/* Description */}
+      <motion.p
+        layoutId={lid(`card-description-${proj.name}`)}
+        layout="position"
+        transition={SPRING}
+        style={{ fontSize: 16, color: "var(--text-secondary)", lineHeight: 1.625, margin: 0, fontFamily: SF }}
+      >
+        {proj.description}
+      </motion.p>
+
+      {/* Features — only shown in the expanded modal view */}
+      {proj.features?.length > 0 && (
+        <motion.div
+          initial={sheet ? false : { opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={sheet ? { duration: 0 } : { delay: 0.18, duration: 0.3 }}
+          style={{ display: "flex", flexDirection: "column", gap: 10 }}
+        >
+          <span style={{ fontSize: 14, fontWeight: 600, color: "var(--text-primary)", fontFamily: SF }}>
+            Features
+          </span>
+          <ul style={{ display: "flex", flexDirection: "column", gap: 8, margin: 0, padding: 0, listStyle: "none" }}>
+            {proj.features.map((feature, i) => (
+              <motion.li
+                key={i}
+                initial={sheet ? false : { opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={sheet ? { duration: 0 } : { delay: 0.22 + i * 0.035 }}
+                style={{ display: "flex", alignItems: "flex-start", gap: 8, fontSize: 14, color: "var(--text-secondary)", lineHeight: 1.55, fontFamily: SF }}
+              >
+                <span style={{ color: proj.accent, marginTop: 1 }}>•</span>
+                <span>{feature}</span>
+              </motion.li>
+            ))}
+          </ul>
+        </motion.div>
+      )}
+    </div>
+  );
+
   const content = (
     <>
       <motion.div
@@ -429,6 +573,10 @@ export function ProjectModal({ proj, onClose, isDesktop }: { proj: Project; onCl
               flex-direction: column;
               gap: 12px;
             }
+            .pm-sheet-scroll {
+              display: flex;
+              flex-direction: column;
+            }
             .pm-media-links {
               display: flex;
               flex-direction: column;
@@ -438,8 +586,6 @@ export function ProjectModal({ proj, onClose, isDesktop }: { proj: Project; onCl
             .pm-image-frame {
               width: 100%;
               aspect-ratio: 16 / 9;
-              position: sticky;
-              top: 0;
               z-index: 2;
               overflow: hidden;
               border-radius: 0;
@@ -464,154 +610,29 @@ export function ProjectModal({ proj, onClose, isDesktop }: { proj: Project; onCl
               }
               .pm-info-col::-webkit-scrollbar { display: none; }
               .pm-image-frame {
-                position: relative;
-                top: auto; z-index: auto;
                 border-radius: 9px;
               }
             }
           `}</style>
 
           <div className="pm-body">
-          {/* Media column: sticky full-width image, then scrollable links + stack */}
-          <div className="pm-media-col">
-            <motion.div
-              layoutId={lid(`card-banner-${proj.name}`)}
-              transition={SPRING}
-              className="pm-image-frame"
-            >
-              <motion.div
-                layoutId={lid(`card-banner-image-${proj.name}`)}
-                transition={SPRING}
-                style={{ position: "absolute", inset: 0 }}
-              >
-                <Image
-                  src={proj.img}
-                  alt={proj.name}
-                  fill
-                  quality={100}
-                  sizes="(max-width: 767px) 100vw, 45vw"
-                  unoptimized={proj.img.endsWith(".svg")}
-                  style={{ objectFit: "cover" }}
-                />
-              </motion.div>
-            </motion.div>
-
-            <div className="pm-media-links">
-            <motion.div layoutId={lid(`card-links-${proj.name}`)} layout="position" transition={SPRING}>
-              <ProjectLinkButtons proj={proj} />
-            </motion.div>
-
-            {/* Full stack list — shown only here, below the image and links */}
-            <motion.div
-              layoutId={lid(`card-tech-section-${proj.name}`)}
-              layout="position"
-              transition={SPRING}
-              style={{ display: "flex", flexDirection: "column", gap: 8 }}
-            >
-              <span style={{ fontSize: 14, fontWeight: 600, color: "var(--text-primary)", fontFamily: SF }}>
-                Stack
-              </span>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-                {proj.tags.map((tag, ti) => {
-                  const tech = TECH_MAP[tag];
-                  return (
-                    <motion.span
-                      key={tag}
-                      initial={sheet ? false : { opacity: 0, y: 4 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={sheet ? { duration: 0 } : { delay: 0.05 + ti * 0.02, duration: 0.2 }}
-                      className="pm-tag"
-                      style={{ color: "var(--tag-text)", background: "var(--tag-bg)", border: "1px solid var(--tag-border)" }}
-                    >
-                      {/* eslint-disable-next-line @next/next/no-img-element -- tiny external SVG icon */}
-                      {tech && <img src={techLogoSrc(tech, isDark)} alt={tag} width={15} height={15} decoding="async" style={{ objectFit: "contain", flexShrink: 0 }} />}
-                      {tag}
-                    </motion.span>
-                  );
-                })}
+          {sheet ? (
+            <>
+              {imageBlock}
+              <div className="pm-sheet-scroll">
+                {linksAndStackBlock}
+                {infoBlock}
               </div>
-            </motion.div>
-            </div>
-          </div>
-
-          {/* Info column: title, description, features */}
-          <div className="pm-info-col" style={{ padding: 20, display: "flex", flexDirection: "column", gap: 16 }}>
-            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16 }}>
-              <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-                <motion.h2
-                  layoutId={lid(`card-title-${proj.name}`)}
-                  layout="position"
-                  transition={SPRING}
-                  style={{ fontSize: 24, fontWeight: 700, color: "var(--text-primary)", letterSpacing: "-0.02em", fontFamily: SF, margin: 0, lineHeight: 1.25 }}
-                >
-                  {proj.name}
-                </motion.h2>
-                <motion.span
-                  initial={sheet ? false : { opacity: 0, y: 5 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={sheet ? { duration: 0 } : { delay: 0.15 }}
-                  style={{ fontSize: 14, color: "var(--text-muted)", fontFamily: SF }}
-                >
-                  Created: {proj.year}
-                </motion.span>
+            </>
+          ) : (
+            <>
+              <div className="pm-media-col">
+                {imageBlock}
+                {linksAndStackBlock}
               </div>
-
-              <button
-                ref={closeBtnRef}
-                onClick={onClose}
-                aria-label="Close"
-                style={{
-                  flexShrink: 0,
-                  width: 30, height: 30, borderRadius: "50%",
-                  background: "var(--bg-secondary)", border: "1px solid var(--border)",
-                  color: "var(--text-secondary)", display: "flex", alignItems: "center", justifyContent: "center",
-                  cursor: "pointer",
-                }}
-              >
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-                  <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-                </svg>
-              </button>
-            </div>
-
-            {/* Description */}
-            <motion.p
-              layoutId={lid(`card-description-${proj.name}`)}
-              layout="position"
-              transition={SPRING}
-              style={{ fontSize: 16, color: "var(--text-secondary)", lineHeight: 1.625, margin: 0, fontFamily: SF }}
-            >
-              {proj.description}
-            </motion.p>
-
-            {/* Features — only shown in the expanded modal view */}
-            {proj.features?.length > 0 && (
-              <motion.div
-                initial={sheet ? false : { opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={sheet ? { duration: 0 } : { delay: 0.18, duration: 0.3 }}
-                style={{ display: "flex", flexDirection: "column", gap: 10 }}
-              >
-                <span style={{ fontSize: 14, fontWeight: 600, color: "var(--text-primary)", fontFamily: SF }}>
-                  Features
-                </span>
-                <ul style={{ display: "flex", flexDirection: "column", gap: 8, margin: 0, padding: 0, listStyle: "none" }}>
-                  {proj.features.map((feature, i) => (
-                    <motion.li
-                      key={i}
-                      initial={sheet ? false : { opacity: 0, x: -10 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={sheet ? { duration: 0 } : { delay: 0.22 + i * 0.035 }}
-                      style={{ display: "flex", alignItems: "flex-start", gap: 8, fontSize: 14, color: "var(--text-secondary)", lineHeight: 1.55, fontFamily: SF }}
-                    >
-                      <span style={{ color: proj.accent, marginTop: 1 }}>•</span>
-                      <span>{feature}</span>
-                    </motion.li>
-                  ))}
-                </ul>
-              </motion.div>
-            )}
-          </div>
+              {infoBlock}
+            </>
+          )}
           </div>
         </motion.div>
       </div>
