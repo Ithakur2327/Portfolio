@@ -338,7 +338,7 @@ export function SkillsSection() {
           position: relative;
           overflow: hidden;
           border: 0.7px dashed rgba(0,0,0,0.32);
-          border-radius: 14px;
+          border-radius: 4px;
           background: #ffffff;
           min-height: 300px;
           flex: 1;
@@ -411,7 +411,7 @@ export function SkillsSection() {
         ${mq.mobile} {
           .skills-inner { padding: 0 16px 28px !important; }
           .falling-icons-row { flex-direction: column; gap: 16px; }
-          .falling-icons-box { border-radius: 12px; min-height: 265px; }
+          .falling-icons-box { border-radius: 4px; min-height: 265px; }
           .falling-icons-flow { padding: 18px 12px; gap: 8px; }
           .falling-icon-chip { width: 45px; height: 51px; border-radius: 11px; gap: 4px; padding: 6px 3px 5px; }
           .falling-icon-chip img { width: 17px; height: 17px; }
@@ -421,7 +421,7 @@ export function SkillsSection() {
         }
 
         @media ${cond.down(BP.mobileXsMax)} {
-          .falling-icons-box { min-height: 225px; }
+          .falling-icons-box { min-height: 225px; border-radius: 4px; }
           .falling-icon-chip { width: 38px; height: 44px; border-radius: 10px; }
           .falling-icon-chip img { width: 14px; height: 14px; }
           .falling-icon-textmark { font-size: 11px; }
