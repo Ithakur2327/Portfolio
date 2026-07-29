@@ -114,7 +114,7 @@ export function ProjectCard({ proj, index, visible, isDesktop, onOpen }: {
       onClick={onOpen}
       onHoverStart={() => setHovered(true)}
       onHoverEnd={() => setHovered(false)}
-      whileHover={{ scale: 1.02 }}
+      whileHover={isDesktop ? { scale: 1.02 } : undefined}
       whileTap={{ scale: 0.98 }}
       style={{
         position: "relative",
@@ -125,6 +125,8 @@ export function ProjectCard({ proj, index, visible, isDesktop, onOpen }: {
         overflow: "hidden",
         borderRadius: 14,
         willChange: "transform",
+        WebkitTapHighlightColor: "transparent",
+        touchAction: "manipulation",
       }}
     >
       {/* Accent frame stays on a static wrapper so its border renders evenly */}
@@ -355,7 +357,7 @@ export function ProjectModal({ proj, onClose, isDesktop }: { proj: Project; onCl
           quality={100}
           sizes="(max-width: 767px) 100vw, 45vw"
           unoptimized={proj.img.endsWith(".svg")}
-          style={{ objectFit: "cover" }}
+          style={{ objectFit: "contain" }}
         />
       </motion.div>
     </motion.div>
