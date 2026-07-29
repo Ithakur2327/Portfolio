@@ -80,7 +80,7 @@ export function SparklesBridge() {
       if (themeRef.current !== lastTheme) {
         lastTheme = themeRef.current;
         const isDark = lastTheme === "dark";
-        bgColor  = isDark ? "#040404" : "#edf1f5";
+        bgColor  = isDark ? "#000000" : "#edf1f5";
         dotColor = isDark ? "255,255,255" : "0,0,0";
       }
 
