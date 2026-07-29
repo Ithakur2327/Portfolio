@@ -474,14 +474,13 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
       <section id="home"
         className={vis === "ssr" ? "" : "reveal visible"}
       >
-        <div style={{ position: "relative" }}>
+        <div style={{ position: "relative", left: "50%", marginLeft: "-50vw", width: "100vw" }}>
           <div style={{ position: "absolute", inset: 0, zIndex: 0 }}>
             <DotField />
           </div>
           <div style={{ position: "relative", zIndex: 1 }}>
 
         <div style={{
-          position:"relative", left:"50%", marginLeft:"-50vw", width:"100vw",
           background:BG, borderTop:B,
         }}>
           <div className="h-profile" style={{maxWidth:CW, margin:"0 auto", borderLeft:B, borderRight:B, borderBottom:B, borderTop:"none", borderRadius:8.5}}>
@@ -492,7 +491,7 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
               style={{
                 backgroundImage: `url(${isDark ? "/avatar-dark.jpg" : "/avatar-light.jpg"}${avatarVersion ? `?v=${avatarVersion}` : ""})`,
                 backgroundSize: "cover",
-                backgroundPosition: "center",
+                backgroundPosition: "58% 40%",
               }}
             >
               <div style={{width:"100%", aspectRatio:"1 / 1", flexShrink:0}}>
@@ -518,9 +517,6 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
                 <FlipSentences/>
               </div>
             </div>
-          </div>
-        </div>
-
           </div>
         </div>
 
@@ -575,6 +571,9 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
         </div>
 
         <div style={{ height: 38, maxWidth: CW, margin: "0 auto" }} />
+
+          </div>
+        </div>
 
       </section>
     </>
