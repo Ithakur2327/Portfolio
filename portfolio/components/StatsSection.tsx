@@ -752,11 +752,11 @@ export function StatsSection() {
         html.light .lc-cell-3 { background: #984b10; }
         html.light .lc-cell-4 { background: #000000; }
 
-        /* Stats panels — boxed with a dashed border, matching the Skills section's falling-icons-box */
+        /* Stats panels — boxed with a dashed border, brightness matched to the Skills section's falling-icons-box */
         .stat-card-3d {
           padding: 20px;
           background: transparent;
-          border: 1px dashed var(--border);
+          border: 0.7px dashed rgba(0,0,0,0.32);
           border-radius: 10px;
           position: relative;
           display: flex;
@@ -766,16 +766,12 @@ export function StatsSection() {
           transition: border-color 0.2s;
           min-width: 0; /* keeps the center divider mathematically centered — a grid item's default min-width:auto lets its own non-scrollable content (e.g. a long header string) grow the track past 50%, dragging the divider along with it */
         }
+        .dark .stat-card-3d {
+          border-color: rgba(255,255,255,0.32);
+        }
         .stat-card-3d:hover {
           border-color: var(--text-muted);
           transform: none;
-          box-shadow: none;
-        }
-        html.light .stat-card-3d {
-          background: transparent;
-          box-shadow: none;
-        }
-        html.light .stat-card-3d:hover {
           box-shadow: none;
         }
 
@@ -804,7 +800,7 @@ export function StatsSection() {
         }
         ${mq.navCollapse} { .about-content { padding: 0 22px 34px; } }
         ${mq.mobile} {
-          .about-content  { padding: 0 14px 28px; }
+          .about-content  { padding: 0 16px 28px; }
           .stat-card-3d   { width: 100% !important; min-width: 0 !important; }
           .lc-header-stats { flex-direction: column; align-items: flex-start !important; }
           .lc-header-stats-chips {
