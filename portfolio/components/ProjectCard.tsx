@@ -132,7 +132,7 @@ export function ProjectCard({ proj, index, visible, isDesktop, onOpen }: {
         style={{
           width: "100%",
           padding: 3,
-          borderRadius: 4,
+          borderRadius: 8,
           border: `1.2px dashed ${index % 2 === 0 ? TIFFANY : GOLD}`,
           boxSizing: "border-box",
         }}
@@ -142,7 +142,7 @@ export function ProjectCard({ proj, index, visible, isDesktop, onOpen }: {
           layoutId={`card-banner-${proj.name}`}
           transition={SPRING}
           style={{
-            width: "100%", aspectRatio: "16 / 9", borderRadius: 3,
+            width: "100%", aspectRatio: "16 / 9", borderRadius: 5,
             background: "var(--bg-secondary)",
             border: "1.2px solid var(--border)",
             position: "relative", overflow: "hidden",

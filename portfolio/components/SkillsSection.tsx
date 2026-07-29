@@ -137,7 +137,7 @@ function FallingIconsBox({ title, items }: { title: string; items: string[] }) {
       if (rect.width <= 0 || rect.height <= 0) return;
 
     const engine = Engine.create();
-    engine.world.gravity.y = 0;
+    engine.world.gravity.y = 0.85;
 
     const wallOpts = { isStatic: true, friction: 0.4 };
     let floor      = Bodies.rectangle(rect.width / 2, rect.height + 24, rect.width, 48, wallOpts);
