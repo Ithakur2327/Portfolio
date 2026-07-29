@@ -208,10 +208,8 @@ a, button, [role="button"] {
    width is controlled from one place.
 ═══════════════════════════════════════════════════════════ */
 :root {
-  --content-width: 1000px;
+  --content-width: 900px;
   --content-width-inset: calc(var(--content-width) - 32px);
-  --dot-spacing: 4.5px;
-  --content-rail-width: var(--dot-spacing);
   --page-pad: 16px;
 }
 .page-wrapper {
@@ -252,47 +250,6 @@ a, button, [role="button"] {
 }
 .page-wrapper > .dot-divider + style + * {
   margin-top: 0 !important;
-}
-.page-wrapper > .content-rails {
-  margin-top: 0 !important;
-}
-
-.content-rails {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  z-index: 0;
-}
-.content-rail {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  width: var(--content-rail-width);
-  overflow: hidden;
-}
-.content-rail-left  { left: max(0px, calc(var(--page-pad) - var(--content-rail-width))); }
-.content-rail-right { right: max(0px, calc(var(--page-pad) - var(--content-rail-width))); }
-
-@media (--tablet-down) {
-  :root { --content-rail-width: var(--dot-spacing); }
-}
-
-/* Mobile: sections switch from page-wrapper padding to their own
-   left/right padding (16px, then 14px below --mobile), so keep
-   --page-pad in step with that real gutter — otherwise the rail's
-   flush-against-content math drifts and it ends up overlapping text.
-   The rail itself also shrinks to a slim, scrollbar-width strip. */
-@media (--nav-collapse) {
-  :root {
-    --page-pad: 16px;
-    --content-rail-width: 5px;
-  }
-}
-@media (--mobile) {
-  :root {
-    --page-pad: 14px;
-    --content-rail-width: 4px;
-  }
 }
 
 .screen-line-top    { position: relative; }
@@ -1054,10 +1011,10 @@ html.light .nav-root.scrolled {
   .hero-grid { grid-template-columns: 1fr !important; }
   .nav-inner { padding: 0 14px; }
   .page-wrapper { border-left: none !important; border-right: none !important; }
-  section { padding-left: 16px; padding-right: 16px; }
+  section { padding-left: 8px; padding-right: 8px; }
   section#about { padding-left: 0 !important; padding-right: 0 !important; }
   .about-panels { grid-template-columns: 1fr !important; }
-  .skills-strip-offset { margin-left: -16px !important; margin-right: -16px !important; }
+  .skills-strip-offset { margin-left: -8px !important; margin-right: -8px !important; }
   .stat-badges-row { flex-wrap: wrap; gap: 8px !important; }
   .stat-badge { min-width: calc(50% - 4px) !important; padding: 13px 16px !important; }
   .contact-cols { flex-direction: column !important; }
@@ -1081,9 +1038,9 @@ html.light .nav-root.scrolled {
 }
 
 @media (--mobile) {
-  section, .section-inner { padding-left: 14px !important; padding-right: 14px !important; }
+  section, .section-inner { padding-left: 6px !important; padding-right: 6px !important; }
   section#about { padding-left: 0 !important; padding-right: 0 !important; }
-  .skills-strip-offset { margin-left: -14px !important; margin-right: -14px !important; }
+  .skills-strip-offset { margin-left: -6px !important; margin-right: -6px !important; }
   .proj-tags { flex-wrap: wrap; }
   .bottom-grid { grid-template-columns: 1fr !important; }
   .contact-cols { flex-direction: column !important; }
@@ -1094,7 +1051,7 @@ html.light .nav-root.scrolled {
   .contrib-wrap { overflow-x: auto; padding-bottom: 6px; }
   .overview-cols { flex-direction: column !important; }
   .about-para { text-align: justify !important; text-justify: inter-word !important; }
-  .about-content { padding-left: 14px !important; padding-right: 14px !important; }
+  .about-content { padding-left: 6px !important; padding-right: 6px !important; }
 }
 
 @media (--nav-tiny) {

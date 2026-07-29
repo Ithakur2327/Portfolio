@@ -3,7 +3,6 @@ import Link from "next/link";
 import { Navbar } from "@/components/Navbar";
 import { SectionTitleIcon } from "@/components/SectionIcon";
 import { ProjectsGrid } from "@/components/ProjectsGrid";
-import { ContentRails } from "@/components/DotBackground";
 import { PROJECTS } from "@/lib/projects-data";
 import { mq } from "@/lib/breakpoints";
 
@@ -66,7 +65,6 @@ export default function ProjectsPage() {
 
             <ProjectsGrid projects={PROJECTS} wide />
           </div>
-          <ContentRails />
         </div>
       </main>
     </>

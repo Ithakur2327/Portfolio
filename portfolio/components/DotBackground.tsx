@@ -19,7 +19,6 @@ function DotCanvas({
   interactive,
   maxCols,
   colGap,
-  align,
   stopBeforeSelector,
 }: {
   dotColor: string;
@@ -27,7 +26,6 @@ function DotCanvas({
   interactive: boolean;
   maxCols?: number;
   colGap?: number;
-  align?: "start" | "end" | "center";
   stopBeforeSelector?: string;
 }) {
   const ref = useRef<HTMLCanvasElement>(null);
@@ -53,6 +51,7 @@ function DotCanvas({
 
     let w = 0, h = 0, dpr = 1;
     let drawH = 0; // vertical extent actually filled with dots (may stop before container's full height)
+    let containerLeft = 0, containerTop = 0; // viewport-relative, used to phase-align the dot grid globally
     let dotPositions: Float32Array | null = null;
     let staticCanvas: OffscreenCanvas | null = null;
     let staticCtx: OffscreenCanvasRenderingContext2D | null = null;
@@ -63,6 +62,17 @@ function DotCanvas({
     let colorDirty = false;
     let idleTimer: ReturnType<typeof setTimeout> | null = null;
     const mouse = { x: -9999, y: -9999, active: false };
+
+    // Smallest non-negative local offset such that (globalOrigin + offset)
+    // lands on a multiple of `step`, measured from the viewport's edge.
+    // Using this instead of a container-local offset means every DotCanvas
+    // on the page — rail, divider, or hero background — shares one grid,
+    // so wherever a full-width divider crosses the narrow rail, the dots
+    // line up exactly instead of clashing or looking offset.
+    const phaseOffset = (globalOrigin: number, step: number) => {
+      const r = ((globalOrigin % step) + step) % step;
+      return (step - r) % step;
+    };
 
     const getStopY = (): number => {
       if (!stopBeforeSelector) return h;
@@ -78,26 +88,20 @@ function DotCanvas({
 
     const bakeDots = () => {
       drawH = getStopY();
-      const oy = (drawH % SPACING) / 2;
+      const oy = phaseOffset(containerTop, SPACING);
       const rows = Math.ceil(drawH / SPACING) + 2;
 
       let xs: number[];
       if (maxCols && maxCols > 0) {
+        // Same global grid step as everything else (so it merges seamlessly
+        // with full-width dividers/backgrounds), just capped to maxCols
+        // columns for the narrow rail.
         const gap = colGap ?? SPACING;
-        if (align === "end") {
-          // Flush against the right/inner edge of the rail (touching the card).
-          xs = Array.from({ length: maxCols }, (_, c) => w - c * gap).reverse();
-        } else if (align === "start") {
-          // Flush against the left/inner edge of the rail (touching the card).
-          xs = Array.from({ length: maxCols }, (_, c) => c * gap);
-        } else {
-          // Centered — same result regardless of which side the rail is on.
-          const totalSpan = (maxCols - 1) * gap;
-          const startX = (w - totalSpan) / 2;
-          xs = Array.from({ length: maxCols }, (_, c) => startX + c * gap);
-        }
+        const ox = phaseOffset(containerLeft, gap);
+        xs = [];
+        for (let x = ox; x <= w + gap && xs.length < maxCols; x += gap) xs.push(x);
       } else {
-        const ox = (w % SPACING) / 2;
+        const ox = phaseOffset(containerLeft, SPACING);
         xs = [];
         for (let x = ox; x <= w + SPACING; x += SPACING) xs.push(x);
       }
@@ -265,7 +269,7 @@ function DotCanvas({
       if (raf)       cancelAnimationFrame(raf);
       if (idleTimer) clearTimeout(idleTimer);
     };
-  }, [interactive, maxCols, colGap, align, stopBeforeSelector]);
+  }, [interactive, maxCols, colGap, stopBeforeSelector]);
 
   return (
     <canvas
@@ -328,8 +332,8 @@ export function ContentRails() {
           interactive
           dotColor={dotColor}
           activeDotColor={activeDotColor}
-          maxCols={1}
-          align="end"
+          maxCols={2}
+          colGap={2.5}
           stopBeforeSelector="footer, .site-footer"
         />
       </div>
@@ -338,8 +342,8 @@ export function ContentRails() {
           interactive
           dotColor={dotColor}
           activeDotColor={activeDotColor}
-          maxCols={1}
-          align="start"
+          maxCols={2}
+          colGap={2.5}
           stopBeforeSelector="footer, .site-footer"
         />
       </div>

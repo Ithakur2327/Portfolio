@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Navbar } from "@/components/Navbar";
 import { ContactPageForm } from "@/components/ContactPageForm";
-import { ContentRails } from "@/components/DotBackground";
 
 export const metadata: Metadata = {
   title: "Contact — Indresh Thakur",
@@ -75,7 +74,6 @@ export default function ContactPage() {
               </div>
             </div>
           </div>
-          <ContentRails />
         </div>
       </main>
     </>

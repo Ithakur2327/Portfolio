@@ -3,7 +3,7 @@ import { HeroSection }     from "@/components/HeroSection";
 import { SparklesBridge }  from "@/components/SparklesBridge";
 import { AboutSection }    from "@/components/AboutSection";
 import { StatsSection }    from "@/components/StatsSection";
-import { DotDivider, ContentRails } from "@/components/DotBackground";
+import { DotDivider } from "@/components/DotBackground";
 import { SkillsSection }   from "@/components/SkillsSection";
 import { ProjectsSection } from "@/components/ProjectsSection";
 import { EducationSection} from "@/components/EducationSection";
@@ -46,7 +46,6 @@ export default function Home() {
           <DotDivider />
           <CertificationsSection />
           <Footer />
-          <ContentRails />
         </div>
       </main>
       <ScrollFadeAndTop />
