@@ -471,7 +471,7 @@ function LeetCodeStats({ username = "IThakur09" }: { username?: string }) {
             </div>
           </div>
           <div
-            style={{ flex: 1, width: "100%", overflowX: "auto", overflowY: "visible", WebkitOverflowScrolling: "touch", scrollbarWidth: "thin", scrollbarColor: "rgba(255,161,22,0.3) transparent" }}
+            style={{ flex: 1, width: "100%", overflowX: "auto", overflowY: "visible", WebkitOverflowScrolling: "touch", scrollbarWidth: "thin", scrollbarColor: "rgba(10,186,181,0.45) transparent" }}
             onMouseLeave={() => setHovered(null)}
           >
             {gridContent}
@@ -620,7 +620,7 @@ function GitHubGraph({ username = "Ithakur2327" }: { username?: string }) {
             {isLive ? "2026 contributions" : "2026 activity (preview)"}
           </div>
           <div
-            style={{ flex: 1, width: "100%", overflowX: "auto", overflowY: "visible", WebkitOverflowScrolling: "touch", scrollbarWidth: "thin", scrollbarColor: "rgba(255,161,22,0.3) transparent" }}
+            style={{ flex: 1, width: "100%", overflowX: "auto", overflowY: "visible", WebkitOverflowScrolling: "touch", scrollbarWidth: "thin", scrollbarColor: "rgba(10,186,181,0.45) transparent" }}
             onMouseLeave={() => setHovered(null)}
           >
             <div style={{ display: "inline-flex", flexDirection: "column", paddingBottom: 4, minWidth: "max-content" }}>
@@ -817,7 +817,7 @@ export function StatsSection() {
 
         .stat-card-3d ::-webkit-scrollbar { height: 4px; }
         .stat-card-3d ::-webkit-scrollbar-track { background: transparent; }
-        .stat-card-3d ::-webkit-scrollbar-thumb { border-radius: 2px; background: rgba(128,128,128,0.25); }
+        .stat-card-3d ::-webkit-scrollbar-thumb { border-radius: 2px; background: rgba(10,186,181,0.45); }
       `}</style>
 
       <section id="stats" ref={statsRef} className={revealClass}>
