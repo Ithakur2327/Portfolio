@@ -1005,8 +1005,6 @@ html.light .nav-root.scrolled {
   .hero-grid { grid-template-columns: 1fr !important; }
   .nav-inner { padding: 0 14px; }
   .page-wrapper { border-left: none !important; border-right: none !important; }
-  section { padding-left: 8px; padding-right: 8px; }
-  section#about { padding-left: 0 !important; padding-right: 0 !important; }
   .about-panels { grid-template-columns: 1fr !important; }
   .skills-strip-offset { margin-left: -8px !important; margin-right: -8px !important; }
   .stat-badges-row { flex-wrap: wrap; gap: 8px !important; }
@@ -1032,8 +1030,6 @@ html.light .nav-root.scrolled {
 }
 
 @media (--mobile) {
-  section, .section-inner { padding-left: 6px !important; padding-right: 6px !important; }
-  section#about { padding-left: 0 !important; padding-right: 0 !important; }
   .skills-strip-offset { margin-left: -6px !important; margin-right: -6px !important; }
   .proj-tags { flex-wrap: wrap; }
   .bottom-grid { grid-template-columns: 1fr !important; }
@@ -1045,7 +1041,6 @@ html.light .nav-root.scrolled {
   .contrib-wrap { overflow-x: auto; padding-bottom: 6px; }
   .overview-cols { flex-direction: column !important; }
   .about-para { text-align: justify !important; text-justify: inter-word !important; }
-  .about-content { padding-left: 6px !important; padding-right: 6px !important; }
 }
 
 @media (--nav-tiny) {
