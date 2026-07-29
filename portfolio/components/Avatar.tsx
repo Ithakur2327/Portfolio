@@ -60,6 +60,20 @@ export function Avatar({ version }: { version?: string } = {}) {
     return () => window.removeEventListener("intro:flightStart", onDone);
   }, [introDone]);
 
+  // Kick off the avatar image downloads immediately on mount instead of
+  // waiting for the intro overlay to finish — the WebGL/shader setup below
+  // still waits for introDone (to avoid contending with the intro's ring
+  // animation), but there's no reason the *network fetch* needs to wait
+  // too. Prefetching here means the images are already decoded/cached by
+  // the time the real effect runs, so the avatar doesn't visibly pop in
+  // late.
+  useEffect(() => {
+    const d = new window.Image();
+    d.src = version ? `/avatar-dark.jpg?v=${version}` : "/avatar-dark.jpg";
+    const l = new window.Image();
+    l.src = version ? `/avatar-light.jpg?v=${version}` : "/avatar-light.jpg";
+  }, [version]);
+
   useEffect(() => {
     if (!introDone) return;
     const canvas = canvasRef.current;
@@ -75,7 +89,7 @@ export function Avatar({ version }: { version?: string } = {}) {
     const DPR = Math.min(window.devicePixelRatio || 1, 3);
     const rect0 = canvas.getBoundingClientRect();
     const displayed = Math.round(Math.max(rect0.width, rect0.height)) || 300;
-    let SIZE = Math.min(1024, Math.max(560, displayed) * DPR);
+    let SIZE = Math.min(1280, Math.max(560, displayed) * DPR);
     canvas.width  = SIZE;
     canvas.height = SIZE;
 
@@ -406,7 +420,7 @@ export function Avatar({ version }: { version?: string } = {}) {
       const r = entries[0]?.contentRect;
       if (!r) return;
       const displayedNow = Math.round(Math.max(r.width, r.height));
-      const next = Math.min(1024, Math.max(560, displayedNow) * DPR);
+      const next = Math.min(1280, Math.max(560, displayedNow) * DPR);
       if (Math.abs(next - SIZE) < 2) return; // ignore sub-pixel noise
       SIZE = next;
       canvas.width  = SIZE;
