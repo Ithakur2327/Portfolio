@@ -17,9 +17,7 @@ export function ProjectsGrid({ projects, visible = true, mobileMax, wide }: {
   wide?: boolean;
 }) {
   const [active, setActive] = useState<Project | null>(null);
-  const [activeIndex, setActiveIndex] = useState(0);
-  // Desktop/laptop gets the hover-driven image reveal; tablet and mobile
-  // get the scroll-triggered version instead (see ProjectCard).
+  // Desktop/laptop gets the hover-driven image reveal and morph animation; tablet and mobile get the sheet
   const isDesktop = useIsLaptopUp();
 
   return (
@@ -52,13 +50,13 @@ export function ProjectsGrid({ projects, visible = true, mobileMax, wide }: {
               index={i}
               visible={visible}
               isDesktop={isDesktop}
-              onOpen={() => { setActive(proj); setActiveIndex(i); }}
+              onOpen={() => setActive(proj)}
             />
           ))}
         </div>
 
         <AnimatePresence>
-          {active && <ProjectModal key="modal" proj={active} index={activeIndex} onClose={() => setActive(null)} />}
+          {active && <ProjectModal key="modal" proj={active} isDesktop={isDesktop} onClose={() => setActive(null)} />}
         </AnimatePresence>
       </LayoutGroup>
     </>

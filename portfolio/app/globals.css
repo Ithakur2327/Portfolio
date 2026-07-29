@@ -208,10 +208,10 @@ a, button, [role="button"] {
    width is controlled from one place.
 ═══════════════════════════════════════════════════════════ */
 :root {
-  --content-width: 900px;
+  --content-width: 1000px;
   --content-width-inset: calc(var(--content-width) - 32px);
   --dot-spacing: 4.5px;
-  --content-rail-width: calc(var(--dot-spacing) * 2);
+  --content-rail-width: var(--dot-spacing);
   --page-pad: 16px;
 }
 .page-wrapper {
@@ -277,8 +277,22 @@ a, button, [role="button"] {
   :root { --content-rail-width: var(--dot-spacing); }
 }
 
+/* Mobile: sections switch from page-wrapper padding to their own
+   left/right padding (16px, then 14px below --mobile), so keep
+   --page-pad in step with that real gutter — otherwise the rail's
+   flush-against-content math drifts and it ends up overlapping text.
+   The rail itself also shrinks to a slim, scrollbar-width strip. */
 @media (--nav-collapse) {
-  .content-rails { display: none; }
+  :root {
+    --page-pad: 16px;
+    --content-rail-width: 5px;
+  }
+}
+@media (--mobile) {
+  :root {
+    --page-pad: 14px;
+    --content-rail-width: 4px;
+  }
 }
 
 .screen-line-top    { position: relative; }

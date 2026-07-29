@@ -6,7 +6,7 @@ import Image from "next/image";
 import type { Project } from "@/lib/projects-data";
 import { TECH_MAP } from "@/lib/projects-data";
 import { useTheme } from "./ThemeProvider";
-import { BP, mq } from "@/lib/breakpoints";
+import { mq } from "@/lib/breakpoints";
 
 const MONO = "'Geist Mono', 'SF Mono', monospace";
 const SF   = "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', sans-serif";
@@ -267,18 +267,16 @@ export function ProjectCard({ proj, index, visible, isDesktop, onOpen }: {
 }
 
 // Modal — expanded shared-layout counterpart of the card
-export function ProjectModal({ proj, onClose, index = 0 }: { proj: Project; onClose: () => void; index?: number }) {
+export function ProjectModal({ proj, onClose, isDesktop }: { proj: Project; onClose: () => void; isDesktop: boolean }) {
   const modalRef = useRef<HTMLDivElement>(null);
   const closeBtnRef = useRef<HTMLButtonElement>(null);
   const { theme } = useTheme();
   const isDark = theme === "dark";
-  // Mobile uses a plain slide-up sheet instead of the card-morph animation
-  const [isMobile] = useState(
-    () => typeof window !== "undefined" && window.innerWidth <= BP.mobileMax
-  );
-  // Lightweight tween on mobile — cheaper than a spring on low-end phones
-  const mobileTransition = { type: "tween" as const, duration: 0.22, ease: [0.22, 1, 0.36, 1] as const };
-  const lid = (id: string) => (isMobile ? undefined : id);
+  // Tablet and mobile both get the lightweight slide-up/down sheet instead of the card-morph animation
+  const sheet = !isDesktop;
+  // Lightweight tween — cheaper than a spring, and identical for open/close
+  const sheetTransition = { type: "tween" as const, duration: 0.22, ease: [0.22, 1, 0.36, 1] as const };
+  const lid = (id: string) => (sheet ? undefined : id);
 
   useEffect(() => {
     document.documentElement.style.overflow = "hidden";
@@ -361,10 +359,10 @@ export function ProjectModal({ proj, onClose, index = 0 }: { proj: Project; onCl
           aria-modal="true"
           aria-label={`${proj.name} project details`}
           layoutId={lid(`card-container-${proj.name}`)}
-          initial={isMobile ? { y: "100%" } : false}
-          animate={isMobile ? { y: 0 } : undefined}
-          exit={isMobile ? { opacity: 0 } : undefined}
-          transition={isMobile ? mobileTransition : SPRING}
+          initial={sheet ? { y: "100%" } : false}
+          animate={sheet ? { y: 0 } : undefined}
+          exit={sheet ? { y: "100%" } : undefined}
+          transition={sheet ? sheetTransition : SPRING}
           className="pm-shell"
           style={{
             pointerEvents: "auto",
@@ -382,6 +380,7 @@ export function ProjectModal({ proj, onClose, index = 0 }: { proj: Project; onCl
             .pm-overlay {
               backdrop-filter: blur(6px);
               -webkit-backdrop-filter: blur(6px);
+              contain: strict;
             }
 
             /* Shell is the layout-animated frame — it never scrolls itself */
@@ -391,8 +390,9 @@ export function ProjectModal({ proj, onClose, index = 0 }: { proj: Project; onCl
               max-height: 92vh;
               will-change: transform;
               transform: translateZ(0);
+              contain: layout paint;
             }
-            ${mq.tabletSplitUp} { .pm-shell { max-height: 82vh; } }
+            ${mq.laptopUp} { .pm-shell { max-height: 82vh; } }
 
             /* Body is a plain, non-layout-animated div that actually scrolls */
             .pm-body {
@@ -424,38 +424,60 @@ export function ProjectModal({ proj, onClose, index = 0 }: { proj: Project; onCl
             .proj-link-btn:hover { transform: translateY(-1.5px); opacity: 0.88; }
             .proj-link-btn:active { transform: translateY(0) scale(0.98); }
 
+            .pm-media-col {
+              display: flex;
+              flex-direction: column;
+              gap: 12px;
+            }
+            .pm-media-links {
+              display: flex;
+              flex-direction: column;
+              gap: 12px;
+              padding: 0 20px 20px;
+            }
+            .pm-image-frame {
+              width: 100%;
+              aspect-ratio: 16 / 9;
+              position: sticky;
+              top: 0;
+              z-index: 2;
+              overflow: hidden;
+              border-radius: 0;
+              flex-shrink: 0;
+            }
+
             /* Desktop/laptop: horizontal split — media left, info right */
-            ${mq.tabletSplitUp} {
+            ${mq.laptopUp} {
               .pm-body { flex-direction: row; }
               .pm-media-col {
                 width: 45%; flex-shrink: 0;
-                display: flex; flex-direction: column; gap: 14px;
+                gap: 14px;
                 padding: 24px; border-right: 1px solid var(--border);
                 overflow-y: auto; scrollbar-width: none;
               }
               .pm-media-col::-webkit-scrollbar { display: none; }
+              .pm-media-links { padding: 0; }
               .pm-info-col {
                 flex: 1; min-width: 0;
                 padding: 24px; overflow-y: auto; scrollbar-width: none;
                 display: flex; flex-direction: column; gap: 16px;
               }
               .pm-info-col::-webkit-scrollbar { display: none; }
-              .pm-image-frame { aspect-ratio: 4 / 3; }
+              .pm-image-frame {
+                position: relative;
+                top: auto; z-index: auto;
+                border-radius: 9px;
+              }
             }
           `}</style>
 
           <div className="pm-body">
-          {/* Media column: image + links + stack */}
-          <div className="pm-media-col" style={{ padding: 20, display: "flex", flexDirection: "column", gap: 12 }}>
-            {/* Image fills the complete media area — no frame/box around it */}
+          {/* Media column: sticky full-width image, then scrollable links + stack */}
+          <div className="pm-media-col">
             <motion.div
               layoutId={lid(`card-banner-${proj.name}`)}
               transition={SPRING}
               className="pm-image-frame"
-              style={{
-                width: "100%", aspectRatio: "16 / 9", position: "relative",
-                overflow: "hidden", borderRadius: 9, flexShrink: 0,
-              }}
             >
               <motion.div
                 layoutId={lid(`card-banner-image-${proj.name}`)}
@@ -474,6 +496,7 @@ export function ProjectModal({ proj, onClose, index = 0 }: { proj: Project; onCl
               </motion.div>
             </motion.div>
 
+            <div className="pm-media-links">
             <motion.div layoutId={lid(`card-links-${proj.name}`)} layout="position" transition={SPRING}>
               <ProjectLinkButtons proj={proj} />
             </motion.div>
@@ -494,9 +517,9 @@ export function ProjectModal({ proj, onClose, index = 0 }: { proj: Project; onCl
                   return (
                     <motion.span
                       key={tag}
-                      initial={isMobile ? false : { opacity: 0, y: 4 }}
+                      initial={sheet ? false : { opacity: 0, y: 4 }}
                       animate={{ opacity: 1, y: 0 }}
-                      transition={isMobile ? { duration: 0 } : { delay: 0.05 + ti * 0.02, duration: 0.2 }}
+                      transition={sheet ? { duration: 0 } : { delay: 0.05 + ti * 0.02, duration: 0.2 }}
                       className="pm-tag"
                       style={{ color: "var(--tag-text)", background: "var(--tag-bg)", border: "1px solid var(--tag-border)" }}
                     >
@@ -508,6 +531,7 @@ export function ProjectModal({ proj, onClose, index = 0 }: { proj: Project; onCl
                 })}
               </div>
             </motion.div>
+            </div>
           </div>
 
           {/* Info column: title, description, features */}
@@ -523,9 +547,9 @@ export function ProjectModal({ proj, onClose, index = 0 }: { proj: Project; onCl
                   {proj.name}
                 </motion.h2>
                 <motion.span
-                  initial={isMobile ? false : { opacity: 0, y: 5 }}
+                  initial={sheet ? false : { opacity: 0, y: 5 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={isMobile ? { duration: 0 } : { delay: 0.15 }}
+                  transition={sheet ? { duration: 0 } : { delay: 0.15 }}
                   style={{ fontSize: 14, color: "var(--text-muted)", fontFamily: SF }}
                 >
                   Created: {proj.year}
@@ -563,9 +587,9 @@ export function ProjectModal({ proj, onClose, index = 0 }: { proj: Project; onCl
             {/* Features — only shown in the expanded modal view */}
             {proj.features?.length > 0 && (
               <motion.div
-                initial={isMobile ? false : { opacity: 0, y: 10 }}
+                initial={sheet ? false : { opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={isMobile ? { duration: 0 } : { delay: 0.18, duration: 0.3 }}
+                transition={sheet ? { duration: 0 } : { delay: 0.18, duration: 0.3 }}
                 style={{ display: "flex", flexDirection: "column", gap: 10 }}
               >
                 <span style={{ fontSize: 14, fontWeight: 600, color: "var(--text-primary)", fontFamily: SF }}>
@@ -575,9 +599,9 @@ export function ProjectModal({ proj, onClose, index = 0 }: { proj: Project; onCl
                   {proj.features.map((feature, i) => (
                     <motion.li
                       key={i}
-                      initial={isMobile ? false : { opacity: 0, x: -10 }}
+                      initial={sheet ? false : { opacity: 0, x: -10 }}
                       animate={{ opacity: 1, x: 0 }}
-                      transition={isMobile ? { duration: 0 } : { delay: 0.22 + i * 0.035 }}
+                      transition={sheet ? { duration: 0 } : { delay: 0.22 + i * 0.035 }}
                       style={{ display: "flex", alignItems: "flex-start", gap: 8, fontSize: 14, color: "var(--text-secondary)", lineHeight: 1.55, fontFamily: SF }}
                     >
                       <span style={{ color: proj.accent, marginTop: 1 }}>•</span>

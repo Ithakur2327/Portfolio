@@ -19,6 +19,7 @@ function DotCanvas({
   interactive,
   maxCols,
   colGap,
+  align,
   stopBeforeSelector,
 }: {
   dotColor: string;
@@ -26,6 +27,7 @@ function DotCanvas({
   interactive: boolean;
   maxCols?: number;
   colGap?: number;
+  align?: "start" | "end" | "center";
   stopBeforeSelector?: string;
 }) {
   const ref = useRef<HTMLCanvasElement>(null);
@@ -81,12 +83,19 @@ function DotCanvas({
 
       let xs: number[];
       if (maxCols && maxCols > 0) {
-        // Exact, centered column count for narrow rails (no overscan),
-        // with its own tighter gap independent of the row spacing.
         const gap = colGap ?? SPACING;
-        const totalSpan = (maxCols - 1) * gap;
-        const startX = (w - totalSpan) / 2;
-        xs = Array.from({ length: maxCols }, (_, c) => startX + c * gap);
+        if (align === "end") {
+          // Flush against the right/inner edge of the rail (touching the card).
+          xs = Array.from({ length: maxCols }, (_, c) => w - c * gap).reverse();
+        } else if (align === "start") {
+          // Flush against the left/inner edge of the rail (touching the card).
+          xs = Array.from({ length: maxCols }, (_, c) => c * gap);
+        } else {
+          // Centered — same result regardless of which side the rail is on.
+          const totalSpan = (maxCols - 1) * gap;
+          const startX = (w - totalSpan) / 2;
+          xs = Array.from({ length: maxCols }, (_, c) => startX + c * gap);
+        }
       } else {
         const ox = (w % SPACING) / 2;
         xs = [];
@@ -256,7 +265,7 @@ function DotCanvas({
       if (raf)       cancelAnimationFrame(raf);
       if (idleTimer) clearTimeout(idleTimer);
     };
-  }, [interactive, maxCols, colGap, stopBeforeSelector]);
+  }, [interactive, maxCols, colGap, align, stopBeforeSelector]);
 
   return (
     <canvas
@@ -319,8 +328,8 @@ export function ContentRails() {
           interactive
           dotColor={dotColor}
           activeDotColor={activeDotColor}
-          maxCols={2}
-          colGap={2.5}
+          maxCols={1}
+          align="end"
           stopBeforeSelector="footer, .site-footer"
         />
       </div>
@@ -329,8 +338,8 @@ export function ContentRails() {
           interactive
           dotColor={dotColor}
           activeDotColor={activeDotColor}
-          maxCols={2}
-          colGap={2.5}
+          maxCols={1}
+          align="start"
           stopBeforeSelector="footer, .site-footer"
         />
       </div>
