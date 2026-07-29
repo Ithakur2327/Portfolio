@@ -1014,7 +1014,7 @@ html.light .nav-root.scrolled {
   section { padding-left: 0; padding-right: 0; }
   section#about { padding-left: 0 !important; padding-right: 0 !important; }
   .about-panels { grid-template-columns: 1fr !important; }
-  .skills-strip-offset { margin-left: -8px !important; margin-right: -8px !important; }
+  .skills-strip-offset { margin-left: 0 !important; margin-right: 0 !important; }
   .stat-badges-row { flex-wrap: wrap; gap: 8px !important; }
   .stat-badge { min-width: calc(50% - 4px) !important; padding: 13px 16px !important; }
   .contact-cols { flex-direction: column !important; }
@@ -1038,9 +1038,9 @@ html.light .nav-root.scrolled {
 }
 
 @media (--mobile) {
-  section, .section-inner { padding-left: 6px !important; padding-right: 6px !important; }
+  section, .section-inner { padding-left: 0 !important; padding-right: 0 !important; }
   section#about { padding-left: 0 !important; padding-right: 0 !important; }
-  .skills-strip-offset { margin-left: -6px !important; margin-right: -6px !important; }
+  .skills-strip-offset { margin-left: 0 !important; margin-right: 0 !important; }
   .proj-tags { flex-wrap: wrap; }
   .bottom-grid { grid-template-columns: 1fr !important; }
   .contact-cols { flex-direction: column !important; }

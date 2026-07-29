@@ -139,13 +139,13 @@ export function ProjectCard({ proj, index, visible, isDesktop, onOpen }: {
       >
         <svg width="100%" height="100%" aria-hidden="true" style={{ position: "absolute", inset: 0, pointerEvents: "none" }}>
           <rect
-            x="0.75" y="0.75"
-            width="calc(100% - 1.5px)" height="calc(100% - 1.5px)"
+            x="0.6" y="0.6"
+            width="calc(100% - 1.2px)" height="calc(100% - 1.2px)"
             rx="8" ry="8"
             fill="none"
-            stroke={index % 2 === 0 ? "rgba(10,186,181,0.6)" : "rgba(212,175,55,0.6)"}
-            strokeWidth="1"
-            strokeDasharray="3 2"
+            stroke={index % 2 === 0 ? "rgba(10,186,181,0.32)" : "rgba(212,175,55,0.32)"}
+            strokeWidth="0.7"
+            strokeDasharray="2 1.3"
           />
         </svg>
         <motion.div
@@ -159,7 +159,7 @@ export function ProjectCard({ proj, index, visible, isDesktop, onOpen }: {
             position: "relative", overflow: "hidden",
           }}
         >
-          {/* Owns the hover/scroll reveal transform, kept separate from the layoutId'd image below */}
+          {/* Owns the hover/scroll reveal transform, kept separate from the image below */}
           <motion.div
             initial={false}
             animate={{ y: shown ? "0%" : "55%", rotate: shown ? 0 : -8 }}
@@ -176,7 +176,7 @@ export function ProjectCard({ proj, index, visible, isDesktop, onOpen }: {
                 src={proj.img}
                 alt={proj.name}
                 fill
-                quality={100}
+                quality={80}
                 sizes="(max-width: 640px) 96vw, (max-width: 1024px) 48vw, 520px"
                 unoptimized={proj.img.endsWith(".svg")}
                 style={{ objectFit: "contain" }}
@@ -363,7 +363,7 @@ export function ProjectModal({ proj, onClose, isDesktop }: { proj: Project; onCl
           src={proj.img}
           alt={proj.name}
           fill
-          quality={100}
+          quality={80}
           sizes="(max-width: 767px) 100vw, 45vw"
           unoptimized={proj.img.endsWith(".svg")}
           style={{ objectFit: "contain" }}

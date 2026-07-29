@@ -32,7 +32,8 @@ export function ProjectsSection() {
           <div style={{ height: 1, background: "var(--border)", margin: "20px 0 20px" }} />
 
           <style suppressHydrationWarning>{`
-            ${mq.mobile} { .proj-inner { padding: 0 16px 28px !important; } }
+            ${mq.navCollapse} { .proj-inner { padding: 0 22px 34px !important; } }
+            ${mq.mobile} { .proj-inner { padding: 0 14px 28px !important; } }
           `}</style>
 
           <ProjectsGrid projects={featured} visible={visible} mobileMax={MOBILE_COUNT} />

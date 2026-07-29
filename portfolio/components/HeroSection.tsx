@@ -317,6 +317,7 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
           }
           .h-info-pad {
             padding: 20px 28px 18px !important;
+            --info-col-gap: 60px;
           }
           .h-grid {
             gap: 14px 60px !important;
@@ -462,8 +463,8 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
           .h-info-wrap {
             border-left: none !important;
             border-right: none !important;
-            margin-left: 12px !important;
-            margin-right: 12px !important;
+            margin-left: 6px !important;
+            margin-right: 6px !important;
           }
           .hbg-wrap, .h-info-box {
             border-radius: 8px !important;
@@ -476,7 +477,7 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
       >
         <div style={{ position: "relative", left: "50%", marginLeft: "-50vw", width: "100vw" }}>
           <div style={{ position: "absolute", inset: 0, zIndex: 0 }}>
-            <DotField />
+            <DotField interactive={false} />
           </div>
           <div style={{ position: "relative", zIndex: 1 }}>
 
@@ -503,7 +504,7 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
               <div style={{flex:1}}/>
               <div className="h-name-row" style={{padding:"20px 20px 0", marginBottom:"0px", gap:6}}>
                 <h1 style={{
-                  fontSize:"clamp(19px,2.7vw,26px)", fontWeight:900,
+                  fontSize:"clamp(16px,2vw,19px)", fontWeight:900,
                   letterSpacing:"0.02em", color:"var(--text-primary)",
                   lineHeight:1, margin:0,
                   fontFamily:"'Geist Pixel Square','Geist Mono',monospace", display:"inline-block",
@@ -520,9 +521,7 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
           </div>
         </div>
 
-        <div style={{height:22, maxWidth:CW, margin:"0 auto"}}/>
-
-        <div style={{height:22, maxWidth:CW, margin:"0 auto"}}/>
+        <div style={{height:38, maxWidth:CW, margin:"0 auto"}}/>
 
         <div className="h-info-wrap">
           <HoverBorderGradient>
