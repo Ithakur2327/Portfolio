@@ -420,9 +420,9 @@ function LeetCodeStats({ username = "IThakur09" }: { username?: string }) {
 
       {loading ? <Spin color="#FFA116" /> : (
         <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
-          <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: 8, marginBottom: 4 }}>
+          <div className="lc-header-stats" style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: 8, marginBottom: 4 }}>
             <span style={{ fontSize: 11, fontWeight: 700, color: "var(--text-primary)", fontFamily: MONO, flexShrink: 0 }}>2026 activity <span style={{ color: "var(--text-muted)", fontWeight: 500 }}>—</span></span>
-            <div style={{ display: "flex", alignItems: "center", gap: 5, flexWrap: "wrap" }}>
+            <div className="lc-header-stats-chips" style={{ display: "flex", alignItems: "center", gap: 5, flexWrap: "wrap" }}>
               <StatChip
                 label="Solved" solved={d.totalSolved} color={solvedColor} bold
                 onEnter={e => handleStatEnter(e, "Total Solved", d.totalSolved, LC_TOTAL)}
@@ -823,6 +823,8 @@ export function StatsSection() {
         ${mq.mobile} {
           .about-content  { padding: 0 14px 28px; }
           .stat-card-3d   { width: 100% !important; min-width: 0 !important; }
+          .lc-header-stats { flex-direction: column; align-items: flex-start !important; }
+          .lc-header-stats-chips { flex-shrink: 0; width: 100%; }
         }
 
         .stat-card-3d ::-webkit-scrollbar { height: 4px; }
