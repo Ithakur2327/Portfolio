@@ -132,10 +132,10 @@ export function AboutSection() {
         }
         html.light .about-box { border-color: rgba(0,0,0,0.30); }
         ${mq.navCollapse} {
-          .about-box { padding: 10px 8px; }
+          .about-box { padding: 16px 16px; }
         }
         ${mq.mobile} {
-          .about-box { padding: 8px 6px; border-radius: 8px; }
+          .about-box { padding: 14px 12px; border-radius: 8px; }
         }
       `}</style>
 
