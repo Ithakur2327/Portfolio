@@ -174,8 +174,9 @@ img, svg, canvas {
 ═══════════════════════════════════════════════════════════ */
 ::-webkit-scrollbar       { width: var(--scrollbar-w); }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #81D8D0; border-radius: 2px; }
-* { scrollbar-width: thin; scrollbar-color: #81D8D0 transparent; }
+::-webkit-scrollbar-thumb { background: rgba(129, 216, 208, 0.35); border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(129, 216, 208, 0.55); }
+* { scrollbar-width: thin; scrollbar-color: rgba(129, 216, 208, 0.35) transparent; }
 
 /* ═══════════════════════════════════════════════════════════
    SELECTION & BASE LINKS
