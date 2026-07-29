@@ -17,16 +17,10 @@ function DotCanvas({
   dotColor,
   activeDotColor,
   interactive,
-  maxCols,
-  colGap,
-  stopBeforeSelector,
 }: {
   dotColor: string;
   activeDotColor: string;
   interactive: boolean;
-  maxCols?: number;
-  colGap?: number;
-  stopBeforeSelector?: string;
 }) {
   const ref = useRef<HTMLCanvasElement>(null);
   const dotColorRef = useRef(dotColor);
@@ -50,8 +44,6 @@ function DotCanvas({
     if (!ctx) return;
 
     let w = 0, h = 0, dpr = 1;
-    let drawH = 0; // vertical extent actually filled with dots (may stop before container's full height)
-    let containerLeft = 0, containerTop = 0; // viewport-relative, used to phase-align the dot grid globally
     let dotPositions: Float32Array | null = null;
     let staticCanvas: OffscreenCanvas | null = null;
     let staticCtx: OffscreenCanvasRenderingContext2D | null = null;
@@ -63,53 +55,16 @@ function DotCanvas({
     let idleTimer: ReturnType<typeof setTimeout> | null = null;
     const mouse = { x: -9999, y: -9999, active: false };
 
-    // Smallest non-negative local offset such that (globalOrigin + offset)
-    // lands on a multiple of `step`, measured from the viewport's edge.
-    // Using this instead of a container-local offset means every DotCanvas
-    // on the page — rail, divider, or hero background — shares one grid,
-    // so wherever a full-width divider crosses the narrow rail, the dots
-    // line up exactly instead of clashing or looking offset.
-    const phaseOffset = (globalOrigin: number, step: number) => {
-      const r = ((globalOrigin % step) + step) % step;
-      return (step - r) % step;
-    };
-
-    const getStopY = (): number => {
-      if (!stopBeforeSelector) return h;
-      const host = container.closest(".page-wrapper");
-      if (!host) return h;
-      const node = host.querySelector(stopBeforeSelector);
-      if (!node) return h;
-      const containerRect = container.getBoundingClientRect();
-      const nodeRect = node.getBoundingClientRect();
-      const y = nodeRect.top - containerRect.top;
-      return y > 0 ? Math.min(y, h) : h;
-    };
-
     const bakeDots = () => {
-      drawH = getStopY();
-      const oy = phaseOffset(containerTop, SPACING);
-      const rows = Math.ceil(drawH / SPACING) + 2;
+      const ox = (w % SPACING) / 2;
+      const oy = (h % SPACING) / 2;
+      const cols = Math.ceil(w / SPACING) + 2;
+      const rows = Math.ceil(h / SPACING) + 2;
 
-      let xs: number[];
-      if (maxCols && maxCols > 0) {
-        // Same global grid step as everything else (so it merges seamlessly
-        // with full-width dividers/backgrounds), just capped to maxCols
-        // columns for the narrow rail.
-        const gap = colGap ?? SPACING;
-        const ox = phaseOffset(containerLeft, gap);
-        xs = [];
-        for (let x = ox; x <= w + gap && xs.length < maxCols; x += gap) xs.push(x);
-      } else {
-        const ox = phaseOffset(containerLeft, SPACING);
-        xs = [];
-        for (let x = ox; x <= w + SPACING; x += SPACING) xs.push(x);
-      }
-
-      const arr = new Float32Array(xs.length * rows * 2);
+      const arr = new Float32Array(cols * rows * 2);
       let i = 0;
-      for (const x of xs) {
-        for (let y = oy; y <= drawH + SPACING; y += SPACING) {
+      for (let x = ox; x <= w + SPACING; x += SPACING) {
+        for (let y = oy; y <= h + SPACING; y += SPACING) {
           arr[i++] = x;
           arr[i++] = y;
         }
@@ -269,7 +224,7 @@ function DotCanvas({
       if (raf)       cancelAnimationFrame(raf);
       if (idleTimer) clearTimeout(idleTimer);
     };
-  }, [interactive, maxCols, colGap, stopBeforeSelector]);
+  }, [interactive, maxCols, colGap, align, stopBeforeSelector]);
 
   return (
     <canvas
@@ -291,8 +246,8 @@ function useDotColors() {
   const { theme } = useTheme();
   const isDark = theme === "dark";
   return {
-    dotColor: isDark ? "rgba(255,255,255,0.22)" : "rgba(0,0,0,0.26)",
-    activeDotColor: isDark ? "rgba(255,255,255,0.36)" : "rgba(0,0,0,0.42)",
+    dotColor: isDark ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.18)",
+    activeDotColor: isDark ? "rgba(255,255,255,0.27)" : "rgba(0,0,0,0.32)",
   };
 }
 
@@ -319,34 +274,6 @@ export function DotDivider({ height = 38 }: { height?: number }) {
       }}
     >
       <DotField interactive />
-    </div>
-  );
-}
-
-export function ContentRails() {
-  const { dotColor, activeDotColor } = useDotColors();
-  return (
-    <div className="content-rails" aria-hidden="true">
-      <div className="content-rail content-rail-left">
-        <DotCanvas
-          interactive
-          dotColor={dotColor}
-          activeDotColor={activeDotColor}
-          maxCols={2}
-          colGap={2.5}
-          stopBeforeSelector="footer, .site-footer"
-        />
-      </div>
-      <div className="content-rail content-rail-right">
-        <DotCanvas
-          interactive
-          dotColor={dotColor}
-          activeDotColor={activeDotColor}
-          maxCols={2}
-          colGap={2.5}
-          stopBeforeSelector="footer, .site-footer"
-        />
-      </div>
     </div>
   );
 }
