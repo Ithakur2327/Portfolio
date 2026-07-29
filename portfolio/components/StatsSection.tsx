@@ -752,63 +752,51 @@ export function StatsSection() {
         html.light .lc-cell-3 { background: #984b10; }
         html.light .lc-cell-4 { background: #000000; }
 
-        /* Stats box — single dashed-border box holding both panels, matching the Skills section's falling-icons-box exactly */
-        .about-panels {
-          display: grid;
-          gap: 0;
-          align-items: stretch;
-          grid-template-columns: 1fr 1fr;
-          position: relative;
-          box-sizing: border-box;
-          border: 0.7px dashed rgba(0,0,0,0.32);
-          border-radius: 4px;
-          background: #ffffff;
-          padding: 22px;
-        }
-        .dark .about-panels {
-          border-color: rgba(255,255,255,0.32);
-          background: #000000;
-        }
-
+        /* Stats panels — boxed with a dashed border, matching the Skills section's falling-icons-box */
         .stat-card-3d {
-          padding: 0;
+          padding: 20px;
           background: transparent;
-          border: none;
-          border-radius: 0;
+          border: 1px dashed var(--border);
+          border-radius: 10px;
           position: relative;
           display: flex;
           flex-direction: column;
           overflow: visible;
           box-shadow: none;
-          transition: none;
+          transition: border-color 0.2s;
           min-width: 0; /* keeps the center divider mathematically centered — a grid item's default min-width:auto lets its own non-scrollable content (e.g. a long header string) grow the track past 50%, dragging the divider along with it */
         }
         .stat-card-3d:hover {
+          border-color: var(--text-muted);
           transform: none;
           box-shadow: none;
         }
+        html.light .stat-card-3d {
+          background: transparent;
+          box-shadow: none;
+        }
+        html.light .stat-card-3d:hover {
+          box-shadow: none;
+        }
 
-        /* Vertical divider between the two panels inside the shared box */
-        .about-panels > .stat-card-3d:first-child { padding-right: 24px; border-right: 1px dashed var(--border); }
-        .about-panels > .stat-card-3d:last-child  { padding-left: 24px; }
+        .about-panels {
+          display: grid;
+          gap: 14px;
+          align-items: stretch;
+          grid-template-columns: 1fr 1fr;
+          position: relative;
+        }
 
         ${mq.tablet} {
           .about-panels { grid-template-columns: 1fr !important; }
           .stat-card-3d { width: 100% !important; min-width: 0 !important; min-height: 220px; }
-          .about-panels > .stat-card-3d:first-child {
-            padding-right: 0;
-            border-right: none;
-            border-bottom: 1px dashed var(--border);
-            padding-bottom: 24px;
-            margin-bottom: 20px;
-          }
-          .about-panels > .stat-card-3d:last-child { padding-left: 0; }
           /* Graph cells scale up so graph fills card width */
           .gh-cell { width: 14px !important; height: 14px !important; border-radius: 3px !important; }
           .lc-cell { width: 14px !important; height: 14px !important; border-radius: 3px !important; }
         }
         ${mq.mobile} {
-          .about-panels { grid-template-columns: 1fr; padding: 16px; }
+          .about-panels { grid-template-columns: 1fr; }
+          .stat-card-3d { padding: 16px; }
         }
 
         .about-content {
@@ -846,7 +834,7 @@ export function StatsSection() {
               </span>
             </div>
             <div style={{ height: 1, background: "var(--border)", margin: "18px 0 20px" }} />
-            <div className="about-panels">
+            <div className="about-panels" style={{ paddingBottom: 32 }}>
               <div className="stat-card-3d">
                 <GitHubGraph username="Ithakur2327" />
               </div>
