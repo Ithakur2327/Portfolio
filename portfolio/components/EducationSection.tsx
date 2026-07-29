@@ -13,7 +13,7 @@ const EDUCATION = [
     school: "Noida Institute of Engineering and Technology",
     short: "Greater Noida",
     degree: "B.Tech — Computer Science & Engineering (AI)",
-    period: "Aug 2023 — Present",
+    period: "",
   },
   {
     school: "L.N.J School",
@@ -32,7 +32,6 @@ const EDUCATION = [
 const LANGUAGES = [
   { name: "HINDI" },
   { name: "ENGLISH" },
-  { name: "MAITHILI" },
 ];
 
 /* Language chip */
@@ -102,7 +101,7 @@ export function EducationSection() {
         .edu-inner {
           max-width: var(--content-width);
           margin: 0 auto;
-          padding: 0 32px 64px;
+          padding: 0 20px 64px;
         }
 
         /* Section header */
@@ -227,26 +226,26 @@ export function EducationSection() {
           margin-top: 8px;
           padding: 14px 16px;
           border-top: 1px solid var(--border);
-          border: 1px solid rgba(59,130,246,0.22);
+          border: 1px solid rgba(10,186,181,0.28);
           border-radius: 10px;
-          background: rgba(59,130,246,0.04);
-          box-shadow: 0 0 0 1px rgba(59,130,246,0.08) inset;
+          background: rgba(10,186,181,0.05);
+          box-shadow: 0 0 0 1px rgba(10,186,181,0.08) inset;
         }
         .lang-row::-webkit-scrollbar { display: none; }
         .lang-label-txt {
           font-size: 12px;
-          font-weight: 800;
+          font-weight: 900;
           letter-spacing: 0.06em;
           text-transform: uppercase;
           color: var(--text-primary);
-          font-family: ${MONO};
+          font-family: ${SF};
           flex-shrink: 0;
         }
         .lang-dash {
           font-size: 13px;
           font-weight: 400;
           color: var(--text-muted);
-          font-family: ${MONO};
+          font-family: ${SF};
           margin: 0 12px;
           flex-shrink: 0;
         }
@@ -263,34 +262,19 @@ export function EducationSection() {
           padding: 5px 16px;
           border-radius: 7px;
           font-size: 12.5px;
-          font-weight: 800;
+          font-weight: 600;
           font-family: ${SF};
           letter-spacing: 0.06em;
-          border: 1px solid rgba(59,130,246,0.35);
-          color: #60a5fa;
-          background: rgba(59,130,246,0.08);
+          border: 1px dashed rgba(10,186,181,0.45);
+          color: #2dd4c8;
+          background: rgba(10,186,181,0.08);
           cursor: default;
           user-select: none;
-          transition: transform 0.18s cubic-bezier(0.22,1,0.36,1), box-shadow 0.18s, background 0.18s;
-        }
-        .lang-pill-item:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 4px 14px rgba(59,130,246,0.20);
-          background: rgba(59,130,246,0.14);
-        }
-        html.light .lang-row {
-          border-color: rgba(217,119,6,0.28);
-          background: rgba(217,119,6,0.04);
-          box-shadow: 0 0 0 1px rgba(217,119,6,0.08) inset;
         }
         html.light .lang-pill-item {
-          color: #92400e;
-          background: rgba(217,119,6,0.10);
-          border-color: rgba(217,119,6,0.35);
-        }
-        html.light .lang-pill-item:hover {
-          box-shadow: 0 4px 12px rgba(217,119,6,0.18);
-          background: rgba(217,119,6,0.16);
+          color: #0f766e;
+          background: rgba(10,186,181,0.10);
+          border-color: rgba(10,186,181,0.45);
         }
         .lang-pill-dot { display: none; }
 

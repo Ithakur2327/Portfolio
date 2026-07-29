@@ -73,7 +73,7 @@ export function CertificationsSection() {
         .edu-inner {
           max-width: var(--content-width);
           margin: 0 auto;
-          padding: 0 32px 64px;
+          padding: 0 20px 64px;
         }
         .edu-sec-titlerow {
           padding-top: 50px;

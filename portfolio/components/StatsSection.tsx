@@ -423,12 +423,24 @@ function LeetCodeStats({ username = "IThakur09" }: { username?: string }) {
           <div className="lc-header-stats" style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: 8, marginBottom: 4 }}>
             <span style={{ fontSize: 11, fontWeight: 700, color: "var(--text-primary)", fontFamily: MONO, flexShrink: 0 }}>2026 activity <span style={{ color: "var(--text-muted)", fontWeight: 500 }}>—</span></span>
             <div className="lc-header-stats-chips" style={{ display: "flex", alignItems: "center", gap: 5, flexWrap: "wrap" }}>
-              <StatChip
-                label="Solved" solved={d.totalSolved} color={solvedColor} bold
-                onEnter={e => handleStatEnter(e, "Total Solved", d.totalSolved, LC_TOTAL)}
-                onLeave={handleStatLeave}
-              />
               <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  padding: "3px 6px",
+                  borderRadius: 7,
+                  border: "1px dashed var(--border)",
+                  flexShrink: 0,
+                }}
+              >
+                <StatChip
+                  label="Solved" solved={d.totalSolved} color={solvedColor} bold
+                  onEnter={e => handleStatEnter(e, "Total Solved", d.totalSolved, LC_TOTAL)}
+                  onLeave={handleStatLeave}
+                />
+              </div>
+              <div
+                className="lc-emh-box"
                 style={{
                   display: "flex",
                   alignItems: "center",
@@ -437,6 +449,7 @@ function LeetCodeStats({ username = "IThakur09" }: { username?: string }) {
                   padding: "3px 6px",
                   borderRadius: 7,
                   border: "1px dashed var(--border)",
+                  flexShrink: 0,
                 }}
               >
                 <StatChip
@@ -739,7 +752,24 @@ export function StatsSection() {
         html.light .lc-cell-3 { background: #984b10; }
         html.light .lc-cell-4 { background: #000000; }
 
-        /* Stats panels — no box, content sits directly on black background */
+        /* Stats box — single dashed-border box holding both panels, matching the Skills section's falling-icons-box exactly */
+        .about-panels {
+          display: grid;
+          gap: 0;
+          align-items: stretch;
+          grid-template-columns: 1fr 1fr;
+          position: relative;
+          box-sizing: border-box;
+          border: 0.7px dashed rgba(0,0,0,0.32);
+          border-radius: 4px;
+          background: #ffffff;
+          padding: 22px;
+        }
+        .dark .about-panels {
+          border-color: rgba(255,255,255,0.32);
+          background: #000000;
+        }
+
         .stat-card-3d {
           padding: 0;
           background: transparent;
@@ -757,63 +787,28 @@ export function StatsSection() {
           transform: none;
           box-shadow: none;
         }
-        html.light .stat-card-3d {
-          background: transparent;
-          border: none;
-          box-shadow: none;
-        }
-        html.light .stat-card-3d:hover {
-          box-shadow: none;
-        }
 
-        .about-panels {
-          display: grid;
-          gap: 14px;
-          align-items: stretch;
-          grid-template-columns: 1fr 1fr;
-          position: relative;
-        }
-        /* Vertical partition line between GitHub and LeetCode panels — spans the
-           full height of the row so it reads as one continuous connected line. */
-        .about-panels::after {
-          content: "";
-          position: absolute;
-          top: 0; bottom: 0;
-          left: 50%;
-          width: 1px;
-          background: var(--border);
-          transform: translateX(-50%);
-          z-index: 1;
-        }
-        .about-panels > .stat-card-3d:first-child { padding-right: 28px; }
-        .about-panels > .stat-card-3d:last-child  { padding-left: 28px; }
+        /* Vertical divider between the two panels inside the shared box */
+        .about-panels > .stat-card-3d:first-child { padding-right: 24px; border-right: 1px dashed var(--border); }
+        .about-panels > .stat-card-3d:last-child  { padding-left: 24px; }
 
         ${mq.tablet} {
           .about-panels { grid-template-columns: 1fr !important; }
-          .about-panels::after { display: none; }
-          .about-panels > .stat-card-3d:first-child,
-          .about-panels > .stat-card-3d:last-child { padding: 0; }
           .stat-card-3d { width: 100% !important; min-width: 0 !important; min-height: 220px; }
-          /* Horizontal divider between stacked panels on tablet */
           .about-panels > .stat-card-3d:first-child {
-            border-bottom: 1px solid var(--border);
-            padding-bottom: 24px !important;
-            margin-bottom: 4px;
+            padding-right: 0;
+            border-right: none;
+            border-bottom: 1px dashed var(--border);
+            padding-bottom: 24px;
+            margin-bottom: 20px;
           }
+          .about-panels > .stat-card-3d:last-child { padding-left: 0; }
           /* Graph cells scale up so graph fills card width */
           .gh-cell { width: 14px !important; height: 14px !important; border-radius: 3px !important; }
           .lc-cell { width: 14px !important; height: 14px !important; border-radius: 3px !important; }
         }
         ${mq.mobile} {
-          .about-panels { grid-template-columns: 1fr; }
-          .about-panels::after { display: none; }
-          .about-panels > .stat-card-3d:first-child,
-          .about-panels > .stat-card-3d:last-child { padding: 0; }
-          .about-panels > .stat-card-3d:first-child {
-            border-bottom: 1px solid var(--border);
-            padding-bottom: 20px !important;
-            margin-bottom: 4px;
-          }
+          .about-panels { grid-template-columns: 1fr; padding: 16px; }
         }
 
         .about-content {
@@ -824,7 +819,16 @@ export function StatsSection() {
           .about-content  { padding: 0 14px 28px; }
           .stat-card-3d   { width: 100% !important; min-width: 0 !important; }
           .lc-header-stats { flex-direction: column; align-items: flex-start !important; }
-          .lc-header-stats-chips { flex-shrink: 0; width: 100%; }
+          .lc-header-stats-chips {
+            flex-wrap: nowrap !important;
+            width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+            padding-bottom: 2px;
+          }
+          .lc-header-stats-chips::-webkit-scrollbar { display: none; }
+          .lc-emh-box { flex-wrap: nowrap !important; }
         }
 
         .stat-card-3d ::-webkit-scrollbar { height: 4px; }
@@ -842,7 +846,7 @@ export function StatsSection() {
               </span>
             </div>
             <div style={{ height: 1, background: "var(--border)", margin: "18px 0 20px" }} />
-            <div className="about-panels" style={{ paddingBottom: 32 }}>
+            <div className="about-panels">
               <div className="stat-card-3d">
                 <GitHubGraph username="Ithakur2327" />
               </div>
