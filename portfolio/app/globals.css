@@ -136,11 +136,19 @@ html {
   text-size-adjust: 100%;
   overflow-y: scroll;
   overflow-x: hidden;
+  scrollbar-gutter: stable;
   overscroll-behavior-y: auto;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
   -webkit-overflow-scrolling: touch;
+  /* Keeps the scrollbar's gutter reserved at all times, even while
+     `html.intro-active` switches overflow to `hidden` during the intro.
+     Without this, the scrollbar disappears for the intro's duration and
+     then pops back in the instant the intro ends — the "scroll icon
+     appearing late" glitch. Supported browsers just always reserve the
+     space; unsupported ones silently ignore it (same as today). */
+  scrollbar-gutter: stable;
 }
 
 body {
@@ -172,11 +180,10 @@ img, svg, canvas {
 /* ═══════════════════════════════════════════════════════════
    SCROLLBAR
 ═══════════════════════════════════════════════════════════ */
-::-webkit-scrollbar       { width: var(--scrollbar-w); }
+::-webkit-scrollbar       { width: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: rgba(129, 216, 208, 0.35); border-radius: 2px; }
-::-webkit-scrollbar-thumb:hover { background: rgba(129, 216, 208, 0.55); }
-* { scrollbar-width: thin; scrollbar-color: rgba(129, 216, 208, 0.35) transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+* { scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
 
 /* ═══════════════════════════════════════════════════════════
    SELECTION & BASE LINKS
@@ -202,23 +209,13 @@ a, button, [role="button"] {
    width is controlled from one place.
 ═══════════════════════════════════════════════════════════ */
 :root {
-  --content-width: 950px;
+  --content-width: 900px;
   --content-width-inset: calc(var(--content-width) - 32px);
-  --page-pad: 16px;
-  /* Width of the visible scroll indicator (see SCROLLBAR block below).
-     On mobile the left/right space around every section is set to this
-     exact value so content hugs the scrollbar symmetrically instead of
-     leaving a bigger, inconsistent gap. */
-  --scrollbar-w: 4px;
-}
-
-@media (--mobile) {
-  :root { --page-pad: var(--scrollbar-w); }
 }
 .page-wrapper {
   max-width: var(--content-width);
   margin: 0 auto;
-  padding: 0 var(--page-pad);
+  padding: 0 16px;
   min-height: 100vh;
   position: relative;
   z-index: 1;
@@ -239,6 +236,12 @@ a, button, [role="button"] {
   margin-top: 0 !important;
 }
 
+/* Dot dividers ARE the partition — no default 38px margin above/below
+   them (the divider itself provides its own consistent padding below),
+   so sections don't get a stray solid-black gap. Each section's own
+   top-level element is a Fragment whose FIRST child is a <style> tag,
+   so the actual section markup is the sibling *after* that style tag —
+   both rules are needed to reach it. */
 .page-wrapper > .dot-divider {
   margin-top: 0 !important;
 }
@@ -340,14 +343,17 @@ html.light .nav-root.scrolled {
    getBoundingClientRect, hence opacity/pointer-events and not display:none)
    so there's never a duplicate/mismatched avatar showing through the glass
    blur. Scroll is locked so the page can't shift under the overlay.
-   Deliberately NO transition here: the flying clone in IntroLoader.tsx
-   lands and is removed in the exact same synchronous block that removes
-   `intro-active`, so this flips from 0 to 1 on the very same frame the
-   clone disappears — a hard, instant cut, not a crossfade. */
+   The reveal is a short 0.16s crossfade, timed to start the exact instant
+   the flying clone in IntroLoader.tsx begins its own fade-out (see
+   .intro-flip-avatar--landed). Both elements occupy the identical rect at
+   that point, so this isn't hiding any travel — it only smooths over the
+   fact that the flying clone is a flat photo and the real hero avatar is
+   a live WebGL render, which can differ enough in shading to read as a
+   visible "pop" on an instant cut. */
 html.intro-active { overflow: hidden; }
 html.intro-active body { overflow: hidden; }
-#hero-avatar-anchor { opacity: 1; }
-html.intro-active #hero-avatar-anchor { opacity: 0; pointer-events: none; }
+#hero-avatar-anchor { opacity: 1; transition: opacity 0.16s linear; }
+html.intro-active #hero-avatar-anchor { opacity: 0; pointer-events: none; transition: none; }
 
 /* Static placeholder painted synchronously (before React hydrates) by the
    inline script in app/layout.tsx — this is what actually stops the hero
@@ -360,9 +366,9 @@ html.intro-active #hero-avatar-anchor { opacity: 0; pointer-events: none; }
 #intro-shell {
   position: fixed; inset: 0; z-index: 100000;
   display: flex; align-items: center; justify-content: center; gap: 16px;
-  background: color-mix(in srgb, var(--bg-base) 45%, transparent);
-  backdrop-filter: blur(14px) saturate(130%);
-  -webkit-backdrop-filter: blur(14px) saturate(130%);
+  background: color-mix(in srgb, var(--bg-base) 55%, transparent);
+  backdrop-filter: blur(28px) saturate(160%);
+  -webkit-backdrop-filter: blur(28px) saturate(160%);
 }
 .intro-shell-avatar {
   width: 84px; height: 84px; border-radius: 22px;
@@ -371,7 +377,7 @@ html.intro-active #hero-avatar-anchor { opacity: 0; pointer-events: none; }
 }
 @keyframes intro-shell-breathe {
   0%, 100% { transform: scale(1); }
-  50%       { transform: scale(1.035); }
+  50%      { transform: scale(1.035); }
 }
 .intro-shell-ring {
   position: absolute; inset: -4px; border-radius: 26px;
@@ -1001,11 +1007,17 @@ html.light .nav-root.scrolled {
    RESPONSIVE
 ═══════════════════════════════════════════════════════════ */
 @media (--nav-collapse) {
+  .page-wrapper { padding: 0; }
+}
+
+@media (--nav-collapse) {
   .hero-grid { grid-template-columns: 1fr !important; }
   .nav-inner { padding: 0 14px; }
   .page-wrapper { border-left: none !important; border-right: none !important; }
+  section { padding-left: 16px; padding-right: 16px; }
+  section#about { padding-left: 0 !important; padding-right: 0 !important; }
   .about-panels { grid-template-columns: 1fr !important; }
-  .skills-strip-offset { margin-left: -8px !important; margin-right: -8px !important; }
+  .skills-strip-offset { margin-left: -16px !important; margin-right: -16px !important; }
   .stat-badges-row { flex-wrap: wrap; gap: 8px !important; }
   .stat-badge { min-width: calc(50% - 4px) !important; padding: 13px 16px !important; }
   .contact-cols { flex-direction: column !important; }
@@ -1029,7 +1041,9 @@ html.light .nav-root.scrolled {
 }
 
 @media (--mobile) {
-  .skills-strip-offset { margin-left: -6px !important; margin-right: -6px !important; }
+  section, .section-inner { padding-left: 14px !important; padding-right: 14px !important; }
+  section#about { padding-left: 0 !important; padding-right: 0 !important; }
+  .skills-strip-offset { margin-left: -14px !important; margin-right: -14px !important; }
   .proj-tags { flex-wrap: wrap; }
   .bottom-grid { grid-template-columns: 1fr !important; }
   .contact-cols { flex-direction: column !important; }
@@ -1040,6 +1054,7 @@ html.light .nav-root.scrolled {
   .contrib-wrap { overflow-x: auto; padding-bottom: 6px; }
   .overview-cols { flex-direction: column !important; }
   .about-para { text-align: justify !important; text-justify: inter-word !important; }
+  .about-content { padding-left: 14px !important; padding-right: 14px !important; }
 }
 
 @media (--nav-tiny) {

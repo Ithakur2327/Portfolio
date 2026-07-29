@@ -19,9 +19,7 @@ function techLogoSrc(tech: { logo: string; logoLight?: string }, isDark: boolean
 // Shared spring used by every layoutId'd element for the card-to-modal morph
 const SPRING = { type: "spring" as const, stiffness: 260, damping: 25 };
 
-// Alternating banner frame colors by card position
-const TIFFANY = "#0ABAB5";
-const GOLD = "#D4AF37";
+// Alternating banner frame colors by card position (as rgba, see SVG border below)
 
 export const GithubIcon = ({ size = 18 }: { size?: number }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor">
@@ -135,10 +133,21 @@ export function ProjectCard({ proj, index, visible, isDesktop, onOpen }: {
           width: "100%",
           padding: 3,
           borderRadius: 8,
-          border: `1.2px dashed ${index % 2 === 0 ? TIFFANY : GOLD}`,
           boxSizing: "border-box",
+          position: "relative",
         }}
       >
+        <svg width="100%" height="100%" aria-hidden="true" style={{ position: "absolute", inset: 0, pointerEvents: "none" }}>
+          <rect
+            x="0.6" y="0.6"
+            width="calc(100% - 1.2px)" height="calc(100% - 1.2px)"
+            rx="8" ry="8"
+            fill="none"
+            stroke={index % 2 === 0 ? "rgba(10,186,181,0.32)" : "rgba(212,175,55,0.32)"}
+            strokeWidth="0.7"
+            strokeDasharray="3 2"
+          />
+        </svg>
         <motion.div
           ref={frameRef}
           layoutId={`card-banner-${proj.name}`}
