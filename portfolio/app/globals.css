@@ -141,13 +141,6 @@ html {
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
   -webkit-overflow-scrolling: touch;
-  /* Keeps the scrollbar's gutter reserved at all times, even while
-     `html.intro-active` switches overflow to `hidden` during the intro.
-     Without this, the scrollbar disappears for the intro's duration and
-     then pops back in the instant the intro ends — the "scroll icon
-     appearing late" glitch. Supported browsers just always reserve the
-     space; unsupported ones silently ignore it (same as today). */
-  scrollbar-gutter: stable;
 }
 
 body {
@@ -179,10 +172,10 @@ img, svg, canvas {
 /* ═══════════════════════════════════════════════════════════
    SCROLLBAR
 ═══════════════════════════════════════════════════════════ */
-::-webkit-scrollbar       { width: 4px; }
+::-webkit-scrollbar       { width: var(--scrollbar-w); }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
-* { scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
+::-webkit-scrollbar-thumb { background: #81D8D0; border-radius: 2px; }
+* { scrollbar-width: thin; scrollbar-color: #81D8D0 transparent; }
 
 /* ═══════════════════════════════════════════════════════════
    SELECTION & BASE LINKS
@@ -211,6 +204,15 @@ a, button, [role="button"] {
   --content-width: 950px;
   --content-width-inset: calc(var(--content-width) - 32px);
   --page-pad: 16px;
+  /* Width of the visible scroll indicator (see SCROLLBAR block below).
+     On mobile the left/right space around every section is set to this
+     exact value so content hugs the scrollbar symmetrically instead of
+     leaving a bigger, inconsistent gap. */
+  --scrollbar-w: 4px;
+}
+
+@media (--mobile) {
+  :root { --page-pad: var(--scrollbar-w); }
 }
 .page-wrapper {
   max-width: var(--content-width);
@@ -997,10 +999,6 @@ html.light .nav-root.scrolled {
 /* ═══════════════════════════════════════════════════════════
    RESPONSIVE
 ═══════════════════════════════════════════════════════════ */
-@media (--nav-collapse) {
-  .page-wrapper { padding: 0; }
-}
-
 @media (--nav-collapse) {
   .hero-grid { grid-template-columns: 1fr !important; }
   .nav-inner { padding: 0 14px; }
