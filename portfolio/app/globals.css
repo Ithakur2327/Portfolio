@@ -141,12 +141,6 @@ html {
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
   -webkit-overflow-scrolling: touch;
-  /* Keeps the scrollbar's gutter reserved at all times, even while
-     `html.intro-active` switches overflow to `hidden` during the intro.
-     Without this, the scrollbar disappears for the intro's duration and
-     then pops back in the instant the intro ends — the "scroll icon
-     appearing late" glitch. Supported browsers just always reserve the
-     space; unsupported ones silently ignore it (same as today). */
   scrollbar-gutter: stable;
 }
 
@@ -208,7 +202,7 @@ a, button, [role="button"] {
    width is controlled from one place.
 ═══════════════════════════════════════════════════════════ */
 :root {
-  --content-width: 900px;
+  --content-width: 890px;
   --content-width-inset: calc(var(--content-width) - 32px);
   --page-pad: 16px;
 }
@@ -236,12 +230,7 @@ a, button, [role="button"] {
   margin-top: 0 !important;
 }
 
-/* Dot dividers ARE the partition — no default 38px margin above/below
-   them (the divider itself provides its own consistent padding below),
-   so sections don't get a stray solid-black gap. Each section's own
-   top-level element is a Fragment whose FIRST child is a <style> tag,
-   so the actual section markup is the sibling *after* that style tag —
-   both rules are needed to reach it. */
+
 .page-wrapper > .dot-divider {
   margin-top: 0 !important;
 }
@@ -337,29 +326,11 @@ html.light .nav-root.scrolled {
 .logo-avatar.show { opacity: 1; transform: scale(1) translateY(0); }
 .logo-avatar img { width:100%; height:100%; object-fit:cover; border-radius:12px; }
 
-/* ── Intro landing sequence ──
-   While the intro overlay is flying the avatar into place, the real hero
-   avatar underneath must stay invisible (still measurable via
-   getBoundingClientRect, hence opacity/pointer-events and not display:none)
-   so there's never a duplicate/mismatched avatar showing through the glass
-   blur. Scroll is locked so the page can't shift under the overlay.
-   Deliberately NO transition here: the flying clone in IntroLoader.tsx
-   lands and is removed in the exact same synchronous block that removes
-   `intro-active`, so this flips from 0 to 1 on the very same frame the
-   clone disappears — a hard, instant cut, not a crossfade. */
 html.intro-active { overflow: hidden; }
 html.intro-active body { overflow: hidden; }
 #hero-avatar-anchor { opacity: 1; }
 html.intro-active #hero-avatar-anchor { opacity: 0; pointer-events: none; }
 
-/* Static placeholder painted synchronously (before React hydrates) by the
-   inline script in app/layout.tsx — this is what actually stops the hero
-   section from flashing on screen before the real IntroLoader can mount.
-   Structure and animations are kept identical to IntroLoader's own
-   ".intro-hub" markup (ring spin + breathing avatar, pulsing dots) so
-   when that component takes over on mount (see IntroLoader's
-   useIsomorphicLayoutEffect) there's nothing visually new popping in —
-   it reads as one continuous intro, not two. */
 #intro-shell {
   position: fixed; inset: 0; z-index: 100000;
   display: flex; align-items: center; justify-content: center; gap: 16px;
@@ -388,10 +359,6 @@ html.intro-active #hero-avatar-anchor { opacity: 0; pointer-events: none; }
     #0abab5 240deg, #d4af37 320deg, transparent 360deg
   );
   animation: intro-shell-ring-spin 1.1s linear infinite;
-  /* Promote to its own layer up front (matches IntroLoader.tsx's own
-     .intro-hub-ring::before) — without this the very first spin frame
-     pays the cost of layer creation, which is what read as the ring
-     "sticking" for a beat right at the very start of the page. */
   will-change: transform;
 }
 @keyframes intro-shell-ring-spin { to { transform: rotate(360deg); } }
@@ -670,9 +637,6 @@ h1, h2, h3, .section-title {
   -webkit-backface-visibility: hidden;
 }
 .marquee-inner:hover { animation-play-state: paused; }
-/* While a project modal is morphing open/closed, pause continuously-running
-   background animations so the compositor isn't juggling them at the same
-   time — noticeably reduces jank on lower-power mobile devices. */
 .modal-open .marquee-inner { animation-play-state: paused; }
 .marquee-fade {
   mask: linear-gradient(90deg,transparent,black 6%,black 94%,transparent);
@@ -940,19 +904,13 @@ html.light .nav-root.scrolled {
   box-shadow: none !important;
 }
 
-/* Mobile nav height. (Was `max-width: 760px`, which left a 761–767px gap
-   before the tablet rule below started at 768px — during that sliver the
-   nav silently fell back to its unstyled default height. Using the same
-   --tablet-split-down tier the rest of the app already uses for this
-   exact boundary closes the gap.) */
+
 @media (--tablet-split-down) {
   .nav-root { height: 56px !important; }
   .nav-inner { height: 56px !important; }
   .logo-area { width: 38px; height: 38px; }
 }
 
-/* Tablet nav height (768px–1180px) — the range where the nav gets extra
-   breathing room before collapsing back down on real laptops. */
 @media (--nav-roomy) {
   .nav-root { height: 68px !important; }
   .nav-inner { height: 68px !important; padding: 0 32px !important; }
@@ -1060,8 +1018,6 @@ html.light .nav-root.scrolled {
   .nav-root  { height: 46px; }
 }
 
-/* Short landscape phones — a height/orientation query, not a width tier,
-   so it intentionally sits outside the BP width ladder. */
 @media (max-height: 500px) and (orientation: landscape) {
   section { padding-top: 8px; padding-bottom: 8px; }
 }
@@ -1088,11 +1044,7 @@ html.light .nav-root.scrolled {
 
 /* Force GPU layers only on elements that need it — avoid layer explosion */
 @media (--nav-collapse) {
-  /* Remove will-change from everything except the cat.
-     .reveal is scoped to .visible only — stripping will-change before
-     the transition runs forces the browser to promote the compositor
-     layer synchronously on the first animation frame, which is what
-     causes a choppy/jerky start to the reveal on mobile. */
+
   .marquee-inner,
   .reveal.visible,
   .s-tile,
@@ -1130,10 +1082,6 @@ html.light .nav-root.scrolled {
     scroll-behavior: smooth;
   }
 
-  /* (blur intentionally kept — see ScrollFadeAndTop; it's the key visual
-     ingredient that matches chanhdai's fade and 1px is cheap to composite) */
-
-  /* Prevent paint on every scroll — contain:paint where safe */
   .proj-card,
   .cert-card,
   .edu-card,
