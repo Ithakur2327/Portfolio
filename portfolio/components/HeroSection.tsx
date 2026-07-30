@@ -203,6 +203,12 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
           flex-direction: row;
           align-items: stretch;
           overflow: hidden;
+          --h-avatar-w: 151px;
+        }
+
+        .h-full-divider {
+          width: calc(100% + var(--h-avatar-w));
+          margin-left: calc(-1 * var(--h-avatar-w));
         }
 
         .h-avatar {
@@ -285,6 +291,7 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
         }
 
         ${mq.tabletThroughLaptopNarrow} {
+          .h-profile { --h-avatar-w: calc(clamp(220px, 32vw, 300px) + 1px); }
           .h-avatar {
             width: clamp(220px, 32vw, 300px) !important;
             min-width: clamp(220px, 32vw, 300px) !important;
@@ -341,6 +348,7 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
         ${mq.laptopNarrow} {
           .h-profile {
             min-height: calc(clamp(220px, 24vw, 250px) - 14px) !important;
+            --h-avatar-w: calc(clamp(190px, 21vw, 213px) + 1px);
           }
           .h-avatar {
             width: clamp(190px, 21vw, 213px) !important;
@@ -364,6 +372,7 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
         }
 
         ${mq.laptopWide} {
+          .h-profile { --h-avatar-w: calc(clamp(148px, calc(404.6px - 16.23vw), 213px) + 1px); }
           .h-avatar {
             width: clamp(148px, calc(404.6px - 16.23vw), 213px) !important;
             min-width: clamp(148px, calc(404.6px - 16.23vw), 213px) !important;
@@ -382,7 +391,7 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
         }
 
         ${mq.mobile} {
-          .h-profile { flex-direction: row !important; }
+          .h-profile { flex-direction: row !important; --h-avatar-w: calc(clamp(125px, 34vw, 165px) + 1px); }
 
           .h-avatar {
             width: clamp(125px, 34vw, 165px) !important;
@@ -439,6 +448,7 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
         }
 
         @media ${cond.down(BP.mobileXxsMax)} {
+          .h-profile { --h-avatar-w: calc(clamp(105px, 30vw, 135px) + 1px); }
           .h-avatar {
             width: clamp(105px, 30vw, 135px) !important;
             min-width: clamp(105px, 30vw, 135px) !important;
@@ -482,9 +492,9 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
           <div style={{ position: "relative", zIndex: 1 }}>
 
         <div style={{
-          background:BG, borderTop:B, borderBottom:B,
+          background:BG, borderTop:B,
         }}>
-          <div className="h-profile" style={{maxWidth:CW, margin:"0 auto", borderLeft:B, borderRight:B, borderTop:"none", borderRadius:8.5}}>
+          <div className="h-profile" style={{maxWidth:CW, margin:"0 auto", borderLeft:B, borderRight:B, borderBottom:B, borderTop:"none", borderRadius:8.5}}>
 
             <div
               className="h-avatar"
@@ -513,7 +523,7 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
                 }}>Indresh Thakur</h1>
                 <VerifiedBadge className="h-verified-badge" />
               </div>
-              <div style={{height:1, background:"var(--border)", width:"100%"}}/>
+              <div className="h-full-divider" style={{height:1, background:"var(--border)"}}/>
               <div style={{padding:"8px 20px 12px", height:36, display:"flex", alignItems:"center", overflow:"hidden"}}>
                 <FlipSentences/>
               </div>
