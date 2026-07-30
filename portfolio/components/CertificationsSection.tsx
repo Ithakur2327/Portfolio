@@ -233,7 +233,7 @@ export function CertificationsSection() {
           .edu-inner { padding: 0 22px 34px; }
         }
         ${mq.mobile} {
-          .edu-inner { padding: 0 14px 28px; }
+          .edu-inner { padding: 0 16px 28px; }
           .edu-sec-title { font-size: 22px; }
         }
         ${mq.tabletSplitDown} {
