@@ -412,7 +412,7 @@ export function SkillsSection() {
           .skills-inner { padding: 0 22px 34px !important; }
         }
         ${mq.mobile} {
-          .skills-inner { padding: 0 16px 28px !important; }
+          .skills-inner { padding: 0 13px 28px !important; }
           .falling-icons-row { flex-direction: column; gap: 16px; }
           .falling-icons-box { border-radius: 12px; min-height: 265px; }
           .falling-icons-flow { padding: 18px 12px; gap: 8px; }

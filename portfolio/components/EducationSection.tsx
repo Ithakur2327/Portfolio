@@ -34,7 +34,6 @@ const LANGUAGES = [
   { name: "ENGLISH" },
 ];
 
-/* Language chip */
 function LangPill({ name, delay }: { name: string; delay: number }) {
   const ref = useRef<HTMLSpanElement>(null);
   const inView = useInView(ref, { once: true, margin: "-10% 0px -10% 0px" });
@@ -53,7 +52,6 @@ function LangPill({ name, delay }: { name: string; delay: number }) {
   );
 }
 
-/* Education card */
 function EduCard({ school, degree, short, period, index, sectionVisible }: {
   school: string; degree: string; short: string; period: string; index: number; sectionVisible: boolean;
 }) {
@@ -64,11 +62,9 @@ function EduCard({ school, degree, short, period, index, sectionVisible }: {
       animate={sectionVisible ? { opacity: 1, y: 0, rotateX: 0 } : { opacity: 0, y: 22, rotateX: 8 }}
       transition={{ duration: 0.52, ease: [0.22, 1, 0.36, 1], delay: sectionVisible ? index * 0.1 : 0 }}
     >
-      {/* left graduation-cap icon — used for both college and school entries */}
       <div className="edu-card-icon">
         <SectionIcon type="cap" size={15} strokeWidth={2} />
       </div>
-      {/* vertical connecting line (hidden for last) */}
       {index < EDUCATION.length - 1 && <div className="edu-card-line" />}
       <div className="edu-card-body">
         <div className="edu-card-top">
@@ -84,13 +80,13 @@ function EduCard({ school, degree, short, period, index, sectionVisible }: {
   );
 }
 
+// Education section
 export function EducationSection() {
   const { ref, revealClass, visible } = useReveal();
 
   return (
     <>
       <style suppressHydrationWarning>{`
-        /* Shared section wrapper */
         .edu-outer {
           position: relative;
           left: 50%;
@@ -104,7 +100,6 @@ export function EducationSection() {
           padding: 0 20px 64px;
         }
 
-        /* Section header */
         .edu-sec-titlerow {
           padding-top: 50px;
           margin-bottom: 20px;
@@ -141,7 +136,6 @@ export function EducationSection() {
           margin-bottom: 22px;
         }
 
-        /* Education cards */
         .edu-card {
           position: relative;
           display: flex;
@@ -212,7 +206,6 @@ export function EducationSection() {
           padding-top: 2px;
         }
 
-        /* Language row */
         .lang-row {
           display: flex;
           align-items: center;
@@ -278,19 +271,17 @@ export function EducationSection() {
         }
         .lang-pill-dot { display: none; }
 
-        /* Responsive tweaks */
         ${mq.navCollapse} {
           .edu-inner { padding: 0 22px 34px; }
         }
         ${mq.mobile} {
-          .edu-inner { padding: 0 16px 28px; }
+          .edu-inner { padding: 0 13px 28px; }
           .edu-card-top { flex-direction: column; gap: 4px; }
           .edu-card-period { margin-left: 0; }
           .edu-sec-title { font-size: 22px; }
         }
       `}</style>
 
-      {/* ═══ EDUCATION ═══ */}
       <section
         id="education"
         ref={ref}
@@ -298,7 +289,6 @@ export function EducationSection() {
       >
         <div className="edu-outer">
           <div className="edu-inner">
-            {/* Title row – exactly like Projects/Skills */}
             <div className="edu-sec-titlerow">
               <h2 className="edu-sec-title">
                 <SectionTitleIcon type="institution" />
@@ -308,7 +298,6 @@ export function EducationSection() {
 
             <div className="edu-sec-divider" />
 
-            {/* Cards */}
             {EDUCATION.map((edu, i) => (
               <EduCard
                 key={i}
@@ -318,7 +307,6 @@ export function EducationSection() {
               />
             ))}
 
-            {/* Languages */}
             <div className="lang-row">
               <span className="lang-label-txt">Languages</span>
               <span className="lang-dash">—</span>

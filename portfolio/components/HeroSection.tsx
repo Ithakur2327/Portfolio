@@ -157,6 +157,7 @@ function HoverBorderGradient({ children, radius = 10 }: { children: React.ReactN
 
 const CW = "var(--content-width-inset)";
 
+// Hero section
 export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) {
   const [vis, setVis] = useState<"ssr" | "visible">("ssr");
   const { openPdf } = usePdfModal();
@@ -473,8 +474,8 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
           .h-info-wrap {
             border-left: none !important;
             border-right: none !important;
-            margin-left: 6px !important;
-            margin-right: 6px !important;
+            margin-left: 5px !important;
+            margin-right: 5px !important;
           }
           .hbg-wrap, .h-info-box {
             border-radius: 8px !important;

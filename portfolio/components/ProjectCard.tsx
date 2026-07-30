@@ -11,15 +11,12 @@ import { mq } from "@/lib/breakpoints";
 const MONO = "'Geist Mono', 'SF Mono', monospace";
 const SF   = "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', sans-serif";
 
-// Swaps in the dark-hex logo variant for light theme, where needed
 function techLogoSrc(tech: { logo: string; logoLight?: string }, isDark: boolean) {
   return !isDark && tech.logoLight ? tech.logoLight : tech.logo;
 }
 
-// Shared spring used by every layoutId'd element for the card-to-modal morph
 const SPRING = { type: "spring" as const, stiffness: 260, damping: 25 };
 
-// Alternating banner frame colors by card position (as rgba, see SVG border below)
 
 export const GithubIcon = ({ size = 18 }: { size?: number }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor">
@@ -39,7 +36,6 @@ const ExpandIcon = ({ size = 15 }: { size?: number }) => (
   </svg>
 );
 
-// Icon links shared between the card header and the modal
 function ProjectLinks({ proj, size }: { proj: Project; size: number }) {
   return (
     <>
@@ -63,7 +59,6 @@ function ProjectLinks({ proj, size }: { proj: Project; size: number }) {
   );
 }
 
-// Labeled button versions of the same links, used in the modal
 function ProjectLinkButtons({ proj }: { proj: Project }) {
   return (
     <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
@@ -85,7 +80,6 @@ function ProjectLinkButtons({ proj }: { proj: Project }) {
   );
 }
 
-// Card — collapsed grid tile
 export function ProjectCard({ proj, index, visible, isDesktop, onOpen }: {
   proj: Project;
   index: number;
@@ -94,13 +88,11 @@ export function ProjectCard({ proj, index, visible, isDesktop, onOpen }: {
   onOpen: () => void;
 }) {
   const frameRef = useRef<HTMLDivElement>(null);
-  // Replays every time the card enters/leaves view on touch devices
   const inView = useInView(frameRef, { amount: 0.6 });
   const [hovered, setHovered] = useState(false);
   const { theme } = useTheme();
   const isDark = theme === "dark";
 
-  // Desktop reveals on hover, touch devices reveal on scroll into view
   const shown = isDesktop ? hovered : inView;
 
   return (
@@ -127,64 +119,24 @@ export function ProjectCard({ proj, index, visible, isDesktop, onOpen }: {
         touchAction: "manipulation",
       }}
     >
-      {/* Accent frame stays on a static wrapper so its border renders evenly */}
       <div
         style={{
           width: "100%",
           padding: 3,
-          borderRadius: 8,
+          borderRadius: 4,
+          border: `0.7px dashed ${index % 2 === 0 ? "rgba(10,186,181,0.32)" : "rgba(212,175,55,0.32)"}`,
           boxSizing: "border-box",
-          position: "relative",
         }}
       >
-        {(() => {
-          const frameColor = index % 2 === 0 ? "rgba(10,186,181,0.32)" : "rgba(212,175,55,0.32)";
-          const cornerColor = index % 2 === 0 ? "rgba(10,186,181,0.5)" : "rgba(212,175,55,0.5)";
-          const r = 8;
-          const w = 0.7;
-          const half = w / 2;
-          const cornerW = 1;
-          const arcR = r - cornerW / 2;
-          const corner = (
-            <svg width={r + 1} height={r + 1} viewBox={`0 0 ${r + 1} ${r + 1}`} style={{ display: "block" }}>
-              <path d={`M${cornerW / 2} ${r} A${arcR} ${arcR} 0 0 1 ${r} ${cornerW / 2}`} fill="none" stroke={cornerColor} strokeWidth={cornerW} strokeLinecap="round" />
-            </svg>
-          );
-          return (
-            <>
-              {/* straight edges — each starts a fresh dash right at its corner */}
-              <svg aria-hidden="true" style={{ position: "absolute", top: 0, left: r, right: r, height: 1, overflow: "visible", pointerEvents: "none" }}>
-                <line x1="0" y1={half} x2="100%" y2={half} stroke={frameColor} strokeWidth={w} strokeDasharray="3 2" />
-              </svg>
-              <svg aria-hidden="true" style={{ position: "absolute", bottom: 0, left: r, right: r, height: 1, overflow: "visible", pointerEvents: "none" }}>
-                <line x1="0" y1={half} x2="100%" y2={half} stroke={frameColor} strokeWidth={w} strokeDasharray="3 2" />
-              </svg>
-              <svg aria-hidden="true" style={{ position: "absolute", left: 0, top: r, bottom: r, width: 1, overflow: "visible", pointerEvents: "none" }}>
-                <line x1={half} y1="0" x2={half} y2="100%" stroke={frameColor} strokeWidth={w} strokeDasharray="3 2" />
-              </svg>
-              <svg aria-hidden="true" style={{ position: "absolute", right: 0, top: r, bottom: r, width: 1, overflow: "visible", pointerEvents: "none" }}>
-                <line x1={half} y1="0" x2={half} y2="100%" stroke={frameColor} strokeWidth={w} strokeDasharray="3 2" />
-              </svg>
-              {/* corners — solid, so there is never a dash-phase gap right where it's most visible */}
-              <div aria-hidden="true" style={{ position: "absolute", top: 0, left: 0, pointerEvents: "none" }}>{corner}</div>
-              <div aria-hidden="true" style={{ position: "absolute", top: 0, right: 0, transform: "rotate(90deg)", pointerEvents: "none" }}>{corner}</div>
-              <div aria-hidden="true" style={{ position: "absolute", bottom: 0, right: 0, transform: "rotate(180deg)", pointerEvents: "none" }}>{corner}</div>
-              <div aria-hidden="true" style={{ position: "absolute", bottom: 0, left: 0, transform: "rotate(270deg)", pointerEvents: "none" }}>{corner}</div>
-            </>
-          );
-        })()}
         <motion.div
           ref={frameRef}
           layoutId={`card-banner-${proj.name}`}
           transition={SPRING}
           style={{
-            width: "100%", aspectRatio: "16 / 9", borderRadius: 8,
-            background: "var(--bg-secondary)",
-            border: "1.2px solid var(--border)",
+            width: "100%", aspectRatio: "16 / 9", borderRadius: 3,
             position: "relative", overflow: "hidden",
           }}
         >
-          {/* Owns the hover/scroll reveal transform, kept separate from the image below */}
           <motion.div
             initial={false}
             animate={{ y: shown ? "0%" : "55%", rotate: shown ? 0 : -8 }}
@@ -211,7 +163,6 @@ export function ProjectCard({ proj, index, visible, isDesktop, onOpen }: {
         </motion.div>
       </div>
 
-      {/* Detail section */}
       <div style={{ width: "100%", padding: "12px 8px", display: "flex", flexDirection: "column", gap: 16 }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <motion.span
@@ -261,7 +212,6 @@ export function ProjectCard({ proj, index, visible, isDesktop, onOpen }: {
             Stack
           </span>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 8, alignItems: "center" }}>
-            {/* Only first 3 tags on the collapsed card — full stack shows in the modal */}
             {proj.tags.slice(0, 3).map(tag => {
               const tech = TECH_MAP[tag];
               if (!tech) return null;
@@ -302,15 +252,12 @@ export function ProjectCard({ proj, index, visible, isDesktop, onOpen }: {
   );
 }
 
-// Modal — expanded shared-layout counterpart of the card
 export function ProjectModal({ proj, onClose, isDesktop }: { proj: Project; onClose: () => void; isDesktop: boolean }) {
   const modalRef = useRef<HTMLDivElement>(null);
   const closeBtnRef = useRef<HTMLButtonElement>(null);
   const { theme } = useTheme();
   const isDark = theme === "dark";
-  // Tablet and mobile both get the lightweight slide-up/down sheet instead of the card-morph animation
   const sheet = !isDesktop;
-  // Lightweight tween — cheaper than a spring, and identical for open/close
   const sheetTransition = { type: "tween" as const, duration: 0.22, ease: [0.22, 1, 0.36, 1] as const };
   const lid = (id: string) => (sheet ? undefined : id);
 
@@ -321,10 +268,8 @@ export function ProjectModal({ proj, onClose, isDesktop }: { proj: Project; onCl
     const cat = document.getElementById("oneko");
     if (cat) cat.style.display = "none";
 
-    // Restore focus to the trigger element on close
     const previouslyFocused = document.activeElement as HTMLElement | null;
 
-    // Deferred by one rAF so it doesn't compete with the open animation
     let focusTimer: ReturnType<typeof setTimeout>;
     const raf = requestAnimationFrame(() => {
       focusTimer = setTimeout(() => closeBtnRef.current?.focus(), 50);
@@ -332,7 +277,6 @@ export function ProjectModal({ proj, onClose, isDesktop }: { proj: Project; onCl
 
     const esc = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
 
-    // Basic focus trap — Tab/Shift+Tab cycle within the modal only
     const trapFocus = (e: KeyboardEvent) => {
       if (e.key !== "Tab" || !modalRef.current) return;
       const focusables = modalRef.current.querySelectorAll<HTMLElement>(
@@ -403,7 +347,6 @@ export function ProjectModal({ proj, onClose, isDesktop }: { proj: Project; onCl
         <ProjectLinkButtons proj={proj} />
       </motion.div>
 
-      {/* Full stack list — shown only here, below the image and links */}
       <motion.div
         layoutId={lid(`card-tech-section-${proj.name}`)}
         layout="position"
@@ -476,7 +419,6 @@ export function ProjectModal({ proj, onClose, isDesktop }: { proj: Project; onCl
         </button>
       </div>
 
-      {/* Description */}
       <motion.p
         layoutId={lid(`card-description-${proj.name}`)}
         layout="position"
@@ -486,7 +428,6 @@ export function ProjectModal({ proj, onClose, isDesktop }: { proj: Project; onCl
         {proj.description}
       </motion.p>
 
-      {/* Features — only shown in the expanded modal view */}
       {proj.features?.length > 0 && (
         <motion.div
           initial={sheet ? false : { opacity: 0, y: 10 }}
@@ -553,7 +494,7 @@ export function ProjectModal({ proj, onClose, isDesktop }: { proj: Project; onCl
             borderRadius: sheet ? "16px 16px 0 0" : 16,
             boxShadow: "0 12px 28px -8px rgba(0,0,0,0.45)",
             overflow: "hidden",
-            willChange: "transform",
+            ...(sheet ? {} : { willChange: "transform", transform: "translateZ(0)" }),
           }}
         >
           <style suppressHydrationWarning>{`
@@ -563,13 +504,10 @@ export function ProjectModal({ proj, onClose, isDesktop }: { proj: Project; onCl
               contain: strict;
             }
 
-            /* Shell is the layout-animated frame — it never scrolls itself */
             .pm-shell {
               display: flex;
               flex-direction: column;
               max-height: 92vh;
-              will-change: transform;
-              transform: translateZ(0);
               contain: layout paint;
             }
             ${mq.laptopUp} { .pm-shell { max-height: 82vh; } }

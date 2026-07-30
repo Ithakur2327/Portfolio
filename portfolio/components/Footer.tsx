@@ -21,7 +21,6 @@ function FluidGradientText({ text }: { text: string }) {
   const { theme } = useTheme();
   const isDark = theme === "dark";
 
-  // Shared fill logic
   const triggerFill = (relX: number) => {
     mouseXRaw.jump(relX * VW);
     animate(hollowOpacity, 0, { duration: 0.22, ease: "easeOut" });
@@ -29,13 +28,11 @@ function FluidGradientText({ text }: { text: string }) {
     animate(sweepOpacity,  1, { duration: 0.22, ease: "easeOut" });
   };
   const triggerDrain = () => {
-    // Drain the fill smoothly
     animate(sweepOpacity,  0, { duration: 0.30, ease: [0.4, 0, 1, 1] });
     animate(fillOpacity,   0, { duration: 0.60, ease: [0.4, 0, 1, 1] });
     animate(hollowOpacity, 1, { duration: 0.60, ease: "easeIn", delay: 0.12 });
   };
 
-  // Mouse interactions
   const handleMouseEnter = (e: React.MouseEvent<HTMLDivElement>) => {
     const r = e.currentTarget.getBoundingClientRect();
     triggerFill((e.clientX - r.left) / r.width);
@@ -46,9 +43,8 @@ function FluidGradientText({ text }: { text: string }) {
   };
   const handleMouseLeave = () => triggerDrain();
 
-  // Touch interactions
   const handleTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
-    e.preventDefault(); // stops browser text-selection on long-press
+    e.preventDefault();
     const r = e.currentTarget.getBoundingClientRect();
     const t = e.touches[0];
     triggerFill((t.clientX - r.left) / r.width);
@@ -60,19 +56,16 @@ function FluidGradientText({ text }: { text: string }) {
   };
   const handleTouchEnd = () => triggerDrain();
 
-  // Theme colors
   const strokeColor  = isDark ? "#00c8a8" : "#7c3aed";
 
-  // Dark: exact same stop structure as light (0%, 45%, 100%) just teal instead of purple
   const baseStops = isDark
     ? [{ o: "0%", c: "#002e28" }, { o: "45%", c: "#007a65" }, { o: "100%", c: "#00e8c6" }]
     : [{ o: "0%", c: "#1e0345" }, { o: "45%", c: "#5b21b6" }, { o: "100%", c: "#a855f7" }];
 
-  // Exact teal equivalents of purple sweep colors
-  const brightColor  = isDark ? "#00ffda" : "#e879f9";  // teal ↔ fuchsia bright
-  const crystalEdge  = isDark ? "#ccfff7" : "#fae8ff";  // near-white teal ↔ near-white purple
-  const midColor     = isDark ? "#00b89c" : "#7c3aed";  // mid teal ↔ mid purple
-  const dimColor     = isDark ? "#001a14" : "#1e0345";  // near-black teal ↔ near-black purple
+  const brightColor  = isDark ? "#00ffda" : "#e879f9";
+  const crystalEdge  = isDark ? "#ccfff7" : "#fae8ff";
+  const midColor     = isDark ? "#00b89c" : "#7c3aed";
+  const dimColor     = isDark ? "#001a14" : "#1e0345";
 
   const spread = VW * 0.26;
   const gx1 = useTransform(mouseX, v => v - spread);
@@ -80,7 +73,6 @@ function FluidGradientText({ text }: { text: string }) {
 
   const tl = VW * 0.945;
 
-  // Stretch the art to fill the box on small screens.
   const isMobile = useIsMobile();
 
   return (
@@ -103,12 +95,10 @@ function FluidGradientText({ text }: { text: string }) {
         aria-hidden="true"
       >
         <defs>
-          {/* Base fill — bottom bright → top dark (water fill) */}
           <linearGradient id="fgt_base" x1="0" y1={VH} x2="0" y2="0" gradientUnits="userSpaceOnUse">
             {baseStops.map((s, i) => <stop key={i} offset={s.o} stopColor={s.c} />)}
           </linearGradient>
 
-          {/* Crystal left-edge shine — fixed, sharpest at x=0 fades rightward */}
           <linearGradient id="fgt_crystal" x1="0" y1="0" x2={VW * 0.18} y2="0" gradientUnits="userSpaceOnUse">
             <stop offset="0%"   stopColor={crystalEdge} stopOpacity="0.55" />
             <stop offset="18%"  stopColor={brightColor}  stopOpacity="0.28" />
@@ -116,7 +106,6 @@ function FluidGradientText({ text }: { text: string }) {
             <stop offset="100%" stopColor={dimColor}      stopOpacity="0" />
           </linearGradient>
 
-          {/* Sweep highlight — centered on mouse, horizontal */}
           <motion.linearGradient
             id="fgt_sweep"
             x1={gx1} y1="0"
@@ -133,7 +122,6 @@ function FluidGradientText({ text }: { text: string }) {
           </motion.linearGradient>
         </defs>
 
-        {/* Layer 1 — hollow outline (resting) */}
         <motion.text
           x="50%" y={VH}
           textAnchor="middle" dominantBaseline="auto"
@@ -148,7 +136,6 @@ function FluidGradientText({ text }: { text: string }) {
           {text}
         </motion.text>
 
-        {/* Layer 2 — base fill (hover) — water body */}
         <motion.text
           x="50%" y={VH}
           textAnchor="middle" dominantBaseline="auto"
@@ -162,7 +149,6 @@ function FluidGradientText({ text }: { text: string }) {
           {text}
         </motion.text>
 
-        {/* Layer 3 — crystal left-edge shine */}
         <motion.text
           x="50%" y={VH}
           textAnchor="middle" dominantBaseline="auto"
@@ -176,7 +162,6 @@ function FluidGradientText({ text }: { text: string }) {
           {text}
         </motion.text>
 
-        {/* Layer 4 — mouse sweep highlight */}
         <motion.text
           x="50%" y={VH}
           textAnchor="middle" dominantBaseline="auto"
@@ -191,17 +176,13 @@ function FluidGradientText({ text }: { text: string }) {
         </motion.text>
       </svg>
 
-      {/* Line flush with SVG bottom — negative margin kills the SVG inline gap */}
       <div className="fgt-line" />
     </div>
   );
 }
 
+// Footer section
 export function Footer() {
-  // Computing the year directly during render would bake the build-time
-  // year into this statically-prerendered page, which can mismatch the
-  // client's actual year right around a New Year rollover. Render a fixed
-  // value on the first (server-matching) pass, then correct it after mount.
   const [year, setYear] = React.useState(2026);
   React.useEffect(() => { setYear(new Date().getFullYear()); }, []);
 
@@ -246,7 +227,6 @@ export function Footer() {
           background: var(--border);
         }
 
-        /* ── Big pixel text ── */
         .fgt-outer {
           position: relative;
           left: 50%;
@@ -256,8 +236,8 @@ export function Footer() {
           cursor: crosshair;
           user-select: none;
           -webkit-user-select: none;
-          touch-action: none;          /* prevents scroll hijack AND text selection on mobile */
-          -webkit-touch-callout: none; /* disables iOS long-press menu */
+          touch-action: none;
+          -webkit-touch-callout: none;
           font-size: 0;
           line-height: 0;
         }
@@ -273,7 +253,6 @@ export function Footer() {
           font-size: ${FONT_SIZE}px;
           font-weight: 400;
         }
-        /* Line sits flush directly below SVG */
         .fgt-line {
           display: block;
           width: 100%;
@@ -288,14 +267,10 @@ export function Footer() {
         @media (max-width: ${BP.footerCompactMax}px) {
           .footer-bottom-band  { padding: 26px 22px 8px; gap: 16px; }
         }
-        ${MQ.mobileSm} {
-          .footer-bottom-band  { padding: 22px 16px 8px; flex-direction: column; gap: 12px; }
+        ${MQ.mobile} {
+          .footer-bottom-band  { padding: 22px 13px 8px; flex-direction: column; gap: 12px; }
         }
 
-        /* PC / laptop only — cap "IThakur.Dev" to a fixed width instead of
-           full 100vw (intentionally wider than --content-width; it's a
-           decorative banner, not body content). Mobile and tablet keep
-           the existing full-bleed size. */
         @media (min-width: ${BP.laptopMin}px) {
           .fgt-outer {
             position: static;
@@ -308,13 +283,7 @@ export function Footer() {
             padding: 0 32px;
             box-sizing: border-box;
           }
-          /* Bigger on desktop — same width as the content column, more
-             presence height-wise. */
           .fgt-svg { height: clamp(84px, 18vw, 260px); }
-          /* The divider still needs to read as full-bleed like every other
-             section divider on the site, even though its parent (.fgt-outer)
-             is now intentionally width-capped to match the text above it.
-             It stays visually flush directly under the text either way. */
           .fgt-line {
             position: relative;
             left: 50%;

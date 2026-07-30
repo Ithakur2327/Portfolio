@@ -24,9 +24,6 @@ interface LCCalDay { date: number; count: number; }
 interface HoveredCell { date: string; count: number; x: number; y: number; }
 interface StatHover { label: string; solved: number; total: number; x: number; y: number; }
 
-// Keeps popover tooltips from getting clipped off the left/right edge of the
-// viewport on narrow (mobile) screens, while nudging the little arrow back
-// toward the hovered element so it still visibly "points" at it.
 function computeTooltipPosition(x: number, halfWidth: number) {
   if (typeof window === "undefined") return { left: x, arrowOffset: 0 };
   const min = halfWidth + 8;
@@ -79,7 +76,6 @@ function LeetCodeLogo({ size = 34, isDark = true }: { size?: number; isDark?: bo
         height={size * 0.56}
         style={{ display: "block", width: size * 0.56, height: size * 0.56, objectFit: "contain", objectPosition: "center", flexShrink: 0, margin: 0 }}
         onError={(e) => {
-          // Fallback to the bundled data URI if the CDN is unreachable.
           (e.target as HTMLImageElement).src = LEETCODE_ICON_DATA_URI;
           (e.target as HTMLImageElement).style.filter = isDark
             ? "grayscale(1) brightness(2.1) contrast(1.05)"
@@ -100,7 +96,6 @@ function GitHubLogo({ size = 34, isDark }: { size?: number; isDark: boolean }) {
   );
 }
 
-/* Portal tooltip (used for heatmap cell hover) */
 function PortalTooltip({ hovered, accentColor, label }: {
   hovered: HoveredCell | null;
   accentColor: string;
@@ -144,7 +139,6 @@ function PortalTooltip({ hovered, accentColor, label }: {
   );
 }
 
-/* Ghost-card tooltip used for the LeetCode "solved" stat chips */
 function StatTooltip({ hovered, accentColor }: { hovered: StatHover | null; accentColor: string }) {
   const [mounted, setMounted] = useState(false);
   useEffect(() => { setMounted(true); }, []);
@@ -192,8 +186,6 @@ function StatTooltip({ hovered, accentColor }: { hovered: StatHover | null; acce
   );
 }
 
-/* Small pill showing a solved/total stat; hover reveals the ghost-card tooltip.
-   Shows the full word ("Easy") on desktop/tablet and an abbreviation ("E") on mobile. */
 function StatChip({ label, shortLabel, solved, color, bold, onEnter, onLeave }: {
   label: string;
   shortLabel?: string;
@@ -234,7 +226,6 @@ function StatChip({ label, shortLabel, solved, color, bold, onEnter, onLeave }: 
   );
 }
 
-/* LeetCode stats */
 const LC_TOTAL = 3949;
 const GLOBAL_RANK = 150000;
 const MON_SHORT = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
@@ -270,7 +261,7 @@ function LeetCodeStats({ username = "IThakur09" }: { username?: string }) {
           if (days.length > 0) setCalData(days);
           if (json.profile) setData(json.profile as LC);
         }
-      } catch { /* fall back to the static placeholder numbers below */ }
+      } catch { }
       setLoading(false);
     })();
   }, [username]);
@@ -289,12 +280,6 @@ function LeetCodeStats({ username = "IThakur09" }: { username?: string }) {
     }
   });
 
-  // IMPORTANT: this page is statically prerendered, so `new Date()` evaluated
-  // directly during render would return the build-time date on the server
-  // but the real visit-time date on the client -- a guaranteed hydration
-  // mismatch (extra/missing week columns) any time a week boundary passes
-  // between build and visit. Gate the real "today" behind `mounted` so the
-  // first client render matches the server exactly, then let it fill in.
   const jan1 = new Date(2026, 0, 1);
   const startSun = new Date(jan1); startSun.setDate(startSun.getDate() - startSun.getDay());
   const today = mounted ? (() => { const t = new Date(); t.setHours(0, 0, 0, 0); return t; })() : startSun;
@@ -350,7 +335,6 @@ function LeetCodeStats({ username = "IThakur09" }: { username?: string }) {
 
   const gridContent = (
     <div style={{ display: "inline-flex", flexDirection: "column", paddingBottom: 4, minWidth: "max-content" }}>
-      {/* Month labels */}
       <div style={{ display: "flex", marginBottom: 4, paddingLeft: 26 }}>
         {lcMonthLabels.map((m, i) => {
           const nextCol = lcMonthLabels[i + 1]?.col ?? lcWeeks.length;
@@ -363,13 +347,11 @@ function LeetCodeStats({ username = "IThakur09" }: { username?: string }) {
         })}
       </div>
       <div style={{ display: "flex", gap: 0 }}>
-        {/* Day labels */}
         <div style={{ display: "flex", flexDirection: "column", gap: GAP, marginRight: 4 }}>
           {DAY_LABELS_LC.map((lbl, i) => (
             <div key={i} style={{ height: CELL, fontSize: 9, color: "var(--text-muted)", fontFamily: MONO, lineHeight: `${CELL}px`, userSelect: "none", width: 22 }}>{lbl}</div>
           ))}
         </div>
-        {/* Cells */}
         <div style={{ display: "flex", gap: GAP }}>
           {lcWeeks.map((wk, wi) => (
             <div key={wi} style={{ display: "flex", flexDirection: "column", gap: GAP }}>
@@ -389,7 +371,6 @@ function LeetCodeStats({ username = "IThakur09" }: { username?: string }) {
           ))}
         </div>
       </div>
-      {/* Legend */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 3, marginTop: 8 }}>
         <span style={{ fontSize: 9, color: "var(--text-muted)", fontFamily: MONO, marginRight: 3 }}>Less</span>
         {[0,1,2,3,4].map(l => <div key={l} className={`lc-cell lc-cell-${l}`} style={{ width: 10, height: 10, borderRadius: 2 }} />)}
@@ -400,11 +381,8 @@ function LeetCodeStats({ username = "IThakur09" }: { username?: string }) {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
-      {/* Portal tooltips — render into body, no stacking context issues */}
       <PortalTooltip hovered={hovered} accentColor={solvedColor} label="submissions" />
       <StatTooltip hovered={statHover} accentColor={statHover?.label === "Total Solved" ? solvedColor : (diffColors as Record<string, string>)[statHover?.label ?? ""] ?? solvedColor} />
-
-      {/* Header */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10, flexWrap: "wrap", gap: 8 }}>
         <a href={`https://leetcode.com/${username}`} target="_blank" rel="noreferrer" style={{ display: "flex", alignItems: "center", gap: 8, textDecoration: "none" }}>
           <LeetCodeLogo size={34} isDark={isDark} />
@@ -487,9 +465,6 @@ function LeetCodeStats({ username = "IThakur09" }: { username?: string }) {
   );
 }
 
-/* ─────────────────────────────────────────────────────
-   GitHub Graph
-───────────────────────────────────────────────────── */
 const MONTHS_GH = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 const DAYS_GH = ["","Mon","","Wed","","Fri",""];
 
@@ -538,9 +513,8 @@ function GitHubGraph({ username = "Ithakur2327" }: { username?: string }) {
           }
           setWeeks(ws); setIsLive(true); setLoading(false);
           return;
-        } catch { /* try next */ }
+        } catch { }
       }
-      // fallback
       const today = new Date(); today.setHours(0,0,0,0);
       const jan1 = new Date(2026,0,1);
       const startSun = new Date(jan1); startSun.setDate(startSun.getDate() - startSun.getDay());
@@ -573,7 +547,6 @@ function GitHubGraph({ username = "Ithakur2327" }: { username?: string }) {
   weeks.forEach((w, wi) => {
     if (!w.days[0]) return;
     const d = new Date(w.days[0].date + "T00:00:00");
-    // Skip Dec 2025 (partial week before Jan 1 2026) — only label 2026 months
     if (d.getFullYear() < 2026) return;
     const lbl = MONTHS_GH[d.getMonth()];
     const last = monthLabels[monthLabels.length - 1];
@@ -596,10 +569,7 @@ function GitHubGraph({ username = "Ithakur2327" }: { username?: string }) {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
-      {/* Portal tooltip — renders into body */}
       <PortalTooltip hovered={hovered} accentColor={isDark ? "#4ade80" : "#1a7f37"} label="contributions" />
-
-      {/* Header */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10, flexWrap: "wrap", gap: 8 }}>
         <a href={`https://github.com/${username}`} target="_blank" rel="noreferrer" style={{ display: "flex", alignItems: "center", gap: 8, textDecoration: "none" }}>
           <GitHubLogo size={34} isDark={isDark} />
@@ -629,7 +599,6 @@ function GitHubGraph({ username = "Ithakur2327" }: { username?: string }) {
             onMouseLeave={() => setHovered(null)}
           >
             <div style={{ display: "inline-flex", flexDirection: "column", paddingBottom: 4, minWidth: "max-content" }}>
-              {/* Month labels */}
               <div style={{ display: "flex", marginBottom: 4, paddingLeft: 26 }}>
                 {monthLabels.map((m, i) => {
                   const nextCol = monthLabels[i + 1]?.col ?? weeks.length;
@@ -663,7 +632,6 @@ function GitHubGraph({ username = "Ithakur2327" }: { username?: string }) {
                   ))}
                 </div>
               </div>
-              {/* Legend */}
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 8 }}>
                 <span style={{ fontSize: 9, color: "var(--text-muted)", fontFamily: MONO }}>{isLive ? "Contribution activity" : "preview"}</span>
                 <div style={{ display: "flex", alignItems: "center", gap: 3 }}>
@@ -680,9 +648,7 @@ function GitHubGraph({ username = "Ithakur2327" }: { username?: string }) {
   );
 }
 
-/* ─────────────────────────────────────────────────────
-   Main StatsSection export
-───────────────────────────────────────────────────── */
+// Stats section
 export function StatsSection() {
   const { ref: statsRef, revealClass } = useReveal(0.15);
 
@@ -762,7 +728,6 @@ export function StatsSection() {
         html.light .lc-cell-3 { background: #984b10; }
         html.light .lc-cell-4 { background: #000000; }
 
-        /* Stats panels — boxed with a dashed border, brightness matched to the Skills section's falling-icons-box */
         .stat-card-3d {
           padding: 12px 14px;
           background: transparent;
@@ -774,7 +739,7 @@ export function StatsSection() {
           overflow: visible;
           box-shadow: none;
           transition: border-color 0.2s;
-          min-width: 0; /* keeps the center divider mathematically centered — a grid item's default min-width:auto lets its own non-scrollable content (e.g. a long header string) grow the track past 50%, dragging the divider along with it */
+          min-width: 0;
         }
         .dark .stat-card-3d {
           border-color: rgba(255,255,255,0.32);
@@ -796,7 +761,6 @@ export function StatsSection() {
         ${mq.tablet} {
           .about-panels { grid-template-columns: 1fr !important; }
           .stat-card-3d { width: 100% !important; min-width: 0 !important; min-height: 220px; padding: 14px; }
-          /* Graph cells scale up so graph fills card width */
           .gh-cell { width: 14px !important; height: 14px !important; border-radius: 3px !important; }
           .lc-cell { width: 14px !important; height: 14px !important; border-radius: 3px !important; }
         }
@@ -810,7 +774,7 @@ export function StatsSection() {
         }
         ${mq.navCollapse} { .about-content { padding: 0 22px 34px; } }
         ${mq.mobile} {
-          .about-content  { padding: 0 16px 28px; }
+          .about-content  { padding: 0 13px 28px; }
           .stat-card-3d   { width: 100% !important; min-width: 0 !important; }
           .lc-activity-label { font-size: 10px !important; }
           .lc-solved-box, .lc-emh-box { padding: 2px 4px !important; gap: 3px !important; }

@@ -17,7 +17,6 @@ type NavLink = {
   icon: string;
   external: boolean;
   type: NavLinkType;
-  /** Shown dimmed/blurred and inert — reserved for sections not built yet. */
   comingSoon?: boolean;
 };
 
@@ -53,8 +52,6 @@ function useActiveSection() {
 
     const io = new IntersectionObserver(
       (entries) => {
-        // Pick the entry closest to the top of the "active band" among
-        // those currently intersecting it.
         const visible = entries.filter(e => e.isIntersecting);
         if (visible.length === 0) return;
         const top = visible.reduce((a, b) =>
@@ -126,20 +123,20 @@ function SunIconAnimated({ size = 16 }: { size?: number }) {
 function NavTooltip({ children, label, kbd }: { children: React.ReactNode; label: string; kbd?: string }) {
   const [show, setShow] = useState(false);
   const timer    = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const hasShown = useRef(false); // show only once per hover, not repeatedly
+  const hasShown = useRef(false);
 
   return (
     <div
       style={{ position: "relative", display: "inline-flex", alignItems: "center", justifyContent: "center" }}
       onMouseEnter={() => {
-        if (hasShown.current) return; // already shown this hover session — skip
+        if (hasShown.current) return;
         hasShown.current = true;
         timer.current = setTimeout(() => setShow(true), 0);
       }}
       onMouseLeave={() => {
         if (timer.current) clearTimeout(timer.current);
         setShow(false);
-        hasShown.current = false; // reset so next hover shows it
+        hasShown.current = false;
       }}
     >
       {children}
@@ -283,7 +280,7 @@ function CommandMenu({
       }
       const el = document.querySelector<HTMLElement>(item.href);
       if (!el) return;
-      const navOffset = 64; // matches html { scroll-padding-top: 64px }
+      const navOffset = 64;
       const top = el.getBoundingClientRect().top + window.scrollY - navOffset;
       window.scrollTo({ top, behavior: "smooth" });
     }, 60);
@@ -449,11 +446,6 @@ export function Navbar() {
   const pathname = usePathname();
   const isHome = pathname === "/";
 
-  // Corner logo swaps `<I>` for the avatar photo once the real hero avatar
-  // (`#hero-avatar-anchor`, only present on "/") has scrolled out from
-  // under the fixed navbar — and swaps back to `<I>` when it's back in
-  // view. Pages without a hero avatar (Contact, Projects) have nothing to
-  // wait for, so they just show the avatar right away.
   const [heroAvatarOutOfView, setHeroAvatarOutOfView] = useState(!isHome);
 
   useEffect(() => { setMounted(true); }, []);
@@ -468,8 +460,6 @@ export function Navbar() {
     if (!isHome) { setHeroAvatarOutOfView(true); return; }
     const el = document.getElementById("hero-avatar-anchor");
     if (!el) { setHeroAvatarOutOfView(true); return; }
-    // -52px top margin = the fixed navbar's own height, so the swap fires
-    // exactly as the hero avatar tucks in behind the navbar, not earlier.
     const io = new IntersectionObserver(
       ([entry]) => setHeroAvatarOutOfView(!entry.isIntersecting),
       { rootMargin: "-52px 0px 0px 0px", threshold: 0 }
@@ -513,7 +503,6 @@ export function Navbar() {
         @keyframes cmdk-p-in   { from{opacity:0;transform:translateY(-6px) scale(0.98)} to{opacity:1;transform:translateY(0) scale(1)} }
         @keyframes cmdk-p-out  { from{opacity:1;transform:translateY(0) scale(1)} to{opacity:0;transform:translateY(-6px) scale(0.98)} }
 
-        /* Mobile overlay: blur */
         ${mq.mobile} {
           .cmdk-overlay { backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
         }
@@ -523,7 +512,6 @@ export function Navbar() {
           -webkit-mask-image: linear-gradient(to bottom,transparent 0,black 32px,black calc(100% - 32px),transparent 100%);
         }
 
-        /* KBD */
         .nav-kbd {
           display:inline-flex;align-items:center;justify-content:center;
           height:18px;min-width:20px;width:fit-content;gap:3px;
@@ -541,7 +529,6 @@ export function Navbar() {
           color:var(--text-muted);
         }
 
-        /* Search trigger */
         .cmdk-trigger {
           display:inline-flex;align-items:center;gap:6px;
           height:34px;padding:0 8px;border-radius:8px;border:none;
@@ -554,13 +541,10 @@ export function Navbar() {
           -webkit-tap-highlight-color:transparent;
         }
         .cmdk-trigger:hover { color:var(--nav-link-hover);background:var(--nav-link-active-bg); }
-        /* Show the search label on mobile + tablets; hide only on large desktops */
         ${mq.laptopWideUp} { .cmdk-trigger-label { display:none !important; } }
-        /* Hide the keyboard shortcut hint on tablets and smaller (show only on large desktops) */
         ${mq.laptopNarrowDown} { .cmdk-trigger-kbd   { display:none !important; } }
         .cmdk-trigger-kbd { display:flex;align-items:center;gap:3px; }
 
-        /* Desktop nav links */
         .nav-desktop-link {
           font-size:14.5px;font-weight:500;letter-spacing:-0.01em;
           color:var(--nav-link-color);text-decoration:none;
@@ -573,7 +557,6 @@ export function Navbar() {
 
         .nav-sep { width:1px;height:20px;align-self:center;background:var(--nav-border);flex-shrink:0; }
 
-        /* Icon button */
         .icon-btn {
           display:grid;place-items:center;
           width:34px;height:34px;border-radius:8px;border:none;
@@ -607,7 +590,6 @@ export function Navbar() {
           }
         }
 
-        /* Tooltip — desktop/mouse pointer only */
         .nav-tooltip-box {
           position:absolute;top:calc(100% + 8px);left:50%;transform:translateX(-50%);
           background:var(--text-primary);color:var(--bg-base);
@@ -633,7 +615,6 @@ export function Navbar() {
           border-bottom:5px solid var(--text-primary);
         }
 
-        /* Treat tablets and smaller like mobile: hide desktop-only nav links */
         ${mq.laptopNarrowDown} { .nav-desktop-only { display:none !important; } }
       `}</style>
 
@@ -644,7 +625,7 @@ export function Navbar() {
             <div className="logo-area">
               <div className={`logo-i${showCornerAvatar ? " hide" : ""}`}>&lt;I&gt;</div>
               <div className={`logo-avatar${showCornerAvatar ? " show" : ""}`}>
-                {/* eslint-disable-next-line @next/next/no-img-element -- intentionally a plain img: this exact URL is already preloaded in layout.tsx and fetched by Avatar.tsx's WebGL loader, so next/image would rewrite it to a different optimizer URL and cause an extra fetch instead of reusing the cached one */}
+                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={isDark ? "/avatar-dark.jpg" : "/avatar-light.jpg"}
                   alt="IT"

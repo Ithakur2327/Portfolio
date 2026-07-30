@@ -82,7 +82,6 @@ export function ContactPageForm() {
           margin-top: 22px;
         }
 
-        /* ── Book-a-call banner ── */
         .cpf-banner {
           width: 100%;
           padding: 18px 20px;
@@ -171,10 +170,6 @@ export function ContactPageForm() {
             {sent ? "Opening Email App..." : "Send Message"}
             <SendIcon />
           </SolidMagneticButton>
-          {/* mailto: silently does nothing if the visitor has no default mail
-              app configured (common on fresh desktop installs) -- there's no
-              way to detect that in JS, so always show a working fallback
-              rather than leaving those visitors with no path to reach out. */}
           <p style={{ fontSize: 12.5, color: "var(--text-muted)", fontFamily: MONO, margin: 0 }}>
             Or email directly at{" "}
             <a href={`mailto:${TO_EMAIL}`} style={{ color: "var(--text-secondary)", textDecoration: "underline" }}>

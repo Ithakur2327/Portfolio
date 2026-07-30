@@ -15,12 +15,8 @@ import { mq } from "@/lib/breakpoints";
 
 const SF = "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', sans-serif";
 
-// Same two accent colors used for the dashed frames around the project
-// cards, reused here so the About box reads as part of the same system.
 const TIFFANY = "#0FA89C";
 const GOLD = "#D4AF37";
-
-/* Time-of-day greeting removed — reverted back to a static "About" title. */
 
 const ABOUT_TEXT = `Hi, I'm [[Indresh Thakur]], currently pursuing [[B.Tech]] in [[Computer Science & Engineering (AI)]] at [[NIET Greater Noida]]. I'm a [[motivated]] and [[growth oriented]] [[Full-Stack]] & [[AI Developer]] passionate about building [[modern]], [[scalable]], and [[user]]-[[focused]] digital experiences.
 
@@ -90,20 +86,18 @@ function ScrollRevealText() {
   );
 }
 
-/* About section export */
+// About section
 export function AboutSection() {
   const { ref, revealClass } = useReveal();
 
   return (
     <>
       <style suppressHydrationWarning>{`
-        /* Name highlight → tiffany, same accent used for the project cards. */
         .name-highlight {
           display: inline; color: ${TIFFANY}; font-weight: 600; white-space: nowrap;
           background: rgba(15,168,156,0.12); border: 1px solid rgba(15,168,156,0.35);
           border-radius: 5px; padding: 1px 7px 2px;
         }
-        /* All other highlighted terms → gold, same accent used for the project cards. */
         .gold-box-word {
           display: inline; color: ${GOLD}; font-weight: 600;
           background: rgba(212,175,55,0.10); border: 1px solid rgba(212,175,55,0.30);
@@ -117,7 +111,7 @@ export function AboutSection() {
         }
         ${mq.navCollapse} { .about-content { padding: 0 22px 34px; } }
         ${mq.mobile} {
-          .about-content { padding: 0 14px 28px; }
+          .about-content { padding: 0 13px 28px; }
           .about-para    { font-size: 14px !important; }
         }
 

@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState } from "react";
 
-/** Shared section icons used across the site. */
 export type SectionIconType =
   | "home" | "about" | "chart" | "layers" | "box"
   | "badge" | "book" | "mail" | "resume" | "github"
@@ -66,7 +65,6 @@ export function SectionIcon({
   }
 }
 
-/** Shared icon badge for section titles. */
 export function SectionTitleIcon({ type }: { type: SectionIconType }) {
   const ref = useRef<HTMLSpanElement>(null);
   const [popped, setPopped] = useState(false);
@@ -112,7 +110,6 @@ export function SectionTitleIcon({ type }: { type: SectionIconType }) {
   );
 }
 
-/** Small section marker dot. */
 export function GoldDot() {
   return (
     <span

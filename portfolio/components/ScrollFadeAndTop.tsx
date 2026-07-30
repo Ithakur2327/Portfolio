@@ -10,7 +10,6 @@ function ArrowUpIcon() {
   );
 }
 
-/** Bottom fade and scroll-to-top helper. */
 export function ScrollFadeAndTop() {
   const [scrolledPast, setScrolledPast] = useState(false);
   const [dimmed, setDimmed] = useState(false);
@@ -52,13 +51,6 @@ export function ScrollFadeAndTop() {
 
   return (
     <>
-      {/* Bottom fade/blur — fades from transparent into the page background,
-          stops appearing before the footer (which has its own background).
-          Uses chanhdai's exact technique: a background gradient combined
-          with a mask gradient (not a single flat linear-gradient strip) so
-          the blend curve is smooth instead of a hard-edged band, plus a
-          solid safe-area strip underneath so the very bottom edge (behind
-          notches/home-indicators) is fully opaque. */}
       <div
         aria-hidden="true"
         style={{
@@ -86,7 +78,6 @@ export function ScrollFadeAndTop() {
         <div style={{ background: "var(--bg-base)", paddingBottom: "env(safe-area-inset-bottom, 0px)" }} />
       </div>
 
-      {/* Bottom-right scroll-to-top arrow */}
       <button
         type="button"
         aria-label="Scroll to top"

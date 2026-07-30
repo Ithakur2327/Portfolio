@@ -150,9 +150,6 @@ function DotCanvas({
       schedule();
     };
 
-    // Scrolling moves the page under a stationary cursor, so the glow
-    // would otherwise stay frozen at stale coordinates. Clear it as soon
-    // as the page scrolls; it'll reappear on the next real mousemove.
     const onScroll = () => {
       if (!mouse.active) return;
       mouse.active = false;

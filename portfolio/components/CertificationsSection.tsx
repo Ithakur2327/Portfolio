@@ -9,7 +9,6 @@ import { mq } from "@/lib/breakpoints";
 const SF = "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', sans-serif";
 const MONO = "'Geist Mono', monospace";
 
-// Certifications are matched to PDFs by title.
 const CERTIFICATIONS = [
   {
     title: "MERN Stack Development",
@@ -55,6 +54,7 @@ const CERTIFICATIONS = [
   },
 ];
 
+// Certifications section
 export function CertificationsSection() {
   const { ref, revealClass, visible } = useReveal();
   const { openPdf } = usePdfModal();
@@ -62,7 +62,6 @@ export function CertificationsSection() {
   return (
     <>
       <style suppressHydrationWarning>{`
-        /* Shared section wrapper */
         .edu-outer {
           position: relative;
           left: 50%;
@@ -109,7 +108,6 @@ export function CertificationsSection() {
           transition: box-shadow 0.2s, transform 0.2s;
         }
 
-        /* Certification section */
         .cert-count-badge {
           font-family: ${MONO};
           font-size: 10px;
@@ -124,7 +122,6 @@ export function CertificationsSection() {
         .cert-logo-img {
           width: 17px; height: 17px; object-fit: contain;
         }
-        /* Certification grid */
         .cert-grid {
           display: grid;
           grid-template-columns: 1fr 1fr;
@@ -132,15 +129,7 @@ export function CertificationsSection() {
           grid-auto-flow: column;
           column-gap: 40px;
         }
-        /* Right column sits a bit further from the center gap. Uses
-           margin (not padding) so the icon AND its absolutely-positioned
-           connecting line — which is anchored to this box's own edge —
-           shift together; padding here would only have moved the icon,
-           leaving the line behind and visibly misaligned from it. */
         .cert-grid > .cert-item-2:nth-child(n+4) { margin-left: 14px; }
-        /* Column 1's last card has no card visually below it in the
-           2-column layout (its next DOM sibling is the top of column 2) —
-           so its trailing connector line is hidden here only. */
         .cert-grid > .cert-item-2:nth-child(3) > .cert-item-2-line { display: none; }
         .cert-item-2 {
           position: relative;
@@ -169,8 +158,6 @@ export function CertificationsSection() {
           justify-content: space-between;
           gap: 12px;
         }
-        /* Only the certificate name is clickable — the card itself carries
-           no onClick/role/tabIndex. */
         .cert-item-2-title {
           display: inline-block;
           font-size: 14.5px;
@@ -228,12 +215,11 @@ export function CertificationsSection() {
           border-color: var(--text-muted);
         }
 
-        /* Responsive tweaks */
         ${mq.navCollapse} {
           .edu-inner { padding: 0 22px 34px; }
         }
         ${mq.mobile} {
-          .edu-inner { padding: 0 16px 28px; }
+          .edu-inner { padding: 0 13px 28px; }
           .edu-sec-title { font-size: 22px; }
         }
         ${mq.tabletSplitDown} {
@@ -247,7 +233,6 @@ export function CertificationsSection() {
         }
       `}</style>
 
-      {/* ═══ CERTIFICATIONS ═══ */}
       <section
         id="certifications"
         ref={ref}
@@ -255,7 +240,6 @@ export function CertificationsSection() {
       >
         <div className="edu-outer">
           <div className="edu-inner">
-            {/* Title row */}
             <div className="edu-sec-titlerow">
               <h2 className="edu-sec-title">
                 <SectionTitleIcon type="badge" />
@@ -266,8 +250,6 @@ export function CertificationsSection() {
 
             <div className="edu-sec-divider" />
 
-            {/* Cert items — education-card layout: company icon, title, issuer/date.
-                Only the certificate name is clickable; the card itself is inert. */}
             <div className="cert-grid">
               {CERTIFICATIONS.map((cert, i) => {
                 const pdfSrc = `/certificates/${slugify(cert.title)}.pdf`;
@@ -280,7 +262,7 @@ export function CertificationsSection() {
                     transition={{ duration: 0.46, ease: [0.22, 1, 0.36, 1], delay: visible ? i * 0.08 : 0 }}
                   >
                     <div className="edu-card-icon">
-                      {/* eslint-disable-next-line @next/next/no-img-element -- small external SVG issuer logo (simpleicons.org); dangerouslyAllowSVG is intentionally off */}
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
                         className="cert-logo-img"
                         src={cert.logo}

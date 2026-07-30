@@ -9,15 +9,10 @@ import { useIsLaptopUp } from "@/lib/useBreakpoint";
 export function ProjectsGrid({ projects, visible = true, mobileMax, wide }: {
   projects: Project[];
   visible?: boolean;
-  /** If set, only this many cards show on narrow (<=640px) screens — the
-   *  rest stay in the DOM (no layout shift on resize) but are hidden. */
   mobileMax?: number;
-  /** Adds a 3-column layout on large screens — used by the "All Projects"
-   *  page, which has room to breathe with the full project list. */
   wide?: boolean;
 }) {
   const [active, setActive] = useState<Project | null>(null);
-  // Desktop/laptop gets the hover-driven image reveal and morph animation; tablet and mobile get the sheet
   const isDesktop = useIsLaptopUp();
 
   return (

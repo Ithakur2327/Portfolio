@@ -8,12 +8,10 @@ import { mq } from "@/lib/breakpoints";
 
 const SF = "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', sans-serif";
 
-// Only the first 4 projects show on the homepage — the rest live on
-// the /projects page behind the "View more" link below. On narrow
-// (<=640px) screens only 3 of those 4 are shown (see ProjectsGrid).
 const FEATURED_COUNT = 4;
 const MOBILE_COUNT   = 3;
 
+// Projects section
 export function ProjectsSection() {
   const { ref: revealRef, revealClass, visible } = useReveal();
   const featured = PROJECTS.slice(0, FEATURED_COUNT);
@@ -33,7 +31,7 @@ export function ProjectsSection() {
 
           <style suppressHydrationWarning>{`
             ${mq.navCollapse} { .proj-inner { padding: 0 22px 34px !important; } }
-            ${mq.mobile} { .proj-inner { padding: 0 16px 28px !important; } }
+            ${mq.mobile} { .proj-inner { padding: 0 13px 28px !important; } }
           `}</style>
 
           <ProjectsGrid projects={featured} visible={visible} mobileMax={MOBILE_COUNT} />

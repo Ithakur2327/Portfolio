@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Navbar } from "@/components/Navbar";
 import { ContactPageForm } from "@/components/ContactPageForm";
+import { mq } from "@/lib/breakpoints";
 
 export const metadata: Metadata = {
   title: "Contact — Indresh Thakur",
@@ -55,10 +56,15 @@ export default function ContactPage() {
           max-width: 440px;
           margin: 0;
         }
+        .contact-page-inner {
+          padding: 44px 0 80px;
+        }
+        ${mq.navCollapse} { .contact-page-inner { padding: 44px 22px 80px; } }
+        ${mq.mobile} { .contact-page-inner { padding: 44px 13px 80px; } }
       `}</style>
       <main style={{ paddingTop: 52 }}>
         <div className="page-wrapper">
-          <div style={{ padding: "44px 0 80px" }}>
+          <div className="contact-page-inner">
             <BackToHomeLink />
 
             <div style={{ paddingTop: 18 }}>
