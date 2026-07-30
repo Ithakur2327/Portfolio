@@ -131,13 +131,17 @@ function FallingIconsBox({ title, items }: { title: string; items: string[] }) {
 
     const start = () => {
       if (cancelled) return;
-      const { Engine, World, Bodies, Body, Mouse, MouseConstraint } = Matter;
+      const { Engine, World, Bodies, Body, Mouse, MouseConstraint, Events } = Matter;
 
       let rect = box.getBoundingClientRect();
       if (rect.width <= 0 || rect.height <= 0) return;
 
     const engine = Engine.create();
-    engine.world.gravity.y = 0.85;
+    // Start with gravity off so icons don't fall on load — they sit exactly
+    // where they were laid out. Gravity turns on the moment the user first
+    // drags an icon, after which everything behaves as before.
+    engine.world.gravity.y = 0;
+    let gravityEnabled = false;
 
     const wallOpts = { isStatic: true, friction: 0.4 };
     let floor      = Bodies.rectangle(rect.width / 2, rect.height + 24, rect.width, 48, wallOpts);
@@ -157,7 +161,7 @@ function FallingIconsBox({ title, items }: { title: string; items: string[] }) {
         chamfer: { radius: 10 },
         inertia: Infinity,
       });
-      Body.setVelocity(body, { x: (Math.random() - 0.5) * 3, y: 0 });
+      // No initial random velocity either — icons stay put until interacted with.
       return { el, body, hw: r.width / 2, hh: r.height / 2 };
     });
 
@@ -187,6 +191,14 @@ function FallingIconsBox({ title, items }: { title: string; items: string[] }) {
       mouse,
       constraint: { stiffness: 0.2, render: { visible: false } },
     });
+
+    // Turn on gravity the first time the user actually drags an icon.
+    const enableGravity = () => {
+      if (gravityEnabled) return;
+      gravityEnabled = true;
+      engine.world.gravity.y = 0.85;
+    };
+    Events.on(mouseConstraint, "startdrag", enableGravity);
 
     const handleTouchStart = (e: TouchEvent) => mouse.mousedown(e);
     const handleTouchMove = (e: TouchEvent) => {
@@ -231,6 +243,7 @@ function FallingIconsBox({ title, items }: { title: string; items: string[] }) {
 
       pieces.forEach(({ el, body, hw, hh }) => {
         if (kick !== 0) {
+          if (!gravityEnabled) enableGravity();
           Body.setVelocity(body, { x: body.velocity.x, y: body.velocity.y + kick });
         }
         const maxX = Math.max(hw, rect.width - hw);
@@ -272,6 +285,7 @@ function FallingIconsBox({ title, items }: { title: string; items: string[] }) {
         box.removeEventListener("touchmove", handleTouchMove);
         box.removeEventListener("touchend", handleTouchEnd);
         box.removeEventListener("touchcancel", handleTouchEnd);
+        Events.off(mouseConstraint, "startdrag", enableGravity);
         clearTimeout(resizeTimer);
         cancelAnimationFrame(rafId);
         World.clear(engine.world, false);
