@@ -410,7 +410,6 @@ function LeetCodeStats({ username = "IThakur09" }: { username?: string }) {
                   alignItems: "center",
                   padding: "3px 6px",
                   borderRadius: 7,
-                  border: "1px dashed var(--border)",
                   flexShrink: 1,
                   minWidth: 0,
                 }}
@@ -430,7 +429,6 @@ function LeetCodeStats({ username = "IThakur09" }: { username?: string }) {
                   flexWrap: "nowrap",
                   padding: "3px 6px",
                   borderRadius: 7,
-                  border: "1px dashed var(--border)",
                   flexShrink: 1,
                   minWidth: 0,
                 }}
