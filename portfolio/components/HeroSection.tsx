@@ -398,7 +398,7 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
           .h-nameblock {
             flex: 1 !important;
             min-width: 0 !important;
-            overflow: hidden !important;
+            overflow: visible !important;
           }
 
           .h-nameblock > div:nth-child(2) {
@@ -482,9 +482,9 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
           <div style={{ position: "relative", zIndex: 1 }}>
 
         <div style={{
-          background:BG, borderTop:B,
+          background:BG, borderTop:B, borderBottom:B,
         }}>
-          <div className="h-profile" style={{maxWidth:CW, margin:"0 auto", borderLeft:B, borderRight:B, borderBottom:B, borderTop:"none", borderRadius:8.5}}>
+          <div className="h-profile" style={{maxWidth:CW, margin:"0 auto", borderLeft:B, borderRight:B, borderTop:"none", borderRadius:8.5}}>
 
             <div
               className="h-avatar"

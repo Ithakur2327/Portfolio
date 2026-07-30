@@ -221,26 +221,29 @@ export function Footer() {
           overflow: hidden;
         }
 
-        .footer-social-band {
-          max-width: var(--content-width);
-          margin: 0 auto;
-          padding: 40px 32px 18px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
         .footer-bottom-band {
           max-width: var(--content-width);
           margin: 0 auto;
-          padding: 18px 32px;
+          padding: 34px 32px 8px;
           display: flex;
           align-items: center;
           justify-content: center;
+          gap: 20px;
+          flex-wrap: wrap;
+          row-gap: 12px;
         }
         .footer-copy {
           font-size: 11.5px;
           color: var(--text-muted);
           font-family: ${MONO};
+        }
+        .footer-full-line {
+          position: relative;
+          left: 50%;
+          margin-left: -50vw;
+          width: 100vw;
+          height: 1px;
+          background: var(--border);
         }
 
         /* ── Big pixel text ── */
@@ -249,7 +252,7 @@ export function Footer() {
           left: 50%;
           margin-left: -50vw;
           width: 100vw;
-          margin-top: clamp(2px, 0.6vw, 8px);
+          margin-top: clamp(20px, 3vw, 44px);
           cursor: crosshair;
           user-select: none;
           -webkit-user-select: none;
@@ -283,12 +286,10 @@ export function Footer() {
         }
 
         @media (max-width: ${BP.footerCompactMax}px) {
-          .footer-social-band  { padding: 32px 22px 14px; }
-          .footer-bottom-band  { padding: 14px 22px; }
+          .footer-bottom-band  { padding: 26px 22px 8px; gap: 16px; }
         }
         ${MQ.mobileSm} {
-          .footer-social-band  { padding: 26px 16px 12px; }
-          .footer-bottom-band  { padding: 12px 16px; }
+          .footer-bottom-band  { padding: 22px 16px 8px; flex-direction: column; gap: 12px; }
         }
 
         /* PC / laptop only — cap "IThakur.Dev" to a fixed width instead of
@@ -301,7 +302,7 @@ export function Footer() {
             left: auto;
             width: 100%;
             max-width: 1140px;
-            margin-top: clamp(2px, 0.5vw, 6px);
+            margin-top: clamp(10px, 2vw, 28px);
             margin-left: auto;
             margin-right: auto;
             padding: 0 32px;
@@ -321,21 +322,19 @@ export function Footer() {
             width: 100vw;
             margin-top: -10px;
           }
-          .footer-social-band { padding: 56px 32px 20px; }
-          .footer-bottom-band { padding: 20px 32px 24px; }
+          .footer-bottom-band { padding: 38px 32px 10px; }
         }
       `}</style>
 
       <footer id="site-footer-root" className="footer-root">
-        <div className="footer-social-band">
+        <div className="footer-bottom-band">
+          <span className="footer-copy">© {year} Indresh Thakur. All rights reserved.</span>
           <SocialRow size={22} gap={16} bright thinBorder boostSize={1.15} />
         </div>
 
-        <FluidGradientText text="IThakur.Dev" />
+        <div className="footer-full-line" />
 
-        <div className="footer-bottom-band">
-          <span className="footer-copy">© {year} Indresh Thakur. All rights reserved.</span>
-        </div>
+        <FluidGradientText text="IThakur.Dev" />
       </footer>
     </>
   );
