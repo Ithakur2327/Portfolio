@@ -103,9 +103,10 @@ export function ProjectCard({ proj, index, visible, isDesktop, onOpen }: {
       <div
         style={{
           width: "100%",
-          padding: 3,
-          borderRadius: 11,
-          border: `0.7px dashed ${index % 2 === 0 ? "rgba(10,186,181,0.32)" : "rgba(212,175,55,0.32)"}`,
+         padding: 2,
+         borderRadius: 14,
+        border: `1px dashed ${
+        index % 2 === 0 ? "rgba(10,186,181,0.55)" : "rgba(212,175,55,0.55)" }`,
           boxSizing: "border-box",
         }}
       >
@@ -114,7 +115,7 @@ export function ProjectCard({ proj, index, visible, isDesktop, onOpen }: {
           layoutId={`card-banner-${proj.name}`}
           transition={SPRING}
           style={{
-            width: "100%", aspectRatio: "16 / 9", borderRadius: 9,
+            width: "100%", aspectRatio: "16 / 9", borderRadius: 12,
             position: "relative", overflow: "hidden",
           }}
         >
