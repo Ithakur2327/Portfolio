@@ -111,7 +111,7 @@ const FallingIcon = memo(forwardRef<HTMLDivElement, { name: string }>(function F
 FallingIcon.displayName = "FallingIcon";
 
 // Physics
-function FallingIconsBox({ title, items }: { title: string; items: string[] }) {
+function FallingIconsBox({ title, items, index = 0 }: { title: string; items: string[]; index?: number }) {
   const { ref: boxRef, inView } = useBoxInView();
   const iconRefs = useRef<(HTMLDivElement | null)[]>([]);
 
@@ -131,12 +131,24 @@ function FallingIconsBox({ title, items }: { title: string; items: string[] }) {
 
     const start = () => {
       if (cancelled) return;
-      const { Engine, World, Bodies, Body, Mouse, MouseConstraint, Events } = Matter;
+      const { Engine, World, Bodies, Body, Mouse, MouseConstraint, Events, Sleeping } = Matter;
 
       let rect = box.getBoundingClientRect();
       if (rect.width <= 0 || rect.height <= 0) return;
 
-    const engine = Engine.create();
+    const isMobile = typeof window !== "undefined" && window.matchMedia("(max-width: 767px)").matches;
+    // Lighter solver keeps it cheap on phones; no artificial fps cap here —
+    // sleeping bodies + the scroll deadzone (below) do the real work of
+    // keeping this light, so we let rAF run at the display's native rate
+    // (up to 120Hz) for the smoothest feel.
+    const engine = Engine.create({
+      positionIterations: isMobile ? 3 : 6,
+      velocityIterations: isMobile ? 2 : 4,
+      constraintIterations: isMobile ? 1 : 2,
+    });
+    // Resting bodies stop being simulated entirely — big win since icons
+    // now sit still until dragged instead of tumbling in on load.
+    engine.enableSleeping = true;
     // Start with gravity off so icons don't fall on load — they sit exactly
     // where they were laid out. Gravity turns on the moment the user first
     // drags an icon, after which everything behaves as before.
@@ -161,7 +173,9 @@ function FallingIconsBox({ title, items }: { title: string; items: string[] }) {
         chamfer: { radius: 10 },
         inertia: Infinity,
       });
-      // No initial random velocity either — icons stay put until interacted with.
+      // Spawn already asleep — nothing to simulate until it's touched, so
+      // there's no "warm up" period of full physics right after mount.
+      Sleeping.set(body, true);
       return { el, body, hw: r.width / 2, hh: r.height / 2 };
     });
 
@@ -198,7 +212,10 @@ function FallingIconsBox({ title, items }: { title: string; items: string[] }) {
       gravityEnabled = true;
       engine.world.gravity.y = 0.85;
     };
-    Events.on(mouseConstraint, "startdrag", enableGravity);
+    Events.on(mouseConstraint, "startdrag", (event: any) => {
+      enableGravity();
+      if (event?.body) Sleeping.set(event.body, false);
+    });
 
     const handleTouchStart = (e: TouchEvent) => mouse.mousedown(e);
     const handleTouchMove = (e: TouchEvent) => {
@@ -238,12 +255,18 @@ function FallingIconsBox({ title, items }: { title: string; items: string[] }) {
       lastTime = time;
       Engine.update(engine, delta);
 
-      const kick = scrollImpulse !== 0 ? Math.max(-2.5, Math.min(2.5, -scrollImpulse * 0.045)) : 0;
+      const rawKick = scrollImpulse !== 0 ? Math.max(-2.5, Math.min(2.5, -scrollImpulse * 0.045)) : 0;
+      // Ignore tiny scroll jitter — only a real scroll gesture should wake icons.
+      const kick = Math.abs(rawKick) > 0.15 ? rawKick : 0;
       scrollImpulse = 0;
 
       pieces.forEach(({ el, body, hw, hh }) => {
+        // Idle icon, no scroll kick this frame — nothing to compute or paint.
+        if (body.isSleeping && kick === 0) return;
+
         if (kick !== 0) {
           if (!gravityEnabled) enableGravity();
+          if (body.isSleeping) Sleeping.set(body, false);
           Body.setVelocity(body, { x: body.velocity.x, y: body.velocity.y + kick });
         }
         const maxX = Math.max(hw, rect.width - hw);
@@ -293,14 +316,14 @@ function FallingIconsBox({ title, items }: { title: string; items: string[] }) {
       };
     };
 
-    const timer = setTimeout(() => requestAnimationFrame(start), 150);
+    const timer = setTimeout(() => requestAnimationFrame(start), 150 + index * 120);
 
     return () => {
       cancelled = true;
       clearTimeout(timer);
       cleanup?.();
     };
-  }, [hasAppeared, boxRef]);
+  }, [hasAppeared, boxRef, index]);
 
   return (
     <div className="falling-icons-panel">
@@ -428,17 +451,27 @@ export function SkillsSection() {
         ${mq.mobile} {
           .skills-inner { padding: 0 13px 28px !important; }
           .falling-icons-row { flex-direction: column; gap: 16px; }
-          .falling-icons-box { border-radius: 12px; min-height: 265px; }
+          .falling-icons-box {
+            border-radius: 12px;
+            min-height: 275px;
+            width: calc(100% + 14.5px);
+            margin: 0 -8px;
+          }
           .falling-icons-flow { padding: 18px 12px; gap: 8px; }
-          .falling-icon-chip { width: 45px; height: 51px; border-radius: 11px; gap: 4px; padding: 6px 3px 5px; }
-          .falling-icon-chip img { width: 17px; height: 17px; }
+          .falling-icon-chip {
+            width: 45px; height: 51px; border-radius: 11px; gap: 4px; padding: 6px 3px 5px;
+            box-shadow: 0 3px 6px -3px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.5);
+          }
+          .dark .falling-icon-chip { box-shadow: 0 3px 6px -3px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.1); }
+          .falling-icon-chip img { width: 17px; height: 17px; filter: none; }
+          .dark .falling-icon-chip img.invert-in-dark { filter: invert(1); }
           .falling-icon-textmark { font-size: 13px; }
           .falling-icon-name { font-size: 6.6px; }
           .falling-icons-title { font-size: 12.5px; margin-bottom: 8px; }
         }
 
         @media ${cond.down(BP.mobileXsMax)} {
-          .falling-icons-box { min-height: 225px; }
+          .falling-icons-box { min-height: 235px; }
           .falling-icon-chip { width: 38px; height: 44px; border-radius: 10px; }
           .falling-icon-chip img { width: 14px; height: 14px; }
           .falling-icon-textmark { font-size: 11px; }
@@ -469,8 +502,8 @@ export function SkillsSection() {
             <div style={{ height:1, background:"var(--border)", margin:"18px 0 18px" }} />
 
             <div className="falling-icons-row">
-              <FallingIconsBox title="Languages & Full Stack" items={LANG_FULLSTACK_TECH} />
-              <FallingIconsBox title="GenAI, DevOps & Tools" items={GENAI_DEVOPS_TOOLS_TECH} />
+              <FallingIconsBox title="Languages & Full Stack" items={LANG_FULLSTACK_TECH} index={0} />
+              <FallingIconsBox title="GenAI, DevOps & Tools" items={GENAI_DEVOPS_TOOLS_TECH} index={1} />
             </div>
           </div>
         </div>
