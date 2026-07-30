@@ -145,7 +145,7 @@ function ArrowUpRightIcon() {
   );
 }
 
-export { SendIcon, ResumeIcon };
+export { SendIcon, ResumeIcon, ArrowUpRightIcon };
 
 export function SolidMagneticButton({
   as = "button",

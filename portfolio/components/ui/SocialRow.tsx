@@ -91,8 +91,9 @@ function SocialTooltip({
   );
 }
 
-export function SocialRow({ size = 28, gap = 16, bright = false, leftAlign = false }: { size?: number; gap?: number; bright?: boolean; leftAlign?: boolean }) {
+export function SocialRow({ size = 28, gap = 16, bright = false, leftAlign = false, hideKeys = [], thinBorder = false, boostSize = 1 }: { size?: number; gap?: number; bright?: boolean; leftAlign?: boolean; hideKeys?: string[]; thinBorder?: boolean; boostSize?: number }) {
   const [active, setActive] = useState<string | null>(null);
+  const links = hideKeys.length ? SOCIAL_LINKS.filter(s => !hideKeys.includes(s.key)) : SOCIAL_LINKS;
 
   return (
     <>
@@ -112,6 +113,13 @@ export function SocialRow({ size = 28, gap = 16, bright = false, leftAlign = fal
         }
         .rt-link--bright { color: var(--text-secondary); }
         .rt-link:hover { color: var(--text-primary); transform: translateY(-1px); }
+
+        .rt-row--thin .rt-link svg { stroke-width: 1.2; }
+
+        .rt-icon-boost {
+          display: inline-flex;
+          transform: scale(var(--rt-boost, 1));
+        }
 
         .rt-tip {
           position: absolute;
@@ -154,8 +162,8 @@ export function SocialRow({ size = 28, gap = 16, bright = false, leftAlign = fal
         }
       `}</style>
 
-      <div className="rt-row" style={{ gap, justifyContent: leftAlign ? "flex-start" : undefined }}>
-        {SOCIAL_LINKS.map(s => (
+      <div className={`rt-row${thinBorder ? " rt-row--thin" : ""}`} style={{ gap, justifyContent: leftAlign ? "flex-start" : undefined }}>
+        {links.map(s => (
           <SocialTooltip
             key={s.key}
             label={s.label}
@@ -173,7 +181,11 @@ export function SocialRow({ size = 28, gap = 16, bright = false, leftAlign = fal
               onClick={!s.href ? (e) => e.preventDefault() : undefined}
               aria-disabled={!s.href || undefined}
             >
-              {s.icon}
+              {boostSize !== 1 && s.key !== "linkedin" ? (
+                <span className="rt-icon-boost" style={{ "--rt-boost": boostSize } as React.CSSProperties}>
+                  {s.icon}
+                </span>
+              ) : s.icon}
             </a>
           </SocialTooltip>
         ))}

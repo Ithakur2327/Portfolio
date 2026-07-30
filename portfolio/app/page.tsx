@@ -45,6 +45,7 @@ export default function Home() {
           <EducationSection />
           <DotDivider />
           <CertificationsSection />
+          <DotDivider />
           <Footer />
         </div>
       </main>

@@ -3,7 +3,6 @@ import React from "react";
 import { useTheme } from "./ThemeProvider";
 import { motion, useMotionValue, useSpring, useTransform, animate } from "motion/react";
 import { SocialRow } from "./ui/SocialRow";
-import { SolidMagneticButton, SendIcon } from "./HeroActionButtons";
 import { BP, mq as MQ } from "@/lib/breakpoints";
 import { useIsMobile } from "@/lib/useBreakpoint";
 
@@ -222,10 +221,10 @@ export function Footer() {
           overflow: hidden;
         }
 
-        .footer-cta-band {
+        .footer-social-band {
           max-width: var(--content-width);
           margin: 0 auto;
-          padding: 28px 32px 22px;
+          padding: 40px 32px 18px;
           display: flex;
           align-items: center;
           justify-content: center;
@@ -237,10 +236,6 @@ export function Footer() {
           display: flex;
           align-items: center;
           justify-content: center;
-          gap: 16px;
-          border-bottom: 1px solid var(--border);
-          flex-wrap: wrap;
-          row-gap: 12px;
         }
         .footer-copy {
           font-size: 11.5px;
@@ -254,7 +249,7 @@ export function Footer() {
           left: 50%;
           margin-left: -50vw;
           width: 100vw;
-          margin-top: clamp(20px, 3vw, 44px);
+          margin-top: clamp(2px, 0.6vw, 8px);
           cursor: crosshair;
           user-select: none;
           -webkit-user-select: none;
@@ -288,11 +283,12 @@ export function Footer() {
         }
 
         @media (max-width: ${BP.footerCompactMax}px) {
-          .footer-bottom-band  { padding: 14px 22px; gap: 14px; }
+          .footer-social-band  { padding: 32px 22px 14px; }
+          .footer-bottom-band  { padding: 14px 22px; }
         }
         ${MQ.mobileSm} {
-          .footer-cta-band     { padding: 20px 16px 16px; }
-          .footer-bottom-band  { padding: 12px 16px; flex-direction: column; gap: 10px; }
+          .footer-social-band  { padding: 26px 16px 12px; }
+          .footer-bottom-band  { padding: 12px 16px; }
         }
 
         /* PC / laptop only — cap "IThakur.Dev" to a fixed width instead of
@@ -305,7 +301,7 @@ export function Footer() {
             left: auto;
             width: 100%;
             max-width: 1140px;
-            margin-top: clamp(10px, 2vw, 28px);
+            margin-top: clamp(2px, 0.5vw, 6px);
             margin-left: auto;
             margin-right: auto;
             padding: 0 32px;
@@ -325,24 +321,21 @@ export function Footer() {
             width: 100vw;
             margin-top: -10px;
           }
-          .footer-bottom-band { padding: 24px 32px 18px; }
+          .footer-social-band { padding: 56px 32px 20px; }
+          .footer-bottom-band { padding: 20px 32px 24px; }
         }
       `}</style>
 
       <footer id="site-footer-root" className="footer-root">
-        <div className="footer-cta-band">
-          <SolidMagneticButton as="a" href="/contact">
-            <SendIcon />
-            Get in Touch
-          </SolidMagneticButton>
-        </div>
-
-        <div className="footer-bottom-band">
-          <span className="footer-copy">© {year} Indresh Thakur. All rights reserved.</span>
-          <SocialRow size={16} gap={12} />
+        <div className="footer-social-band">
+          <SocialRow size={22} gap={16} bright thinBorder boostSize={1.15} />
         </div>
 
         <FluidGradientText text="IThakur.Dev" />
+
+        <div className="footer-bottom-band">
+          <span className="footer-copy">© {year} Indresh Thakur. All rights reserved.</span>
+        </div>
       </footer>
     </>
   );

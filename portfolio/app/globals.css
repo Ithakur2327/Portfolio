@@ -574,10 +574,10 @@ h1, h2, h3, .section-title {
 
 .reveal {
   opacity: 0;
-  transform: translate3d(0, 16px, 0);
+  transform: translate3d(0, 22px, 0);
   transition:
-    opacity 0.5s cubic-bezier(0.22, 1, 0.36, 1),
-    transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+    opacity 0.7s var(--expo-out),
+    transform 0.75s var(--expo-out);
   will-change: opacity, transform;
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
@@ -1088,9 +1088,13 @@ html.light .nav-root.scrolled {
 
 /* Force GPU layers only on elements that need it — avoid layer explosion */
 @media (--nav-collapse) {
-  /* Remove will-change from everything except the cat */
+  /* Remove will-change from everything except the cat.
+     .reveal is scoped to .visible only — stripping will-change before
+     the transition runs forces the browser to promote the compositor
+     layer synchronously on the first animation frame, which is what
+     causes a choppy/jerky start to the reveal on mobile. */
   .marquee-inner,
-  .reveal,
+  .reveal.visible,
   .s-tile,
   .proj-card,
   .cert-item,

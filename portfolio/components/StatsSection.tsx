@@ -205,6 +205,7 @@ function StatChip({ label, shortLabel, solved, color, bold, onEnter, onLeave }: 
 }) {
   return (
     <div
+      className="stat-chip"
       onMouseEnter={onEnter}
       onMouseLeave={onLeave}
       style={{
@@ -217,9 +218,10 @@ function StatChip({ label, shortLabel, solved, color, bold, onEnter, onLeave }: 
         border: `1px solid ${bold ? `${color}55` : "var(--border)"}`,
         cursor: "default",
         transition: "border-color 0.15s ease, transform 0.15s cubic-bezier(0.19,1,0.22,1)",
+        whiteSpace: "nowrap",
       }}
     >
-      <span style={{ fontSize: 9, fontWeight: 700, color, fontFamily: MONO, letterSpacing: "-0.02em" }}>
+      <span className="stat-chip-label" style={{ fontSize: 9, fontWeight: 700, color, fontFamily: MONO, letterSpacing: "-0.02em" }}>
         {shortLabel ? (
           <>
             <span className="stat-chip-label-full">{label}</span>
@@ -227,7 +229,7 @@ function StatChip({ label, shortLabel, solved, color, bold, onEnter, onLeave }: 
           </>
         ) : label}
       </span>
-      <span style={{ fontSize: bold ? 12 : 10, fontWeight: 800, color: "var(--text-primary)", fontFamily: MONO, letterSpacing: "-0.03em" }}>{solved}</span>
+      <span className="stat-chip-value" style={{ fontSize: bold ? 12 : 10, fontWeight: 800, color: "var(--text-primary)", fontFamily: MONO, letterSpacing: "-0.03em" }}>{solved}</span>
     </div>
   );
 }
@@ -420,17 +422,19 @@ function LeetCodeStats({ username = "IThakur09" }: { username?: string }) {
 
       {loading ? <Spin color="#FFA116" /> : (
         <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
-          <div className="lc-header-stats" style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: 8, marginBottom: 4 }}>
-            <span style={{ fontSize: 11, fontWeight: 700, color: "var(--text-primary)", fontFamily: MONO, flexShrink: 0 }}>2026 activity <span style={{ color: "var(--text-muted)", fontWeight: 500 }}>—</span></span>
-            <div className="lc-header-stats-chips" style={{ display: "flex", alignItems: "center", gap: 5, flexWrap: "wrap" }}>
+          <div className="lc-header-stats" style={{ display: "flex", alignItems: "center", flexWrap: "nowrap", gap: 8, marginBottom: 4 }}>
+            <span className="lc-activity-label" style={{ fontSize: 11, fontWeight: 700, color: "var(--text-primary)", fontFamily: MONO, flexShrink: 0, whiteSpace: "nowrap" }}>2026 activity <span style={{ color: "var(--text-muted)", fontWeight: 500 }}>—</span></span>
+            <div className="lc-header-stats-chips" style={{ display: "flex", alignItems: "center", gap: 5, flexWrap: "nowrap", minWidth: 0, flex: 1, justifyContent: "flex-end" }}>
               <div
+                className="lc-solved-box"
                 style={{
                   display: "flex",
                   alignItems: "center",
                   padding: "3px 6px",
                   borderRadius: 7,
                   border: "1px dashed var(--border)",
-                  flexShrink: 0,
+                  flexShrink: 1,
+                  minWidth: 0,
                 }}
               >
                 <StatChip
@@ -445,11 +449,12 @@ function LeetCodeStats({ username = "IThakur09" }: { username?: string }) {
                   display: "flex",
                   alignItems: "center",
                   gap: 5,
-                  flexWrap: "wrap",
+                  flexWrap: "nowrap",
                   padding: "3px 6px",
                   borderRadius: 7,
                   border: "1px dashed var(--border)",
-                  flexShrink: 0,
+                  flexShrink: 1,
+                  minWidth: 0,
                 }}
               >
                 <StatChip
@@ -715,9 +720,14 @@ export function StatsSection() {
         }
         .stat-chip-label-short { display: none; }
         .stat-chip-label-full { display: inline; }
-        ${mq.mobile} {
+        ${mq.tablet} {
           .stat-chip-label-short { display: inline; }
           .stat-chip-label-full { display: none; }
+        }
+        ${mq.mobile} {
+          .stat-chip { padding: 2px 5px !important; gap: 3px !important; }
+          .stat-chip-label { font-size: 8px !important; }
+          .stat-chip-value { font-size: 9px !important; }
         }
 
         @keyframes lcPulse { 0%,100%{opacity:1} 50%{opacity:0.7} }
@@ -754,7 +764,7 @@ export function StatsSection() {
 
         /* Stats panels — boxed with a dashed border, brightness matched to the Skills section's falling-icons-box */
         .stat-card-3d {
-          padding: 20px;
+          padding: 12px 14px;
           background: transparent;
           border: 0.7px dashed rgba(0,0,0,0.32);
           border-radius: 10px;
@@ -802,17 +812,8 @@ export function StatsSection() {
         ${mq.mobile} {
           .about-content  { padding: 0 16px 28px; }
           .stat-card-3d   { width: 100% !important; min-width: 0 !important; }
-          .lc-header-stats { flex-direction: column; align-items: flex-start !important; }
-          .lc-header-stats-chips {
-            flex-wrap: nowrap !important;
-            width: 100%;
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
-            scrollbar-width: none;
-            padding-bottom: 2px;
-          }
-          .lc-header-stats-chips::-webkit-scrollbar { display: none; }
-          .lc-emh-box { flex-wrap: nowrap !important; }
+          .lc-activity-label { font-size: 10px !important; }
+          .lc-solved-box, .lc-emh-box { padding: 2px 4px !important; gap: 3px !important; }
         }
 
         .stat-card-3d ::-webkit-scrollbar { height: 4px; }

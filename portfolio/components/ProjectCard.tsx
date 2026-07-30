@@ -137,23 +137,48 @@ export function ProjectCard({ proj, index, visible, isDesktop, onOpen }: {
           position: "relative",
         }}
       >
-        <svg width="100%" height="100%" aria-hidden="true" style={{ position: "absolute", inset: 0, pointerEvents: "none" }}>
-          <rect
-            x="0.6" y="0.6"
-            width="calc(100% - 1.2px)" height="calc(100% - 1.2px)"
-            rx="8" ry="8"
-            fill="none"
-            stroke={index % 2 === 0 ? "rgba(10,186,181,0.32)" : "rgba(212,175,55,0.32)"}
-            strokeWidth="0.7"
-            strokeDasharray="2 1.3"
-          />
-        </svg>
+        {(() => {
+          const frameColor = index % 2 === 0 ? "rgba(10,186,181,0.32)" : "rgba(212,175,55,0.32)";
+          const cornerColor = index % 2 === 0 ? "rgba(10,186,181,0.5)" : "rgba(212,175,55,0.5)";
+          const r = 8;
+          const w = 0.7;
+          const half = w / 2;
+          const cornerW = 1;
+          const arcR = r - cornerW / 2;
+          const corner = (
+            <svg width={r + 1} height={r + 1} viewBox={`0 0 ${r + 1} ${r + 1}`} style={{ display: "block" }}>
+              <path d={`M${cornerW / 2} ${r} A${arcR} ${arcR} 0 0 1 ${r} ${cornerW / 2}`} fill="none" stroke={cornerColor} strokeWidth={cornerW} strokeLinecap="round" />
+            </svg>
+          );
+          return (
+            <>
+              {/* straight edges — each starts a fresh dash right at its corner */}
+              <svg aria-hidden="true" style={{ position: "absolute", top: 0, left: r, right: r, height: 1, overflow: "visible", pointerEvents: "none" }}>
+                <line x1="0" y1={half} x2="100%" y2={half} stroke={frameColor} strokeWidth={w} strokeDasharray="3 2" />
+              </svg>
+              <svg aria-hidden="true" style={{ position: "absolute", bottom: 0, left: r, right: r, height: 1, overflow: "visible", pointerEvents: "none" }}>
+                <line x1="0" y1={half} x2="100%" y2={half} stroke={frameColor} strokeWidth={w} strokeDasharray="3 2" />
+              </svg>
+              <svg aria-hidden="true" style={{ position: "absolute", left: 0, top: r, bottom: r, width: 1, overflow: "visible", pointerEvents: "none" }}>
+                <line x1={half} y1="0" x2={half} y2="100%" stroke={frameColor} strokeWidth={w} strokeDasharray="3 2" />
+              </svg>
+              <svg aria-hidden="true" style={{ position: "absolute", right: 0, top: r, bottom: r, width: 1, overflow: "visible", pointerEvents: "none" }}>
+                <line x1={half} y1="0" x2={half} y2="100%" stroke={frameColor} strokeWidth={w} strokeDasharray="3 2" />
+              </svg>
+              {/* corners — solid, so there is never a dash-phase gap right where it's most visible */}
+              <div aria-hidden="true" style={{ position: "absolute", top: 0, left: 0, pointerEvents: "none" }}>{corner}</div>
+              <div aria-hidden="true" style={{ position: "absolute", top: 0, right: 0, transform: "rotate(90deg)", pointerEvents: "none" }}>{corner}</div>
+              <div aria-hidden="true" style={{ position: "absolute", bottom: 0, right: 0, transform: "rotate(180deg)", pointerEvents: "none" }}>{corner}</div>
+              <div aria-hidden="true" style={{ position: "absolute", bottom: 0, left: 0, transform: "rotate(270deg)", pointerEvents: "none" }}>{corner}</div>
+            </>
+          );
+        })()}
         <motion.div
           ref={frameRef}
           layoutId={`card-banner-${proj.name}`}
           transition={SPRING}
           style={{
-            width: "100%", aspectRatio: "16 / 9", borderRadius: 5,
+            width: "100%", aspectRatio: "16 / 9", borderRadius: 8,
             background: "var(--bg-secondary)",
             border: "1.2px solid var(--border)",
             position: "relative", overflow: "hidden",
@@ -507,7 +532,7 @@ export function ProjectModal({ proj, onClose, isDesktop }: { proj: Project; onCl
         }}
       />
 
-      <div style={{ position: "fixed", inset: 0, zIndex: 9001, display: "grid", placeItems: "center", padding: 16, pointerEvents: "none" }}>
+      <div style={{ position: "fixed", inset: 0, zIndex: 9001, display: "grid", alignItems: sheet ? "end" : "center", justifyItems: sheet ? "stretch" : "center", padding: sheet ? 0 : 16, pointerEvents: "none" }}>
         <motion.div
           ref={modalRef}
           role="dialog"
@@ -525,7 +550,7 @@ export function ProjectModal({ proj, onClose, isDesktop }: { proj: Project; onCl
             cursor: "default",
             background: "var(--bg-card)",
             border: "1px solid var(--border)",
-            borderRadius: 16,
+            borderRadius: sheet ? "16px 16px 0 0" : 16,
             boxShadow: "0 12px 28px -8px rgba(0,0,0,0.45)",
             overflow: "hidden",
             willChange: "transform",
@@ -592,7 +617,7 @@ export function ProjectModal({ proj, onClose, isDesktop }: { proj: Project; onCl
               display: flex;
               flex-direction: column;
               gap: 12px;
-              padding: 0 20px 20px;
+              padding: 16px 20px 20px;
             }
             .pm-image-frame {
               width: 100%;
@@ -601,6 +626,7 @@ export function ProjectModal({ proj, onClose, isDesktop }: { proj: Project; onCl
               overflow: hidden;
               border-radius: 0;
               flex-shrink: 0;
+              background: var(--bg-card);
             }
 
             /* Desktop/laptop: horizontal split — media left, info right */
