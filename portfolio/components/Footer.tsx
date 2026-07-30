@@ -202,13 +202,10 @@ export function Footer() {
           overflow: hidden;
         }
 
-        /* Copyright (left) + social icons (right) share one row on
-           laptop/desktop. Below navCollapse (mobile + tablet) they stack
-           with icons on top and copyright underneath — see override below. */
         .footer-bottom-band {
           max-width: var(--content-width);
           margin: 0 auto;
-          padding: 34px 32px 12px;
+          padding: 46px 32px 12px;
           display: flex;
           align-items: center;
           justify-content: space-between;
@@ -270,28 +267,21 @@ export function Footer() {
         }
 
         @media (max-width: ${BP.footerCompactMax}px) {
-          .footer-bottom-band  { padding: 28px 22px 10px; gap: 16px; }
+          .footer-bottom-band  { padding: 38px 22px 10px; gap: 16px; }
         }
 
-        /* Mobile + tablet: stack instead of a side-by-side row. Icons stay
-           in DOM-first position for the desktop row, so flip the visual
-           order here rather than reordering the JSX. */
+        
         ${MQ.navCollapse} {
           .footer-bottom-band {
             flex-direction: column-reverse;
             justify-content: center;
-            padding: 26px 16px 10px;
+            padding: 38px 16px 10px;
             gap: 12px;
           }
         }
         ${MQ.mobile} {
-          .footer-bottom-band { padding: 22px 13px 10px; }
+          .footer-bottom-band { padding: 38px 13px 10px; }
         }
-
-        /* PC / laptop only — cap "IThakur.Dev" to a fixed width instead of
-           full 100vw (intentionally wider than --content-width; it's a
-           decorative banner, not body content). Mobile and tablet keep
-           the existing full-bleed size. */
         @media (min-width: ${BP.laptopMin}px) {
           .fgt-outer {
             position: static;
@@ -304,13 +294,9 @@ export function Footer() {
             padding: 0 32px;
             box-sizing: border-box;
           }
-          /* Bigger on desktop — same width as the content column, more
-             presence height-wise. */
+         
           .fgt-svg { height: clamp(84px, 18vw, 260px); }
-          /* The divider still needs to read as full-bleed like every other
-             section divider on the site, even though its parent (.fgt-outer)
-             is now intentionally width-capped to match the text above it.
-             It stays visually flush directly under the text either way. */
+        
           .fgt-line {
             position: relative;
             left: 50%;
@@ -318,7 +304,7 @@ export function Footer() {
             width: 100vw;
             margin-top: -10px;
           }
-          .footer-bottom-band { padding: 38px 32px 14px; }
+          .footer-bottom-band { padding: 48px 32px 14px; }
         }
       `}</style>
 
