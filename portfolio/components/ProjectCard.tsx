@@ -59,26 +59,7 @@ function ProjectLinks({ proj, size }: { proj: Project; size: number }) {
   );
 }
 
-function ProjectLinkButtons({ proj }: { proj: Project }) {
-  return (
-    <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-      <a
-        href={proj.live} target="_blank" rel="noreferrer"
-        className="proj-link-btn"
-        style={{ borderColor: proj.accentBorder, background: proj.accentBg, color: proj.accent }}
-      >
-        <ExternalIcon size={16} /> Live Demo
-      </a>
-      <a
-        href={proj.github} target="_blank" rel="noreferrer"
-        className="proj-link-btn"
-        style={{ borderColor: "var(--border)", background: "var(--bg-secondary)", color: "var(--text-secondary)" }}
-      >
-        <GithubIcon size={16} /> GitHub
-      </a>
-    </div>
-  );
-}
+
 
 export function ProjectCard({ proj, index, visible, isDesktop, onOpen }: {
   proj: Project;
@@ -123,7 +104,7 @@ export function ProjectCard({ proj, index, visible, isDesktop, onOpen }: {
         style={{
           width: "100%",
           padding: 3,
-          borderRadius: 4,
+          borderRadius: 11,
           border: `0.7px dashed ${index % 2 === 0 ? "rgba(10,186,181,0.32)" : "rgba(212,175,55,0.32)"}`,
           boxSizing: "border-box",
         }}
@@ -133,7 +114,7 @@ export function ProjectCard({ proj, index, visible, isDesktop, onOpen }: {
           layoutId={`card-banner-${proj.name}`}
           transition={SPRING}
           style={{
-            width: "100%", aspectRatio: "16 / 9", borderRadius: 3,
+            width: "100%", aspectRatio: "16 / 9", borderRadius: 9,
             position: "relative", overflow: "hidden",
           }}
         >
@@ -343,8 +324,13 @@ export function ProjectModal({ proj, onClose, isDesktop }: { proj: Project; onCl
 
   const linksAndStackBlock = (
     <div className="pm-media-links">
-      <motion.div layoutId={lid(`card-links-${proj.name}`)} layout="position" transition={SPRING}>
-        <ProjectLinkButtons proj={proj} />
+      <motion.div
+        layoutId={lid(`card-links-${proj.name}`)}
+        layout="position"
+        transition={SPRING}
+        style={{ display: "flex", alignItems: "center", gap: 16 }}
+      >
+        <ProjectLinks proj={proj} size={22} />
       </motion.div>
 
       <motion.div
@@ -531,17 +517,6 @@ export function ProjectModal({ proj, onClose, isDesktop }: { proj: Project; onCl
               font-size: 12.5px; padding: 6px 11px; border-radius: 999px;
               font-family: ${MONO}; font-weight: 600;
             }
-            .proj-link-btn {
-              display: inline-flex; align-items: center; gap: 7px;
-              padding: 8px 14px; border-radius: 9px;
-              border: 1px solid var(--border);
-              font-family: ${SF}; font-size: 13px; font-weight: 600;
-              text-decoration: none;
-              transition: transform 0.15s cubic-bezier(0.16,1,0.3,1), opacity 0.15s ease;
-            }
-            .proj-link-btn:hover { transform: translateY(-1.5px); opacity: 0.88; }
-            .proj-link-btn:active { transform: translateY(0) scale(0.98); }
-
             .pm-media-col {
               display: flex;
               flex-direction: column;

@@ -31,7 +31,7 @@ export function ProjectsSection() {
 
           <style suppressHydrationWarning>{`
             ${mq.navCollapse} { .proj-inner { padding: 0 22px 34px !important; } }
-            ${mq.mobile} { .proj-inner { padding: 0 13px 28px !important; } }
+            ${mq.mobile} { .proj-inner { padding: 0 7px 28px !important; } }
           `}</style>
 
           <ProjectsGrid projects={featured} visible={visible} mobileMax={MOBILE_COUNT} />

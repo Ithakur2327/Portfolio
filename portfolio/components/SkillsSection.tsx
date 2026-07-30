@@ -212,10 +212,14 @@ function FallingIconsBox({ title, items, index = 0 }: { title: string; items: st
       gravityEnabled = true;
       engine.world.gravity.y = 0.85;
     };
-    Events.on(mouseConstraint, "startdrag", (event: any) => {
-      enableGravity();
-      if (event?.body) Sleeping.set(event.body, false);
-    });
+    Events.on(
+      mouseConstraint,
+      "startdrag",
+      (event: Matter.IEvent<Matter.MouseConstraint> & { body?: Matter.Body }) => {
+        enableGravity();
+        if (event?.body) Sleeping.set(event.body, false);
+      }
+    );
 
     const handleTouchStart = (e: TouchEvent) => mouse.mousedown(e);
     const handleTouchMove = (e: TouchEvent) => {
