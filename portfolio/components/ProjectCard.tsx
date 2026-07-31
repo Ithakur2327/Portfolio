@@ -336,8 +336,8 @@ export function ProjectModal({ proj, onClose, isDesktop }: { proj: Project; onCl
           src={proj.img}
           alt={proj.name}
           fill
-          quality={80}
-          sizes="(max-width: 767px) 100vw, 45vw"
+          quality={100}
+          sizes="(max-width: 767px) 100vw, min(45vw, 432px)"
           unoptimized={proj.img.endsWith(".svg")}
           style={{ objectFit: "cover" }}
         />
@@ -489,7 +489,7 @@ export function ProjectModal({ proj, onClose, isDesktop }: { proj: Project; onCl
           aria-modal="true"
           aria-label={`${proj.name} project details`}
           layoutId={lid(`card-container-${proj.name}`)}
-          initial={sheet ? { y: "100%" } : false}
+          initial={sheet ? { y: "100%" } : undefined}
           animate={sheet ? { y: 0 } : undefined}
           exit={sheet ? { y: "100%" } : undefined}
           transition={sheet ? sheetTransition : SPRING}
