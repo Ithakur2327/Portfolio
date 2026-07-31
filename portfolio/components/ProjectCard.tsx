@@ -77,21 +77,8 @@ export function ProjectCard({ proj, index, visible, isDesktop, isHidden, onOpen 
 
   const shown = isDesktop ? hovered : inView;
 
-  // On mobile/tablet the modal opens as a plain bottom sheet (no shared
-  // layoutId morph — see ProjectModal's `lid` helper), so keeping these
-  // layoutId's active there just forces Framer Motion to track this card
-  // in the shared LayoutGroup for no visual benefit, which is what was
-  // causing the janky "open" animation on phones/tablets. Only wire the
-  // layoutId's up on desktop, where the morph animation actually happens.
   const cid = (id: string) => (isDesktop ? id : undefined);
 
-  // While this card's modal is open (desktop only), the real interactive
-  // card must actually UNMOUNT — not just lose its layoutId prop — so that
-  // Framer Motion sees a genuine "element with this layoutId disappeared
-  // here, appeared there" handoff and performs the morph. Toggling the
-  // layoutId prop on a component that stays mounted doesn't trigger this;
-  // only a real mount/unmount does. A same-size invisible placeholder
-  // keeps the grid from reflowing while the card is "away".
   if (isHidden) {
     return (
       <div aria-hidden="true" style={{ width: "100%", visibility: "hidden" }}>
@@ -170,7 +157,7 @@ export function ProjectCard({ proj, index, visible, isDesktop, isHidden, onOpen 
                 src={proj.img}
                 alt={proj.name}
                 fill
-                quality={80}
+                quality={100}
                 sizes="(max-width: 640px) 96vw, (max-width: 1024px) 48vw, 520px"
                 unoptimized={proj.img.endsWith(".svg")}
                 style={{ objectFit: "cover" }}
