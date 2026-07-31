@@ -6,7 +6,11 @@ export function Avatar({ version }: { version?: string } = {}) {
   const { theme } = useTheme();
   const isDark = theme === "dark";
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const isDarkRef = useRef(isDark);
+  const isDarkRef = useRef(
+    typeof document !== "undefined"
+      ? document.documentElement.classList.contains("dark")
+      : isDark,
+  );
   const glRef = useRef<{
     gl: WebGLRenderingContext;
     prog: WebGLProgram;
@@ -20,25 +24,40 @@ export function Avatar({ version }: { version?: string } = {}) {
     tid: ReturnType<typeof setTimeout> | null;
     uTime: WebGLUniformLocation | null;
     uBlink: WebGLUniformLocation | null;
-    uTex: WebGLUniformLocation | null;
+    uTexA: WebGLUniformLocation | null;
+    uTexB: WebGLUniformLocation | null;
+    uMix: WebGLUniformLocation | null;
+    activeIsDark: boolean;
+    mixFrom: WebGLTexture | null;
+    mixTo: WebGLTexture | null;
+    mixProgress: number;
   } | null>(null);
 
   useEffect(() => { isDarkRef.current = isDark; }, [isDark]);
 
-  // Force a near-immediate re-render when theme changes (override idle
-  // throttle just long enough to guarantee one fresh frame at the new
-  // texture — NOT a long window. This used to hold full 60fps for 600ms,
-  // which on mobile meant the expensive per-pixel noise-warp shader (see
-  // FRAG below) ran unthrottled for ~36 frames right as the view
-  // transition was also compositing a full-page screenshot — that
-  // overlap was the actual "lag on theme change" bug. 120ms is plenty to
-  // land a couple of real frames at any refresh rate.
+  // On theme toggle, start a smooth crossfade between the dark/light
+  // textures instead of a hard instant swap. The two photos look
+  // noticeably different (different background/lighting), so an instant
+  // cut reads as a "glitch" — fading between them over ~340ms reads as an
+  // intentional transition instead. This also keeps the render loop at
+  // full framerate for the duration of the fade so it doesn't get caught
+  // by the idle throttle partway through.
   useEffect(() => {
     const G = glRef.current;
     if (!G) return;
+    const nextTex = isDark ? G.texD : G.texL;
+    if (!nextTex) return; // textures not loaded yet — boot() sets initial state directly
+    const curTex = G.activeIsDark ? G.texD : G.texL;
+    if (nextTex === G.mixTo && G.activeIsDark === isDark) return; // no real change
+
+    G.mixFrom = curTex ?? nextTex;
+    G.mixTo = nextTex;
+    G.mixProgress = 0;
+    G.activeIsDark = isDark;
+
     const prevHover = G.state.hover;
     G.state.hover = true;
-    const t = setTimeout(() => { G.state.hover = prevHover; }, 120);
+    const t = setTimeout(() => { G.state.hover = prevHover; }, 420);
     return () => clearTimeout(t);
   }, [isDark]);
 
@@ -148,21 +167,27 @@ export function Avatar({ version }: { version?: string } = {}) {
         Hair only lives in top 33% of the image (uv.y < 0.33).
         Below that is face or background — never warp it.
 
-      Pass 2 — pixel color test (sampled at REST position):
-        Hair pixel = dark warm brown:
-          brightness < 0.42  (not bright skin)
-          red channel > blue * 1.4  (warm tint, not cool shadow)
-          red channel > 0.04  (not pure black background)
-        Face pixel = bright warm: red > 0.50, red > green * 1.1
-        Background = near-black: all channels < 0.04
+      Pass 2 — pixel color test (sampled at REST position), as a
+        CONTINUOUS mask rather than a hard yes/no cutoff:
+          brightness fades in below ~0.46, out above ~0.30 (not bright skin)
+          red channel warm relative to blue (not cool shadow)
+          not pure black background
+        Using smoothstep here instead of a hard if/else means a
+        borderline pixel (e.g. a bright hair highlight right at the
+        threshold) gets a *partial* warp instead of staying completely
+        frozen next to fully-warped neighbours — that hard edge was what
+        made the hair look patchy/glitchy instead of like it was moving
+        as one piece.
 
-      Only pixels that pass BOTH tests get warped.
+      Only pixels that pass BOTH tests get warped (partially or fully).
       Face and background pixels always sample from original uv.
     */
     const FRAG = `
       precision highp float;
       varying vec2 uv;
-      uniform sampler2D tex;
+      uniform sampler2D texA;
+      uniform sampler2D texB;
+      uniform float mixAmt;
       uniform float time;
       uniform float blink;
 
@@ -189,42 +214,41 @@ export function Avatar({ version }: { version?: string } = {}) {
       void main(){
         /* ── Step 1: geometric zone gate ──
            Hair is ONLY in the top 33% of the image.
-           Transition zone 0.28→0.34 softens the cutoff. */
-        float zoneWeight = smoothstep(0.34, 0.25, uv.y);
+           Transition zone softens the cutoff. */
+        float zoneWeight = smoothstep(0.36, 0.23, uv.y);
 
-        /* ── Step 2: compute warp offset ── */
-        float t  = time * 0.7;
-        float dx = (fbm(uv * vec2(4.0, 3.0) + vec2(t * 0.55, t * 0.30)) - 0.5) * 2.0 * 0.026;
-        float dy = (fbm(uv * vec2(3.0, 4.0) + vec2(-t * 0.30, t * 0.45) + 4.3) - 0.5) * 2.0 * 0.011;
+        /* ── Step 2: compute warp offset ──
+           Slower, gentler than before — a calm sway instead of a fast
+           ripple reads as natural hair movement rather than a "wave". */
+        float t  = time * 0.4;
+        float dx = (fbm(uv * vec2(3.2, 2.6) + vec2(t * 0.5, t * 0.28)) - 0.5) * 2.0 * 0.013;
+        float dy = (fbm(uv * vec2(2.6, 3.2) + vec2(-t * 0.28, t * 0.4) + 4.3) - 0.5) * 2.0 * 0.006;
 
-        /* ── Step 3: sample pixel at REST uv to classify it ──
+        /* ── Step 3: sample pixel at REST uv (texA) to classify it ──
            We need to know what this pixel IS before warping it. */
-        vec4 restColor = texture2D(tex, uv);
+        vec4 restColor = texture2D(texA, uv);
         float r = restColor.r;
         float g = restColor.g;
         float b = restColor.b;
         float brightness = (r + g + b) / 3.0;
 
-        /* Hair: dark warm brown
-             brightness 0.04–0.42, red warm (r > b*1.4), not pure black */
-        float isHair = 0.0;
-        if(brightness > 0.04 && brightness < 0.42 && r > b * 1.35 && r > 0.04){
-          isHair = 1.0;
-        }
+        /* Continuous hair mask — smoothstep gates instead of hard cuts */
+        float darkEnough = smoothstep(0.46, 0.30, brightness);
+        float notBlack   = smoothstep(0.02, 0.07, brightness);
+        float warmEnough = smoothstep(1.10, 1.45, r / max(b, 0.02));
+        float isHair = darkEnough * notBlack * warmEnough;
 
-        /* Extra guard: if pixel is bright skin colour, force isHair=0
-           (catches any stray bright pixels in the top zone) */
-        if(brightness > 0.42){ isHair = 0.0; }
-
-        /* Final mask = geometry AND color */
+        /* Final mask = geometry AND color, both continuous now */
         float mask = zoneWeight * isHair;
 
         /* ── Step 4: apply warp only where mask > 0 ── */
         vec2 warpedUV  = clamp(uv + vec2(dx, dy), 0.001, 0.999);
         vec2 finalUV   = mix(uv, warpedUV, mask);
 
-        vec4 col = texture2D(tex, finalUV);
-        gl_FragColor = col;
+        /* ── Step 5: crossfade between the dark/light theme textures ── */
+        vec4 colA = texture2D(texA, finalUV);
+        vec4 colB = texture2D(texB, finalUV);
+        gl_FragColor = mix(colA, colB, mixAmt);
       }`;
 
     const mkS = (type: number, src: string) => {
@@ -307,18 +331,35 @@ export function Avatar({ version }: { version?: string } = {}) {
       gl, prog,
       texD: null as WebGLTexture | null,
       texL: null as WebGLTexture | null,
-      uTex:   gl.getUniformLocation(prog, "tex"),
+      uTexA:  gl.getUniformLocation(prog, "texA"),
+      uTexB:  gl.getUniformLocation(prog, "texB"),
+      uMix:   gl.getUniformLocation(prog, "mixAmt"),
       uTime:  gl.getUniformLocation(prog, "time"),
       uBlink: gl.getUniformLocation(prog, "blink"),
       raf: 0, t: 0,
       blink: 0, blinkDir: 0,
       state: { hover: false },
       tid: null as ReturnType<typeof setTimeout> | null,
+      activeIsDark: isDarkRef.current,
+      mixFrom: null as WebGLTexture | null,
+      mixTo: null as WebGLTexture | null,
+      mixProgress: 1,
     };
     glRef.current = G;
 
     let loaded = 0;
-    const boot = () => { if (++loaded < 2) return; startLoop(); };
+    const boot = () => {
+      if (++loaded < 2) return;
+      // Both textures are ready — settle directly on the correct theme's
+      // texture with no fade (a fade only makes sense for a genuine
+      // toggle after the avatar is already visible).
+      G.activeIsDark = isDarkRef.current;
+      const initTex = G.activeIsDark ? G.texD : G.texL;
+      G.mixFrom = initTex;
+      G.mixTo = initTex;
+      G.mixProgress = 1;
+      startLoop();
+    };
 
     const imgD = new window.Image();
     imgD.crossOrigin = "anonymous";
@@ -388,15 +429,28 @@ export function Avatar({ version }: { version?: string } = {}) {
           }
         }
 
-        const tex = isDarkRef.current ? G.texD : G.texL;
-        if (!tex) return;
+        // Advance the theme crossfade (kicked off by the isDark effect
+        // above, which sets mixFrom/mixTo/mixProgress=0 on toggle). When
+        // no fade is in progress mixProgress just sits at 1 and mixFrom
+        // === mixTo, so this is a no-op the rest of the time.
+        if (G.mixProgress < 1) {
+          G.mixProgress = Math.min(1, G.mixProgress + dt / 0.34); // ~340ms fade
+        }
+
+        const texA = G.mixFrom;
+        const texB = G.mixTo;
+        if (!texA || !texB) return;
 
         gl.viewport(0, 0, canvas.width, canvas.height);
         gl.clearColor(0, 0, 0, 0);
         gl.clear(gl.COLOR_BUFFER_BIT);
         gl.activeTexture(gl.TEXTURE0);
-        gl.bindTexture(gl.TEXTURE_2D, tex);
-        gl.uniform1i(G.uTex,   0);
+        gl.bindTexture(gl.TEXTURE_2D, texA);
+        gl.uniform1i(G.uTexA, 0);
+        gl.activeTexture(gl.TEXTURE1);
+        gl.bindTexture(gl.TEXTURE_2D, texB);
+        gl.uniform1i(G.uTexB, 1);
+        gl.uniform1f(G.uMix,   G.mixProgress);
         gl.uniform1f(G.uTime,  G.t);
         gl.uniform1f(G.uBlink, G.blink);
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);

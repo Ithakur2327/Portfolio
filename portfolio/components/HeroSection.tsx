@@ -28,7 +28,7 @@ function FlipSentences() {
   return (
     <span key={idx} className={`fs-${anim}`} style={{
       display:"block", fontFamily:"'Geist Mono',monospace",
-      fontSize:13.5, lineHeight:1,
+      fontSize:14.5, lineHeight:1.15,
     }}>
       <span className="subtitle-shine">{SENTENCES[idx]}</span>
     </span>
@@ -62,8 +62,8 @@ function IBox({color, children}:{color?:string; children:React.ReactNode}) {
 
 function Row({icon, href, newTab, onClick, children}:{icon:React.ReactNode; href?:string; newTab?:boolean; onClick?:()=>void; children:React.ReactNode}) {
   const s:React.CSSProperties = {
-    display:"flex", alignItems:"center", gap:14, minWidth:0,
-    fontFamily:"'Geist Mono',monospace", fontSize:14,
+    display:"flex", alignItems:"center", gap:14,
+    fontFamily:"'Geist Mono',monospace", fontSize:15,
     color:"var(--text-primary)", textDecoration:"none",
   };
   if (onClick) return (
@@ -270,7 +270,7 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
         }
         .h-grid {
           display: grid;
-          grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+          grid-template-columns: 1fr 1fr;
           grid-template-rows: repeat(3, auto);
           grid-auto-flow: column;
           align-items: center;
@@ -488,7 +488,7 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
       >
         <div style={{ position: "relative", left: "50%", marginLeft: "-50vw", width: "100vw" }}>
           <div style={{ position: "absolute", inset: 0, zIndex: 0 }}>
-            <DotField interactive />
+            <DotField interactive={false} />
           </div>
           <div style={{ position: "relative", zIndex: 1 }}>
 
@@ -515,7 +515,7 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
               <div style={{flex:1}}/>
               <div className="h-name-row" style={{padding:"20px 20px 0", marginBottom:"0px", gap:6}}>
                 <h1 style={{
-                  fontSize:"clamp(16px,2vw,19px)", fontWeight:900,
+                  fontSize:"clamp(17px,2.1vw,20px)", fontWeight:900,
                   letterSpacing:"0.02em", color:"var(--text-primary)",
                   lineHeight:1, margin:0,
                   fontFamily:"'Geist Pixel Square','Geist Mono',monospace", display:"inline-block",

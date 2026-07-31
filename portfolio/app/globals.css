@@ -305,8 +305,8 @@ html.light .nav-root.scrolled {
   display: flex; align-items: center; justify-content: space-between;
 }
 .nav-link {
-  padding: 5px 11px; border-radius: 6px;
-  font-size: 13px; font-weight: 500;
+  padding: 5px 12px; border-radius: 6px;
+  font-size: 14px; font-weight: 500;
   color: var(--nav-link-color);
   background: transparent; text-decoration: none;
   transition: color 0.15s, background 0.15s;
@@ -625,19 +625,19 @@ h1, h2, h3, .section-title {
 ═══════════════════════════════════════════════════════════ */
 .social-link {
   display: inline-flex; align-items: center; justify-content: center;
-  height: 32px; padding: 0 10px; gap: 5px; border-radius: 6px;
+  height: 34px; padding: 0 11px; gap: 5px; border-radius: 6px;
   border: 1px solid var(--border); color: var(--text-secondary);
-  font-size: 12px; font-weight: 500; background: transparent;
+  font-size: 13px; font-weight: 500; background: transparent;
   transition: background 0.15s, color 0.15s, border-color 0.15s;
   cursor: pointer;
 }
 .social-link:hover { background: var(--bg-hover); color: var(--text-primary); border-color: var(--text-muted); }
 
-.overview-item { display: flex; align-items: center; gap: 10px; padding: 7px 8px; margin: 0 -8px; border-radius: 7px; color: var(--text-secondary); font-size: 13.5px; transition: background 0.12s, color 0.12s; }
+.overview-item { display: flex; align-items: center; gap: 10px; padding: 8px 8px; margin: 0 -8px; border-radius: 7px; color: var(--text-secondary); font-size: 14.5px; transition: background 0.12s, color 0.12s; }
 .overview-item:hover { background: var(--bg-hover); color: var(--text-primary); }
 .overview-item .icon { width: 16px; height: 16px; flex-shrink: 0; color: var(--text-muted); }
 
-.about-item { display: flex; gap: 10px; font-size: 13.5px; color: var(--text-secondary); line-height: 1.7; padding: 3px 0; }
+.about-item { display: flex; gap: 10px; font-size: 14.5px; color: var(--text-secondary); line-height: 1.7; padding: 3px 0; }
 .about-item::before { content: '—'; color: var(--text-muted); flex-shrink: 0; margin-top: 1px; font-family: 'Geist Mono', monospace; }
 
 /* ── Marquee ── */
@@ -675,7 +675,7 @@ h1, h2, h3, .section-title {
 .cert-card {
   display: flex; align-items: flex-start; gap: 12px;
   padding: 12px 8px; margin: 0 -8px; border-radius: 7px;
-  font-size: 13px; transition: background 0.12s;
+  font-size: 14px; transition: background 0.12s;
   cursor: pointer; border-bottom: 1px solid var(--border);
 }
 .cert-card:last-child { border-bottom: none; }
@@ -684,17 +684,17 @@ h1, h2, h3, .section-title {
 .contact-row {
   display: flex; align-items: center; gap: 10px;
   padding: 10px 8px; margin: 0 -8px; border-radius: 7px;
-  font-size: 13.5px; color: var(--text-secondary);
+  font-size: 14.5px; color: var(--text-secondary);
   transition: background 0.12s, color 0.12s;
 }
 .contact-row:hover { background: var(--bg-hover); color: var(--text-primary); }
 .contact-row + .contact-row { border-top: 1px solid var(--border); }
 
 .field-input {
-  width: 100%; padding: 9px 12px; border-radius: 7px;
+  width: 100%; padding: 10px 12px; border-radius: 7px;
   border: 1px solid var(--border);
   background: var(--bg-secondary); color: var(--text-primary);
-  font-size: 13.5px; outline: none; font-family: inherit;
+  font-size: 14.5px; outline: none; font-family: inherit;
   transition: border-color 0.15s, box-shadow 0.15s;
 }
 .field-input:focus {
@@ -704,10 +704,10 @@ h1, h2, h3, .section-title {
 
 .btn-primary {
   display: inline-flex; align-items: center; gap: 6px;
-  padding: 9px 20px; border-radius: 7px;
+  padding: 10px 20px; border-radius: 7px;
   border: 1px solid var(--border);
   background: var(--accent); color: var(--accent-fg);
-  font-size: 13.5px; font-weight: 600; cursor: pointer;
+  font-size: 14.5px; font-weight: 600; cursor: pointer;
   font-family: inherit;
   transition: opacity 0.15s, transform 0.15s;
   position: relative; overflow: hidden;
@@ -719,10 +719,10 @@ h1, h2, h3, .section-title {
 
 .btn-ghost {
   display: inline-flex; align-items: center; gap: 5px;
-  padding: 5px 10px; border-radius: 6px;
+  padding: 6px 11px; border-radius: 6px;
   border: 1px solid var(--border);
   background: transparent; color: var(--text-muted);
-  font-size: 12px; font-weight: 500; cursor: pointer;
+  font-size: 13px; font-weight: 500; cursor: pointer;
   font-family: inherit;
   transition: color 0.15s, border-color 0.15s, background 0.15s;
 }
@@ -744,11 +744,11 @@ h1, h2, h3, .section-title {
 }
 .stat-badge:hover { border-color: var(--text-muted); background: var(--bg-hover); }
 .stat-badge .stat-num {
-  font-size: 24px; font-weight: 700; letter-spacing: -0.04em;
+  font-size: 26px; font-weight: 700; letter-spacing: -0.04em;
   color: var(--text-primary); font-family: 'Geist Mono', monospace;
 }
 .stat-badge .stat-label {
-  font-size: 11px; color: var(--text-muted); margin-top: 2px;
+  font-size: 12px; color: var(--text-muted); margin-top: 2px;
   text-align: center; line-height: 1.3;
 }
 
@@ -1007,8 +1007,8 @@ html.light .nav-root.scrolled {
   .contact-cols { flex-direction: column !important; }
   .overview-cols { flex-direction: column !important; }
   .bottom-grid { grid-template-columns: 1fr !important; }
-  .about-heading { font-size: clamp(20px, 6vw, 28px) !important; }
-  .section-title { font-size: 18px !important; }
+  .about-heading { font-size: clamp(21px, 6vw, 30px) !important; }
+  .section-title { font-size: 19px !important; }
   .contrib-wrap { overflow-x: auto; padding-bottom: 6px; }
   .proj-tags { flex-wrap: wrap; }
   .hero-social { flex-direction: column !important; }
@@ -1033,8 +1033,8 @@ html.light .nav-root.scrolled {
   .contact-cols { flex-direction: column !important; }
   .stat-badges-row { flex-wrap: wrap; gap: 8px !important; }
   .stat-badge { min-width: calc(50% - 4px) !important; padding: 12px 16px !important; }
-  .about-heading { font-size: clamp(18px, 5.5vw, 26px) !important; }
-  .section-title { font-size: 18px !important; }
+  .about-heading { font-size: clamp(19px, 5.5vw, 28px) !important; }
+  .section-title { font-size: 19px !important; }
   .contrib-wrap { overflow-x: auto; padding-bottom: 6px; }
   .overview-cols { flex-direction: column !important; }
   .about-para { text-align: justify !important; text-justify: inter-word !important; }
