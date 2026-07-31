@@ -61,12 +61,12 @@ function ProjectLinks({ proj, size }: { proj: Project; size: number }) {
 
 
 
-export function ProjectCard({ proj, index, visible, isDesktop, isActive, onOpen }: {
+export function ProjectCard({ proj, index, visible, isDesktop, isHidden, onOpen }: {
   proj: Project;
   index: number;
   visible: boolean;
   isDesktop: boolean;
-  isActive?: boolean;
+  isHidden?: boolean;
   onOpen: () => void;
 }) {
   const frameRef = useRef<HTMLDivElement>(null);
@@ -77,19 +77,35 @@ export function ProjectCard({ proj, index, visible, isDesktop, isActive, onOpen 
 
   const shown = isDesktop ? hovered : inView;
 
-  // While this card's modal is open, hand the shared layoutId's over to
-  // ProjectModal entirely (see cid below) so Framer Motion has exactly one
-  // element per id to animate — otherwise both the grid card and the modal
-  // claim the same layoutId at once and the morph collapses into a plain
-  // pop/fade instead of growing from the card.
-  const cid = (id: string) => (isDesktop && !isActive ? id : undefined);
-
   // On mobile/tablet the modal opens as a plain bottom sheet (no shared
   // layoutId morph — see ProjectModal's `lid` helper), so keeping these
   // layoutId's active there just forces Framer Motion to track this card
   // in the shared LayoutGroup for no visual benefit, which is what was
   // causing the janky "open" animation on phones/tablets. Only wire the
   // layoutId's up on desktop, where the morph animation actually happens.
+  const cid = (id: string) => (isDesktop ? id : undefined);
+
+  // While this card's modal is open (desktop only), the real interactive
+  // card must actually UNMOUNT — not just lose its layoutId prop — so that
+  // Framer Motion sees a genuine "element with this layoutId disappeared
+  // here, appeared there" handoff and performs the morph. Toggling the
+  // layoutId prop on a component that stays mounted doesn't trigger this;
+  // only a real mount/unmount does. A same-size invisible placeholder
+  // keeps the grid from reflowing while the card is "away".
+  if (isHidden) {
+    return (
+      <div aria-hidden="true" style={{ width: "100%", visibility: "hidden" }}>
+        <div style={{ width: "100%", padding: 2, borderRadius: 14, boxSizing: "border-box" }}>
+          <div style={{ width: "100%", aspectRatio: "16 / 9", borderRadius: 12 }} />
+        </div>
+        <div style={{ width: "100%", padding: "12px 8px", display: "flex", flexDirection: "column", gap: 16 }}>
+          <div style={{ height: 20 }} />
+          <div style={{ height: 60 }} />
+          <div style={{ height: 46 }} />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <motion.div

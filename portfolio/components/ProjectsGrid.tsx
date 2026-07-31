@@ -45,7 +45,7 @@ export function ProjectsGrid({ projects, visible = true, mobileMax, wide }: {
               index={i}
               visible={visible}
               isDesktop={isDesktop}
-              isActive={active?.name === proj.name}
+              isHidden={isDesktop && active?.name === proj.name}
               onOpen={() => setActive(proj)}
             />
           ))}
