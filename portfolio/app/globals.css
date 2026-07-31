@@ -150,7 +150,7 @@ body {
   overflow-x: hidden;
   font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text',
                'Helvetica Neue', Arial, sans-serif;
-  font-size: 14px;
+  font-size: 15px;
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -173,10 +173,19 @@ img, svg, canvas {
 /* ═══════════════════════════════════════════════════════════
    SCROLLBAR
 ═══════════════════════════════════════════════════════════ */
-::-webkit-scrollbar       { width: 4px; }
+::-webkit-scrollbar       { width: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
-* { scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
+::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, #0FA89C 55%, var(--border));
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in srgb, #0FA89C 75%, var(--border));
+}
+* {
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, #0FA89C 55%, var(--border)) transparent;
+}
 
 /* ═══════════════════════════════════════════════════════════
    SELECTION & BASE LINKS
@@ -305,12 +314,12 @@ html.light .nav-root.scrolled {
 .nav-link:hover  { color: var(--nav-link-hover); background: var(--nav-link-active-bg); }
 .nav-link.active { color: var(--nav-link-hover); background: var(--nav-link-active-bg); }
 
-.logo-area { position: relative; width: 44px; height: 44px; flex-shrink: 0; }
+.logo-area { position: relative; width: 47px; height: 47px; flex-shrink: 0; }
 .logo-i {
   position: absolute; inset: 0;
   display: flex; align-items: center; justify-content: center;
   font-family: 'Geist Mono', monospace;
-  font-size: 15px; font-weight: 900;
+  font-size: 16px; font-weight: 900;
   color: var(--text-primary);
   transition: opacity 0.45s cubic-bezier(0.16,1,0.3,1), transform 0.45s cubic-bezier(0.16,1,0.3,1);
 }
@@ -318,13 +327,21 @@ html.light .nav-root.scrolled {
 
 .logo-avatar {
   position: absolute; inset: 0;
-  border-radius: 12px; overflow: hidden;
+  border-radius: 13px; overflow: hidden;
   border: 1.5px solid var(--border);
   opacity: 0; transform: scale(0.7) translateY(8px);
   transition: opacity 0.45s cubic-bezier(0.16,1,0.3,1), transform 0.45s cubic-bezier(0.16,1,0.3,1);
+  /* Keeps the crop crisp at every DPR instead of letting the browser
+     snap it to fractional device pixels mid-transition. */
+  transform-style: flat;
 }
 .logo-avatar.show { opacity: 1; transform: scale(1) translateY(0); }
-.logo-avatar img { width:100%; height:100%; object-fit:cover; border-radius:12px; }
+.logo-avatar img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  border-radius: 13px;
+  display: block;
+}
 
 html.intro-active { overflow: hidden; }
 html.intro-active body { overflow: hidden; }
@@ -441,14 +458,14 @@ h1, h2, h3, .section-title {
 }
 
 .section-label {
-  font-size: 11px; font-weight: 600;
+  font-size: 12px; font-weight: 600;
   letter-spacing: 0.08em; text-transform: uppercase;
   color: var(--text-muted); margin-bottom: 16px;
   font-family: 'Geist Mono', monospace;
 }
 
 .about-heading {
-  font-size: 28px; font-weight: 700; letter-spacing: -0.03em;
+  font-size: 30px; font-weight: 700; letter-spacing: -0.03em;
   color: var(--text-primary); line-height: 1;
   font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', sans-serif;
   display: inline-block;
@@ -463,7 +480,7 @@ h1, h2, h3, .section-title {
 }
 
 .section-title {
-  font-size: 22px; font-weight: 700;
+  font-size: 24px; font-weight: 700;
   letter-spacing: -0.03em; color: var(--text-primary);
   margin-bottom: 20px; line-height: 1.25;
 }
@@ -591,7 +608,7 @@ h1, h2, h3, .section-title {
 .tag {
   display: inline-flex; align-items: center;
   padding: 2px 9px; border-radius: 5px;
-  font-size: 12px; font-weight: 500;
+  font-size: 13px; font-weight: 500;
   background: var(--tag-bg); color: var(--tag-text); border: 1px solid var(--tag-border);
   transition: background 0.15s, border-color 0.15s;
   white-space: nowrap;
@@ -788,6 +805,18 @@ html.light .gold-word {
   img[src*="devicons"], img[src*="wikimedia"], img[src*="chartjs"], img[src*="jwt"] {
     image-rendering: auto;
   }
+  /* Photographic avatar images look harsher/aliased under the
+     contrast-optimized mode above (it's tuned for flat icon art). Force
+     them back to smooth, high-quality scaling — this is the image that
+     appears in the navbar corner on scroll, so it needs to stay crisp
+     and clean at small sizes rather than looking noisy. */
+  .logo-avatar img,
+  .h-avatar,
+  #intro-shell img,
+  img[src*="avatar-dark"],
+  img[src*="avatar-light"] {
+    image-rendering: auto;
+  }
 
 
 canvas {
@@ -906,18 +935,18 @@ html.light .nav-root.scrolled {
 
 
 @media (--tablet-split-down) {
-  .nav-root { height: 56px !important; }
-  .nav-inner { height: 56px !important; }
-  .logo-area { width: 38px; height: 38px; }
+  .nav-root { height: 58px !important; }
+  .nav-inner { height: 58px !important; }
+  .logo-area { width: 40px; height: 40px; }
 }
 
 @media (--nav-roomy) {
-  .nav-root { height: 68px !important; }
-  .nav-inner { height: 68px !important; padding: 0 32px !important; }
-  .logo-area { width: 46px; height: 46px; }
-  .logo-i { font-size: 14px !important; }
-  .nav-link { font-size: 13.5px !important; padding: 5px 12px !important; }
-  .theme-btn { width: 34px !important; height: 34px !important; border-radius: 8px !important; }
+  .nav-root { height: 70px !important; }
+  .nav-inner { height: 70px !important; padding: 0 32px !important; }
+  .logo-area { width: 49px; height: 49px; }
+  .logo-i { font-size: 15px !important; }
+  .nav-link { font-size: 14.5px !important; padding: 5px 12px !important; }
+  .theme-btn { width: 36px !important; height: 36px !important; border-radius: 8px !important; }
 }
 
 

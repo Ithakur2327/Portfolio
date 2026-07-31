@@ -78,7 +78,7 @@ function MenuItemIcon({ type, color }: { type: string; color: string }) {
   return <SectionIcon type={type as SectionIconType} size={14} color={color} strokeWidth={2} />;
 }
 
-function SearchIcon({ size = 16 }: { size?: number }) {
+function SearchIcon({ size = 17 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" shapeRendering="geometricPrecision">
       <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
@@ -92,7 +92,7 @@ function Kbd({ children, style: s }: { children: React.ReactNode; style?: React.
 
 const moonVariants: Variants = { normal: { rotate: 0 }, animate: { rotate: [0, -10, 10, -5, 5, 0] } };
 const moonTransition: Transition = { duration: 1.2, ease: "easeInOut" };
-function MoonIconAnimated({ size = 16 }: { size?: number }) {
+function MoonIconAnimated({ size = 17 }: { size?: number }) {
   const c = useAnimation();
   return (
     <div onMouseEnter={() => c.start("animate")} onMouseLeave={() => c.start("normal")}>
@@ -108,7 +108,7 @@ const sunPathVariants: Variants = {
   animate: (i: number) => ({ opacity: [0, 1], transition: { delay: i * 0.1, duration: 0.3 } }),
 };
 const SUN_RAYS = ["M12 3v1","M12 20v1","M3 12h1","M20 12h1","m18.364 5.636-.707.707","m6.343 17.657-.707.707","m5.636 5.636.707.707","m17.657 17.657.707.707"];
-function SunIconAnimated({ size = 16 }: { size?: number }) {
+function SunIconAnimated({ size = 17 }: { size?: number }) {
   const c = useAnimation();
   return (
     <div onMouseEnter={() => c.start("animate")} onMouseLeave={() => c.start("normal")}>
@@ -425,7 +425,7 @@ function CommandMenu({
 function CommandMenuTrigger({ onClick, btnRef }: { onClick: () => void; btnRef: React.RefObject<HTMLButtonElement | null> }) {
   return (
     <button ref={btnRef} onClick={onClick} aria-label="Open command menu" className="cmdk-trigger">
-      <SearchIcon size={16} />
+      <SearchIcon size={17} />
       <span className="cmdk-trigger-label">Search…</span>
       <span className="cmdk-trigger-kbd">
         <Kbd>Ctrl</Kbd>
@@ -514,9 +514,9 @@ export function Navbar() {
 
         .nav-kbd {
           display:inline-flex;align-items:center;justify-content:center;
-          height:18px;min-width:20px;width:fit-content;gap:3px;
+          height:19px;min-width:21px;width:fit-content;gap:3px;
           border-radius:3px;padding:0 4px;
-          font-family:inherit;font-size:11px;font-weight:400;line-height:1;
+          font-family:inherit;font-size:11.5px;font-weight:400;line-height:1;
           color:var(--text-muted);user-select:none;pointer-events:none;
           background:rgba(0,0,0,0.04);
           border:1px solid rgba(0,0,0,0.09);
@@ -531,10 +531,10 @@ export function Navbar() {
 
         .cmdk-trigger {
           display:inline-flex;align-items:center;gap:6px;
-          height:34px;padding:0 8px;border-radius:8px;border:none;
+          height:36px;padding:0 9px;border-radius:8px;border:none;
           background:transparent;color:var(--nav-link-color);
           cursor:pointer;user-select:none;
-          font-size:14.5px;font-weight:500;
+          font-size:15.5px;font-weight:500;
           font-family:-apple-system,'SF Pro Display','Helvetica Neue',sans-serif;
           letter-spacing:-0.01em;
           transition:background 0.15s,color 0.15s;
@@ -546,20 +546,21 @@ export function Navbar() {
         .cmdk-trigger-kbd { display:flex;align-items:center;gap:3px; }
 
         .nav-desktop-link {
-          font-size:14.5px;font-weight:500;letter-spacing:-0.01em;
+          font-size:15.5px;font-weight:500;letter-spacing:-0.01em;
           color:var(--nav-link-color);text-decoration:none;
           transition:color 0.15s;padding:0 2px;
           font-family:-apple-system,'SF Pro Display','Helvetica Neue',sans-serif;
           cursor:pointer;background:none;border:none;
+          display:inline-flex;align-items:center;height:36px;
         }
         .nav-desktop-link:hover { color:var(--nav-link-hover); }
         .nav-desktop-link.active { color:var(--nav-link-hover); }
 
-        .nav-sep { width:1px;height:20px;align-self:center;background:var(--nav-border);flex-shrink:0; }
+        .nav-sep { width:1px;height:22px;align-self:center;background:var(--nav-border);flex-shrink:0; }
 
         .icon-btn {
           display:grid;place-items:center;
-          width:34px;height:34px;border-radius:8px;border:none;
+          width:36px;height:36px;border-radius:8px;border:none;
           background:transparent;color:var(--nav-link-color);
           cursor:pointer;touch-action:manipulation;
           transition:background 0.15s,color 0.15s;
@@ -656,8 +657,8 @@ export function Navbar() {
             <NavTooltip label="Toggle mode" kbd="D">
               <button suppressHydrationWarning className="icon-btn" onClick={handleTheme} aria-label="Toggle theme">
                 {mounted
-                  ? isDark ? <MoonIconAnimated size={16} /> : <SunIconAnimated size={16} />
-                  : <MoonIconAnimated size={16} />
+                  ? isDark ? <MoonIconAnimated size={17} /> : <SunIconAnimated size={17} />
+                  : <MoonIconAnimated size={17} />
                 }
               </button>
             </NavTooltip>
