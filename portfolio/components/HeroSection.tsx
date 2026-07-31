@@ -488,7 +488,7 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
       >
         <div style={{ position: "relative", left: "50%", marginLeft: "-50vw", width: "100vw" }}>
           <div style={{ position: "absolute", inset: 0, zIndex: 0 }}>
-            <DotField interactive={false} />
+            <DotField interactive />
           </div>
           <div style={{ position: "relative", zIndex: 1 }}>
 

@@ -95,7 +95,7 @@ export const PROJECTS: Project[] = [
     accent: "#10b981",
     accentBg: "rgba(16,185,129,0.10)",
     accentBorder: "rgba(16,185,129,0.25)",
-    img: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=1600&q=85",
+    img: "/healthnex-preview.png",
     description: "Preventive health platform that turns lifestyle and family-history intake into a personalized risk score. An LLM-powered assistant generates prevention plans, with interactive charts tracking health metrics over time.",
     features: [
       "Lifestyle and family-history intake feeding a personalized risk score",
@@ -149,7 +149,7 @@ export const PROJECTS: Project[] = [
     accent: "#ef4444",
     accentBg: "rgba(239,68,68,0.10)",
     accentBorder: "rgba(239,68,68,0.25)",
-    img: "https://images.unsplash.com/photo-1488190211105-8b0e65b80b4e?w=1600&q=85",
+    img: "/vidlearn-preview.png",
     description: "AI study companion that turns any YouTube lecture into structured notes. Paste a URL and VidLearn pulls the transcript via the YouTube API, then uses an LLM to summarize key concepts and generate MCQ quizzes with explanations.",
     features: [
       "Transcript extraction straight from a pasted YouTube URL",
@@ -162,13 +162,13 @@ export const PROJECTS: Project[] = [
     live: "#",
   },
   {
-    name: "Myntra Clone",
+    name: "TrendCart",
     year: "2024",
     accent: "#ec4899",
     accentBg: "rgba(236,72,153,0.10)",
     accentBorder: "rgba(236,72,153,0.25)",
-    img: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=1600&q=85",
-    description: "Full-featured fashion e-commerce platform with advanced filtering, autocomplete search, and a Redux-powered cart and wishlist. Includes a multi-step checkout flow with address and payment pages, fully responsive end to end.",
+    img: "/ecommerce-preview.png",
+    description: "Full-featured e-commerce platform for fashion and lifestyle products, with advanced filtering, autocomplete search, and a Redux-powered cart and wishlist. Includes a multi-step checkout flow with address and payment pages, fully responsive end to end.",
     features: [
       "Advanced filtering by brand, price, size and category",
       "Search with autocomplete suggestions",
