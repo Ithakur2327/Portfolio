@@ -152,10 +152,13 @@ function FallingIconsBox({ title, items, index = 0 }: { title: string; items: st
       if (rect.width <= 0 || rect.height <= 0) return;
 
     const isMobile = typeof window !== "undefined" && window.matchMedia("(max-width: 767px)").matches;
-    // Lighter solver keeps it cheap on phones.
+    // Lighter solver keeps it cheap on phones; no artificial fps cap here —
+    // sleeping bodies + the scroll deadzone (below) do the real work of
+    // keeping this light, so we let rAF run at the display's native rate
+    // (up to 120Hz) for the smoothest feel.
     const engine = Engine.create({
-      positionIterations: isMobile ? 2 : 6,
-      velocityIterations: isMobile ? 1 : 4,
+      positionIterations: isMobile ? 3 : 6,
+      velocityIterations: isMobile ? 2 : 4,
       constraintIterations: isMobile ? 1 : 2,
     });
     // Resting bodies stop being simulated entirely — big win since icons
@@ -188,7 +191,7 @@ function FallingIconsBox({ title, items, index = 0 }: { title: string; items: st
       // Spawn already asleep — nothing to simulate until it's touched, so
       // there's no "warm up" period of full physics right after mount.
       Sleeping.set(body, true);
-      return { el, body, hw: r.width / 2, hh: r.height / 2, lastPx: Math.round(x), lastPy: Math.round(y) };
+      return { el, body, hw: r.width / 2, hh: r.height / 2 };
     });
 
     pieces.forEach(({ el, body }) => {
@@ -265,25 +268,12 @@ function FallingIconsBox({ title, items, index = 0 }: { title: string; items: st
 
     let rafId = 0;
     let lastTime = performance.now();
-    let lastProcessed = lastTime;
-    // Phones on a 90/120Hz screen were trying to run full collision solving
-    // every single refresh, which is what showed up as stutter during the
-    // scroll bounce. Capping the actual work to ~45 times a second (well
-    // above what's visually distinguishable for this kind of motion) gives
-    // a steady result instead. Desktop keeps running at native refresh rate.
-    const mobileFrameBudgetMs = isMobile ? 1000 / 45 : 0;
     const tick = (time: number) => {
       if (!inViewRef.current || themePausedRef.current) {
         lastTime = time;
         rafId = requestAnimationFrame(tick);
         return;
       }
-
-      if (mobileFrameBudgetMs && time - lastProcessed < mobileFrameBudgetMs) {
-        rafId = requestAnimationFrame(tick);
-        return;
-      }
-      lastProcessed = time;
 
       const rawKick = scrollImpulse !== 0 ? Math.max(-2.5, Math.min(2.5, -scrollImpulse * 0.045)) : 0;
       // Ignore tiny scroll jitter — only a real scroll gesture should wake icons.
@@ -306,8 +296,7 @@ function FallingIconsBox({ title, items, index = 0 }: { title: string; items: st
       lastTime = time;
       Engine.update(engine, delta);
 
-      pieces.forEach(piece => {
-        const { el, body, hw, hh } = piece;
+      pieces.forEach(({ el, body, hw, hh }) => {
         // Idle icon, no scroll kick this frame — nothing to compute or paint.
         if (body.isSleeping && kick === 0) return;
 
@@ -326,11 +315,6 @@ function FallingIconsBox({ title, items, index = 0 }: { title: string; items: st
         }
         const px = Math.round(body.position.x);
         const py = Math.round(body.position.y);
-        // Sub-pixel jitter isn't visible — skip the style write (and the
-        // repaint it triggers) when the position hasn't meaningfully changed.
-        if (px === piece.lastPx && py === piece.lastPy) return;
-        piece.lastPx = px;
-        piece.lastPy = py;
         el.style.transform = `translate3d(${px}px, ${py}px, 0) translate(-50%, -50%)`;
       });
       rafId = requestAnimationFrame(tick);
