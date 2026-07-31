@@ -121,6 +121,21 @@ function FallingIconsBox({ title, items, index = 0 }: { title: string; items: st
   const inViewRef = useRef(inView);
   useEffect(() => { inViewRef.current = inView; }, [inView]);
 
+  // While the theme's view-transition screenshot/cross-fade is running, the
+  // browser is already doing heavy work — pause the physics loop for that
+  // brief window instead of fighting it for the main thread.
+  const themePausedRef = useRef(false);
+  useEffect(() => {
+    const onStart = () => { themePausedRef.current = true; };
+    const onEnd = () => { themePausedRef.current = false; };
+    window.addEventListener("theme-transition-start", onStart);
+    window.addEventListener("theme-transition-end", onEnd);
+    return () => {
+      window.removeEventListener("theme-transition-start", onStart);
+      window.removeEventListener("theme-transition-end", onEnd);
+    };
+  }, []);
+
   useEffect(() => {
     if (!hasAppeared) return;
     const box = boxRef.current;
@@ -179,11 +194,16 @@ function FallingIconsBox({ title, items, index = 0 }: { title: string; items: st
       return { el, body, hw: r.width / 2, hh: r.height / 2 };
     });
 
-    pieces.forEach(({ el }) => {
+    pieces.forEach(({ el, body }) => {
       el.style.position = "absolute";
       el.style.left = "0px";
       el.style.top = "0px";
       el.style.margin = "0";
+      // Paint the icon at its real (laid-out) position right away. Without
+      // this, the element sits at the box's (0,0) corner — on top of every
+      // other icon — until the tick loop first wakes its body via a drag
+      // or scroll kick, which is what caused icons to pile up at the start.
+      el.style.transform = `translate3d(${Math.round(body.position.x)}px, ${Math.round(body.position.y)}px, 0) translate(-50%, -50%)`;
     });
 
     type MouseHandlers = Matter.Mouse & {
@@ -249,7 +269,24 @@ function FallingIconsBox({ title, items, index = 0 }: { title: string; items: st
     let rafId = 0;
     let lastTime = performance.now();
     const tick = (time: number) => {
-      if (!inViewRef.current) {
+      if (!inViewRef.current || themePausedRef.current) {
+        lastTime = time;
+        rafId = requestAnimationFrame(tick);
+        return;
+      }
+
+      const rawKick = scrollImpulse !== 0 ? Math.max(-2.5, Math.min(2.5, -scrollImpulse * 0.045)) : 0;
+      // Ignore tiny scroll jitter — only a real scroll gesture should wake icons.
+      const kick = Math.abs(rawKick) > 0.15 ? rawKick : 0;
+      scrollImpulse = 0;
+
+      // Nothing awake and nothing to wake it — every icon is exactly where
+      // it was painted, so there's nothing to simulate or repaint this
+      // frame. Skipping Engine.update here (rather than just skipping the
+      // per-icon work below) is what keeps the section at ~0% CPU while
+      // it's just sitting on screen untouched.
+      const anyAwake = kick !== 0 || pieces.some(p => !p.body.isSleeping) || !!mouseConstraint.body;
+      if (!anyAwake) {
         lastTime = time;
         rafId = requestAnimationFrame(tick);
         return;
@@ -258,11 +295,6 @@ function FallingIconsBox({ title, items, index = 0 }: { title: string; items: st
       const delta = Math.min(time - lastTime, 1000 / 30);
       lastTime = time;
       Engine.update(engine, delta);
-
-      const rawKick = scrollImpulse !== 0 ? Math.max(-2.5, Math.min(2.5, -scrollImpulse * 0.045)) : 0;
-      // Ignore tiny scroll jitter — only a real scroll gesture should wake icons.
-      const kick = Math.abs(rawKick) > 0.15 ? rawKick : 0;
-      scrollImpulse = 0;
 
       pieces.forEach(({ el, body, hw, hh }) => {
         // Idle icon, no scroll kick this frame — nothing to compute or paint.

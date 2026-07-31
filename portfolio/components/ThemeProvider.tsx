@@ -26,7 +26,10 @@ export function useTheme() {
         switchTheme();
         return;
       }
-      document.startViewTransition(switchTheme);
+      window.dispatchEvent(new Event("theme-transition-start"));
+      const done = () => window.dispatchEvent(new Event("theme-transition-end"));
+      const transition = document.startViewTransition(switchTheme);
+      transition.finished.then(done, done);
     },
   };
 }

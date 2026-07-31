@@ -61,11 +61,12 @@ function ProjectLinks({ proj, size }: { proj: Project; size: number }) {
 
 
 
-export function ProjectCard({ proj, index, visible, isDesktop, onOpen }: {
+export function ProjectCard({ proj, index, visible, isDesktop, isActive, onOpen }: {
   proj: Project;
   index: number;
   visible: boolean;
   isDesktop: boolean;
+  isActive?: boolean;
   onOpen: () => void;
 }) {
   const frameRef = useRef<HTMLDivElement>(null);
@@ -76,13 +77,19 @@ export function ProjectCard({ proj, index, visible, isDesktop, onOpen }: {
 
   const shown = isDesktop ? hovered : inView;
 
+  // While this card's modal is open, hand the shared layoutId's over to
+  // ProjectModal entirely (see cid below) so Framer Motion has exactly one
+  // element per id to animate — otherwise both the grid card and the modal
+  // claim the same layoutId at once and the morph collapses into a plain
+  // pop/fade instead of growing from the card.
+  const cid = (id: string) => (isDesktop && !isActive ? id : undefined);
+
   // On mobile/tablet the modal opens as a plain bottom sheet (no shared
   // layoutId morph — see ProjectModal's `lid` helper), so keeping these
   // layoutId's active there just forces Framer Motion to track this card
   // in the shared LayoutGroup for no visual benefit, which is what was
   // causing the janky "open" animation on phones/tablets. Only wire the
   // layoutId's up on desktop, where the morph animation actually happens.
-  const cid = (id: string) => (isDesktop ? id : undefined);
 
   return (
     <motion.div
@@ -125,7 +132,7 @@ export function ProjectCard({ proj, index, visible, isDesktop, onOpen }: {
           style={{
             width: "100%", aspectRatio: "16 / 9", borderRadius: 12,
             position: "relative", overflow: "hidden",
-            background: isDark ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.05)",
+            background: isDark ? "#121212" : "rgba(0,0,0,0.05)",
             border: "1px solid var(--border)",
           }}
         >
@@ -252,7 +259,7 @@ export function ProjectModal({ proj, onClose, isDesktop }: { proj: Project; onCl
   const { theme } = useTheme();
   const isDark = theme === "dark";
   const sheet = !isDesktop;
-  const sheetTransition = { type: "tween" as const, duration: 0.22, ease: [0.22, 1, 0.36, 1] as const };
+  const sheetTransition = { type: "tween" as const, duration: 0.18, ease: [0.22, 1, 0.36, 1] as const };
   const lid = (id: string) => (sheet ? undefined : id);
 
   useEffect(() => {
@@ -329,7 +336,7 @@ export function ProjectModal({ proj, onClose, isDesktop }: { proj: Project; onCl
           quality={80}
           sizes="(max-width: 767px) 100vw, 45vw"
           unoptimized={proj.img.endsWith(".svg")}
-          style={{ objectFit: "contain" }}
+          style={{ objectFit: "cover" }}
         />
       </motion.div>
     </motion.div>
@@ -493,7 +500,8 @@ export function ProjectModal({ proj, onClose, isDesktop }: { proj: Project; onCl
             borderRadius: sheet ? "16px 16px 0 0" : 16,
             boxShadow: "0 12px 28px -8px rgba(0,0,0,0.45)",
             overflow: "hidden",
-            ...(sheet ? {} : { willChange: "transform", transform: "translateZ(0)" }),
+            willChange: "transform",
+            transform: "translateZ(0)",
           }}
         >
           <style suppressHydrationWarning>{`

@@ -62,7 +62,7 @@ function IBox({color, children}:{color?:string; children:React.ReactNode}) {
 
 function Row({icon, href, newTab, onClick, children}:{icon:React.ReactNode; href?:string; newTab?:boolean; onClick?:()=>void; children:React.ReactNode}) {
   const s:React.CSSProperties = {
-    display:"flex", alignItems:"center", gap:14,
+    display:"flex", alignItems:"center", gap:14, minWidth:0,
     fontFamily:"'Geist Mono',monospace", fontSize:14,
     color:"var(--text-primary)", textDecoration:"none",
   };
@@ -270,7 +270,7 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
         }
         .h-grid {
           display: grid;
-          grid-template-columns: 1fr 1fr;
+          grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
           grid-template-rows: repeat(3, auto);
           grid-auto-flow: column;
           align-items: center;
