@@ -25,9 +25,7 @@ const ICON_VECTORDB = glyph(
   `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='#14b8a6' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'><ellipse cx='12' cy='5' rx='8' ry='3'/><path d='M4 5v14c0 1.66 3.58 3 8 3s8-1.34 8-3V5'/><path d='M4 12c0 1.66 3.58 3 8 3s8-1.34 8-3'/></svg>`
 );
 
-// Official brand logos, served pre-colored via the Simple Icons CDN
-// (https://cdn.simpleicons.org/<slug>/<hex>) so each icon matches its
-// project's accent instead of shipping a hand-traced approximation.
+
 const officialLogo = (slug: string, hex: string) => `https://cdn.simpleicons.org/${slug}/${hex}`;
 
 export const TECH_MAP: Record<string, { color: string; logo: string; logoLight?: string }> = {
