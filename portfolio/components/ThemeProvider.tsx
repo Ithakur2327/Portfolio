@@ -1,6 +1,5 @@
 "use client";
 import { ThemeProvider as NextThemesProvider, useTheme as useNextTheme } from "next-themes";
-import { cond } from "@/lib/breakpoints";
 export type Theme = "dark" | "light";
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
@@ -23,10 +22,7 @@ export function useTheme() {
     theme: (resolvedTheme ?? "dark") as Theme,
     setTheme: (t: Theme) => {
       const switchTheme = () => setTheme(t);
-
-      const supportsViewTransition = typeof document !== "undefined" && !!document.startViewTransition;
-      const isSmallScreen = typeof window !== "undefined" && window.matchMedia(cond.tabletDown).matches;
-      if (!supportsViewTransition || isSmallScreen) {
+      if (typeof document === "undefined" || !document.startViewTransition) {
         switchTheme();
         return;
       }
