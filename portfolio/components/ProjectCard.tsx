@@ -61,12 +61,11 @@ function ProjectLinks({ proj, size }: { proj: Project; size: number }) {
 
 
 
-export function ProjectCard({ proj, index, visible, isDesktop, isHidden, onOpen }: {
+export function ProjectCard({ proj, index, visible, isDesktop, onOpen }: {
   proj: Project;
   index: number;
   visible: boolean;
   isDesktop: boolean;
-  isHidden?: boolean;
   onOpen: () => void;
 }) {
   const frameRef = useRef<HTMLDivElement>(null);
@@ -84,21 +83,6 @@ export function ProjectCard({ proj, index, visible, isDesktop, isHidden, onOpen 
   const shown = isDesktop ? hovered : inView;
 
   const cid = (id: string) => (isDesktop ? id : undefined);
-
-  if (isHidden) {
-    return (
-      <div aria-hidden="true" style={{ width: "100%", visibility: "hidden" }}>
-        <div style={{ width: "100%", padding: 2, borderRadius: 14, boxSizing: "border-box" }}>
-          <div style={{ width: "100%", aspectRatio: "16 / 9", borderRadius: 12 }} />
-        </div>
-        <div style={{ width: "100%", padding: "12px 8px", display: "flex", flexDirection: "column", gap: 16 }}>
-          <div style={{ height: 20 }} />
-          <div style={{ height: 60 }} />
-          <div style={{ height: 46 }} />
-        </div>
-      </div>
-    );
-  }
 
   return (
     <motion.div

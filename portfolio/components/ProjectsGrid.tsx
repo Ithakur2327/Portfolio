@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { AnimatePresence, LayoutGroup } from "motion/react";
 import type { Project } from "@/lib/projects-data";
 import { ProjectCard, ProjectModal } from "./ProjectCard";
@@ -14,29 +14,6 @@ export function ProjectsGrid({ projects, visible = true, mobileMax, wide }: {
 }) {
   const [active, setActive] = useState<Project | null>(null);
   const isDesktop = useIsLaptopUp();
-
-  // On open, the clicked card's real (layoutId-bearing) element and the
-  // newly-mounted modal must both exist in the DOM for at least one frame —
-  // that overlap is what lets the shared layoutId transition compute its
-  // "from" rect and morph. On close this overlap happens for free (the
-  // modal stays mounted mid-exit while the grid card is instantly restored),
-  // which is why closing always animated correctly. Opening had no such
-  // overlap: the source card was swapped for its invisible placeholder in
-  // the very same render that mounted the modal, so there was nothing for
-  // Framer to morph from and the modal just popped in.
-  // `hiddenName` mirrors `active` but is deliberately set one frame later,
-  // giving that first frame of overlap on open while staying perfectly in
-  // sync (reset instantly) on close.
-  const [hiddenName, setHiddenName] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!active) {
-      setHiddenName(null);
-      return;
-    }
-    const raf = requestAnimationFrame(() => setHiddenName(active.name));
-    return () => cancelAnimationFrame(raf);
-  }, [active]);
 
   return (
     <>
