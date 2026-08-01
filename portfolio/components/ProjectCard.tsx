@@ -148,12 +148,12 @@ export function ProjectCard({ proj, index, visible, isDesktop, isHidden, onOpen 
           <motion.div
             initial={false}
             animate={shown
-              ? { width: "100%", height: "100%", bottom: 0, rotate: 0, borderRadius: 10, boxShadow: "0 0 0 rgba(0,0,0,0)" }
-              : { width: "85%", height: "72%", bottom: "-8%", rotate: -8, borderRadius: 6, boxShadow: "0 20px 40px -8px rgba(0,0,0,0.45)" }}
+              ? { scaleX: 1, scaleY: 1, y: 0, rotate: 0, borderRadius: 10, boxShadow: "0 0 0 rgba(0,0,0,0)" }
+              : { scaleX: 0.85, scaleY: 0.72, y: "22%", rotate: -8, borderRadius: 6, boxShadow: "0 20px 40px -8px rgba(0,0,0,0.45)" }}
             transition={isDesktop
-              ? { type: "spring", stiffness: 210, damping: 24, mass: 0.85 }
-              : { type: "tween", duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
-            style={{ position: "absolute", left: 0, right: 0, margin: "0 auto", overflow: "hidden", willChange: "transform" }}
+              ? { type: "spring", stiffness: 160, damping: 26, mass: 0.9 }
+              : { type: "tween", duration: 0.85, ease: [0.22, 1, 0.36, 1] }}
+            style={{ position: "absolute", inset: 0, overflow: "hidden", willChange: "transform" }}
           >
             <motion.div
               layoutId={cid(`card-banner-image-${proj.name}`)}
@@ -488,7 +488,7 @@ export function ProjectModal({ proj, onClose, isDesktop }: { proj: Project; onCl
         }}
       />
 
-      <div style={{ position: "fixed", inset: 0, zIndex: 9001, display: "grid", alignItems: sheet ? "end" : "center", justifyItems: sheet ? "stretch" : "center", padding: sheet ? 0 : 16, pointerEvents: "none" }}>
+      <motion.div layoutRoot style={{ position: "fixed", inset: 0, zIndex: 9001, display: "grid", alignItems: sheet ? "end" : "center", justifyItems: sheet ? "stretch" : "center", padding: sheet ? 0 : 16, pointerEvents: "none" }}>
         <motion.div
           ref={modalRef}
           role="dialog"
@@ -623,7 +623,7 @@ export function ProjectModal({ proj, onClose, isDesktop }: { proj: Project; onCl
           )}
           </div>
         </motion.div>
-      </div>
+      </motion.div>
     </>
   );
 
