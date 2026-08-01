@@ -85,12 +85,21 @@ export function ProjectCard({ proj, index, visible, isDesktop, isHidden = false,
 
   const cid = (id: string) => (isDesktop ? id : undefined);
 
+  const [revealed, setRevealed] = useState(false);
+  useEffect(() => {
+    if (visible) setRevealed(true);
+  }, [visible]);
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 26, scale: 0.96 }}
       animate={{ opacity: visible ? 1 : 0, y: visible ? 0 : 26, scale: visible ? 1 : 0.96 }}
-      transition={{ ...SPRING, delay: visible ? 0.07 * index : 0 }}
+      transition={{ type: "spring", stiffness: 210, damping: 24, mass: 0.9, delay: visible && !revealed ? 0.07 * index : 0 }}
+      style={{ width: "100%", visibility: isHidden ? "hidden" : "visible" }}
+    >
+    <motion.div
       layoutId={cid(`card-container-${proj.name}`)}
+      transition={SPRING}
       onClick={onOpen}
       onHoverStart={() => setHovered(true)}
       onHoverEnd={() => setHovered(false)}
@@ -107,7 +116,6 @@ export function ProjectCard({ proj, index, visible, isDesktop, isHidden = false,
         willChange: "transform",
         WebkitTapHighlightColor: "transparent",
         touchAction: "manipulation",
-        visibility: isHidden ? "hidden" : "visible",
         pointerEvents: isHidden ? "none" : undefined,
       }}
     >
@@ -133,33 +141,29 @@ export function ProjectCard({ proj, index, visible, isDesktop, isHidden = false,
           }}
         >
           <motion.div
-            layoutId={cid(`card-banner-image-${proj.name}`)}
-            initial={{ bottom: "-12%", rotate: -8 }}
-            animate={shown ? { bottom: 0, rotate: 0 } : { bottom: "-12%", rotate: -8 }}
+            initial={false}
+            animate={shown
+              ? { scaleX: 1, scaleY: 1, y: 0, rotate: 0, borderRadius: 10, boxShadow: "0 0 0 rgba(0,0,0,0)" }
+              : { scaleX: 0.85, scaleY: 0.72, y: "22%", rotate: -8, borderRadius: 6, boxShadow: "0 20px 40px -8px rgba(0,0,0,0.45)" }}
             transition={isDesktop
-              ? { type: "spring", stiffness: 150, damping: 20, mass: 1 }
-              : { type: "tween", duration: 1.1, ease: [0.22, 1, 0.36, 1] }}
-            style={{
-              position: "absolute",
-              height: "auto",
-              width: "85%",
-              left: 0, right: 0, margin: "0 auto",
-              aspectRatio: "16 / 10",
-              overflow: "hidden",
-              borderRadius: 6,
-              boxShadow: "0 20px 40px -8px rgba(0,0,0,0.45)",
-              willChange: "transform",
-            }}
+              ? { type: "spring", stiffness: 160, damping: 26, mass: 0.9 }
+              : { type: "tween", duration: 0.85, ease: [0.22, 1, 0.36, 1] }}
+            style={{ position: "absolute", inset: 0, overflow: "hidden", willChange: "transform" }}
           >
-            <Image
-              src={proj.img}
-              alt={proj.name}
-              fill
-              quality={100}
-              sizes="(max-width: 640px) 96vw, (max-width: 1024px) 48vw, 520px"
-              unoptimized={proj.img.endsWith(".svg")}
-              style={{ objectFit: "cover" }}
-            />
+            <motion.div
+              layoutId={cid(`card-banner-image-${proj.name}`)}
+              style={{ position: "absolute", inset: 0, overflow: "hidden" }}
+            >
+              <Image
+                src={proj.img}
+                alt={proj.name}
+                fill
+                quality={100}
+                sizes="(max-width: 640px) 96vw, (max-width: 1024px) 48vw, 520px"
+                unoptimized={proj.img.endsWith(".svg")}
+                style={{ objectFit: "cover" }}
+              />
+            </motion.div>
           </motion.div>
         </motion.div>
       </div>
@@ -249,6 +253,7 @@ export function ProjectCard({ proj, index, visible, isDesktop, isHidden = false,
           transform: translateY(-1.5px) scale(1.08);
         }
       `}</style>
+    </motion.div>
     </motion.div>
   );
 }
