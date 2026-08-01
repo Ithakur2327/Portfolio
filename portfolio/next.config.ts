@@ -81,13 +81,8 @@ const nextConfig: NextConfig = {
   },
 
   experimental: {
-    // NOTE: do NOT add "motion" here. Next's optimizePackageImports rewrites
-    // it into deep per-module imports at build time (production only, dev
-    // is unaffected) which breaks the shared internal state that motion's
-    // layoutId / shared-layout (morph) animations depend on. This is why
-    // the project-card morph worked on localhost but silently stopped
-    // working after deploying — the prod build was the only one applying
-    // this rewrite.
+    optimizePackageImports: ["motion"],
+    // Turbo for faster local development
   },
 
   compress: true,
