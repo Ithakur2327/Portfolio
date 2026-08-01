@@ -61,11 +61,12 @@ function ProjectLinks({ proj, size }: { proj: Project; size: number }) {
 
 
 
-export function ProjectCard({ proj, index, visible, isDesktop, onOpen }: {
+export function ProjectCard({ proj, index, visible, isDesktop, isHidden = false, onOpen }: {
   proj: Project;
   index: number;
   visible: boolean;
   isDesktop: boolean;
+  isHidden?: boolean;
   onOpen: () => void;
 }) {
   const frameRef = useRef<HTMLDivElement>(null);
@@ -86,15 +87,17 @@ export function ProjectCard({ proj, index, visible, isDesktop, onOpen }: {
 
   return (
     <motion.div
-      initial={false}
-      animate={{ opacity: visible ? 1 : 0, y: visible ? 0 : 20 }}
-      transition={{ delay: visible ? 0.05 * index : 0, type: "spring", stiffness: 340, damping: 26, mass: 0.75 }}
+      initial={{ opacity: 0, y: 26, scale: 0.96 }}
+      animate={{ opacity: isHidden ? 0 : visible ? 1 : 0, y: visible ? 0 : 26, scale: isHidden ? 0.96 : visible ? 1 : 0.96 }}
+      transition={isHidden
+        ? { opacity: { duration: 0 } }
+        : { delay: visible ? 0.07 * index : 0, type: "spring", stiffness: 210, damping: 24, mass: 0.9 }}
       layoutId={cid(`card-container-${proj.name}`)}
-      onClick={onOpen}
+      onClick={isHidden ? undefined : onOpen}
       onHoverStart={() => setHovered(true)}
       onHoverEnd={() => setHovered(false)}
-      whileHover={isDesktop ? { scale: 1.02 } : undefined}
-      whileTap={{ scale: 0.98 }}
+      whileHover={isDesktop && !isHidden ? { scale: 1.02 } : undefined}
+      whileTap={isHidden ? undefined : { scale: 0.98 }}
       style={{
         position: "relative",
         display: "flex",
@@ -106,6 +109,7 @@ export function ProjectCard({ proj, index, visible, isDesktop, onOpen }: {
         willChange: "transform",
         WebkitTapHighlightColor: "transparent",
         touchAction: "manipulation",
+        pointerEvents: isHidden ? "none" : undefined,
       }}
     >
       <div
