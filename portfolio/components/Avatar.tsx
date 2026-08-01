@@ -160,28 +160,6 @@ export function Avatar({ version }: { version?: string } = {}) {
         gl_Position = vec4(pos, 0.0, 1.0);
       }`;
 
-    /*
-      TWO-PASS hair detection:
-
-      Pass 1 — geometric zone:
-        Hair only lives in top 33% of the image (uv.y < 0.33).
-        Below that is face or background — never warp it.
-
-      Pass 2 — pixel color test (sampled at REST position), as a
-        CONTINUOUS mask rather than a hard yes/no cutoff:
-          brightness fades in below ~0.46, out above ~0.30 (not bright skin)
-          red channel warm relative to blue (not cool shadow)
-          not pure black background
-        Using smoothstep here instead of a hard if/else means a
-        borderline pixel (e.g. a bright hair highlight right at the
-        threshold) gets a *partial* warp instead of staying completely
-        frozen next to fully-warped neighbours — that hard edge was what
-        made the hair look patchy/glitchy instead of like it was moving
-        as one piece.
-
-      Only pixels that pass BOTH tests get warped (partially or fully).
-      Face and background pixels always sample from original uv.
-    */
     const FRAG = `
       precision highp float;
       varying vec2 uv;
@@ -212,40 +190,38 @@ export function Avatar({ version }: { version?: string } = {}) {
       }
 
       void main(){
-        /* ── Step 1: geometric zone gate ──
-           Hair is ONLY in the top 33% of the image.
-           Transition zone softens the cutoff. */
         float zoneWeight = smoothstep(0.36, 0.23, uv.y);
 
-        /* ── Step 2: compute warp offset ──
-           Slower, gentler than before — a calm sway instead of a fast
-           ripple reads as natural hair movement rather than a "wave". */
-        float t  = time * 0.4;
-        float dx = (fbm(uv * vec2(3.2, 2.6) + vec2(t * 0.5, t * 0.28)) - 0.5) * 2.0 * 0.013;
-        float dy = (fbm(uv * vec2(2.6, 3.2) + vec2(-t * 0.28, t * 0.4) + 4.3) - 0.5) * 2.0 * 0.006;
-
-        /* ── Step 3: sample pixel at REST uv (texA) to classify it ──
-           We need to know what this pixel IS before warping it. */
         vec4 restColor = texture2D(texA, uv);
         float r = restColor.r;
         float g = restColor.g;
         float b = restColor.b;
         float brightness = (r + g + b) / 3.0;
 
-        /* Continuous hair mask — smoothstep gates instead of hard cuts */
         float darkEnough = smoothstep(0.46, 0.30, brightness);
         float notBlack   = smoothstep(0.02, 0.07, brightness);
         float warmEnough = smoothstep(1.10, 1.45, r / max(b, 0.02));
         float isHair = darkEnough * notBlack * warmEnough;
 
-        /* Final mask = geometry AND color, both continuous now */
-        float mask = zoneWeight * isHair;
+        float rootAnchor = smoothstep(0.0, 0.30, uv.y);
+        float sideAnchor = 1.0 - smoothstep(0.25, 0.47, abs(uv.x - 0.5));
+        float freedom = rootAnchor * sideAnchor;
 
-        /* ── Step 4: apply warp only where mask > 0 ── */
-        vec2 warpedUV  = clamp(uv + vec2(dx, dy), 0.001, 0.999);
-        vec2 finalUV   = mix(uv, warpedUV, mask);
+        float mask = zoneWeight * isHair * freedom;
 
-        /* ── Step 5: crossfade between the dark/light theme textures ── */
+        float t = time * 0.4;
+        float gust = 0.5 + 0.5 * fbm(vec2(t * 0.32, 5.1));
+
+        float dxBig  = (fbm(uv * vec2(3.0, 2.4) + vec2(t * 0.55, t * 0.3)) - 0.5) * 2.0;
+        float dyBig  = (fbm(uv * vec2(2.4, 3.0) + vec2(-t * 0.3, t * 0.42) + 4.3) - 0.5) * 2.0;
+        float dxFine = (fbm(uv * vec2(9.0, 7.0) + vec2(t * 1.1, -t * 0.8) + 8.8) - 0.5) * 2.0;
+
+        float dx = (dxBig * 0.014 + dxFine * 0.0035) * gust;
+        float dy = dyBig * 0.0055 * gust;
+
+        vec2 warpedUV = clamp(uv + vec2(dx, dy), 0.001, 0.999);
+        vec2 finalUV  = mix(uv, warpedUV, mask);
+
         vec4 colA = texture2D(texA, finalUV);
         vec4 colB = texture2D(texB, finalUV);
         gl_FragColor = mix(colA, colB, mixAmt);

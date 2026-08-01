@@ -191,7 +191,7 @@ function FallingIconsBox({ title, items, index = 0 }: { title: string; items: st
       // Spawn already asleep — nothing to simulate until it's touched, so
       // there's no "warm up" period of full physics right after mount.
       Sleeping.set(body, true);
-      return { el, body, hw: r.width / 2, hh: r.height / 2 };
+      return { el, body, hw: r.width / 2, hh: r.height / 2, awake: false };
     });
 
     pieces.forEach(({ el, body }) => {
@@ -296,9 +296,20 @@ function FallingIconsBox({ title, items, index = 0 }: { title: string; items: st
       lastTime = time;
       Engine.update(engine, delta);
 
-      pieces.forEach(({ el, body, hw, hh }) => {
+      pieces.forEach((piece) => {
+        const { el, body, hw, hh } = piece;
         // Idle icon, no scroll kick this frame — nothing to compute or paint.
-        if (body.isSleeping && kick === 0) return;
+        if (body.isSleeping && kick === 0) {
+          if (piece.awake) {
+            piece.awake = false;
+            el.style.willChange = "auto";
+          }
+          return;
+        }
+        if (!piece.awake) {
+          piece.awake = true;
+          el.style.willChange = "transform";
+        }
 
         if (kick !== 0) {
           if (!gravityEnabled) enableGravity();
@@ -443,7 +454,6 @@ export function SkillsSection() {
           position: relative; z-index: 1;
           cursor: grab; touch-action: none;
           user-select: none; -webkit-user-select: none;
-          will-change: transform;
           backface-visibility: hidden;
           -webkit-backface-visibility: hidden;
           box-shadow: 0 6px 12px -6px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.5);

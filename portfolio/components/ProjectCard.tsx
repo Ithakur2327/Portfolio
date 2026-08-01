@@ -70,7 +70,13 @@ export function ProjectCard({ proj, index, visible, isDesktop, isHidden, onOpen 
   onOpen: () => void;
 }) {
   const frameRef = useRef<HTMLDivElement>(null);
-  const inView = useInView(frameRef, { amount: 0.6 });
+  // `once` on mobile: without it, scrolling a card in and out of the 60%
+  // threshold re-triggers the width/height/rotate/shadow tween every single
+  // time, and with a full grid of cards doing that simultaneously while the
+  // user scrolls, it adds up to visible jank. Desktop doesn't use `inView`
+  // for anything visual (hover drives it there), so this only changes mobile
+  // behavior: each card now plays its reveal once and then stays settled.
+  const inView = useInView(frameRef, { amount: 0.6, once: !isDesktop });
   const [hovered, setHovered] = useState(false);
   const { theme } = useTheme();
   const isDark = theme === "dark";
