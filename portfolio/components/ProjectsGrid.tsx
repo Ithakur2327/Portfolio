@@ -50,7 +50,7 @@ export function ProjectsGrid({ projects, visible = true, mobileMax, wide }: {
               index={i}
               visible={visible}
               isDesktop={isDesktop}
-              isHidden={isDesktop && active?.name === proj.name}
+              isHidden={active?.name === proj.name}
               onOpen={() => setActiveIndex(i)}
               imageSizes={imageSizes}
             />

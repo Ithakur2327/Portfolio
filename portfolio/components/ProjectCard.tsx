@@ -80,7 +80,7 @@ export function ProjectCard({ proj, index, visible, isDesktop, isHidden, onOpen,
 
   const shown = isDesktop ? hovered : inView;
 
-  const cid = (id: string) => (isDesktop ? id : undefined);
+  const cid = (id: string) => id;
 
   if (isHidden) {
     return (
@@ -187,7 +187,7 @@ export function ProjectCard({ proj, index, visible, isDesktop, isHidden, onOpen,
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <motion.span
             layoutId={cid(`card-title-${proj.name}`)}
-            layout={isDesktop ? "position" : undefined}
+            layout="position"
             transition={SPRING}
             style={{ fontSize: 20, fontWeight: 600, color: "var(--text-primary)", letterSpacing: "-0.01em", fontFamily: SF, lineHeight: 1.3 }}
           >
@@ -195,7 +195,7 @@ export function ProjectCard({ proj, index, visible, isDesktop, isHidden, onOpen,
           </motion.span>
           <motion.div
             layoutId={cid(`card-links-${proj.name}`)}
-            layout={isDesktop ? "position" : undefined}
+            layout="position"
             transition={SPRING}
             style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}
             onClick={e => e.stopPropagation()}
@@ -215,7 +215,7 @@ export function ProjectCard({ proj, index, visible, isDesktop, isHidden, onOpen,
 
         <motion.p
           layoutId={cid(`card-description-${proj.name}`)}
-          layout={isDesktop ? "position" : undefined}
+          layout="position"
           transition={SPRING}
           style={{ fontSize: 16, color: "var(--text-secondary)", lineHeight: 1.5, margin: 0, fontFamily: SF, textAlign: "left", display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical", overflow: "hidden" }}
         >
@@ -224,7 +224,7 @@ export function ProjectCard({ proj, index, visible, isDesktop, isHidden, onOpen,
 
         <motion.div
           layoutId={cid(`card-tech-section-${proj.name}`)}
-          layout={isDesktop ? "position" : undefined}
+          layout="position"
           transition={SPRING}
           style={{ width: "100%", display: "flex", flexDirection: "column", gap: 8 }}
         >
@@ -280,8 +280,8 @@ export function ProjectModal({ proj, index, onClose, isDesktop }: { proj: Projec
   const { theme } = useTheme();
   const isDark = theme === "dark";
   const sheet = !isDesktop;
-  const sheetTransition = { type: "tween" as const, duration: 0.18, ease: [0.22, 1, 0.36, 1] as const };
-  const lid = (id: string) => (sheet ? undefined : id);
+  const sheetSpring = { type: "spring" as const, stiffness: 300, damping: 32, mass: 0.8 };
+  const lid = (id: string) => id;
 
   useEffect(() => {
     document.documentElement.style.overflow = "hidden";
@@ -509,10 +509,8 @@ export function ProjectModal({ proj, index, onClose, isDesktop }: { proj: Projec
           aria-modal="true"
           aria-label={`${proj.name} project details`}
           layoutId={lid(`card-container-${proj.name}`)}
-          initial={sheet ? { y: "100%" } : undefined}
-          animate={sheet ? { y: 0 } : undefined}
-          exit={sheet ? { y: "100%" } : undefined}
-          transition={sheet ? sheetTransition : SPRING}
+          exit={{ opacity: 0 }}
+          transition={sheet ? sheetSpring : SPRING}
           className="pm-shell"
           style={{
             pointerEvents: "auto",
