@@ -4,6 +4,7 @@ import { ThemeProvider } from "@/components/ThemeProvider";
 import { PdfModalProvider } from "@/components/PdfViewerModal";
 import { IntroLoader } from "@/components/IntroLoader";
 import OnekoCatLoader from "@/components/OnekoCatLoader";
+import { Navbar } from "@/components/Navbar";
 import { createHash } from "crypto";
 import { readFileSync } from "fs";
 import path from "path";
@@ -221,6 +222,16 @@ export default function RootLayout({
 
         <ThemeProvider>
           <PdfModalProvider>
+            {/* Rendered here (outside template.tsx's animated motion.div in
+                `children`) on purpose: that wrapper animates `scale`/`y`/
+                `filter`, and any of those on an ancestor turns it into the
+                containing block for `position: fixed` descendants per the
+                CSS spec. Navbar used to be the first child inside each
+                page.tsx — i.e. inside that animated div — so it was
+                "fixed" relative to the wrapper instead of the viewport and
+                scrolled away with the page. Keeping it here, as a true
+                sibling of that wrapper, is what keeps it pinned. */}
+            <Navbar />
             <div style={{ position: "relative", zIndex: 1 }}>
               {children}
             </div>

@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Navbar } from "@/components/Navbar";
 import { ContactPageForm } from "@/components/ContactPageForm";
 import { mq } from "@/lib/breakpoints";
 
@@ -25,7 +24,6 @@ function BackToHomeLink() {
 export default function ContactPage() {
   return (
     <>
-      <Navbar />
       <style suppressHydrationWarning>{`
         .back-home-link {
           display: inline-flex; align-items: center; gap: 6px;

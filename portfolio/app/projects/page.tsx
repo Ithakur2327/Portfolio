@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Navbar } from "@/components/Navbar";
 import { SectionTitleIcon } from "@/components/SectionIcon";
 import { ProjectsGrid } from "@/components/ProjectsGrid";
 import { PROJECTS } from "@/lib/projects-data";
@@ -27,7 +26,6 @@ function BackToHomeLink() {
 export default function ProjectsPage() {
   return (
     <>
-      <Navbar />
       <style suppressHydrationWarning>{`
         .back-home-link {
           display: inline-flex; align-items: center; gap: 6px;

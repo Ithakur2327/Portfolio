@@ -1,4 +1,3 @@
-import { Navbar }          from "@/components/Navbar";
 import { HeroSection }     from "@/components/HeroSection";
 import { SparklesBridge }  from "@/components/SparklesBridge";
 import { AboutSection }    from "@/components/AboutSection";
@@ -29,7 +28,6 @@ export default function Home() {
   const avatarVersion = getAvatarVersion();
   return (
     <>
-      <Navbar />
       <main style={{ paddingTop: 52 }}>
         <SparklesBridge />
         <div className="page-wrapper">
