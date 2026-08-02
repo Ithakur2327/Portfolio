@@ -78,9 +78,13 @@ export function ProjectCard({ proj, index, visible, isDesktop, isHidden, onOpen,
   const { theme } = useTheme();
   const isDark = theme === "dark";
 
+  useEffect(() => {
+    if (isHidden) setHovered(false);
+  }, [isHidden]);
+
   const shown = isDesktop ? hovered : inView;
 
-  const cid = (id: string) => id;
+  const cid = (id: string) => (isDesktop ? id : undefined);
 
   if (isHidden) {
     return (
@@ -187,7 +191,7 @@ export function ProjectCard({ proj, index, visible, isDesktop, isHidden, onOpen,
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <motion.span
             layoutId={cid(`card-title-${proj.name}`)}
-            layout="position"
+            layout={isDesktop ? "position" : undefined}
             transition={SPRING}
             style={{ fontSize: 20, fontWeight: 600, color: "var(--text-primary)", letterSpacing: "-0.01em", fontFamily: SF, lineHeight: 1.3 }}
           >
@@ -195,7 +199,7 @@ export function ProjectCard({ proj, index, visible, isDesktop, isHidden, onOpen,
           </motion.span>
           <motion.div
             layoutId={cid(`card-links-${proj.name}`)}
-            layout="position"
+            layout={isDesktop ? "position" : undefined}
             transition={SPRING}
             style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}
             onClick={e => e.stopPropagation()}
@@ -215,7 +219,7 @@ export function ProjectCard({ proj, index, visible, isDesktop, isHidden, onOpen,
 
         <motion.p
           layoutId={cid(`card-description-${proj.name}`)}
-          layout="position"
+          layout={isDesktop ? "position" : undefined}
           transition={SPRING}
           style={{ fontSize: 16, color: "var(--text-secondary)", lineHeight: 1.5, margin: 0, fontFamily: SF, textAlign: "left", display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical", overflow: "hidden" }}
         >
@@ -224,7 +228,7 @@ export function ProjectCard({ proj, index, visible, isDesktop, isHidden, onOpen,
 
         <motion.div
           layoutId={cid(`card-tech-section-${proj.name}`)}
-          layout="position"
+          layout={isDesktop ? "position" : undefined}
           transition={SPRING}
           style={{ width: "100%", display: "flex", flexDirection: "column", gap: 8 }}
         >
@@ -280,8 +284,8 @@ export function ProjectModal({ proj, index, onClose, isDesktop }: { proj: Projec
   const { theme } = useTheme();
   const isDark = theme === "dark";
   const sheet = !isDesktop;
-  const sheetSpring = { type: "spring" as const, stiffness: 300, damping: 32, mass: 0.8 };
-  const lid = (id: string) => id;
+  const sheetTransition = { type: "tween" as const, duration: 0.32, ease: [0.16, 1, 0.3, 1] as const };
+  const lid = (id: string) => (sheet ? undefined : id);
 
   useEffect(() => {
     document.documentElement.style.overflow = "hidden";
@@ -509,19 +513,19 @@ export function ProjectModal({ proj, index, onClose, isDesktop }: { proj: Projec
           aria-modal="true"
           aria-label={`${proj.name} project details`}
           layoutId={lid(`card-container-${proj.name}`)}
-          exit={{ opacity: 0 }}
-          transition={sheet ? sheetSpring : SPRING}
+          initial={sheet ? { opacity: 0, y: 28, scale: 0.96 } : undefined}
+          animate={sheet ? { opacity: 1, y: 0, scale: 1 } : undefined}
+          exit={sheet ? { opacity: 0, y: 28, scale: 0.96 } : { opacity: 0 }}
+          transition={sheet ? sheetTransition : SPRING}
           className="pm-shell"
           style={{
             pointerEvents: "auto",
             width: "100%", maxWidth: 960,
             cursor: "default",
-            background: "var(--bg-card)",
-            border: "1px solid var(--border)",
             borderRadius: sheet ? "16px 16px 0 0" : 16,
             boxShadow: "0 12px 28px -8px rgba(0,0,0,0.45)",
             overflow: "hidden",
-            willChange: "transform",
+            willChange: "transform, opacity",
             transform: "translateZ(0)",
           }}
         >
@@ -545,8 +549,18 @@ export function ProjectModal({ proj, index, onClose, isDesktop }: { proj: Projec
               flex-direction: column;
               max-height: 92vh;
               contain: layout paint;
+              background: var(--bg-card);
+              border: 1px solid var(--border);
             }
-            ${mq.laptopUp} { .pm-shell { max-height: 82vh; } }
+            ${mq.laptopUp} {
+              .pm-shell {
+                max-height: 82vh;
+                background: var(--nav-bg-scrolled);
+                border-color: var(--nav-border);
+                backdrop-filter: blur(14px) saturate(160%);
+                -webkit-backdrop-filter: blur(14px) saturate(160%);
+              }
+            }
 
             /* Body is a plain, non-layout-animated div that actually scrolls */
             .pm-body {
