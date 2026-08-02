@@ -284,7 +284,7 @@ export function ProjectModal({ proj, index, onClose, isDesktop }: { proj: Projec
   const { theme } = useTheme();
   const isDark = theme === "dark";
   const sheet = !isDesktop;
-  const sheetTransition = { type: "tween" as const, duration: 0.32, ease: [0.16, 1, 0.3, 1] as const };
+  const sheetTransition = { type: "spring" as const, stiffness: 280, damping: 30, mass: 0.85 };
   const lid = (id: string) => (sheet ? undefined : id);
 
   useEffect(() => {
@@ -513,9 +513,9 @@ export function ProjectModal({ proj, index, onClose, isDesktop }: { proj: Projec
           aria-modal="true"
           aria-label={`${proj.name} project details`}
           layoutId={lid(`card-container-${proj.name}`)}
-          initial={sheet ? { opacity: 0, y: 28, scale: 0.96 } : undefined}
-          animate={sheet ? { opacity: 1, y: 0, scale: 1 } : undefined}
-          exit={sheet ? { opacity: 0, y: 28, scale: 0.96 } : { opacity: 0 }}
+          initial={sheet ? { opacity: 0, y: "100%", scale: 0.97 } : undefined}
+          animate={sheet ? { opacity: 1, y: "0%", scale: 1 } : undefined}
+          exit={sheet ? { opacity: 0, y: "100%", scale: 0.97 } : undefined}
           transition={sheet ? sheetTransition : SPRING}
           className="pm-shell"
           style={{
@@ -602,6 +602,7 @@ export function ProjectModal({ proj, index, onClose, isDesktop }: { proj: Projec
               border-radius: 14px;
               border: 1px dashed ${dashColor};
               box-sizing: border-box;
+              overflow: hidden;
               flex-shrink: 0;
               background: var(--bg-card);
             }
