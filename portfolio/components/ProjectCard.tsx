@@ -144,7 +144,7 @@ export function ProjectCard({ proj, index, visible, isDesktop, isHidden, onOpen,
         >
           <motion.div
             initial={false}
-            animate={shown ? { scaleX: 1, scaleY: 1, y: 0 } : { scaleX: 0.85, scaleY: 0.72, y: "9%" }}
+            animate={shown ? { scale: 1, y: 0 } : { scale: 0.8, y: "10%" }}
             transition={isDesktop
               ? { type: "spring", stiffness: 150, damping: 22, mass: 0.85 }
               : { type: "tween", duration: 0.52, ease: [0.16, 1, 0.3, 1] }}
@@ -152,7 +152,7 @@ export function ProjectCard({ proj, index, visible, isDesktop, isHidden, onOpen,
           >
             <motion.div
               initial={false}
-              animate={shown ? { rotate: 0, borderRadius: 10 } : { rotate: -8, borderRadius: 6 }}
+              animate={shown ? { rotate: 0, borderRadius: 10 } : { rotate: -7, borderRadius: 6 }}
               transition={isDesktop
                 ? { type: "spring", stiffness: 150, damping: 22, mass: 0.85 }
                 : { type: "tween", duration: 0.52, ease: [0.16, 1, 0.3, 1] }}
