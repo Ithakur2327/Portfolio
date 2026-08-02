@@ -15,6 +15,7 @@ function techLogoSrc(tech: { logo: string; logoLight?: string }, isDark: boolean
   return !isDark && tech.logoLight ? tech.logoLight : tech.logo;
 }
 
+const SPRING = { type: "spring" as const, stiffness: 240, damping: 32, mass: 0.85 };
 const HOVER_SPRING = { type: "spring" as const, stiffness: 300, damping: 28, mass: 0.6 };
 const TAP_SPRING = { type: "spring" as const, stiffness: 420, damping: 34, mass: 0.5 };
 
@@ -62,11 +63,12 @@ function ProjectLinks({ proj, size }: { proj: Project; size: number }) {
 
 
 
-export function ProjectCard({ proj, index, visible, isDesktop, onOpen, imageSizes }: {
+export function ProjectCard({ proj, index, visible, isDesktop, isHidden, onOpen, imageSizes }: {
   proj: Project;
   index: number;
   visible: boolean;
   isDesktop: boolean;
+  isHidden?: boolean;
   onOpen: () => void;
   imageSizes?: string;
 }) {
@@ -76,13 +78,35 @@ export function ProjectCard({ proj, index, visible, isDesktop, onOpen, imageSize
   const { theme } = useTheme();
   const isDark = theme === "dark";
 
+  useEffect(() => {
+    if (isHidden) setHovered(false);
+  }, [isHidden]);
+
   const shown = isDesktop ? hovered : inView;
+
+  const cid = (id: string) => (isDesktop ? id : undefined);
+
+  if (isHidden) {
+    return (
+      <div aria-hidden="true" style={{ width: "100%", visibility: "hidden" }}>
+        <div style={{ width: "100%", padding: 2, borderRadius: 14, boxSizing: "border-box" }}>
+          <div style={{ width: "100%", aspectRatio: "16 / 9", borderRadius: 12 }} />
+        </div>
+        <div style={{ width: "100%", padding: "12px 8px", display: "flex", flexDirection: "column", gap: 16 }}>
+          <div style={{ height: 20 }} />
+          <div style={{ height: 60 }} />
+          <div style={{ height: 46 }} />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <motion.div
       initial={false}
       animate={{ opacity: visible ? 1 : 0, y: visible ? 0 : 20 }}
       transition={{ delay: visible ? 0.055 * index : 0, type: "spring", stiffness: 190, damping: 30, mass: 0.9 }}
+      layoutId={cid(`card-container-${proj.name}`)}
       style={{ position: "relative", width: "100%" }}
     >
       <motion.div
@@ -115,6 +139,8 @@ export function ProjectCard({ proj, index, visible, isDesktop, onOpen, imageSize
       >
         <motion.div
           ref={frameRef}
+          layoutId={cid(`card-banner-${proj.name}`)}
+          transition={SPRING}
           style={{
             width: "100%", aspectRatio: "16 / 9", borderRadius: 12,
             position: "relative", overflow: "hidden",
