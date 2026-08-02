@@ -152,6 +152,7 @@ function FallingIconsBox({ title, items, index = 0 }: { title: string; items: st
       if (rect.width <= 0 || rect.height <= 0) return;
 
     const isMobile = typeof window !== "undefined" && window.matchMedia("(max-width: 767px)").matches;
+    const pointerDownRef = { current: false };
     // Lighter solver keeps it cheap on phones; no artificial fps cap here —
     // sleeping bodies + the scroll deadzone (below) do the real work of
     // keeping this light, so we let rAF run at the display's native rate
@@ -241,13 +242,22 @@ function FallingIconsBox({ title, items, index = 0 }: { title: string; items: st
       }
     );
 
-    const handleTouchStart = (e: TouchEvent) => mouse.mousedown(e);
+    const handleTouchStart = (e: TouchEvent) => { pointerDownRef.current = true; mouse.mousedown(e); };
     const handleTouchMove = (e: TouchEvent) => {
       if (!mouseConstraint.body) return;
       e.preventDefault();
       mouse.mousemove(e);
     };
-    const handleTouchEnd = (e: TouchEvent) => mouse.mouseup(e);
+    const handleTouchEnd = (e: TouchEvent) => { pointerDownRef.current = false; mouse.mouseup(e); };
+
+    // Matter's own native mousedown/mouseup listeners (attached by Mouse.create)
+    // handle the actual drag; these just track "is a pointer currently down"
+    // so the tick loop below knows to keep Engine.update running long enough
+    // for Matter's hit-test to find and attach to a body.
+    const handleMouseDown = () => { pointerDownRef.current = true; };
+    const handleMouseUp = () => { pointerDownRef.current = false; };
+    box.addEventListener("mousedown", handleMouseDown);
+    window.addEventListener("mouseup", handleMouseUp);
 
     box.addEventListener("touchstart", handleTouchStart, { passive: true });
     box.addEventListener("touchmove", handleTouchMove, { passive: false });
@@ -260,6 +270,14 @@ function FallingIconsBox({ title, items, index = 0 }: { title: string; items: st
     let scrollImpulse = 0;
     const handleScroll = () => {
       const currentY = window.scrollY;
+      if (!inViewRef.current) {
+        // Off-screen: just track position, don't bank up an impulse that
+        // would otherwise dump itself as one big kick the instant this
+        // box scrolls into view.
+        lastScrollY = currentY;
+        scrollImpulse = 0;
+        return;
+      }
       const delta = Math.max(-80, Math.min(80, currentY - lastScrollY));
       lastScrollY = currentY;
       scrollImpulse += delta;
@@ -285,7 +303,7 @@ function FallingIconsBox({ title, items, index = 0 }: { title: string; items: st
       // frame. Skipping Engine.update here (rather than just skipping the
       // per-icon work below) is what keeps the section at ~0% CPU while
       // it's just sitting on screen untouched.
-      const anyAwake = kick !== 0 || pieces.some(p => !p.body.isSleeping) || !!mouseConstraint.body;
+      const anyAwake = kick !== 0 || pieces.some(p => !p.body.isSleeping) || !!mouseConstraint.body || pointerDownRef.current;
       if (!anyAwake) {
         lastTime = time;
         rafId = requestAnimationFrame(tick);
@@ -311,7 +329,7 @@ function FallingIconsBox({ title, items, index = 0 }: { title: string; items: st
           el.style.willChange = "transform";
         }
 
-        if (kick !== 0) {
+        if (kick !== 0 && body !== mouseConstraint.body) {
           if (!gravityEnabled) enableGravity();
           if (body.isSleeping) Sleeping.set(body, false);
           Body.setVelocity(body, { x: body.velocity.x, y: body.velocity.y + kick });
@@ -351,6 +369,8 @@ function FallingIconsBox({ title, items, index = 0 }: { title: string; items: st
       cleanup = () => {
         window.removeEventListener("resize", handleResize);
         window.removeEventListener("scroll", handleScroll);
+        box.removeEventListener("mousedown", handleMouseDown);
+        window.removeEventListener("mouseup", handleMouseUp);
         box.removeEventListener("touchstart", handleTouchStart);
         box.removeEventListener("touchmove", handleTouchMove);
         box.removeEventListener("touchend", handleTouchEnd);
@@ -437,10 +457,10 @@ export function SkillsSection() {
         .falling-icons-flow {
           position: relative;
           z-index: 1;
-          display: flex;
-          flex-wrap: wrap;
+          display: grid;
+          grid-template-columns: repeat(6, minmax(0, 1fr));
+          justify-items: center;
           align-content: flex-start;
-          justify-content: center;
           gap: 9px;
           padding: 20px 18px;
         }
@@ -493,6 +513,11 @@ export function SkillsSection() {
 
         ${mq.navCollapse} {
           .skills-inner { padding: 0 22px 34px !important; }
+        }
+        ${mq.tablet} {
+          .skills-inner { max-width: 100% !important; padding: 0 24px 40px !important; }
+          .falling-icons-row { gap: 18px; }
+          .falling-icons-box { min-height: 240px; }
         }
         ${mq.mobile} {
           .skills-inner { padding: 0 13px 28px !important; }
