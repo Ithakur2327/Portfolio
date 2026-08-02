@@ -270,7 +270,7 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
         }
         .h-grid {
           display: grid;
-          grid-template-columns: 1fr 1fr;
+          grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
           grid-template-rows: repeat(3, auto);
           grid-auto-flow: column;
           align-items: center;
@@ -432,9 +432,6 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
             font-size: clamp(10.5px, 3vw, 12.5px) !important;
           }
 
-          .h-info-pad {
-            padding: 14px 16px 12px !important;
-          }
           .h-grid {
             grid-template-columns: 1fr !important;
             grid-template-rows: none !important;
