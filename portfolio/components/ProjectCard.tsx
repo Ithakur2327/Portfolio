@@ -15,7 +15,9 @@ function techLogoSrc(tech: { logo: string; logoLight?: string }, isDark: boolean
   return !isDark && tech.logoLight ? tech.logoLight : tech.logo;
 }
 
-const SPRING = { type: "spring" as const, stiffness: 260, damping: 25 };
+const SPRING = { type: "spring" as const, stiffness: 230, damping: 32, mass: 0.85 };
+const HOVER_SPRING = { type: "spring" as const, stiffness: 300, damping: 28, mass: 0.6 };
+const TAP_SPRING = { type: "spring" as const, stiffness: 420, damping: 34, mass: 0.5 };
 
 
 export const GithubIcon = ({ size = 18 }: { size?: number }) => (
@@ -61,13 +63,14 @@ function ProjectLinks({ proj, size }: { proj: Project; size: number }) {
 
 
 
-export function ProjectCard({ proj, index, visible, isDesktop, isHidden, onOpen }: {
+export function ProjectCard({ proj, index, visible, isDesktop, isHidden, onOpen, imageSizes }: {
   proj: Project;
   index: number;
   visible: boolean;
   isDesktop: boolean;
   isHidden?: boolean;
   onOpen: () => void;
+  imageSizes?: string;
 }) {
   const frameRef = useRef<HTMLDivElement>(null);
   const inView = useInView(frameRef, { amount: 0.6 });
@@ -98,13 +101,13 @@ export function ProjectCard({ proj, index, visible, isDesktop, isHidden, onOpen 
     <motion.div
       initial={false}
       animate={{ opacity: visible ? 1 : 0, y: visible ? 0 : 20 }}
-      transition={{ delay: visible ? 0.05 * index : 0, type: "spring", stiffness: 340, damping: 26, mass: 0.75 }}
+      transition={{ delay: visible ? 0.055 * index : 0, type: "spring", stiffness: 190, damping: 30, mass: 0.9 }}
       layoutId={cid(`card-container-${proj.name}`)}
       onClick={onOpen}
       onHoverStart={() => setHovered(true)}
       onHoverEnd={() => setHovered(false)}
-      whileHover={isDesktop ? { scale: 1.02 } : undefined}
-      whileTap={{ scale: 0.98 }}
+      whileHover={isDesktop ? { scale: 1.02, transition: HOVER_SPRING } : undefined}
+      whileTap={{ scale: 0.98, transition: TAP_SPRING }}
       style={{
         position: "relative",
         display: "flex",
@@ -145,8 +148,8 @@ export function ProjectCard({ proj, index, visible, isDesktop, isHidden, onOpen 
               ? { width: "100%", height: "100%", bottom: 0, rotate: 0, borderRadius: 10, boxShadow: "0 0 0 rgba(0,0,0,0)" }
               : { width: "85%", height: "72%", bottom: "-8%", rotate: -8, borderRadius: 6, boxShadow: "0 20px 40px -8px rgba(0,0,0,0.45)" }}
             transition={isDesktop
-              ? { type: "spring", stiffness: 210, damping: 24, mass: 0.85 }
-              : { type: "tween", duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
+              ? { type: "spring", stiffness: 110, damping: 21, mass: 1 }
+              : { type: "tween", duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
             style={{ position: "absolute", left: 0, right: 0, margin: "0 auto", overflow: "hidden", willChange: "transform" }}
           >
             <motion.div
@@ -157,8 +160,8 @@ export function ProjectCard({ proj, index, visible, isDesktop, isHidden, onOpen 
                 src={proj.img}
                 alt={proj.name}
                 fill
-                quality={100}
-                sizes="(max-width: 640px) 96vw, (max-width: 1024px) 48vw, 520px"
+                quality={88}
+                sizes={imageSizes ?? "(max-width: 599px) 94vw, min(48vw, 438px)"}
                 unoptimized={proj.img.endsWith(".svg")}
                 style={{ objectFit: "cover" }}
               />
@@ -256,7 +259,8 @@ export function ProjectCard({ proj, index, visible, isDesktop, isHidden, onOpen 
   );
 }
 
-export function ProjectModal({ proj, onClose, isDesktop }: { proj: Project; onClose: () => void; isDesktop: boolean }) {
+export function ProjectModal({ proj, index, onClose, isDesktop }: { proj: Project; index: number; onClose: () => void; isDesktop: boolean }) {
+  const dashColor = index % 2 === 0 ? "rgba(10,186,181,0.55)" : "rgba(212,175,55,0.55)";
   const modalRef = useRef<HTMLDivElement>(null);
   const closeBtnRef = useRef<HTMLButtonElement>(null);
   const { theme } = useTheme();
@@ -321,28 +325,30 @@ export function ProjectModal({ proj, onClose, isDesktop }: { proj: Project; onCl
   }, [onClose]);
 
   const imageBlock = (
-    <motion.div
-      layoutId={lid(`card-banner-${proj.name}`)}
-      transition={SPRING}
-      className="pm-image-frame"
-      style={sheet ? { position: "sticky", top: 0 } : { position: "relative" }}
-    >
+    <div className="pm-image-border" style={sheet ? { position: "sticky", top: 0, zIndex: 2 } : undefined}>
       <motion.div
-        layoutId={lid(`card-banner-image-${proj.name}`)}
+        layoutId={lid(`card-banner-${proj.name}`)}
         transition={SPRING}
-        style={{ position: "absolute", inset: 0 }}
+        className="pm-image-frame"
+        style={{ position: "relative" }}
       >
-        <Image
-          src={proj.img}
-          alt={proj.name}
-          fill
-          quality={80}
-          sizes="(max-width: 767px) 100vw, 45vw"
-          unoptimized={proj.img.endsWith(".svg")}
-          style={{ objectFit: "cover" }}
-        />
+        <motion.div
+          layoutId={lid(`card-banner-image-${proj.name}`)}
+          transition={SPRING}
+          style={{ position: "absolute", inset: 0 }}
+        >
+          <Image
+            src={proj.img}
+            alt={proj.name}
+            fill
+            quality={88}
+            sizes="(max-width: 767px) 100vw, min(45vw, 432px)"
+            unoptimized={proj.img.endsWith(".svg")}
+            style={{ objectFit: "cover" }}
+          />
+        </motion.div>
       </motion.div>
-    </motion.div>
+    </div>
   );
 
   const linksAndStackBlock = (
@@ -564,12 +570,21 @@ export function ProjectModal({ proj, onClose, isDesktop }: { proj: Project; onCl
               gap: 12px;
               padding: 16px 20px 20px;
             }
+            .pm-image-border {
+              width: 100%;
+              padding: 2px;
+              border-radius: 14px;
+              border: 1px dashed ${dashColor};
+              box-sizing: border-box;
+              flex-shrink: 0;
+              background: var(--bg-card);
+            }
             .pm-image-frame {
               width: 100%;
               aspect-ratio: 16 / 9;
               z-index: 2;
               overflow: hidden;
-              border-radius: 0;
+              border-radius: 12px;
               flex-shrink: 0;
               background: var(--bg-card);
             }

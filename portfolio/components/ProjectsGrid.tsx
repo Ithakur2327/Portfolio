@@ -12,8 +12,13 @@ export function ProjectsGrid({ projects, visible = true, mobileMax, wide }: {
   mobileMax?: number;
   wide?: boolean;
 }) {
-  const [active, setActive] = useState<Project | null>(null);
+  const [activeIndex, setActiveIndex] = useState<number | null>(null);
   const isDesktop = useIsLaptopUp();
+  const active = activeIndex === null ? null : projects[activeIndex] ?? null;
+
+  const imageSizes = wide
+    ? "(max-width: 599px) 94vw, (max-width: 1299px) min(48vw, 438px), min(32vw, 284px)"
+    : "(max-width: 599px) 94vw, min(48vw, 438px)";
 
   return (
     <>
@@ -22,6 +27,7 @@ export function ProjectsGrid({ projects, visible = true, mobileMax, wide }: {
           display: grid;
           grid-template-columns: 1fr;
           gap: 14px;
+          contain: layout;
         }
         @media (min-width: ${BP.tabletMin}px) {
           .proj-grid2 { grid-template-columns: repeat(2, 1fr); }
@@ -46,13 +52,16 @@ export function ProjectsGrid({ projects, visible = true, mobileMax, wide }: {
               visible={visible}
               isDesktop={isDesktop}
               isHidden={isDesktop && active?.name === proj.name}
-              onOpen={() => setActive(proj)}
+              onOpen={() => setActiveIndex(i)}
+              imageSizes={imageSizes}
             />
           ))}
         </div>
 
         <AnimatePresence>
-          {active && <ProjectModal key="modal" proj={active} isDesktop={isDesktop} onClose={() => setActive(null)} />}
+          {active && activeIndex !== null && (
+            <ProjectModal key="modal" proj={active} index={activeIndex} isDesktop={isDesktop} onClose={() => setActiveIndex(null)} />
+          )}
         </AnimatePresence>
       </LayoutGroup>
     </>

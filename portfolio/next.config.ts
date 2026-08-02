@@ -9,6 +9,7 @@ const nextConfig: NextConfig = {
     minimumCacheTTL: 31536000,
     deviceSizes: [375, 640, 750, 828, 1080, 1200, 1920, 2048, 3840],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384, 512],
+    qualities: [72, 80, 88, 100],
     dangerouslyAllowSVG: false,
     remotePatterns: [
       { protocol: "https", hostname: "images.unsplash.com" },
@@ -26,10 +27,7 @@ const nextConfig: NextConfig = {
         ],
       },
       {
-        // The in-app PDF viewer (resume / certificates) loads this file inside
-        // an <iframe>. "X-Frame-Options: DENY" above blocks that even though
-        // it's same-origin, so we relax it just for the PDF to allow framing
-        // from this site only — fixes the resume not rendering in the modal.
+       
         source: "/resume.pdf",
         headers: [
           { key: "X-Frame-Options", value: "SAMEORIGIN" },
