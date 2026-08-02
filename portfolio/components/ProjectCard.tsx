@@ -74,16 +74,17 @@ export function ProjectCard({ proj, index, visible, isDesktop, isHidden = false,
   // threshold re-triggers the width/height/rotate/shadow tween every single
   // time, and with a full grid of cards doing that simultaneously while the
   // user scrolls, it adds up to visible jank. Desktop doesn't use `inView`
-  // for anything visual (hover drives it there), so this only changes mobile
-  // behavior: each card now plays its reveal once and then stays settled.
+  // for anything visual (the image's own whileHover drives it there), so
+  // this only changes mobile behavior: each card now plays its reveal once
+  // and then stays settled.
   const inView = useInView(frameRef, { amount: 0.6, once: !isDesktop });
-  const [hovered, setHovered] = useState(false);
   const { theme } = useTheme();
   const isDark = theme === "dark";
 
-  const shown = isDesktop ? hovered : inView;
-
   const cid = (id: string) => (isDesktop ? id : undefined);
+
+  const tiltSettled = { scaleX: 1, scaleY: 1, y: 0, rotate: 0, borderRadius: 10, boxShadow: "0 0 0 rgba(0,0,0,0)" };
+  const tiltPeeking = { scaleX: 0.85, scaleY: 0.72, y: "22%", rotate: -8, borderRadius: 6, boxShadow: "0 20px 40px -8px rgba(0,0,0,0.45)" };
 
   const [revealed, setRevealed] = useState(false);
   useEffect(() => {
@@ -101,8 +102,6 @@ export function ProjectCard({ proj, index, visible, isDesktop, isHidden = false,
       layoutId={cid(`card-container-${proj.name}`)}
       transition={SPRING}
       onClick={onOpen}
-      onHoverStart={() => setHovered(true)}
-      onHoverEnd={() => setHovered(false)}
       whileHover={isDesktop ? { scale: 1.02 } : undefined}
       whileTap={{ scale: 0.98 }}
       style={{
@@ -141,29 +140,27 @@ export function ProjectCard({ proj, index, visible, isDesktop, isHidden = false,
           }}
         >
           <motion.div
-            initial={false}
-            animate={shown
-              ? { scaleX: 1, scaleY: 1, y: 0, rotate: 0, borderRadius: 10, boxShadow: "0 0 0 rgba(0,0,0,0)" }
-              : { scaleX: 0.85, scaleY: 0.72, y: "22%", rotate: -8, borderRadius: 6, boxShadow: "0 20px 40px -8px rgba(0,0,0,0.45)" }}
-            transition={isDesktop
-              ? { type: "spring", stiffness: 160, damping: 26, mass: 0.9 }
-              : { type: "tween", duration: 0.85, ease: [0.22, 1, 0.36, 1] }}
+            layoutId={cid(`card-banner-image-${proj.name}`)}
+            initial={tiltPeeking}
+            whileHover={isDesktop ? tiltSettled : undefined}
+            animate={isDesktop ? undefined : (inView ? tiltSettled : tiltPeeking)}
+            transition={{
+              layout: SPRING,
+              default: isDesktop
+                ? { type: "spring", stiffness: 160, damping: 26, mass: 0.9 }
+                : { type: "tween", duration: 0.85, ease: [0.22, 1, 0.36, 1] },
+            }}
             style={{ position: "absolute", inset: 0, overflow: "hidden", willChange: "transform" }}
           >
-            <motion.div
-              layoutId={cid(`card-banner-image-${proj.name}`)}
-              style={{ position: "absolute", inset: 0, overflow: "hidden" }}
-            >
-              <Image
-                src={proj.img}
-                alt={proj.name}
-                fill
-                quality={100}
-                sizes="(max-width: 640px) 96vw, (max-width: 1024px) 48vw, 520px"
-                unoptimized={proj.img.endsWith(".svg")}
-                style={{ objectFit: "cover" }}
-              />
-            </motion.div>
+            <Image
+              src={proj.img}
+              alt={proj.name}
+              fill
+              quality={100}
+              sizes="(max-width: 640px) 96vw, (max-width: 1024px) 48vw, 520px"
+              unoptimized={proj.img.endsWith(".svg")}
+              style={{ objectFit: "cover" }}
+            />
           </motion.div>
         </motion.div>
       </div>
