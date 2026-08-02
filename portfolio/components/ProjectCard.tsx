@@ -489,7 +489,7 @@ export function ProjectModal({ proj, onClose, isDesktop }: { proj: Project; onCl
           aria-modal="true"
           aria-label={`${proj.name} project details`}
           layoutId={lid(`card-container-${proj.name}`)}
-          initial={sheet ? { y: "100%" } : false}
+          initial={sheet ? { y: "100%" } : undefined}
           animate={sheet ? { y: 0 } : undefined}
           exit={sheet ? { y: "100%" } : undefined}
           transition={sheet ? sheetTransition : SPRING}
