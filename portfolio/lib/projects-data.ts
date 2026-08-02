@@ -69,7 +69,7 @@ export const PROJECTS: Project[] = [
     ],
     tags: ["Next.js", "TypeScript", "FastAPI", "LangChain", "RAG", "LLM APIs"],
     github: "https://github.com/Ithakur2327",
-    live: "#",
+    live: "",
   },
   {
     name: "Portfolio Website",
@@ -87,7 +87,7 @@ export const PROJECTS: Project[] = [
     ],
     tags: ["Next.js", "TypeScript", "Tailwind CSS", "Framer Motion", "shadcn/ui", "Vercel"],
     github: "https://github.com/Ithakur2327",
-    live: "#",
+    live: "https://ithakur.vercel.app",
   },
   {
     name: "HealthnexAI",
@@ -105,7 +105,7 @@ export const PROJECTS: Project[] = [
     ],
     tags: ["React.js", "Node.js", "Express.js", "MongoDB", "LLM APIs", "Tailwind CSS"],
     github: "https://github.com/Ithakur2327",
-    live: "#",
+    live: "",
   },
   {
     name: "FinLedgerAI",
@@ -123,7 +123,7 @@ export const PROJECTS: Project[] = [
     ],
     tags: ["React.js", "Node.js", "MongoDB", "OpenAI API", "Chart.js"],
     github: "https://github.com/Ithakur2327",
-    live: "#",
+    live: "",
   },
   {
     name: "SnipixAI",
@@ -141,7 +141,7 @@ export const PROJECTS: Project[] = [
     ],
     tags: ["Next.js", "TypeScript", "LangChain", "RAG", "Vector DB", "LLM APIs"],
     github: "https://github.com/Ithakur2327",
-    live: "#",
+    live: "",
   },
   {
     name: "VidLearn",
@@ -159,7 +159,7 @@ export const PROJECTS: Project[] = [
     ],
     tags: ["Next.js", "TypeScript", "YouTube API", "LLM APIs", "Tailwind CSS"],
     github: "https://github.com/Ithakur2327",
-    live: "#",
+    live: "",
   },
   {
     name: "TrendCart",
@@ -177,6 +177,6 @@ export const PROJECTS: Project[] = [
     ],
     tags: ["React.js", "Redux", "Node.js", "MongoDB", "Tailwind CSS"],
     github: "https://github.com/Ithakur2327",
-    live: "#",
+    live: "",
   },
 ];
