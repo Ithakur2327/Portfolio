@@ -42,11 +42,10 @@ export function ProjectsGrid({ projects, visible = true, mobileMax, wide }: {
         }` : ""}
       `}</style>
 
-      <LayoutGroup>
-        <div className="proj-grid2">
-          {projects.map((proj, i) => (
+      <div className="proj-grid2">
+        {projects.map((proj, i) => (
+          <LayoutGroup key={proj.name} id={`project-${proj.name}`}>
             <ProjectCard
-              key={proj.name}
               proj={proj}
               index={i}
               visible={visible}
@@ -55,15 +54,17 @@ export function ProjectsGrid({ projects, visible = true, mobileMax, wide }: {
               onOpen={() => setActiveIndex(i)}
               imageSizes={imageSizes}
             />
-          ))}
-        </div>
+          </LayoutGroup>
+        ))}
+      </div>
 
-        <AnimatePresence>
-          {active && activeIndex !== null && (
+      <AnimatePresence>
+        {active && activeIndex !== null && (
+          <LayoutGroup id={`project-${active.name}`}>
             <ProjectModal key="modal" proj={active} index={activeIndex} isDesktop={isDesktop} onClose={() => setActiveIndex(null)} />
-          )}
-        </AnimatePresence>
-      </LayoutGroup>
+          </LayoutGroup>
+        )}
+      </AnimatePresence>
     </>
   );
 }

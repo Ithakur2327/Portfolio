@@ -1,11 +1,11 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { createPortal } from "react-dom";
 
 import { useReveal } from "./useReveal";
 import { useTheme } from "./ThemeProvider";
-import { SectionTitleIcon } from "./SectionIcon";
+import { SectionIcon } from "./SectionIcon";
 import { mq } from "@/lib/breakpoints";
 import { useIsTablet } from "@/lib/useBreakpoint";
 
@@ -23,6 +23,37 @@ interface LC {
 interface LCCalDay { date: number; count: number; }
 interface HoveredCell { date: string; count: number; x: number; y: number; }
 interface StatHover { label: string; solved: number; total: number; x: number; y: number; }
+
+type PaletteKey = "tiffany" | "blue" | "green" | "original";
+interface HeatPalette { label: string; swatch: string; c1: string; c2: string; c3: string; c4: string; }
+
+const HEAT_PALETTES: Record<PaletteKey, HeatPalette> = {
+  tiffany:  { label: "Tiffany",  swatch: "#0abab5", c1: "#a6e8e3", c2: "#4fd0c7", c3: "#0abab5", c4: "#067b76" },
+  blue:     { label: "Blue",     swatch: "#1262c4", c1: "#8fc6fa", c2: "#1262c4", c3: "#104b98", c4: "#0d0a6b" },
+  green:    { label: "Green",    swatch: "#30a14e", c1: "#9be9a8", c2: "#40c463", c3: "#30a14e", c4: "#216e39" },
+  original: { label: "Original", swatch: "#c46212", c1: "#fac68f", c2: "#c46212", c3: "#984b10", c4: "#000000" },
+};
+const HEAT_PALETTE_ORDER: PaletteKey[] = ["tiffany", "blue", "green", "original"];
+const HEAT_STORAGE_KEY = "heatmap-palettes-v1";
+const DEFAULT_HEAT_PALETTES: Record<"dark" | "light", PaletteKey> = { dark: "blue", light: "original" };
+
+function isPaletteKey(v: unknown): v is PaletteKey {
+  return typeof v === "string" && v in HEAT_PALETTES;
+}
+
+function loadHeatPalettes(): Record<"dark" | "light", PaletteKey> {
+  if (typeof window === "undefined") return DEFAULT_HEAT_PALETTES;
+  try {
+    const raw = window.localStorage.getItem(HEAT_STORAGE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (isPaletteKey(parsed?.dark) && isPaletteKey(parsed?.light)) {
+        return { dark: parsed.dark, light: parsed.light };
+      }
+    }
+  } catch { }
+  return DEFAULT_HEAT_PALETTES;
+}
 
 function computeTooltipPosition(x: number, halfWidth: number) {
   if (typeof window === "undefined") return { left: x, arrowOffset: 0 };
@@ -646,9 +677,157 @@ function GitHubGraph({ username = "Ithakur2327" }: { username?: string }) {
   );
 }
 
+function HeatmapPaletteButton({
+  isDark, activeKey, onSelect,
+}: {
+  isDark: boolean;
+  activeKey: PaletteKey;
+  onSelect: (key: PaletteKey) => void;
+}) {
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const [open, setOpen] = useState(false);
+  const [popped, setPopped] = useState(false);
+  const [hovered, setHovered] = useState(false);
+  const active = HEAT_PALETTES[activeKey];
+
+  useEffect(() => {
+    const el = wrapRef.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) { setPopped(true); obs.disconnect(); }
+      },
+      { threshold: 0.4, rootMargin: "0px 0px -40px 0px" }
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
+
+  useEffect(() => {
+    if (!open) return;
+    const dismiss = (e: MouseEvent) => {
+      if (wrapRef.current && !wrapRef.current.contains(e.target as Node)) setOpen(false);
+    };
+    const esc = (e: KeyboardEvent) => { if (e.key === "Escape") setOpen(false); };
+    document.addEventListener("mousedown", dismiss);
+    window.addEventListener("keydown", esc);
+    return () => {
+      document.removeEventListener("mousedown", dismiss);
+      window.removeEventListener("keydown", esc);
+    };
+  }, [open]);
+
+  return (
+    <div ref={wrapRef} style={{ position: "relative", display: "inline-flex" }}>
+      <button
+        type="button"
+        onClick={() => setOpen(v => !v)}
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
+        aria-haspopup="true"
+        aria-expanded={open}
+        aria-label={`Change heatmap colours (editing ${isDark ? "dark" : "light"} theme)`}
+        title={`Heatmap colours — editing ${isDark ? "dark" : "light"} theme`}
+        className="section-title-icon-3d"
+        style={{
+          width: 34, height: 34, borderRadius: 9,
+          background: "var(--bg-secondary)",
+          border: "1px solid var(--border)",
+          display: "flex", alignItems: "center", justifyContent: "center",
+          color: "var(--text-secondary)", flexShrink: 0,
+          padding: 0, cursor: "pointer", position: "relative",
+          opacity: popped ? 1 : 0,
+          transform: !popped ? "scale(0.4)" : hovered || open ? "scale(1.14)" : "scale(1)",
+          transition: popped
+            ? "transform 0.28s cubic-bezier(0.34,1.56,0.64,1), opacity 0.3s ease, border-color 0.15s ease"
+            : "opacity 0.3s ease, transform 0.4s cubic-bezier(0.34,1.56,0.64,1)",
+          borderColor: open ? active.swatch : "var(--border)",
+        }}
+      >
+        <SectionIcon type="chart" size={15} strokeWidth={2} />
+        <span
+          aria-hidden="true"
+          style={{
+            position: "absolute", right: -3, bottom: -3,
+            width: 9, height: 9, borderRadius: "50%",
+            background: active.swatch,
+            border: "2px solid var(--bg-base)",
+          }}
+        />
+      </button>
+
+      {open && (
+        <div
+          className="heat-palette-pop"
+          style={{
+            position: "absolute", top: "calc(100% + 10px)", left: 0, zIndex: 40,
+            background: "var(--bg-card)", border: "1px solid var(--border)",
+            borderRadius: 12, padding: 10, minWidth: 176,
+            boxShadow: "0 12px 28px rgba(0,0,0,0.28)",
+          }}
+        >
+          <div style={{ fontSize: 10, fontWeight: 700, color: "var(--text-muted)", fontFamily: MONO, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 8 }}>
+            Editing {isDark ? "dark" : "light"} theme
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+            {HEAT_PALETTE_ORDER.map(key => {
+              const p = HEAT_PALETTES[key];
+              const selected = key === activeKey;
+              return (
+                <button
+                  key={key}
+                  type="button"
+                  onClick={() => { onSelect(key); setOpen(false); }}
+                  className="heat-palette-option"
+                  style={{
+                    display: "flex", alignItems: "center", gap: 8,
+                    padding: "6px 8px", borderRadius: 8, border: "1px solid transparent",
+                    background: selected ? "var(--bg-secondary)" : "transparent",
+                    cursor: "pointer", width: "100%", textAlign: "left",
+                  }}
+                >
+                  <span style={{ display: "flex", gap: 2, flexShrink: 0 }}>
+                    {[p.c1, p.c2, p.c3, p.c4].map((c, i) => (
+                      <span key={i} style={{ width: 9, height: 9, borderRadius: 2, background: c }} />
+                    ))}
+                  </span>
+                  <span style={{ flex: 1, fontSize: 12.5, fontWeight: 600, color: "var(--text-primary)", fontFamily: SF }}>
+                    {p.label}
+                  </span>
+                  {selected && (
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={p.swatch} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // Stats section
 export function StatsSection() {
   const { ref: statsRef, revealClass } = useReveal(0.15);
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
+  const [palettes, setPalettes] = useState<Record<"dark" | "light", PaletteKey>>(DEFAULT_HEAT_PALETTES);
+
+  useEffect(() => { setPalettes(loadHeatPalettes()); }, []);
+
+  const activeKey = palettes[isDark ? "dark" : "light"];
+  const active = HEAT_PALETTES[activeKey];
+
+  const selectPalette = useCallback((key: PaletteKey) => {
+    setPalettes(prev => {
+      const next = { ...prev, [isDark ? "dark" : "light"]: key };
+      try { window.localStorage.setItem(HEAT_STORAGE_KEY, JSON.stringify(next)); } catch { }
+      return next;
+    });
+  }, [isDark]);
 
   return (
     <>
@@ -703,28 +882,26 @@ export function StatsSection() {
           transition: transform 0.6s cubic-bezier(0.34,1.56,0.64,1);
         }
 
-        .gh-cell-0 { background: rgba(255,255,255,0.04); outline: 1px solid rgba(255,255,255,0.10); outline-offset: -1px; }
-        .gh-cell-1 { background: #8fc6fa; }
-        .gh-cell-2 { background: #1262c4; }
-        .gh-cell-3 { background: #104b98; }
-        .gh-cell-4 { background: #0d0a6b; }
+        .gh-cell-0, .lc-cell-0 { background: rgba(255,255,255,0.04); outline: 1px solid rgba(255,255,255,0.10); outline-offset: -1px; }
+        html.light .gh-cell-0, html.light .lc-cell-0 { background: #e8eaec; outline: 1px solid rgba(0,0,0,0.08); outline-offset: -1px; }
 
-        .lc-cell-0 { background: rgba(255,255,255,0.04); outline: 1px solid rgba(255,255,255,0.10); outline-offset: -1px; }
-        .lc-cell-1 { background: #8fc6fa; }
-        .lc-cell-2 { background: #1262c4; }
-        .lc-cell-3 { background: #104b98; }
-        .lc-cell-4 { background: #0d0a6b; }
+        .gh-cell-1, .lc-cell-1 { background: var(--heat-1); }
+        .gh-cell-2, .lc-cell-2 { background: var(--heat-2); }
+        .gh-cell-3, .lc-cell-3 { background: var(--heat-3); }
+        .gh-cell-4, .lc-cell-4 { background: var(--heat-4); }
 
-        html.light .gh-cell-0 { background: #e8eaec; outline: 1px solid rgba(0,0,0,0.08); outline-offset: -1px; }
-        html.light .gh-cell-1 { background: #fac68f; }
-        html.light .gh-cell-2 { background: #c46212; }
-        html.light .gh-cell-3 { background: #984b10; }
-        html.light .gh-cell-4 { background: #000000; }
-        html.light .lc-cell-0 { background: #e8eaec; outline: 1px solid rgba(0,0,0,0.08); outline-offset: -1px; }
-        html.light .lc-cell-1 { background: #fac68f; }
-        html.light .lc-cell-2 { background: #c46212; }
-        html.light .lc-cell-3 { background: #984b10; }
-        html.light .lc-cell-4 { background: #000000; }
+        .stat-chip, .stat-chip-label, .stat-chip-value, .lc-solved-box, .lc-emh-box {
+          -webkit-user-select: none;
+          user-select: none;
+          -webkit-touch-callout: none;
+        }
+
+        .heat-palette-option:hover { background: var(--bg-secondary); }
+        @keyframes heatPalettePop {
+          from { opacity: 0; transform: translateY(-6px) scale(0.96); }
+          to   { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .heat-palette-pop { animation: heatPalettePop 0.16s cubic-bezier(0.19,1,0.22,1) forwards; }
 
         .stat-card-3d {
           padding: 12px 14px;
@@ -788,12 +965,21 @@ export function StatsSection() {
           <div className="about-content">
             <div style={{ paddingTop: 50 }}>
               <span style={{ display: "inline-flex", alignItems: "center", gap: 10, fontSize: 28, fontWeight: 700, letterSpacing: "-0.03em", lineHeight: 1, fontFamily: SF, color: "var(--text-primary)" }}>
-                <SectionTitleIcon type="chart" />
+                <HeatmapPaletteButton isDark={isDark} activeKey={activeKey} onSelect={selectPalette} />
                 Stats
               </span>
             </div>
             <div style={{ height: 1, background: "var(--border)", margin: "18px 0 20px" }} />
-            <div className="about-panels" style={{ paddingBottom: 32 }}>
+            <div
+              className="about-panels"
+              style={{
+                paddingBottom: 32,
+                ["--heat-1" as string]: active.c1,
+                ["--heat-2" as string]: active.c2,
+                ["--heat-3" as string]: active.c3,
+                ["--heat-4" as string]: active.c4,
+              } as React.CSSProperties}
+            >
               <div className="stat-card-3d">
                 <GitHubGraph username="Ithakur2327" />
               </div>
