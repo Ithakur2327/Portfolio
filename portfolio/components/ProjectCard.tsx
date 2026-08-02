@@ -103,24 +103,26 @@ export function ProjectCard({ proj, index, visible, isDesktop, isHidden, onOpen,
       animate={{ opacity: visible ? 1 : 0, y: visible ? 0 : 20 }}
       transition={{ delay: visible ? 0.055 * index : 0, type: "spring", stiffness: 190, damping: 30, mass: 0.9 }}
       layoutId={cid(`card-container-${proj.name}`)}
-      onClick={onOpen}
-      onHoverStart={() => setHovered(true)}
-      onHoverEnd={() => setHovered(false)}
-      whileHover={isDesktop ? { scale: 1.02, transition: HOVER_SPRING } : undefined}
-      whileTap={{ scale: 0.98, transition: TAP_SPRING }}
-      style={{
-        position: "relative",
-        display: "flex",
-        flexDirection: "column",
-        width: "100%",
-        cursor: "pointer",
-        overflow: "hidden",
-        borderRadius: 14,
-        willChange: "transform",
-        WebkitTapHighlightColor: "transparent",
-        touchAction: "manipulation",
-      }}
+      style={{ position: "relative", width: "100%" }}
     >
+      <motion.div
+        onClick={onOpen}
+        onHoverStart={() => setHovered(true)}
+        onHoverEnd={() => setHovered(false)}
+        whileHover={isDesktop ? { scale: 1.02, transition: HOVER_SPRING } : undefined}
+        whileTap={{ scale: 0.98, transition: TAP_SPRING }}
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          width: "100%",
+          cursor: "pointer",
+          overflow: "hidden",
+          borderRadius: 14,
+          willChange: "transform",
+          WebkitTapHighlightColor: "transparent",
+          touchAction: "manipulation",
+        }}
+      >
       <div
         style={{
           width: "100%",
@@ -250,6 +252,7 @@ export function ProjectCard({ proj, index, visible, isDesktop, isHidden, onOpen,
           </div>
         </motion.div>
       </div>
+      </motion.div>
 
       <style suppressHydrationWarning>{`
         .proj-icon-link {
