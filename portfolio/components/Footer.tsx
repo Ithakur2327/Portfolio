@@ -205,7 +205,7 @@ export function Footer() {
         .footer-bottom-band {
           max-width: var(--content-width);
           margin: 0 auto;
-          padding: 46px 32px 12px;
+          padding: 62px 32px 12px;
           display: flex;
           align-items: center;
           justify-content: space-between;
@@ -233,7 +233,7 @@ export function Footer() {
           left: 50%;
           margin-left: -50vw;
           width: 100vw;
-          margin-top: clamp(2px, 0.6vw, 8px);
+          margin-top: clamp(18px, 3vw, 40px);
           cursor: crosshair;
           user-select: none;
           -webkit-user-select: none;
@@ -267,7 +267,7 @@ export function Footer() {
         }
 
         @media (max-width: ${BP.footerCompactMax}px) {
-          .footer-bottom-band  { padding: 38px 22px 10px; gap: 16px; }
+          .footer-bottom-band  { padding: 54px 22px 10px; gap: 16px; }
         }
 
         
@@ -275,12 +275,12 @@ export function Footer() {
           .footer-bottom-band {
             flex-direction: column-reverse;
             justify-content: center;
-            padding: 38px 16px 10px;
+            padding: 54px 16px 10px;
             gap: 12px;
           }
         }
         ${MQ.mobile} {
-          .footer-bottom-band { padding: 38px 13px 10px; }
+          .footer-bottom-band { padding: 54px 13px 10px; }
         }
         @media (min-width: ${BP.laptopMin}px) {
           .fgt-outer {
@@ -304,7 +304,12 @@ export function Footer() {
             width: 100vw;
             margin-top: -10px;
           }
-          .footer-bottom-band { padding: 48px 32px 14px; }
+          .footer-bottom-band {
+            padding: 48px 32px 14px;
+            justify-content: center;
+            gap: 28px;
+            flex-wrap: nowrap;
+          }
         }
       `}</style>
 

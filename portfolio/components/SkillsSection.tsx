@@ -516,8 +516,15 @@ export function SkillsSection() {
         }
         ${mq.tablet} {
           .skills-inner { max-width: 100% !important; padding: 0 24px 40px !important; }
-          .falling-icons-row { gap: 18px; }
-          .falling-icons-box { min-height: 240px; }
+          .falling-icons-row { gap: 14px; }
+          .falling-icons-box { min-height: 180px; }
+          .falling-icons-flow { padding: 14px 12px; gap: 6px; }
+          .falling-icon-chip {
+            width: 32px; height: 36px; border-radius: 9px; gap: 2px; padding: 4px 2px;
+          }
+          .falling-icon-chip img { width: 12px; height: 12px; }
+          .falling-icon-textmark { font-size: 11px; }
+          .falling-icon-name { font-size: 5.6px; }
         }
         ${mq.mobile} {
           .skills-inner { padding: 0 13px 28px !important; }
