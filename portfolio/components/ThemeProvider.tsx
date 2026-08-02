@@ -1,4 +1,5 @@
 "use client";
+import { flushSync } from "react-dom";
 import { ThemeProvider as NextThemesProvider, useTheme as useNextTheme } from "next-themes";
 export type Theme = "dark" | "light";
 
@@ -21,7 +22,7 @@ export function useTheme() {
   return {
     theme: (resolvedTheme ?? "dark") as Theme,
     setTheme: (t: Theme) => {
-      const switchTheme = () => setTheme(t);
+      const switchTheme = () => flushSync(() => setTheme(t));
       if (typeof document === "undefined" || !document.startViewTransition) {
         switchTheme();
         return;
