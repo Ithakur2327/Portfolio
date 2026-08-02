@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { AnimatePresence, LayoutGroup } from "motion/react";
+import { AnimatePresence } from "motion/react";
 import type { Project } from "@/lib/projects-data";
 import { ProjectCard, ProjectModal } from "./ProjectCard";
 import { BP, mq } from "@/lib/breakpoints";
@@ -12,6 +12,8 @@ export function ProjectsGrid({ projects, visible = true, mobileMax, wide }: {
   mobileMax?: number;
   wide?: boolean;
 }) {
+  // Only used for the mobile bottom sheet now — desktop cards each manage
+  // their own expanded view internally (see ProjectCard).
   const [active, setActive] = useState<Project | null>(null);
   const isDesktop = useIsLaptopUp();
 
@@ -36,25 +38,24 @@ export function ProjectsGrid({ projects, visible = true, mobileMax, wide }: {
         }` : ""}
       `}</style>
 
-      <LayoutGroup>
-        <div className="proj-grid2">
-          {projects.map((proj, i) => (
-            <ProjectCard
-              key={proj.name}
-              proj={proj}
-              index={i}
-              visible={visible}
-              isDesktop={isDesktop}
-              isHidden={isDesktop && active?.name === proj.name}
-              onOpen={() => setActive(proj)}
-            />
-          ))}
-        </div>
+      <div className="proj-grid2">
+        {projects.map((proj, i) => (
+          <ProjectCard
+            key={proj.name}
+            proj={proj}
+            index={i}
+            visible={visible}
+            isDesktop={isDesktop}
+            onOpenMobile={() => setActive(proj)}
+          />
+        ))}
+      </div>
 
-        <AnimatePresence>
-          {active && <ProjectModal key="modal" proj={active} isDesktop={isDesktop} onClose={() => setActive(null)} />}
-        </AnimatePresence>
-      </LayoutGroup>
+      <AnimatePresence>
+        {!isDesktop && active && (
+          <ProjectModal key="modal" proj={active} onClose={() => setActive(null)} />
+        )}
+      </AnimatePresence>
     </>
   );
 }

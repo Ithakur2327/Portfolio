@@ -1,7 +1,7 @@
 "use client";
 import { useRef, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import { motion, useInView } from "motion/react";
+import { AnimatePresence, motion, useInView } from "motion/react";
 import Image from "next/image";
 import type { Project } from "@/lib/projects-data";
 import { TECH_MAP } from "@/lib/projects-data";
@@ -35,6 +35,11 @@ const ExpandIcon = ({ size = 15 }: { size?: number }) => (
     <line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/>
   </svg>
 );
+const CloseIcon = () => (
+  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+    <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+  </svg>
+);
 
 function ProjectLinks({ proj, size }: { proj: Project; size: number }) {
   return (
@@ -59,15 +64,102 @@ function ProjectLinks({ proj, size }: { proj: Project; size: number }) {
   );
 }
 
+/* Shared CSS for both the desktop (self-contained) modal below and the
+   mobile bottom sheet in ProjectModal — kept identical so the two look
+   and feel the same, they just differ in how they open. */
+const MODAL_STYLE_TAG = (
+  <style suppressHydrationWarning>{`
+    .pm-overlay {
+      contain: strict;
+      will-change: opacity;
+    }
+    ${mq.laptopUp} {
+      .pm-overlay {
+        backdrop-filter: blur(6px);
+        -webkit-backdrop-filter: blur(6px);
+      }
+    }
 
+    .pm-shell {
+      display: flex;
+      flex-direction: column;
+      max-height: 92vh;
+      contain: layout paint;
+    }
+    ${mq.laptopUp} { .pm-shell { max-height: 82vh; } }
 
-export function ProjectCard({ proj, index, visible, isDesktop, isHidden = false, onOpen }: {
+    .pm-body {
+      width: 100%;
+      flex: 1 1 auto;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+    .pm-body::-webkit-scrollbar { display: none; }
+
+    .pm-tag {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 12.5px; padding: 6px 11px; border-radius: 999px;
+      font-family: ${MONO}; font-weight: 600;
+    }
+    .pm-media-col {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .pm-sheet-scroll {
+      display: flex;
+      flex-direction: column;
+    }
+    .pm-media-links {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      padding: 16px 20px 20px;
+    }
+    .pm-image-frame {
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      z-index: 2;
+      overflow: hidden;
+      border-radius: 0;
+      flex-shrink: 0;
+      background: var(--bg-card);
+    }
+
+    ${mq.laptopUp} {
+      .pm-body { flex-direction: row; }
+      .pm-media-col {
+        width: 45%; flex-shrink: 0;
+        gap: 14px;
+        padding: 24px; border-right: 1px solid var(--border);
+        overflow-y: auto; scrollbar-width: none;
+      }
+      .pm-media-col::-webkit-scrollbar { display: none; }
+      .pm-media-links { padding: 0; }
+      .pm-info-col {
+        flex: 1; min-width: 0;
+        padding: 24px; overflow-y: auto; scrollbar-width: none;
+        display: flex; flex-direction: column; gap: 16px;
+      }
+      .pm-info-col::-webkit-scrollbar { display: none; }
+      .pm-image-frame {
+        border-radius: 9px;
+      }
+    }
+  `}</style>
+);
+
+export function ProjectCard({ proj, index, visible, isDesktop, onOpenMobile }: {
   proj: Project;
   index: number;
   visible: boolean;
   isDesktop: boolean;
-  isHidden?: boolean;
-  onOpen: () => void;
+  onOpenMobile: () => void;
 }) {
   const frameRef = useRef<HTMLDivElement>(null);
   // `once` on mobile: without it, scrolling a card in and out of the 60%
@@ -91,178 +183,448 @@ export function ProjectCard({ proj, index, visible, isDesktop, isHidden = false,
     if (visible) setRevealed(true);
   }, [visible]);
 
+  // ── Desktop self-contained modal ─────────────────────────────────────
+  // Each card owns its own open/close state and its own portal, exactly
+  // like the working reference: the card that was clicked is also the
+  // thing that renders (and shares a layoutId with) its own expanded
+  // view, instead of a single modal instance being handed a different
+  // project by a shared parent state. That's what lets Motion reliably
+  // FLIP between the two — it's always the *same* component's node
+  // going from small to large.
+  const [open, setOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  const modalRef = useRef<HTMLDivElement>(null);
+  const closeBtnRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => { setMounted(true); }, []);
+
+  useEffect(() => {
+    if (!isDesktop || !open) return;
+
+    document.documentElement.style.overflow = "hidden";
+    document.body.style.overflow = "hidden";
+    document.body.classList.add("modal-open");
+    const cat = document.getElementById("oneko");
+    if (cat) cat.style.display = "none";
+
+    const previouslyFocused = document.activeElement as HTMLElement | null;
+    let focusTimer: ReturnType<typeof setTimeout>;
+    const raf = requestAnimationFrame(() => {
+      focusTimer = setTimeout(() => closeBtnRef.current?.focus(), 50);
+    });
+
+    const esc = (e: KeyboardEvent) => { if (e.key === "Escape") setOpen(false); };
+    const trapFocus = (e: KeyboardEvent) => {
+      if (e.key !== "Tab" || !modalRef.current) return;
+      const focusables = modalRef.current.querySelectorAll<HTMLElement>(
+        'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])'
+      );
+      if (focusables.length === 0) return;
+      const first = focusables[0];
+      const last = focusables[focusables.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault(); last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault(); first.focus();
+      }
+    };
+    window.addEventListener("keydown", esc);
+    window.addEventListener("keydown", trapFocus);
+
+    const handler = (e: MouseEvent) => {
+      if (modalRef.current && !modalRef.current.contains(e.target as Node)) setOpen(false);
+    };
+    const t = setTimeout(() => document.addEventListener("mousedown", handler), 80);
+
+    return () => {
+      document.documentElement.style.overflow = "";
+      document.body.style.overflow = "";
+      document.body.classList.remove("modal-open");
+      const c = document.getElementById("oneko");
+      if (c) c.style.display = "";
+      window.removeEventListener("keydown", esc);
+      window.removeEventListener("keydown", trapFocus);
+      document.removeEventListener("mousedown", handler);
+      cancelAnimationFrame(raf);
+      clearTimeout(t);
+      clearTimeout(focusTimer);
+      previouslyFocused?.focus?.();
+    };
+  }, [isDesktop, open]);
+
+  const handleOpen = () => {
+    if (isDesktop) setOpen(true);
+    else onOpenMobile();
+  };
+
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 26, scale: 0.96 }}
-      animate={{ opacity: visible ? 1 : 0, y: visible ? 0 : 26, scale: visible ? 1 : 0.96 }}
-      transition={{ type: "spring", stiffness: 210, damping: 24, mass: 0.9, delay: visible && !revealed ? 0.07 * index : 0 }}
-      style={{ width: "100%", visibility: isHidden ? "hidden" : "visible" }}
-    >
-    <motion.div
-      layoutId={cid(`card-container-${proj.name}`)}
-      transition={SPRING}
-      onClick={onOpen}
-      whileHover={isDesktop ? { scale: 1.02 } : undefined}
-      whileTap={{ scale: 0.98 }}
-      style={{
-        position: "relative",
-        display: "flex",
-        flexDirection: "column",
-        width: "100%",
-        cursor: "pointer",
-        overflow: "hidden",
-        borderRadius: 14,
-        willChange: "transform",
-        WebkitTapHighlightColor: "transparent",
-        touchAction: "manipulation",
-        pointerEvents: isHidden ? "none" : undefined,
-      }}
-    >
-      <div
+    <>
+      {isDesktop && mounted && createPortal(
+        <AnimatePresence>
+          {open && (
+            <>
+              <motion.div
+                key="overlay"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.15 }}
+                onClick={() => setOpen(false)}
+                className="pm-overlay"
+                style={{ position: "fixed", inset: 0, zIndex: 9000, background: "rgba(0,0,0,0.55)", willChange: "opacity" }}
+              />
+
+              <motion.div
+                key="wrap"
+                layoutRoot
+                style={{ position: "fixed", inset: 0, zIndex: 9001, display: "grid", placeItems: "center", padding: 16, pointerEvents: "none" }}
+              >
+                <motion.div
+                  ref={modalRef}
+                  role="dialog"
+                  aria-modal="true"
+                  aria-label={`${proj.name} project details`}
+                  layoutId={`card-container-${proj.name}`}
+                  transition={SPRING}
+                  className="pm-shell"
+                  style={{
+                    pointerEvents: "auto",
+                    width: "100%", maxWidth: 960,
+                    cursor: "default",
+                    background: "var(--bg-card)",
+                    border: "1px solid var(--border)",
+                    borderRadius: 16,
+                    boxShadow: "0 12px 28px -8px rgba(0,0,0,0.45)",
+                    overflow: "hidden",
+                    willChange: "transform",
+                    transform: "translateZ(0)",
+                  }}
+                >
+                  {MODAL_STYLE_TAG}
+
+                  <div className="pm-body">
+                    <div className="pm-media-col">
+                      <motion.div
+                        layoutId={`card-banner-${proj.name}`}
+                        transition={SPRING}
+                        className="pm-image-frame"
+                        style={{ position: "relative" }}
+                      >
+                        <motion.div
+                          layoutId={`card-banner-image-${proj.name}`}
+                          transition={SPRING}
+                          style={{ position: "absolute", inset: 0 }}
+                        >
+                          <Image
+                            src={proj.img}
+                            alt={proj.name}
+                            fill
+                            quality={100}
+                            sizes="min(45vw, 432px)"
+                            unoptimized={proj.img.endsWith(".svg")}
+                            style={{ objectFit: "cover" }}
+                          />
+                        </motion.div>
+                      </motion.div>
+
+                      <div className="pm-media-links">
+                        <motion.div
+                          layoutId={`card-links-${proj.name}`}
+                          layout="position"
+                          transition={SPRING}
+                          style={{ display: "flex", alignItems: "center", gap: 16 }}
+                        >
+                          <ProjectLinks proj={proj} size={22} />
+                        </motion.div>
+
+                        <motion.div
+                          layoutId={`card-tech-section-${proj.name}`}
+                          layout="position"
+                          transition={SPRING}
+                          style={{ display: "flex", flexDirection: "column", gap: 8 }}
+                        >
+                          <span style={{ fontSize: 14, fontWeight: 600, color: "var(--text-primary)", fontFamily: SF }}>
+                            Stack
+                          </span>
+                          <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                            {proj.tags.map((tag, ti) => {
+                              const tech = TECH_MAP[tag];
+                              return (
+                                <motion.span
+                                  key={tag}
+                                  initial={{ opacity: 0, y: 4 }}
+                                  animate={{ opacity: 1, y: 0 }}
+                                  transition={{ delay: 0.05 + ti * 0.02, duration: 0.2 }}
+                                  className="pm-tag"
+                                  style={{ color: "var(--tag-text)", background: "var(--tag-bg)", border: "1px solid var(--tag-border)" }}
+                                >
+                                  {/* eslint-disable-next-line @next/next/no-img-element -- tiny external SVG icon */}
+                                  {tech && <img src={techLogoSrc(tech, isDark)} alt={tag} width={15} height={15} decoding="async" style={{ objectFit: "contain", flexShrink: 0 }} />}
+                                  {tag}
+                                </motion.span>
+                              );
+                            })}
+                          </div>
+                        </motion.div>
+                      </div>
+                    </div>
+
+                    <div className="pm-info-col" style={{ padding: 20, display: "flex", flexDirection: "column", gap: 16 }}>
+                      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16 }}>
+                        <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                          <motion.h2
+                            layoutId={`card-title-${proj.name}`}
+                            layout="position"
+                            transition={SPRING}
+                            style={{ fontSize: 24, fontWeight: 700, color: "var(--text-primary)", letterSpacing: "-0.02em", fontFamily: SF, margin: 0, lineHeight: 1.25 }}
+                          >
+                            {proj.name}
+                          </motion.h2>
+                          <motion.span
+                            initial={{ opacity: 0, y: 5 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.15 }}
+                            style={{ fontSize: 14, color: "var(--text-muted)", fontFamily: SF }}
+                          >
+                            Created: {proj.year}
+                          </motion.span>
+                        </div>
+
+                        <button
+                          ref={closeBtnRef}
+                          onClick={() => setOpen(false)}
+                          aria-label="Close"
+                          style={{
+                            flexShrink: 0,
+                            width: 30, height: 30, borderRadius: "50%",
+                            background: "var(--bg-secondary)", border: "1px solid var(--border)",
+                            color: "var(--text-secondary)", display: "flex", alignItems: "center", justifyContent: "center",
+                            cursor: "pointer",
+                          }}
+                        >
+                          <CloseIcon />
+                        </button>
+                      </div>
+
+                      <motion.p
+                        layoutId={`card-description-${proj.name}`}
+                        layout="position"
+                        transition={SPRING}
+                        style={{ fontSize: 16, color: "var(--text-secondary)", lineHeight: 1.625, margin: 0, fontFamily: SF }}
+                      >
+                        {proj.description}
+                      </motion.p>
+
+                      {proj.features?.length > 0 && (
+                        <motion.div
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.18, duration: 0.3 }}
+                          style={{ display: "flex", flexDirection: "column", gap: 10 }}
+                        >
+                          <span style={{ fontSize: 14, fontWeight: 600, color: "var(--text-primary)", fontFamily: SF }}>
+                            Features
+                          </span>
+                          <ul style={{ display: "flex", flexDirection: "column", gap: 8, margin: 0, padding: 0, listStyle: "none" }}>
+                            {proj.features.map((feature, i) => (
+                              <motion.li
+                                key={i}
+                                initial={{ opacity: 0, x: -10 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ delay: 0.22 + i * 0.035 }}
+                                style={{ display: "flex", alignItems: "flex-start", gap: 8, fontSize: 14, color: "var(--text-secondary)", lineHeight: 1.55, fontFamily: SF }}
+                              >
+                                <span style={{ color: proj.accent, marginTop: 1 }}>•</span>
+                                <span>{feature}</span>
+                              </motion.li>
+                            ))}
+                          </ul>
+                        </motion.div>
+                      )}
+                    </div>
+                  </div>
+                </motion.div>
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
+
+      <motion.div
+        initial={{ opacity: 0, y: 26, scale: 0.96 }}
+        animate={{ opacity: visible ? 1 : 0, y: visible ? 0 : 26, scale: visible ? 1 : 0.96 }}
+        transition={{ type: "spring", stiffness: 210, damping: 24, mass: 0.9, delay: visible && !revealed ? 0.07 * index : 0 }}
+        style={{ width: "100%" }}
+      >
+      <motion.div
+        layoutId={cid(`card-container-${proj.name}`)}
+        transition={SPRING}
+        onClick={handleOpen}
+        whileHover={isDesktop ? { scale: 1.02 } : undefined}
+        whileTap={{ scale: 0.98 }}
         style={{
+          position: "relative",
+          display: "flex",
+          flexDirection: "column",
           width: "100%",
-         padding: 2,
-         borderRadius: 14,
-        border: `1px dashed ${
-        index % 2 === 0 ? "rgba(10,186,181,0.55)" : "rgba(212,175,55,0.55)" }`,
-          boxSizing: "border-box",
+          cursor: "pointer",
+          overflow: "hidden",
+          borderRadius: 14,
+          willChange: "transform",
+          WebkitTapHighlightColor: "transparent",
+          touchAction: "manipulation",
         }}
       >
-        <motion.div
-          ref={frameRef}
-          layoutId={cid(`card-banner-${proj.name}`)}
-          transition={SPRING}
+        <div
           style={{
-            width: "100%", aspectRatio: "16 / 9", borderRadius: 12,
-            position: "relative", overflow: "hidden",
-            background: isDark ? "#121212" : "rgba(0,0,0,0.05)",
-            border: "1px solid var(--border)",
+            width: "100%",
+           padding: 2,
+           borderRadius: 14,
+          border: `1px dashed ${
+          index % 2 === 0 ? "rgba(10,186,181,0.55)" : "rgba(212,175,55,0.55)" }`,
+            boxSizing: "border-box",
           }}
         >
           <motion.div
-            layoutId={cid(`card-banner-image-${proj.name}`)}
-            initial={tiltPeeking}
-            whileHover={isDesktop ? tiltSettled : undefined}
-            animate={isDesktop ? undefined : (inView ? tiltSettled : tiltPeeking)}
-            transition={{
-              layout: SPRING,
-              default: isDesktop
-                ? { type: "spring", stiffness: 160, damping: 26, mass: 0.9 }
-                : { type: "tween", duration: 0.85, ease: [0.22, 1, 0.36, 1] },
+            ref={frameRef}
+            layoutId={cid(`card-banner-${proj.name}`)}
+            transition={SPRING}
+            style={{
+              width: "100%", aspectRatio: "16 / 9", borderRadius: 12,
+              position: "relative", overflow: "hidden",
+              background: isDark ? "#121212" : "rgba(0,0,0,0.05)",
+              border: "1px solid var(--border)",
             }}
-            style={{ position: "absolute", inset: 0, overflow: "hidden", willChange: "transform" }}
           >
-            <Image
-              src={proj.img}
-              alt={proj.name}
-              fill
-              quality={100}
-              sizes="(max-width: 640px) 96vw, (max-width: 1024px) 48vw, 520px"
-              unoptimized={proj.img.endsWith(".svg")}
-              style={{ objectFit: "cover" }}
-            />
-          </motion.div>
-        </motion.div>
-      </div>
-
-      <div style={{ width: "100%", padding: "12px 8px", display: "flex", flexDirection: "column", gap: 16 }}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <motion.span
-            layoutId={cid(`card-title-${proj.name}`)}
-            layout={isDesktop ? "position" : undefined}
-            transition={SPRING}
-            style={{ fontSize: 20, fontWeight: 600, color: "var(--text-primary)", letterSpacing: "-0.01em", fontFamily: SF, lineHeight: 1.3 }}
-          >
-            {proj.name}
-          </motion.span>
-          <motion.div
-            layoutId={cid(`card-links-${proj.name}`)}
-            layout={isDesktop ? "position" : undefined}
-            transition={SPRING}
-            style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}
-            onClick={e => e.stopPropagation()}
-          >
-            <button
-              onClick={onOpen}
-              className="card-expand-btn"
-              aria-label="Expand"
-              title="Click to view"
-              style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 24, height: 24, padding: 0, background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer" }}
+            <motion.div
+              layoutId={cid(`card-banner-image-${proj.name}`)}
+              initial={tiltPeeking}
+              whileHover={isDesktop ? tiltSettled : undefined}
+              animate={isDesktop ? undefined : (inView ? tiltSettled : tiltPeeking)}
+              transition={{
+                layout: SPRING,
+                default: isDesktop
+                  ? { type: "spring", stiffness: 160, damping: 26, mass: 0.9 }
+                  : { type: "tween", duration: 0.85, ease: [0.22, 1, 0.36, 1] },
+              }}
+              style={{ position: "absolute", inset: 0, overflow: "hidden", willChange: "transform" }}
             >
-              <ExpandIcon />
-            </button>
-            <ProjectLinks proj={proj} size={20} />
+              <Image
+                src={proj.img}
+                alt={proj.name}
+                fill
+                quality={100}
+                sizes="(max-width: 640px) 96vw, (max-width: 1024px) 48vw, 520px"
+                unoptimized={proj.img.endsWith(".svg")}
+                style={{ objectFit: "cover" }}
+              />
+            </motion.div>
           </motion.div>
         </div>
 
-        <motion.p
-          layoutId={cid(`card-description-${proj.name}`)}
-          layout={isDesktop ? "position" : undefined}
-          transition={SPRING}
-          style={{ fontSize: 16, color: "var(--text-secondary)", lineHeight: 1.5, margin: 0, fontFamily: SF, textAlign: "left", display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical", overflow: "hidden" }}
-        >
-          {proj.description}
-        </motion.p>
-
-        <motion.div
-          layoutId={cid(`card-tech-section-${proj.name}`)}
-          layout={isDesktop ? "position" : undefined}
-          transition={SPRING}
-          style={{ width: "100%", display: "flex", flexDirection: "column", gap: 8 }}
-        >
-          <span style={{ fontSize: 14, fontWeight: 600, color: "var(--text-primary)", fontFamily: SF }}>
-            Stack
-          </span>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 8, alignItems: "center" }}>
-            {proj.tags.slice(0, 3).map(tag => {
-              const tech = TECH_MAP[tag];
-              if (!tech) return null;
-              return (
-                <motion.div key={tag} layoutId={cid(`card-tech-${proj.name}-${tag}`)} transition={SPRING} title={tag} style={{ display: "flex" }}>
-                  {/* eslint-disable-next-line @next/next/no-img-element -- tiny external SVG icon */}
-                  <img
-                    src={techLogoSrc(tech, isDark)}
-                    alt={tag}
-                    width={24}
-                    height={24}
-                    decoding="async"
-                    style={{ objectFit: "contain", display: "block" }}
-                  />
-                </motion.div>
-              );
-            })}
+        <div style={{ width: "100%", padding: "12px 8px", display: "flex", flexDirection: "column", gap: 16 }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <motion.span
+              layoutId={cid(`card-title-${proj.name}`)}
+              layout={isDesktop ? "position" : undefined}
+              transition={SPRING}
+              style={{ fontSize: 20, fontWeight: 600, color: "var(--text-primary)", letterSpacing: "-0.01em", fontFamily: SF, lineHeight: 1.3 }}
+            >
+              {proj.name}
+            </motion.span>
+            <motion.div
+              layoutId={cid(`card-links-${proj.name}`)}
+              layout={isDesktop ? "position" : undefined}
+              transition={SPRING}
+              style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}
+              onClick={e => e.stopPropagation()}
+            >
+              <button
+                onClick={handleOpen}
+                className="card-expand-btn"
+                aria-label="Expand"
+                title="Click to view"
+                style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 24, height: 24, padding: 0, background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer" }}
+              >
+                <ExpandIcon />
+              </button>
+              <ProjectLinks proj={proj} size={20} />
+            </motion.div>
           </div>
-        </motion.div>
-      </div>
 
-      <style suppressHydrationWarning>{`
-        .proj-icon-link {
-          color: var(--text-secondary);
-          transition: color 0.15s ease, transform 0.15s cubic-bezier(0.16,1,0.3,1);
-        }
-        .proj-icon-link:hover {
-          color: ${proj.accent};
-          transform: translateY(-1.5px) scale(1.08);
-        }
+          <motion.p
+            layoutId={cid(`card-description-${proj.name}`)}
+            layout={isDesktop ? "position" : undefined}
+            transition={SPRING}
+            style={{ fontSize: 16, color: "var(--text-secondary)", lineHeight: 1.5, margin: 0, fontFamily: SF, textAlign: "left", display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical", overflow: "hidden" }}
+          >
+            {proj.description}
+          </motion.p>
 
-        .card-expand-btn:hover {
-          color: ${proj.accent};
-          transform: translateY(-1.5px) scale(1.08);
-        }
-      `}</style>
-    </motion.div>
-    </motion.div>
+          <motion.div
+            layoutId={cid(`card-tech-section-${proj.name}`)}
+            layout={isDesktop ? "position" : undefined}
+            transition={SPRING}
+            style={{ width: "100%", display: "flex", flexDirection: "column", gap: 8 }}
+          >
+            <span style={{ fontSize: 14, fontWeight: 600, color: "var(--text-primary)", fontFamily: SF }}>
+              Stack
+            </span>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 8, alignItems: "center" }}>
+              {proj.tags.slice(0, 3).map(tag => {
+                const tech = TECH_MAP[tag];
+                if (!tech) return null;
+                return (
+                  <div key={tag} title={tag} style={{ display: "flex" }}>
+                    {/* eslint-disable-next-line @next/next/no-img-element -- tiny external SVG icon */}
+                    <img
+                      src={techLogoSrc(tech, isDark)}
+                      alt={tag}
+                      width={24}
+                      height={24}
+                      decoding="async"
+                      style={{ objectFit: "contain", display: "block" }}
+                    />
+                  </div>
+                );
+              })}
+            </div>
+          </motion.div>
+        </div>
+
+        <style suppressHydrationWarning>{`
+          .proj-icon-link {
+            color: var(--text-secondary);
+            transition: color 0.15s ease, transform 0.15s cubic-bezier(0.16,1,0.3,1);
+          }
+          .proj-icon-link:hover {
+            color: ${proj.accent};
+            transform: translateY(-1.5px) scale(1.08);
+          }
+
+          .card-expand-btn:hover {
+            color: ${proj.accent};
+            transform: translateY(-1.5px) scale(1.08);
+          }
+        `}</style>
+      </motion.div>
+      </motion.div>
+    </>
   );
 }
 
-export function ProjectModal({ proj, onClose, isDesktop }: { proj: Project; onClose: () => void; isDesktop: boolean }) {
+/* ── Mobile bottom sheet ───────────────────────────────────────────────
+   Desktop no longer uses this component at all — each ProjectCard now
+   renders its own expanded view above. This is purely the mobile
+   "slide up from the bottom" panel, so there's no layoutId/shared-layout
+   involved here anymore. */
+export function ProjectModal({ proj, onClose }: { proj: Project; onClose: () => void }) {
   const modalRef = useRef<HTMLDivElement>(null);
   const closeBtnRef = useRef<HTMLButtonElement>(null);
   const { theme } = useTheme();
   const isDark = theme === "dark";
-  const sheet = !isDesktop;
   const sheetTransition = { type: "tween" as const, duration: 0.18, ease: [0.22, 1, 0.36, 1] as const };
-  const lid = (id: string) => (sheet ? undefined : id);
 
   useEffect(() => {
     document.documentElement.style.overflow = "hidden";
@@ -319,152 +681,6 @@ export function ProjectModal({ proj, onClose, isDesktop }: { proj: Project; onCl
     };
   }, [onClose]);
 
-  const imageBlock = (
-    <motion.div
-      layoutId={lid(`card-banner-${proj.name}`)}
-      transition={SPRING}
-      className="pm-image-frame"
-      style={sheet ? { position: "sticky", top: 0 } : { position: "relative" }}
-    >
-      <motion.div
-        layoutId={lid(`card-banner-image-${proj.name}`)}
-        transition={SPRING}
-        style={{ position: "absolute", inset: 0 }}
-      >
-        <Image
-          src={proj.img}
-          alt={proj.name}
-          fill
-          quality={100}
-          sizes="(max-width: 767px) 100vw, min(45vw, 432px)"
-          unoptimized={proj.img.endsWith(".svg")}
-          style={{ objectFit: "cover" }}
-        />
-      </motion.div>
-    </motion.div>
-  );
-
-  const linksAndStackBlock = (
-    <div className="pm-media-links">
-      <motion.div
-        layoutId={lid(`card-links-${proj.name}`)}
-        layout="position"
-        transition={SPRING}
-        style={{ display: "flex", alignItems: "center", gap: 16 }}
-      >
-        <ProjectLinks proj={proj} size={22} />
-      </motion.div>
-
-      <motion.div
-        layoutId={lid(`card-tech-section-${proj.name}`)}
-        layout="position"
-        transition={SPRING}
-        style={{ display: "flex", flexDirection: "column", gap: 8 }}
-      >
-        <span style={{ fontSize: 14, fontWeight: 600, color: "var(--text-primary)", fontFamily: SF }}>
-          Stack
-        </span>
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-          {proj.tags.map((tag, ti) => {
-            const tech = TECH_MAP[tag];
-            return (
-              <motion.span
-                key={tag}
-                initial={sheet ? false : { opacity: 0, y: 4 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={sheet ? { duration: 0 } : { delay: 0.05 + ti * 0.02, duration: 0.2 }}
-                className="pm-tag"
-                style={{ color: "var(--tag-text)", background: "var(--tag-bg)", border: "1px solid var(--tag-border)" }}
-              >
-                {/* eslint-disable-next-line @next/next/no-img-element -- tiny external SVG icon */}
-                {tech && <img src={techLogoSrc(tech, isDark)} alt={tag} width={15} height={15} decoding="async" style={{ objectFit: "contain", flexShrink: 0 }} />}
-                {tag}
-              </motion.span>
-            );
-          })}
-        </div>
-      </motion.div>
-    </div>
-  );
-
-  const infoBlock = (
-    <div className="pm-info-col" style={{ padding: 20, display: "flex", flexDirection: "column", gap: 16 }}>
-      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16 }}>
-        <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-          <motion.h2
-            layoutId={lid(`card-title-${proj.name}`)}
-            layout="position"
-            transition={SPRING}
-            style={{ fontSize: 24, fontWeight: 700, color: "var(--text-primary)", letterSpacing: "-0.02em", fontFamily: SF, margin: 0, lineHeight: 1.25 }}
-          >
-            {proj.name}
-          </motion.h2>
-          <motion.span
-            initial={sheet ? false : { opacity: 0, y: 5 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={sheet ? { duration: 0 } : { delay: 0.15 }}
-            style={{ fontSize: 14, color: "var(--text-muted)", fontFamily: SF }}
-          >
-            Created: {proj.year}
-          </motion.span>
-        </div>
-
-        <button
-          ref={closeBtnRef}
-          onClick={onClose}
-          aria-label="Close"
-          style={{
-            flexShrink: 0,
-            width: 30, height: 30, borderRadius: "50%",
-            background: "var(--bg-secondary)", border: "1px solid var(--border)",
-            color: "var(--text-secondary)", display: "flex", alignItems: "center", justifyContent: "center",
-            cursor: "pointer",
-          }}
-        >
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-          </svg>
-        </button>
-      </div>
-
-      <motion.p
-        layoutId={lid(`card-description-${proj.name}`)}
-        layout="position"
-        transition={SPRING}
-        style={{ fontSize: 16, color: "var(--text-secondary)", lineHeight: 1.625, margin: 0, fontFamily: SF }}
-      >
-        {proj.description}
-      </motion.p>
-
-      {proj.features?.length > 0 && (
-        <motion.div
-          initial={sheet ? false : { opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={sheet ? { duration: 0 } : { delay: 0.18, duration: 0.3 }}
-          style={{ display: "flex", flexDirection: "column", gap: 10 }}
-        >
-          <span style={{ fontSize: 14, fontWeight: 600, color: "var(--text-primary)", fontFamily: SF }}>
-            Features
-          </span>
-          <ul style={{ display: "flex", flexDirection: "column", gap: 8, margin: 0, padding: 0, listStyle: "none" }}>
-            {proj.features.map((feature, i) => (
-              <motion.li
-                key={i}
-                initial={sheet ? false : { opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={sheet ? { duration: 0 } : { delay: 0.22 + i * 0.035 }}
-                style={{ display: "flex", alignItems: "flex-start", gap: 8, fontSize: 14, color: "var(--text-secondary)", lineHeight: 1.55, fontFamily: SF }}
-              >
-                <span style={{ color: proj.accent, marginTop: 1 }}>•</span>
-                <span>{feature}</span>
-              </motion.li>
-            ))}
-          </ul>
-        </motion.div>
-      )}
-    </div>
-  );
-
   const content = (
     <>
       <motion.div
@@ -481,17 +697,16 @@ export function ProjectModal({ proj, onClose, isDesktop }: { proj: Project; onCl
         }}
       />
 
-      <motion.div layoutRoot style={{ position: "fixed", inset: 0, zIndex: 9001, display: "grid", alignItems: sheet ? "end" : "center", justifyItems: sheet ? "stretch" : "center", padding: sheet ? 0 : 16, pointerEvents: "none" }}>
+      <motion.div style={{ position: "fixed", inset: 0, zIndex: 9001, display: "grid", alignItems: "end", justifyItems: "stretch", padding: 0, pointerEvents: "none" }}>
         <motion.div
           ref={modalRef}
           role="dialog"
           aria-modal="true"
           aria-label={`${proj.name} project details`}
-          layoutId={lid(`card-container-${proj.name}`)}
-          initial={sheet ? { y: "100%" } : undefined}
-          animate={sheet ? { y: 0 } : undefined}
-          exit={sheet ? { y: "100%" } : undefined}
-          transition={sheet ? sheetTransition : SPRING}
+          initial={{ y: "100%" }}
+          animate={{ y: 0 }}
+          exit={{ y: "100%" }}
+          transition={sheetTransition}
           className="pm-shell"
           style={{
             pointerEvents: "auto",
@@ -499,121 +714,113 @@ export function ProjectModal({ proj, onClose, isDesktop }: { proj: Project; onCl
             cursor: "default",
             background: "var(--bg-card)",
             border: "1px solid var(--border)",
-            borderRadius: sheet ? "16px 16px 0 0" : 16,
+            borderRadius: "16px 16px 0 0",
             boxShadow: "0 12px 28px -8px rgba(0,0,0,0.45)",
             overflow: "hidden",
             willChange: "transform",
             transform: "translateZ(0)",
           }}
         >
-          <style suppressHydrationWarning>{`
-            .pm-overlay {
-              contain: strict;
-              will-change: opacity;
-            }
-            /* Blur is compositor-heavy and is the main source of jank during
-               the bottom-sheet open animation on phones/tablets, so it's
-               skipped there and only enabled from laptop width up. */
-            ${mq.laptopUp} {
-              .pm-overlay {
-                backdrop-filter: blur(6px);
-                -webkit-backdrop-filter: blur(6px);
-              }
-            }
-
-            .pm-shell {
-              display: flex;
-              flex-direction: column;
-              max-height: 92vh;
-              contain: layout paint;
-            }
-            ${mq.laptopUp} { .pm-shell { max-height: 82vh; } }
-
-            /* Body is a plain, non-layout-animated div that actually scrolls */
-            .pm-body {
-              width: 100%;
-              flex: 1 1 auto;
-              min-height: 0;
-              display: flex;
-              flex-direction: column;
-              overflow-y: auto;
-              overscroll-behavior: contain;
-              -webkit-overflow-scrolling: touch;
-              scrollbar-width: none;
-            }
-            .pm-body::-webkit-scrollbar { display: none; }
-
-            .pm-tag {
-              display: inline-flex; align-items: center; gap: 6px;
-              font-size: 12.5px; padding: 6px 11px; border-radius: 999px;
-              font-family: ${MONO}; font-weight: 600;
-            }
-            .pm-media-col {
-              display: flex;
-              flex-direction: column;
-              gap: 12px;
-            }
-            .pm-sheet-scroll {
-              display: flex;
-              flex-direction: column;
-            }
-            .pm-media-links {
-              display: flex;
-              flex-direction: column;
-              gap: 12px;
-              padding: 16px 20px 20px;
-            }
-            .pm-image-frame {
-              width: 100%;
-              aspect-ratio: 16 / 9;
-              z-index: 2;
-              overflow: hidden;
-              border-radius: 0;
-              flex-shrink: 0;
-              background: var(--bg-card);
-            }
-
-            /* Desktop/laptop: horizontal split — media left, info right */
-            ${mq.laptopUp} {
-              .pm-body { flex-direction: row; }
-              .pm-media-col {
-                width: 45%; flex-shrink: 0;
-                gap: 14px;
-                padding: 24px; border-right: 1px solid var(--border);
-                overflow-y: auto; scrollbar-width: none;
-              }
-              .pm-media-col::-webkit-scrollbar { display: none; }
-              .pm-media-links { padding: 0; }
-              .pm-info-col {
-                flex: 1; min-width: 0;
-                padding: 24px; overflow-y: auto; scrollbar-width: none;
-                display: flex; flex-direction: column; gap: 16px;
-              }
-              .pm-info-col::-webkit-scrollbar { display: none; }
-              .pm-image-frame {
-                border-radius: 9px;
-              }
-            }
-          `}</style>
+          {MODAL_STYLE_TAG}
 
           <div className="pm-body">
-          {sheet ? (
-            <>
-              {imageBlock}
-              <div className="pm-sheet-scroll">
-                {linksAndStackBlock}
-                {infoBlock}
+            <div
+              className="pm-image-frame"
+              style={{ position: "sticky", top: 0 }}
+            >
+              <div style={{ position: "absolute", inset: 0 }}>
+                <Image
+                  src={proj.img}
+                  alt={proj.name}
+                  fill
+                  quality={100}
+                  sizes="100vw"
+                  unoptimized={proj.img.endsWith(".svg")}
+                  style={{ objectFit: "cover" }}
+                />
               </div>
-            </>
-          ) : (
-            <>
-              <div className="pm-media-col">
-                {imageBlock}
-                {linksAndStackBlock}
+            </div>
+
+            <div className="pm-sheet-scroll">
+              <div className="pm-media-links">
+                <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+                  <ProjectLinks proj={proj} size={22} />
+                </div>
+
+                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                  <span style={{ fontSize: 14, fontWeight: 600, color: "var(--text-primary)", fontFamily: SF }}>
+                    Stack
+                  </span>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                    {proj.tags.map(tag => {
+                      const tech = TECH_MAP[tag];
+                      return (
+                        <span
+                          key={tag}
+                          className="pm-tag"
+                          style={{ color: "var(--tag-text)", background: "var(--tag-bg)", border: "1px solid var(--tag-border)" }}
+                        >
+                          {/* eslint-disable-next-line @next/next/no-img-element -- tiny external SVG icon */}
+                          {tech && <img src={techLogoSrc(tech, isDark)} alt={tag} width={15} height={15} decoding="async" style={{ objectFit: "contain", flexShrink: 0 }} />}
+                          {tag}
+                        </span>
+                      );
+                    })}
+                  </div>
+                </div>
               </div>
-              {infoBlock}
-            </>
-          )}
+
+              <div className="pm-info-col" style={{ padding: 20, display: "flex", flexDirection: "column", gap: 16 }}>
+                <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16 }}>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                    <h2 style={{ fontSize: 24, fontWeight: 700, color: "var(--text-primary)", letterSpacing: "-0.02em", fontFamily: SF, margin: 0, lineHeight: 1.25 }}>
+                      {proj.name}
+                    </h2>
+                    <span style={{ fontSize: 14, color: "var(--text-muted)", fontFamily: SF }}>
+                      Created: {proj.year}
+                    </span>
+                  </div>
+
+                  <button
+                    ref={closeBtnRef}
+                    onClick={onClose}
+                    aria-label="Close"
+                    style={{
+                      flexShrink: 0,
+                      width: 30, height: 30, borderRadius: "50%",
+                      background: "var(--bg-secondary)", border: "1px solid var(--border)",
+                      color: "var(--text-secondary)", display: "flex", alignItems: "center", justifyContent: "center",
+                      cursor: "pointer",
+                    }}
+                  >
+                    <CloseIcon />
+                  </button>
+                </div>
+
+                <p style={{ fontSize: 16, color: "var(--text-secondary)", lineHeight: 1.625, margin: 0, fontFamily: SF }}>
+                  {proj.description}
+                </p>
+
+                {proj.features?.length > 0 && (
+                  <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                    <span style={{ fontSize: 14, fontWeight: 600, color: "var(--text-primary)", fontFamily: SF }}>
+                      Features
+                    </span>
+                    <ul style={{ display: "flex", flexDirection: "column", gap: 8, margin: 0, padding: 0, listStyle: "none" }}>
+                      {proj.features.map((feature, i) => (
+                        <li
+                          key={i}
+                          style={{ display: "flex", alignItems: "flex-start", gap: 8, fontSize: 14, color: "var(--text-secondary)", lineHeight: 1.55, fontFamily: SF }}
+                        >
+                          <span style={{ color: proj.accent, marginTop: 1 }}>•</span>
+                          <span>{feature}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         </motion.div>
       </motion.div>
