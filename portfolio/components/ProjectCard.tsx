@@ -145,12 +145,12 @@ export function ProjectCard({ proj, index, visible, isDesktop, isHidden, onOpen,
           <motion.div
             initial={false}
             animate={shown
-              ? { scaleX: 1, scaleY: 1, y: 0, rotate: 0, borderRadius: 10, boxShadow: "0 0 0 rgba(0,0,0,0)" }
-              : { scaleX: 0.85, scaleY: 0.72, y: "9%", rotate: -8, borderRadius: 6, boxShadow: "0 20px 40px -8px rgba(0,0,0,0.45)" }}
+              ? { width: "100%", height: "100%", bottom: 0, rotate: 0, borderRadius: 10, boxShadow: "0 0 0 rgba(0,0,0,0)" }
+              : { width: "85%", height: "72%", bottom: "-8%", rotate: -8, borderRadius: 6, boxShadow: "0 20px 40px -8px rgba(0,0,0,0.45)" }}
             transition={isDesktop
-              ? { type: "spring", stiffness: 150, damping: 23, mass: 0.9 }
-              : { type: "tween", duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
-            style={{ position: "absolute", inset: 0, transformOrigin: "50% 100%", overflow: "hidden", willChange: "transform" }}
+              ? { type: "spring", stiffness: 110, damping: 21, mass: 1 }
+              : { type: "tween", duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
+            style={{ position: "absolute", left: 0, right: 0, margin: "0 auto", overflow: "hidden", willChange: "transform" }}
           >
             <motion.div
               layoutId={cid(`card-banner-image-${proj.name}`)}
