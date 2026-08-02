@@ -168,10 +168,7 @@ export function ProjectCard({ proj, index, visible, isDesktop, isHidden, onOpen,
                 willChange: "transform",
               }}
             >
-              <motion.div
-                layoutId={cid(`card-banner-image-${proj.name}`)}
-                style={{ position: "absolute", inset: 0, overflow: "hidden" }}
-              >
+              <div style={{ position: "absolute", inset: 0, overflow: "hidden" }}>
                 <Image
                   src={proj.img}
                   alt={proj.name}
@@ -181,7 +178,7 @@ export function ProjectCard({ proj, index, visible, isDesktop, isHidden, onOpen,
                   unoptimized={proj.img.endsWith(".svg")}
                   style={{ objectFit: "cover" }}
                 />
-              </motion.div>
+              </div>
             </motion.div>
           </motion.div>
         </motion.div>
@@ -350,11 +347,7 @@ export function ProjectModal({ proj, index, onClose, isDesktop }: { proj: Projec
         className="pm-image-frame"
         style={{ position: "relative" }}
       >
-        <motion.div
-          layoutId={lid(`card-banner-image-${proj.name}`)}
-          transition={SPRING}
-          style={{ position: "absolute", inset: 0 }}
-        >
+        <div style={{ position: "absolute", inset: 0, overflow: "hidden" }}>
           <Image
             src={proj.img}
             alt={proj.name}
@@ -364,7 +357,7 @@ export function ProjectModal({ proj, index, onClose, isDesktop }: { proj: Projec
             unoptimized={proj.img.endsWith(".svg")}
             style={{ objectFit: "cover" }}
           />
-        </motion.div>
+        </div>
       </motion.div>
     </div>
   );
@@ -494,9 +487,8 @@ export function ProjectModal({ proj, index, onClose, isDesktop }: { proj: Projec
     <>
       <motion.div
         initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        transition={{ duration: 0.15 }}
+        animate={{ opacity: 1, transition: { duration: 0.15 } }}
+        exit={{ opacity: 0, transition: { duration: 0.4 } }}
         onClick={onClose}
         className="pm-overlay"
         style={{
@@ -549,17 +541,13 @@ export function ProjectModal({ proj, index, onClose, isDesktop }: { proj: Projec
               flex-direction: column;
               max-height: 92vh;
               contain: layout paint;
-              background: var(--bg-card);
-              border: 1px solid var(--border);
+              background: var(--modal-glass-bg);
+              border: 1px solid var(--modal-glass-border);
+              backdrop-filter: blur(14px) saturate(160%);
+              -webkit-backdrop-filter: blur(14px) saturate(160%);
             }
             ${mq.laptopUp} {
-              .pm-shell {
-                max-height: 82vh;
-                background: var(--nav-bg-scrolled);
-                border-color: var(--nav-border);
-                backdrop-filter: blur(14px) saturate(160%);
-                -webkit-backdrop-filter: blur(14px) saturate(160%);
-              }
+              .pm-shell { max-height: 82vh; }
             }
 
             /* Body is a plain, non-layout-animated div that actually scrolls */
