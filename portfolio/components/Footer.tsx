@@ -86,6 +86,7 @@ function FluidGradientText({ text }: { text: string }) {
       onTouchEnd={handleTouchEnd}
       onTouchCancel={handleTouchEnd}
     >
+      <div className="fgt-svg-wrap">
       <svg
         className="fgt-svg"
         viewBox={`0 0 ${VW} ${VH}`}
@@ -175,6 +176,7 @@ function FluidGradientText({ text }: { text: string }) {
           {text}
         </motion.text>
       </svg>
+      </div>
 
       <div className="fgt-line" />
     </div>
@@ -242,8 +244,17 @@ export function Footer() {
           font-size: 0;
           line-height: 0;
         }
+        .fgt-svg-wrap {
+          position: relative;
+          width: 100%;
+          overflow: hidden;
+          height: clamp(40px, 11.5vw, 158px);
+        }
         .fgt-svg {
           display: block;
+          position: absolute;
+          left: 0;
+          bottom: 0;
           width: 100%;
           height: clamp(56px, 16vw, 220px);
           vertical-align: bottom;
@@ -295,6 +306,7 @@ export function Footer() {
             box-sizing: border-box;
           }
          
+          .fgt-svg-wrap { height: clamp(60px, 13vw, 187px); }
           .fgt-svg { height: clamp(84px, 18vw, 260px); }
         
           .fgt-line {
@@ -305,7 +317,7 @@ export function Footer() {
             margin-top: -10px;
           }
           .footer-bottom-band {
-            padding: 48px 32px 14px;
+            padding: 60px 32px 14px;
             justify-content: center;
             gap: 28px;
             flex-wrap: nowrap;
