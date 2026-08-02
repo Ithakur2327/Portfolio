@@ -144,27 +144,38 @@ export function ProjectCard({ proj, index, visible, isDesktop, isHidden, onOpen,
         >
           <motion.div
             initial={false}
-            animate={shown
-              ? { width: "100%", height: "100%", bottom: 0, rotate: 0, borderRadius: 10, boxShadow: "0 0 0 rgba(0,0,0,0)" }
-              : { width: "85%", height: "72%", bottom: "-8%", rotate: -8, borderRadius: 6, boxShadow: "0 20px 40px -8px rgba(0,0,0,0.45)" }}
+            animate={shown ? { scaleX: 1, scaleY: 1, y: 0 } : { scaleX: 0.85, scaleY: 0.72, y: "9%" }}
             transition={isDesktop
-              ? { type: "spring", stiffness: 110, damping: 21, mass: 1 }
-              : { type: "tween", duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
-            style={{ position: "absolute", left: 0, right: 0, margin: "0 auto", overflow: "hidden", willChange: "transform" }}
+              ? { type: "spring", stiffness: 130, damping: 22, mass: 0.9 }
+              : { type: "tween", duration: 0.68, ease: [0.16, 1, 0.3, 1] }}
+            style={{ position: "absolute", inset: 0, transformOrigin: "50% 100%", willChange: "transform" }}
           >
             <motion.div
-              layoutId={cid(`card-banner-image-${proj.name}`)}
-              style={{ position: "absolute", inset: 0, overflow: "hidden" }}
+              initial={false}
+              animate={shown ? { rotate: 0, borderRadius: 10 } : { rotate: -8, borderRadius: 6 }}
+              transition={isDesktop
+                ? { type: "spring", stiffness: 130, damping: 22, mass: 0.9 }
+                : { type: "tween", duration: 0.68, ease: [0.16, 1, 0.3, 1] }}
+              style={{
+                position: "absolute", inset: 0, overflow: "hidden",
+                boxShadow: "0 16px 30px -12px rgba(0,0,0,0.4)",
+                willChange: "transform",
+              }}
             >
-              <Image
-                src={proj.img}
-                alt={proj.name}
-                fill
-                quality={88}
-                sizes={imageSizes ?? "(max-width: 599px) 94vw, min(48vw, 438px)"}
-                unoptimized={proj.img.endsWith(".svg")}
-                style={{ objectFit: "cover" }}
-              />
+              <motion.div
+                layoutId={cid(`card-banner-image-${proj.name}`)}
+                style={{ position: "absolute", inset: 0, overflow: "hidden" }}
+              >
+                <Image
+                  src={proj.img}
+                  alt={proj.name}
+                  fill
+                  quality={88}
+                  sizes={imageSizes ?? "(max-width: 599px) 94vw, min(48vw, 438px)"}
+                  unoptimized={proj.img.endsWith(".svg")}
+                  style={{ objectFit: "cover" }}
+                />
+              </motion.div>
             </motion.div>
           </motion.div>
         </motion.div>
