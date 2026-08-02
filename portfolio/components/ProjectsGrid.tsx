@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { AnimatePresence, LayoutGroup } from "motion/react";
+import { AnimatePresence } from "motion/react";
 import type { Project } from "@/lib/projects-data";
 import { ProjectCard, ProjectModal } from "./ProjectCard";
 import { BP, mq } from "@/lib/breakpoints";
@@ -44,25 +44,21 @@ export function ProjectsGrid({ projects, visible = true, mobileMax, wide }: {
 
       <div className="proj-grid2">
         {projects.map((proj, i) => (
-          <LayoutGroup key={proj.name} id={`project-${proj.name}`}>
-            <ProjectCard
-              proj={proj}
-              index={i}
-              visible={visible}
-              isDesktop={isDesktop}
-              isHidden={isDesktop && active?.name === proj.name}
-              onOpen={() => setActiveIndex(i)}
-              imageSizes={imageSizes}
-            />
-          </LayoutGroup>
+          <ProjectCard
+            key={proj.name}
+            proj={proj}
+            index={i}
+            visible={visible}
+            isDesktop={isDesktop}
+            onOpen={() => setActiveIndex(i)}
+            imageSizes={imageSizes}
+          />
         ))}
       </div>
 
       <AnimatePresence>
         {active && activeIndex !== null && (
-          <LayoutGroup id={`project-${active.name}`}>
-            <ProjectModal key="modal" proj={active} index={activeIndex} isDesktop={isDesktop} onClose={() => setActiveIndex(null)} />
-          </LayoutGroup>
+          <ProjectModal key="modal" proj={active} index={activeIndex} isDesktop={isDesktop} onClose={() => setActiveIndex(null)} />
         )}
       </AnimatePresence>
     </>
