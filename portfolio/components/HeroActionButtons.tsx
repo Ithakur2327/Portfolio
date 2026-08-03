@@ -117,7 +117,7 @@ export function LiquidButton({
 
 function ResumeIcon() {
   return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
       <rect x="2" y="4" width="20" height="16" rx="2.5" />
       <circle cx="8" cy="10.5" r="2" />
       <path d="M5 16c0-1.66 1.34-3 3-3s3 1.34 3 3" />
@@ -138,9 +138,9 @@ function SendIcon() {
 
 function ArrowUpRightIcon() {
   return (
-    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
-      <line x1="7" y1="17" x2="17" y2="7" />
-      <polyline points="7 7 17 7 17 17" />
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M5 16c3.2-6.4 7.6-9.6 13-10.6" />
+      <polyline points="11 5 18 5.4 17.4 12.4" />
     </svg>
   );
 }
@@ -252,7 +252,7 @@ export function HeroActionButtons({
           border-radius: 10px;
           border: 1px solid var(--border);
           font-family: 'Geist Mono', monospace;
-          font-size: 12.5px;
+          font-size: 15px;
           font-weight: 600;
           cursor: pointer;
         }
@@ -263,7 +263,7 @@ export function HeroActionButtons({
           min-width: 0 !important;
           justify-content: center !important;
           padding: 0 16px !important;
-          font-size: 12.5px !important;
+          font-size: 15px !important;
           background: var(--bg-secondary) !important;
           backdrop-filter: blur(14px) saturate(160%) !important;
           -webkit-backdrop-filter: blur(14px) saturate(160%) !important;
