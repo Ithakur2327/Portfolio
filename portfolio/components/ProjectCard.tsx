@@ -89,8 +89,8 @@ export function ProjectCard({ proj, index, visible, isDesktop, isHidden, onOpen,
   if (isHidden) {
     return (
       <div aria-hidden="true" style={{ width: "100%", visibility: "hidden" }}>
-        <div style={{ width: "100%", padding: 2, borderRadius: 14, boxSizing: "border-box" }}>
-          <div style={{ width: "100%", aspectRatio: "16 / 9", borderRadius: 12 }} />
+        <div style={{ width: "100%", padding: 2, borderRadius: 18, boxSizing: "border-box" }}>
+          <div style={{ width: "100%", aspectRatio: "16 / 9", borderRadius: 16 }} />
         </div>
         <div style={{ width: "100%", padding: "12px 8px", display: "flex", flexDirection: "column", gap: 16 }}>
           <div style={{ height: 20 }} />
@@ -131,8 +131,8 @@ export function ProjectCard({ proj, index, visible, isDesktop, isHidden, onOpen,
         style={{
           width: "100%",
          padding: 2,
-         borderRadius: 14,
-        border: `1px dashed ${
+         borderRadius: 18,
+        border: `1.3px dashed ${
         index % 2 === 0 ? "rgba(10,186,181,0.55)" : "rgba(212,175,55,0.55)" }`,
           boxSizing: "border-box",
         }}
@@ -142,7 +142,7 @@ export function ProjectCard({ proj, index, visible, isDesktop, isHidden, onOpen,
           layoutId={cid(`card-banner-${proj.name}`)}
           transition={SPRING}
           style={{
-            width: "100%", aspectRatio: "16 / 9", borderRadius: 12,
+            width: "100%", aspectRatio: "16 / 9", borderRadius: 16,
             position: "relative", overflow: "hidden",
             background: isDark ? "#121212" : "rgba(0,0,0,0.05)",
             border: "1px solid var(--border)",
@@ -263,7 +263,7 @@ export function ProjectCard({ proj, index, visible, isDesktop, isHidden, onOpen,
 }
 
 export function ProjectModal({ proj, index, onClose, isDesktop }: { proj: Project; index: number; onClose: () => void; isDesktop: boolean }) {
-  const dashColor = index % 2 === 0 ? "rgb(10, 186, 180)" : "rgba(212,175,55,0.55)";
+  const dashColor = index % 2 === 0 ? "rgba(10,186,181,0.55)" : "rgba(212,175,55,0.55)";
   const modalRef = useRef<HTMLDivElement>(null);
   const closeBtnRef = useRef<HTMLButtonElement>(null);
   const { theme } = useTheme();
@@ -328,8 +328,12 @@ export function ProjectModal({ proj, index, onClose, isDesktop }: { proj: Projec
   }, [onClose]);
 
   const contentFade = sheet
-    ? { initial: false as const, animate: { opacity: 1 } }
-    : { initial: { opacity: 0 }, animate: { opacity: 1, transition: { delay: 0.1, duration: 0.2 } } };
+    ? { initial: false as const, animate: { opacity: 1 }, exit: { opacity: 1 } }
+    : {
+        initial: { opacity: 0 },
+        animate: { opacity: 1, transition: { delay: 0.1, duration: 0.2 } },
+        exit: { opacity: 0, transition: { duration: 0.12 } },
+      };
 
   const imageBlock = (
     <div className="pm-image-border" style={sheet ? { position: "sticky", top: 0, zIndex: 2 } : undefined}>
@@ -546,7 +550,7 @@ export function ProjectModal({ proj, index, onClose, isDesktop }: { proj: Projec
             .pm-image-border {
               width: 100%;
               padding: 2px;
-              border-radius: 14px;
+              border-radius: 18px;
               border: 1.3px dashed ${dashColor};
               box-sizing: border-box;
               overflow: hidden;
@@ -558,7 +562,7 @@ export function ProjectModal({ proj, index, onClose, isDesktop }: { proj: Projec
               aspect-ratio: 16 / 9;
               z-index: 2;
               overflow: hidden;
-              border-radius: 12px;
+              border-radius: 16px;
               flex-shrink: 0;
               background: var(--bg-card);
             }
