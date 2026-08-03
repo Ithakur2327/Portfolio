@@ -58,6 +58,9 @@
   --nav-link-hover: #fafafa;
   --nav-link-active-bg: rgba(255,255,255,0.09);
 
+  --modal-glass-bg:     rgba(16,16,18,0.92);
+  --modal-glass-border: rgba(255,255,255,0.09);
+
   --divider-color:  #27272a;
   --divider-glow:   rgba(139,92,246,0.6);
   --slide-handle-bg: #fafafa;
@@ -102,6 +105,9 @@ html.light {
   --nav-link-color: rgba(0,0,0,0.45);
   --nav-link-hover: #1a1a1a;
   --nav-link-active-bg: rgba(0,0,0,0.08);
+
+  --modal-glass-bg:     rgba(240,243,247,0.92);
+  --modal-glass-border: rgba(0,0,0,0.08);
 
   --divider-color:  #c8c8c4;
   --divider-glow:   rgba(124,58,237,0.5);

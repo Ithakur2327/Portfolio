@@ -15,7 +15,7 @@ function techLogoSrc(tech: { logo: string; logoLight?: string }, isDark: boolean
   return !isDark && tech.logoLight ? tech.logoLight : tech.logo;
 }
 
-const SPRING = { type: "spring" as const, stiffness: 240, damping: 32, mass: 0.85 };
+const SPRING = { type: "spring" as const, stiffness: 280, damping: 30, mass: 0.8 };
 const HOVER_SPRING = { type: "spring" as const, stiffness: 300, damping: 28, mass: 0.6 };
 const TAP_SPRING = { type: "spring" as const, stiffness: 420, damping: 34, mass: 0.5 };
 
@@ -329,7 +329,7 @@ export function ProjectModal({ proj, index, onClose, isDesktop }: { proj: Projec
 
   const contentFade = sheet
     ? { initial: false as const, animate: { opacity: 1 } }
-    : { initial: { opacity: 0 }, animate: { opacity: 1, transition: { delay: 0.16, duration: 0.25 } } };
+    : { initial: { opacity: 0 }, animate: { opacity: 1, transition: { delay: 0.1, duration: 0.2 } } };
 
   const imageBlock = (
     <div className="pm-image-border" style={sheet ? { position: "sticky", top: 0, zIndex: 2 } : undefined}>
@@ -448,7 +448,7 @@ export function ProjectModal({ proj, index, onClose, isDesktop }: { proj: Projec
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1, transition: { duration: 0.15 } }}
-        exit={{ opacity: 0, transition: { duration: 0.4 } }}
+        exit={{ opacity: 0, transition: { duration: 0.35 } }}
         onClick={onClose}
         className="pm-overlay"
         style={{
@@ -500,7 +500,6 @@ export function ProjectModal({ proj, index, onClose, isDesktop }: { proj: Projec
               display: flex;
               flex-direction: column;
               max-height: 92vh;
-              contain: layout paint;
               background: var(--modal-glass-bg);
               border: 1px solid var(--modal-glass-border);
               backdrop-filter: blur(14px) saturate(160%);
@@ -581,9 +580,6 @@ export function ProjectModal({ proj, index, onClose, isDesktop }: { proj: Projec
                 display: flex; flex-direction: column; gap: 16px;
               }
               .pm-info-col::-webkit-scrollbar { display: none; }
-              .pm-image-frame {
-                border-radius: 9px;
-              }
             }
           `}</style>
 
