@@ -63,7 +63,7 @@ function IBox({color, children}:{color?:string; children:React.ReactNode}) {
 function Row({icon, href, newTab, onClick, children}:{icon:React.ReactNode; href?:string; newTab?:boolean; onClick?:()=>void; children:React.ReactNode}) {
   const s:React.CSSProperties = {
     display:"flex", alignItems:"center", gap:14,
-    fontFamily:"'Geist Mono',monospace", fontSize:15,
+    fontFamily:"'Geist Mono',monospace", fontSize:15, fontWeight:600,
     color:"var(--text-primary)", textDecoration:"none",
   };
   if (onClick) return (
@@ -204,7 +204,7 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
           flex-direction: row;
           align-items: stretch;
           overflow: hidden;
-          --h-avatar-w: 151px;
+          --h-avatar-w: 142px;
         }
 
         .h-full-divider {
@@ -213,10 +213,10 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
         }
 
         .h-avatar {
-          width: 150px;
-          min-width: 150px;
-          height: 138px;
-          min-height: 138px;
+          width: 141px;
+          min-width: 141px;
+          height: 130px;
+          min-height: 130px;
           flex-shrink: 0;
           border-right: 1px solid var(--border);
           overflow: hidden;
@@ -349,16 +349,16 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
         ${mq.laptopNarrow} {
           .h-profile {
             min-height: calc(clamp(220px, 24vw, 250px) - 14px) !important;
-            --h-avatar-w: calc(clamp(190px, 21vw, 213px) + 1px);
+            --h-avatar-w: calc(clamp(178px, 19.5vw, 199px) + 1px);
           }
           .h-avatar {
-            width: clamp(190px, 21vw, 213px) !important;
-            min-width: clamp(190px, 21vw, 213px) !important;
-            height: calc(clamp(190px, 21vw, 213px) - 14px) !important;
-            min-height: calc(clamp(190px, 21vw, 213px) - 14px) !important;
+            width: clamp(178px, 19.5vw, 199px) !important;
+            min-width: clamp(178px, 19.5vw, 199px) !important;
+            height: calc(clamp(178px, 19.5vw, 199px) - 14px) !important;
+            min-height: calc(clamp(178px, 19.5vw, 199px) - 14px) !important;
           }
           .h-nameblock h1 {
-            font-size: clamp(34px, 4.2vw, 50px) !important;
+            font-size: clamp(32px, 3.9vw, 46px) !important;
             font-weight: 800 !important;
             line-height: 1 !important;
           }
@@ -373,15 +373,15 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
         }
 
         ${mq.laptopWide} {
-          .h-profile { --h-avatar-w: calc(clamp(148px, calc(404.6px - 16.23vw), 213px) + 1px); }
+          .h-profile { --h-avatar-w: calc(clamp(138px, calc(376.3px - 15.1vw), 198px) + 1px); }
           .h-avatar {
-            width: clamp(148px, calc(404.6px - 16.23vw), 213px) !important;
-            min-width: clamp(148px, calc(404.6px - 16.23vw), 213px) !important;
-            height: clamp(134px, calc(390.6px - 16.23vw), 199px) !important;
-            min-height: clamp(134px, calc(390.6px - 16.23vw), 199px) !important;
+            width: clamp(138px, calc(376.3px - 15.1vw), 198px) !important;
+            min-width: clamp(138px, calc(376.3px - 15.1vw), 198px) !important;
+            height: clamp(125px, calc(363.3px - 15.1vw), 185px) !important;
+            min-height: clamp(125px, calc(363.3px - 15.1vw), 185px) !important;
           }
           .h-nameblock h1 {
-            font-size: clamp(30px, calc(106.36px - 4.7733vw), 50px) !important;
+            font-size: clamp(28px, calc(98.9px - 4.44vw), 46px) !important;
             font-weight: 900 !important;
           }
           .h-verified-badge {
@@ -392,13 +392,13 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
         }
 
         ${mq.mobile} {
-          .h-profile { flex-direction: row !important; --h-avatar-w: calc(clamp(125px, 34vw, 165px) + 1px); }
+          .h-profile { flex-direction: row !important; --h-avatar-w: calc(clamp(117px, 31.7vw, 154px) + 1px); }
 
           .h-avatar {
-            width: clamp(125px, 34vw, 165px) !important;
-            min-width: clamp(125px, 34vw, 165px) !important;
-            height: calc(clamp(125px, 34vw, 165px) - 8px) !important;
-            min-height: calc(clamp(125px, 34vw, 165px) - 8px) !important;
+            width: clamp(117px, 31.7vw, 154px) !important;
+            min-width: clamp(117px, 31.7vw, 154px) !important;
+            height: calc(clamp(117px, 31.7vw, 154px) - 8px) !important;
+            min-height: calc(clamp(117px, 31.7vw, 154px) - 8px) !important;
             border-right: 1px solid var(--border) !important;
             border-bottom: none !important;
             overflow: hidden !important;
@@ -416,7 +416,7 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
             margin-bottom: 0 !important;
           }
           .h-nameblock h1 {
-            font-size: clamp(20px, 7vw, 26px) !important;
+            font-size: clamp(19px, 6.5vw, 24px) !important;
             font-weight: 800 !important;
             letter-spacing: 0.015em !important;
             line-height: 1 !important;
@@ -446,16 +446,16 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
         }
 
         @media ${cond.down(BP.mobileXxsMax)} {
-          .h-profile { --h-avatar-w: calc(clamp(105px, 30vw, 135px) + 1px); }
+          .h-profile { --h-avatar-w: calc(clamp(98px, 28vw, 126px) + 1px); }
           .h-avatar {
-            width: clamp(105px, 30vw, 135px) !important;
-            min-width: clamp(105px, 30vw, 135px) !important;
-            height: calc(clamp(105px, 30vw, 135px) - 6px) !important;
-            min-height: calc(clamp(105px, 30vw, 135px) - 6px) !important;
+            width: clamp(98px, 28vw, 126px) !important;
+            min-width: clamp(98px, 28vw, 126px) !important;
+            height: calc(clamp(98px, 28vw, 126px) - 6px) !important;
+            min-height: calc(clamp(98px, 28vw, 126px) - 6px) !important;
             border-radius: 16px !important;
           }
           .h-nameblock h1 {
-            font-size: clamp(19px, 6.5vw, 22px) !important;
+            font-size: clamp(18px, 6vw, 20px) !important;
             font-weight: 800 !important;
             letter-spacing: 0.015em !important;
             line-height: 1 !important;
@@ -512,7 +512,7 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
               <div style={{flex:1}}/>
               <div className="h-name-row" style={{padding:"20px 20px 0", marginBottom:"0px", gap:6}}>
                 <h1 style={{
-                  fontSize:"clamp(17px,2.1vw,20px)", fontWeight:900,
+                  fontSize:"clamp(16px,2vw,19px)", fontWeight:900,
                   letterSpacing:"0.02em", color:"var(--text-primary)",
                   lineHeight:1, margin:0,
                   fontFamily:"'Geist Pixel Square','Geist Mono',monospace", display:"inline-block",

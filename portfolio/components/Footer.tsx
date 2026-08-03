@@ -328,7 +328,7 @@ export function Footer() {
       <footer id="site-footer-root" className="footer-root">
         <div className="footer-bottom-band">
           <span className="footer-copy">© {year} Indresh Thakur. All rights reserved.</span>
-          <SocialRow size={22} gap={16} bright thinBorder boostSize={1.15} />
+          <SocialRow size={22} gap={16} bright thinBorder />
         </div>
 
         <div className="footer-full-line" />

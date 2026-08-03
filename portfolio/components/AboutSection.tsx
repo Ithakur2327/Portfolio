@@ -71,7 +71,7 @@ function ScrollRevealText() {
       {paras.map((tokens, pi) => (
         <p key={pi} className="about-para" style={{
           margin: 0, lineHeight: 1.7, fontFamily: SF, fontSize: 16,
-          letterSpacing: "-0.01em", fontWeight: 400, color: "var(--text-primary)",
+          letterSpacing: "-0.01em", fontWeight: 600, color: "var(--text-primary)",
           textAlign: "justify", textJustify: "inter-word" as React.CSSProperties["textJustify"],
           hyphens: "auto", wordBreak: "normal", overflowWrap: "break-word",
         }}>
