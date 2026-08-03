@@ -1139,7 +1139,7 @@ html.light .nav-root.scrolled {
   transform: translateZ(0);
 }
 
-/* Ensure modal backdrops don't repaint the main thread */
+
 [role="dialog"] {
   contain: layout style;
 }
