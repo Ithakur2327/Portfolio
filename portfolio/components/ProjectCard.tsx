@@ -263,7 +263,7 @@ export function ProjectCard({ proj, index, visible, isDesktop, isHidden, onOpen,
 }
 
 export function ProjectModal({ proj, index, onClose, isDesktop }: { proj: Project; index: number; onClose: () => void; isDesktop: boolean }) {
-  const dashColor = index % 2 === 0 ? "rgba(10,186,181,0.55)" : "rgba(212,175,55,0.55)";
+  const dashColor = index % 2 === 0 ? "rgb(10, 186, 180)" : "rgba(212,175,55,0.55)";
   const modalRef = useRef<HTMLDivElement>(null);
   const closeBtnRef = useRef<HTMLButtonElement>(null);
   const { theme } = useTheme();
@@ -547,7 +547,7 @@ export function ProjectModal({ proj, index, onClose, isDesktop }: { proj: Projec
               width: 100%;
               padding: 2px;
               border-radius: 14px;
-              border: 1px dashed ${dashColor};
+              border: 1.3px dashed ${dashColor};
               box-sizing: border-box;
               overflow: hidden;
               flex-shrink: 0;

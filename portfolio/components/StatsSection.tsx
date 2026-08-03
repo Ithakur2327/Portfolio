@@ -906,7 +906,7 @@ export function StatsSection() {
         .stat-card-3d {
           padding: 12px 14px;
           background: transparent;
-          border: 0.7px dashed rgba(0,0,0,0.32);
+          border: 1.3px dashed rgba(0, 0, 0, 0.9);
           border-radius: 10px;
           position: relative;
           display: flex;
@@ -917,7 +917,7 @@ export function StatsSection() {
           min-width: 0;
         }
         .dark .stat-card-3d {
-          border-color: rgba(255,255,255,0.32);
+          border-color: rgba(255, 255, 255, 0.51);
         }
         .stat-card-3d:hover {
           border-color: var(--text-muted);
