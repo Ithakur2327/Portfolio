@@ -256,8 +256,8 @@ export function EducationSection() {
           position: sticky;
           top: 78px;
           box-sizing: border-box;
-          border: 1.5px dashed rgba(10,186,181,0.45);
-          border-radius: 14px;
+          border: 1.3px dashed rgba(10,186,181,0.45);
+          border-radius: 12px;
           background: rgba(10,186,181,0.045);
           box-shadow:
             0 14px 34px rgba(0,0,0,0.30),
