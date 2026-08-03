@@ -15,7 +15,7 @@ function techLogoSrc(tech: { logo: string; logoLight?: string }, isDark: boolean
   return !isDark && tech.logoLight ? tech.logoLight : tech.logo;
 }
 
-const SPRING = { type: "spring" as const, stiffness: 230, damping: 32, mass: 0.85 };
+const SPRING = { type: "spring" as const, stiffness: 240, damping: 32, mass: 0.85 };
 const HOVER_SPRING = { type: "spring" as const, stiffness: 300, damping: 28, mass: 0.6 };
 const TAP_SPRING = { type: "spring" as const, stiffness: 420, damping: 34, mass: 0.5 };
 
@@ -186,18 +186,12 @@ export function ProjectCard({ proj, index, visible, isDesktop, isHidden, onOpen,
 
       <div style={{ width: "100%", padding: "12px 8px", display: "flex", flexDirection: "column", gap: 16 }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <motion.span
-            layoutId={cid(`card-title-${proj.name}`)}
-            layout={isDesktop ? "position" : undefined}
-            transition={SPRING}
+          <span
             style={{ fontSize: 20, fontWeight: 600, color: "var(--text-primary)", letterSpacing: "-0.01em", fontFamily: SF, lineHeight: 1.3 }}
           >
             {proj.name}
-          </motion.span>
-          <motion.div
-            layoutId={cid(`card-links-${proj.name}`)}
-            layout={isDesktop ? "position" : undefined}
-            transition={SPRING}
+          </span>
+          <div
             style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}
             onClick={e => e.stopPropagation()}
           >
@@ -211,22 +205,16 @@ export function ProjectCard({ proj, index, visible, isDesktop, isHidden, onOpen,
               <ExpandIcon />
             </button>
             <ProjectLinks proj={proj} size={20} />
-          </motion.div>
+          </div>
         </div>
 
-        <motion.p
-          layoutId={cid(`card-description-${proj.name}`)}
-          layout={isDesktop ? "position" : undefined}
-          transition={SPRING}
+        <p
           style={{ fontSize: 16, color: "var(--text-secondary)", lineHeight: 1.5, margin: 0, fontFamily: SF, textAlign: "left", display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical", overflow: "hidden" }}
         >
           {proj.description}
-        </motion.p>
+        </p>
 
-        <motion.div
-          layoutId={cid(`card-tech-section-${proj.name}`)}
-          layout={isDesktop ? "position" : undefined}
-          transition={SPRING}
+        <div
           style={{ width: "100%", display: "flex", flexDirection: "column", gap: 8 }}
         >
           <span style={{ fontSize: 14, fontWeight: 600, color: "var(--text-primary)", fontFamily: SF }}>
@@ -237,7 +225,7 @@ export function ProjectCard({ proj, index, visible, isDesktop, isHidden, onOpen,
               const tech = TECH_MAP[tag];
               if (!tech) return null;
               return (
-                <motion.div key={tag} layoutId={cid(`card-tech-${proj.name}-${tag}`)} transition={SPRING} title={tag} style={{ display: "flex" }}>
+                <div key={tag} title={tag} style={{ display: "flex" }}>
                   {/* eslint-disable-next-line @next/next/no-img-element -- tiny external SVG icon */}
                   <img
                     src={techLogoSrc(tech, isDark)}
@@ -247,11 +235,11 @@ export function ProjectCard({ proj, index, visible, isDesktop, isHidden, onOpen,
                     decoding="async"
                     style={{ objectFit: "contain", display: "block" }}
                   />
-                </motion.div>
+                </div>
               );
             })}
           </div>
-        </motion.div>
+        </div>
       </div>
       </motion.div>
 
@@ -281,8 +269,8 @@ export function ProjectModal({ proj, index, onClose, isDesktop }: { proj: Projec
   const { theme } = useTheme();
   const isDark = theme === "dark";
   const sheet = !isDesktop;
-  const sheetTransition = { type: "spring" as const, stiffness: 280, damping: 30, mass: 0.85 };
   const lid = (id: string) => (sheet ? undefined : id);
+  const sheetTransition = { type: "spring" as const, stiffness: 280, damping: 30, mass: 0.85 };
 
   useEffect(() => {
     document.documentElement.style.overflow = "hidden";
@@ -339,6 +327,10 @@ export function ProjectModal({ proj, index, onClose, isDesktop }: { proj: Projec
     };
   }, [onClose]);
 
+  const contentFade = sheet
+    ? { initial: false as const, animate: { opacity: 1 } }
+    : { initial: { opacity: 0 }, animate: { opacity: 1, transition: { delay: 0.16, duration: 0.25 } } };
+
   const imageBlock = (
     <div className="pm-image-border" style={sheet ? { position: "sticky", top: 0, zIndex: 2 } : undefined}>
       <motion.div
@@ -363,68 +355,47 @@ export function ProjectModal({ proj, index, onClose, isDesktop }: { proj: Projec
   );
 
   const linksAndStackBlock = (
-    <div className="pm-media-links">
-      <motion.div
-        layoutId={lid(`card-links-${proj.name}`)}
-        layout="position"
-        transition={SPRING}
-        style={{ display: "flex", alignItems: "center", gap: 16 }}
-      >
+    <motion.div className="pm-media-links" {...contentFade}>
+      <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
         <ProjectLinks proj={proj} size={22} />
-      </motion.div>
+      </div>
 
-      <motion.div
-        layoutId={lid(`card-tech-section-${proj.name}`)}
-        layout="position"
-        transition={SPRING}
-        style={{ display: "flex", flexDirection: "column", gap: 8 }}
-      >
+      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
         <span style={{ fontSize: 14, fontWeight: 600, color: "var(--text-primary)", fontFamily: SF }}>
           Stack
         </span>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-          {proj.tags.map((tag, ti) => {
+          {proj.tags.map(tag => {
             const tech = TECH_MAP[tag];
             return (
-              <motion.span
+              <span
                 key={tag}
-                initial={sheet ? false : { opacity: 0, y: 4 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={sheet ? { duration: 0 } : { delay: 0.05 + ti * 0.02, duration: 0.2 }}
                 className="pm-tag"
                 style={{ color: "var(--tag-text)", background: "var(--tag-bg)", border: "1px solid var(--tag-border)" }}
               >
                 {/* eslint-disable-next-line @next/next/no-img-element -- tiny external SVG icon */}
                 {tech && <img src={techLogoSrc(tech, isDark)} alt={tag} width={15} height={15} decoding="async" style={{ objectFit: "contain", flexShrink: 0 }} />}
                 {tag}
-              </motion.span>
+              </span>
             );
           })}
         </div>
-      </motion.div>
-    </div>
+      </div>
+    </motion.div>
   );
 
   const infoBlock = (
-    <div className="pm-info-col" style={{ padding: 20, display: "flex", flexDirection: "column", gap: 16 }}>
+    <motion.div className="pm-info-col" {...contentFade} style={{ padding: 20, display: "flex", flexDirection: "column", gap: 16 }}>
       <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16 }}>
         <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-          <motion.h2
-            layoutId={lid(`card-title-${proj.name}`)}
-            layout="position"
-            transition={SPRING}
+          <h2
             style={{ fontSize: 24, fontWeight: 700, color: "var(--text-primary)", letterSpacing: "-0.02em", fontFamily: SF, margin: 0, lineHeight: 1.25 }}
           >
             {proj.name}
-          </motion.h2>
-          <motion.span
-            initial={sheet ? false : { opacity: 0, y: 5 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={sheet ? { duration: 0 } : { delay: 0.15 }}
-            style={{ fontSize: 14, color: "var(--text-muted)", fontFamily: SF }}
-          >
+          </h2>
+          <span style={{ fontSize: 14, color: "var(--text-muted)", fontFamily: SF }}>
             Created: {proj.year}
-          </motion.span>
+          </span>
         </div>
 
         <button
@@ -445,42 +416,31 @@ export function ProjectModal({ proj, index, onClose, isDesktop }: { proj: Projec
         </button>
       </div>
 
-      <motion.p
-        layoutId={lid(`card-description-${proj.name}`)}
-        layout="position"
-        transition={SPRING}
+      <p
         style={{ fontSize: 16, color: "var(--text-secondary)", lineHeight: 1.625, margin: 0, fontFamily: SF }}
       >
         {proj.description}
-      </motion.p>
+      </p>
 
       {proj.features?.length > 0 && (
-        <motion.div
-          initial={sheet ? false : { opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={sheet ? { duration: 0 } : { delay: 0.18, duration: 0.3 }}
-          style={{ display: "flex", flexDirection: "column", gap: 10 }}
-        >
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
           <span style={{ fontSize: 14, fontWeight: 600, color: "var(--text-primary)", fontFamily: SF }}>
             Features
           </span>
           <ul style={{ display: "flex", flexDirection: "column", gap: 8, margin: 0, padding: 0, listStyle: "none" }}>
             {proj.features.map((feature, i) => (
-              <motion.li
+              <li
                 key={i}
-                initial={sheet ? false : { opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={sheet ? { duration: 0 } : { delay: 0.22 + i * 0.035 }}
                 style={{ display: "flex", alignItems: "flex-start", gap: 8, fontSize: 14, color: "var(--text-secondary)", lineHeight: 1.55, fontFamily: SF }}
               >
                 <span style={{ color: proj.accent, marginTop: 1 }}>•</span>
                 <span>{feature}</span>
-              </motion.li>
+              </li>
             ))}
           </ul>
-        </motion.div>
+        </div>
       )}
-    </div>
+    </motion.div>
   );
 
   const content = (
