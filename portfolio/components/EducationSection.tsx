@@ -1,6 +1,6 @@
 "use client";
-import { useRef, useState } from "react";
-import { motion, useInView, useScroll, useSpring, useTransform, AnimatePresence } from "motion/react";
+import { useRef } from "react";
+import { motion, useInView, useScroll, useSpring, useTransform } from "motion/react";
 import { useReveal } from "./useReveal";
 import { SectionIcon, SectionTitleIcon } from "./SectionIcon";
 import { mq } from "@/lib/breakpoints";
@@ -8,42 +8,24 @@ import { mq } from "@/lib/breakpoints";
 const SF = "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', sans-serif";
 const MONO = "'Geist Mono', monospace";
 
-const EDUCATION: {
-  school: string;
-  short: string;
-  degree: string;
-  period: string;
-  coursework: string[];
-}[] = [
+const EDUCATION: { school: string; short: string; degree: string; period: string }[] = [
   {
     school: "Noida Institute of Engineering and Technology",
     short: "Greater Noida",
     degree: "B.Tech — Computer Science & Engineering (AI)",
     period: "",
-    coursework: [
-      "Data Structures & Algorithms",
-      "Operating Systems",
-      "DBMS",
-      "Computer Networks",
-      "OOP Concepts",
-      "Machine Learning",
-      "Neural Networks",
-      "Discrete Mathematics",
-    ],
   },
   {
     school: "L.N.J School",
     short: "Madhubani, Bihar",
     degree: "Class XII — BSEB",
     period: "",
-    coursework: [],
   },
   {
     school: "U.M.S Madhubani",
     short: "Madhubani, Bihar",
     degree: "Class X — BSEB",
     period: "",
-    coursework: [],
   },
 ];
 
@@ -93,22 +75,16 @@ function LangPill({ name, delay }: { name: string; delay: number }) {
   );
 }
 
-function EduEntry({ school, degree, short, period, coursework, index, total, sectionVisible }: {
-  school: string; degree: string; short: string; period: string; coursework: string[];
+function EduEntry({ school, degree, short, period, index, total, sectionVisible }: {
+  school: string; degree: string; short: string; period: string;
   index: number; total: number; sectionVisible: boolean;
 }) {
-  const hasCoursework = coursework.length > 0;
-  const [open, setOpen] = useState(false);
-
   return (
     <motion.div
-      className={`edu-card${hasCoursework ? " has-course" : ""}`}
+      className="edu-card"
       initial={false}
       animate={sectionVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 16 }}
       transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1], delay: sectionVisible ? index * 0.1 : 0 }}
-      onMouseEnter={() => hasCoursework && setOpen(true)}
-      onMouseLeave={() => hasCoursework && setOpen(false)}
-      onClick={() => hasCoursework && setOpen((o) => !o)}
     >
       <div className="edu-card-icon">
         <SectionIcon type="cap" size={15} strokeWidth={2} />
@@ -117,39 +93,12 @@ function EduEntry({ school, degree, short, period, coursework, index, total, sec
       <div className="edu-card-body">
         <div className="edu-card-top">
           <div>
-            <p className="edu-card-school">
-              {school}
-              {hasCoursework && (
-                <span className={`edu-chevron${open ? " open" : ""}`} aria-hidden="true">›</span>
-              )}
-            </p>
+            <p className="edu-card-school">{school}</p>
             <p className="edu-card-degree">{degree}</p>
             <p className="edu-card-loc">{short}</p>
           </div>
           {period && <span className="edu-card-period">{period}</span>}
         </div>
-
-        {hasCoursework && (
-          <AnimatePresence>
-            {open && (
-              <motion.div
-                className="coursework-pop"
-                initial={{ opacity: 0, y: -6, scale: 0.97 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: -6, scale: 0.97 }}
-                transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
-              >
-                <p className="coursework-pop-title">Core Coursework</p>
-                <p className="coursework-pop-sub">CSE & AI fundamentals</p>
-                <div className="coursework-chips">
-                  {coursework.map((c, i) => (
-                    <span key={i} className="course-chip">{c}</span>
-                  ))}
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        )}
       </div>
     </motion.div>
   );
@@ -185,7 +134,7 @@ function LangNoteCard({ visible }: { visible: boolean }) {
         <div className="note-fold" aria-hidden="true" />
         <div className="lang-note-head">
           <div className="edu-card-icon">
-            <SectionIcon type="website" size={15} strokeWidth={2} />
+            <SectionIcon type="language" size={15} strokeWidth={2} />
           </div>
           <span className="lang-label-txt">Languages</span>
         </div>
@@ -243,13 +192,13 @@ export function EducationSection() {
         /* ── two-card row: Education + Languages ─────────────────── */
         .edu-lang-row {
           display: grid;
-          grid-template-columns: 1.5fr 1fr;
-          gap: 26px;
+          grid-template-columns: 1.15fr 1fr;
+          gap: 20px;
           align-items: start;
         }
 
-        .sticky-wrap { padding-bottom: 220px; }
-        .lang-sticky-wrap { padding-bottom: 140px; }
+        .sticky-wrap { padding-bottom: 110px; }
+        .lang-sticky-wrap { padding-bottom: 80px; }
 
         /* ── sticky note card shell ───────────────────────────────── */
         .note-card {
@@ -268,6 +217,7 @@ export function EducationSection() {
           will-change: transform;
         }
         html.light .note-card {
+          border-color: rgba(10,186,181,0.65);
           background: rgba(10,186,181,0.055);
           box-shadow:
             0 14px 30px rgba(0,0,0,0.10),
@@ -289,6 +239,17 @@ export function EducationSection() {
           background: linear-gradient(135deg, transparent 50%, #e2e2de 50.5%);
           box-shadow: -2px 2px 5px rgba(0,0,0,0.12);
         }
+        .lang-note-card .note-fold {
+          left: -1.5px; right: auto;
+          background: linear-gradient(225deg, transparent 50%, var(--bg-hover) 50.5%);
+          border-bottom-left-radius: 0;
+          border-bottom-right-radius: 7px;
+          box-shadow: 2px 2px 5px rgba(0,0,0,0.25);
+        }
+        html.light .lang-note-card .note-fold {
+          background: linear-gradient(225deg, transparent 50%, #e2e2de 50.5%);
+          box-shadow: 2px 2px 5px rgba(0,0,0,0.12);
+        }
 
         /* ── education entries / timeline ─────────────────────────── */
         .edu-card {
@@ -298,7 +259,6 @@ export function EducationSection() {
           gap: 14px;
           padding: 16px 0;
         }
-        .edu-card.has-course { cursor: pointer; }
         .edu-card-icon {
           width: 34px; height: 34px;
           border-radius: 9px;
@@ -339,21 +299,7 @@ export function EducationSection() {
           letter-spacing: -0.025em;
           font-family: ${SF};
           line-height: 1.2;
-          display: flex;
-          align-items: center;
-          gap: 6px;
         }
-        .edu-chevron {
-          display: inline-block;
-          font-size: 14px;
-          line-height: 1;
-          color: #2dd4c8;
-          transform: rotate(90deg);
-          transition: transform 0.25s ease;
-          flex-shrink: 0;
-        }
-        .edu-chevron.open { transform: rotate(-90deg); }
-        html.light .edu-chevron { color: #0f766e; }
         .edu-card-degree {
           font-size: 12.5px;
           color: var(--text-secondary);
@@ -373,49 +319,6 @@ export function EducationSection() {
           white-space: nowrap;
           flex-shrink: 0;
           padding-top: 2px;
-        }
-
-        /* ── coursework hover / tap popover (college entry only) ──── */
-        .coursework-pop {
-          margin-top: 12px;
-          padding: 14px 14px 12px;
-          border-radius: 10px;
-          border: 1px dashed rgba(10,186,181,0.4);
-          background: var(--bg-hover);
-          box-shadow: 0 10px 26px rgba(0,0,0,0.32), 0 0 0 1px rgba(10,186,181,0.08);
-        }
-        html.light .coursework-pop {
-          box-shadow: 0 10px 22px rgba(0,0,0,0.12), 0 0 0 1px rgba(10,186,181,0.10);
-        }
-        .coursework-pop-title {
-          font-size: 11.5px;
-          font-weight: 700;
-          letter-spacing: 0.02em;
-          color: var(--text-primary);
-          font-family: ${SF};
-        }
-        .coursework-pop-sub {
-          font-size: 10.5px;
-          color: var(--text-muted);
-          font-family: ${MONO};
-          margin-top: 2px;
-          margin-bottom: 10px;
-        }
-        .coursework-chips {
-          display: flex;
-          flex-wrap: wrap;
-          gap: 6px;
-        }
-        .course-chip {
-          font-family: ${MONO};
-          font-size: 10.5px;
-          font-weight: 500;
-          color: var(--text-secondary);
-          background: var(--tag-bg);
-          border: 1px solid var(--tag-border);
-          padding: 3px 8px;
-          border-radius: 6px;
-          white-space: nowrap;
         }
 
         /* ── languages note card ───────────────────────────────────── */
@@ -463,15 +366,15 @@ export function EducationSection() {
           .edu-inner { padding: 0 22px 34px; }
         }
         ${mq.tablet} {
-          .edu-lang-row { grid-template-columns: 1fr 1fr; gap: 18px; }
+          .edu-lang-row { grid-template-columns: 1fr 1fr; gap: 16px; }
           .note-card { padding-left: 18px; padding-right: 18px; }
           .lang-note-card { padding: 18px; }
         }
         ${mq.mobile} {
           .edu-inner { padding: 0 13px 28px; }
           .edu-sec-title { font-size: 22px; }
-          .edu-lang-row { grid-template-columns: 1fr; gap: 44px; }
-          .sticky-wrap { padding-bottom: 130px; }
+          .edu-lang-row { grid-template-columns: 1fr; gap: 34px; }
+          .sticky-wrap { padding-bottom: 70px; }
           .note-card { top: 68px; padding-left: 16px; padding-right: 16px; }
           .lang-note-card { padding: 16px; }
           .edu-card-top { flex-direction: column; gap: 4px; }

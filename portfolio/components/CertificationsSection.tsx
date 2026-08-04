@@ -89,16 +89,17 @@ function CertTLCard({ cert, smooth, fromDeg, visible, delay, onOpen }: {
       animate={visible ? { opacity: 1, y: 0 } : { opacity: 0, y: 14 }}
       transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1], delay: visible ? delay : 0 }}
     >
-      <div className="cert-tl-badge">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={cert.logo}
-          alt={cert.issuer}
-          loading="lazy"
-          onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
-        />
-      </div>
+      <span className="cert-tl-clip" aria-hidden="true" />
       <div className="cert-tl-face">
+        <div className="cert-tl-badge">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={cert.logo}
+            alt={cert.issuer}
+            loading="lazy"
+            onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+          />
+        </div>
         <button type="button" className="cert-tl-title" onClick={onOpen}>
           {cert.title}
         </button>
@@ -159,77 +160,83 @@ export function CertificationsSection() {
         .tl-sticky-wrap { padding-bottom: 90px; }
         .tl-sticky-inner { position: sticky; top: 78px; }
 
+        /* pc + tablet: 3 per row · mobile: 2 per row — full row width */
         .cert-tl-row {
           position: relative;
-          display: flex;
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
           gap: 14px;
-          overflow-x: auto;
-          overflow-y: visible;
           padding: 20px 4px 10px;
-          scroll-snap-type: x proximity;
-          scrollbar-width: thin;
-        }
-        .cert-tl-row::-webkit-scrollbar { height: 5px; }
-        .cert-tl-row::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
-        .cert-tl-row::before {
-          content: "";
-          position: absolute;
-          top: 40px;
-          left: 20px;
-          right: 20px;
-          height: 2px;
-          background: linear-gradient(90deg, transparent, var(--border) 6%, var(--border) 94%, transparent);
-          z-index: 0;
         }
 
         .cert-tl-card {
           position: relative;
-          flex: 1 1 148px;
-          min-width: 148px;
-          scroll-snap-align: start;
           box-sizing: border-box;
           min-height: 150px;
+          max-width: 190px;
+          width: 100%;
+          justify-self: center;
           display: flex;
           flex-direction: column;
           border-radius: 12px;
           padding: 22px 12px 12px;
-          margin-top: 20px;
+          margin-top: 16px;
           transform-origin: top center;
-          will-change: transform, filter;
+          will-change: transform;
           z-index: 1;
-          border: 1.5px dashed rgba(var(--accent),0.5);
+          border: 1.3px dashed rgba(var(--accent),0.5);
           background: rgba(var(--accent),0.05);
           box-shadow: 0 10px 24px rgba(0,0,0,0.26), 0 2px 8px rgba(0,0,0,0.18), 0 0 0 1px rgba(var(--accent),0.07) inset;
-          transition: filter 0.4s ease, box-shadow 0.3s ease;
+          transition: box-shadow 0.3s ease;
         }
         html.light .cert-tl-card {
           background: rgba(var(--accent),0.06);
           box-shadow: 0 10px 22px rgba(0,0,0,0.09), 0 2px 6px rgba(0,0,0,0.06), 0 0 0 1px rgba(var(--accent),0.09) inset;
         }
 
-        /* B/W by default, colour on hover — desktop/laptop (true pointer) only */
-        @media (hover: hover) and (pointer: fine) {
-          .cert-tl-card { filter: grayscale(1) saturate(0); }
-          .cert-tl-card:hover {
-            filter: grayscale(0) saturate(1);
-            box-shadow: 0 14px 30px rgba(0,0,0,0.3), 0 0 0 1px rgba(var(--accent),0.25) inset;
-          }
+        /* one continuous, fading line per row — same weight as the title divider */
+        .cert-tl-card::before {
+          content: "";
+          position: absolute;
+          top: -14px;
+          left: -70px;
+          right: -70px;
+          height: 1.5px;
+          background: var(--border);
+          z-index: 0;
+        }
+        .cert-tl-card:nth-child(3n+1)::before {
+          left: -20px;
+          background: linear-gradient(90deg, transparent, var(--border) 30%, var(--border) 100%);
+        }
+        .cert-tl-card:nth-child(3n)::before {
+          right: -20px;
+          background: linear-gradient(270deg, transparent, var(--border) 30%, var(--border) 100%);
+        }
+
+        .cert-tl-clip {
+          position: absolute;
+          top: -14px;
+          left: 50%;
+          transform: translateX(-50%);
+          width: 0; height: 0;
+          border-left: 6px solid transparent;
+          border-right: 6px solid transparent;
+          border-top: 9px solid rgb(var(--accent));
+          filter: drop-shadow(0 2px 4px rgba(0,0,0,0.35));
+          z-index: 2;
         }
 
         .cert-tl-badge {
-          position: absolute;
-          top: -20px;
-          left: 50%;
-          transform: translateX(-50%);
-          width: 40px; height: 40px;
-          border-radius: 50%;
+          width: 30px; height: 30px;
+          border-radius: 9px;
           display: flex; align-items: center; justify-content: center;
-          background: var(--bg-card, var(--bg-hover));
-          border: 2px solid var(--bg-base);
-          box-shadow: 0 3px 10px rgba(0,0,0,0.3), 0 0 0 1px rgba(var(--accent),0.35);
-          z-index: 2;
+          background: rgba(var(--accent),0.16);
+          border: 1px solid rgba(var(--accent),0.35);
+          flex-shrink: 0;
+          margin-bottom: 8px;
         }
-        .cert-tl-badge img { width: 18px; height: 18px; object-fit: contain; }
+        .cert-tl-badge img { width: 15px; height: 15px; object-fit: contain; }
 
         .cert-tl-face { flex: 1; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
         .cert-tl-title {
@@ -274,7 +281,7 @@ export function CertificationsSection() {
           .edu-sec-divider { margin-bottom: 26px; }
           .tl-sticky-wrap { padding-bottom: 40px; }
           .tl-sticky-inner { top: 68px; }
-          .cert-tl-card { flex-basis: 128px; min-width: 128px; }
+          .cert-tl-row { grid-template-columns: repeat(2, 1fr); gap: 12px; }
         }
       `}</style>
 
