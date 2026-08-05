@@ -15,7 +15,7 @@ import { mq } from "@/lib/breakpoints";
 
 const SF = "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', sans-serif";
 
-const TIFFANY = "#0FA89C";
+const TIFFANY = "#0ABAB5";
 const GOLD = "#D4AF37";
 
 const ABOUT_TEXT = `Hi, I'm [[Indresh Thakur]], currently pursuing [[B.Tech]] in [[Computer Science & Engineering (AI)]] at [[NIET Greater Noida]]. I'm a [[motivated]] and [[growth oriented]] [[Full-Stack]] & [[AI Developer]] passionate about building [[modern]], [[scalable]], and [[user]]-[[focused]] digital experiences.
@@ -95,7 +95,7 @@ export function AboutSection() {
       <style suppressHydrationWarning>{`
         .name-highlight {
           display: inline; color: ${TIFFANY}; font-weight: 600; white-space: nowrap;
-          background: rgba(15,168,156,0.12); border: 1px solid rgba(15,168,156,0.35);
+          background: rgba(10,186,181,0.12); border: 1px solid rgba(10,186,181,0.35);
           border-radius: 5px; padding: 1px 7px 2px;
         }
         .gold-box-word {
@@ -103,7 +103,7 @@ export function AboutSection() {
           background: rgba(212,175,55,0.10); border: 1px solid rgba(212,175,55,0.30);
           border-radius: 5px; padding: 1px 5px 2px; margin: 0 1px;
         }
-        html.light .name-highlight  { color: #0a7a70 !important; background: rgba(15,168,156,0.14) !important; border-color: rgba(10,122,112,0.45) !important; }
+        html.light .name-highlight  { color: #0f766e !important; background: rgba(10,186,181,0.14) !important; border-color: rgba(10,186,181,0.45) !important; }
         html.light .gold-box-word   { color: #b8860b !important; background: rgba(212,175,55,0.14) !important; border-color: rgba(184,134,11,0.45) !important; }
 
         .about-content {
@@ -119,12 +119,12 @@ export function AboutSection() {
           width: 100%;
           max-width: 100%;
           box-sizing: border-box;
-          border: 1.3px dashed rgba(255, 255, 255, 0.38);
+          border: 1.3px dashed rgba(255, 255, 255, 0.49);
           border-radius: 10px;
           background: var(--bg-base);
           padding: 12px 12px;
         }
-        html.light .about-box { border-color: rgba(0, 0, 0, 0.95); }
+        html.light .about-box { border-color: rgba(0, 0, 0, 0.9); }
         ${mq.navCollapse} {
           .about-box { padding: 16px 16px; }
         }

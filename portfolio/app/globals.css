@@ -181,15 +181,15 @@ img, svg, canvas {
 ::-webkit-scrollbar       { width: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb {
-  background: color-mix(in srgb, #0FA89C 55%, var(--border));
+  background: color-mix(in srgb, #0ABAB5 55%, var(--border));
   border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: color-mix(in srgb, #0FA89C 75%, var(--border));
+  background: color-mix(in srgb, #0ABAB5 75%, var(--border));
 }
 * {
   scrollbar-width: thin;
-  scrollbar-color: color-mix(in srgb, #0FA89C 55%, var(--border)) transparent;
+  scrollbar-color: color-mix(in srgb, #0ABAB5 55%, var(--border)) transparent;
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -497,10 +497,6 @@ h1, h2, h3, .section-title {
   from { opacity: 0; transform: translate3d(0, 18px, 0) scale3d(0.98, 0.98, 1); }
   to   { opacity: 1; transform: translate3d(0, 0, 0) scale3d(1, 1, 1); }
 }
-@keyframes fadeUpSubtle {
-  from { opacity: 0; transform: translate3d(0, 8px, 0); }
-  to   { opacity: 1; transform: translate3d(0, 0, 0); }
-}
 @keyframes pulse   { 0%,100%{opacity:1} 50%{opacity:0.35} }
 @keyframes marquee {
   from { transform: translate3d(0, 0, 0); }
@@ -518,23 +514,6 @@ h1, h2, h3, .section-title {
   from { background-position: -200% center; }
   to   { background-position:  200% center; }
 }
-@keyframes glowPulse {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(255,255,255,0); }
-  50%       { box-shadow: 0 0 16px 4px rgba(255,255,255,0.18); }
-}
-@keyframes tooltipPop {
-  from { opacity: 0; transform: translate(-50%, calc(-100% - 4px)) scale(0.80); }
-  to   { opacity: 1; transform: translate(-50%, calc(-100% - 10px)) scale(1); }
-}
-@keyframes trackShimmer {
-  0%   { background-position: -300% center; }
-  100% { background-position:  300% center; }
-}
-@keyframes skills-scroll-left {
-  0%   { transform: translateX(0); }
-  100% { transform: translateX(calc(-100% / 3)); }
-}
-@keyframes contact-spin { to { transform: rotate(360deg); } }
 @keyframes spin { to { transform: rotate(360deg); } }
 
 @keyframes theme-change-wobble {

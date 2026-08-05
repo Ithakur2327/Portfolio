@@ -197,37 +197,37 @@ export function CertificationsSection() {
         .cert-tl-card::before {
           content: "";
           position: absolute;
-          top: -12px;
-          left: -70px;
-          right: -70px;
+          top: -13px;
+          left: -32px;
+          right: -32px;
           height: 1.5px;
           background: var(--border);
           z-index: 0;
         }
         .cert-tl-card:nth-child(3n+1)::before {
-          left: -20px;
-          background: linear-gradient(90deg, transparent, var(--border) 30%, var(--border) 100%);
+          left: -12px;
+          background: linear-gradient(90deg, transparent, var(--border) 40%, var(--border) 100%);
         }
         .cert-tl-card:nth-child(3n)::before {
-          right: -20px;
-          background: linear-gradient(270deg, transparent, var(--border) 30%, var(--border) 100%);
+          right: -12px;
+          background: linear-gradient(270deg, transparent, var(--border) 40%, var(--border) 100%);
         }
 
         /* clip pinning the card to the rail — shows the company logo, square with curved corners */
         .cert-tl-clip {
           position: absolute;
-          top: -13px;
+          top: -16px;
           left: 50%;
           transform: translateX(-50%);
-          width: 24px; height: 24px;
-          border-radius: 7px;
+          width: 30px; height: 30px;
+          border-radius: 8px;
           display: flex; align-items: center; justify-content: center;
           background: var(--bg-card, var(--bg-hover));
           border: 1.4px solid rgb(var(--accent));
           box-shadow: 0 3px 8px rgba(0,0,0,0.35);
           z-index: 2;
         }
-        .cert-tl-clip img { width: 12px; height: 12px; object-fit: contain; }
+        .cert-tl-clip img { width: 17px; height: 17px; object-fit: contain; image-rendering: -webkit-optimize-contrast; }
 
         .cert-tl-face { flex: 1; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
         .cert-tl-title {
@@ -274,21 +274,17 @@ export function CertificationsSection() {
           .tl-sticky-inner { top: 68px; }
           .cert-tl-row { grid-template-columns: repeat(2, 1fr); gap: 12px; }
           .cert-tl-card { max-width: none; }
-          .cert-tl-card::before {
-            left: -40px; right: -40px;
-            background: var(--border);
-          }
           .cert-tl-card:nth-child(3n+1)::before, .cert-tl-card:nth-child(3n)::before {
-            left: -40px; right: -40px;
+            left: -32px; right: -32px;
             background: var(--border);
           }
           .cert-tl-card:nth-child(2n+1)::before {
-            left: -16px;
-            background: linear-gradient(90deg, transparent, var(--border) 30%, var(--border) 100%);
+            left: -12px;
+            background: linear-gradient(90deg, transparent, var(--border) 40%, var(--border) 100%);
           }
           .cert-tl-card:nth-child(2n)::before {
-            right: -16px;
-            background: linear-gradient(270deg, transparent, var(--border) 30%, var(--border) 100%);
+            right: -12px;
+            background: linear-gradient(270deg, transparent, var(--border) 40%, var(--border) 100%);
           }
         }
       `}</style>

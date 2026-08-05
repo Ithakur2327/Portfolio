@@ -111,28 +111,3 @@ export function SectionTitleIcon({ type }: { type: SectionIconType }) {
     </span>
   );
 }
-
-export function GoldDot() {
-  return (
-    <span
-      aria-hidden="true"
-      style={{
-        width: 6, height: 6, borderRadius: "50%",
-        background: "#d4a017", flexShrink: 0,
-        marginLeft: 2,
-      }}
-    />
-  );
-}
-
-
-export function SectionTitle({
-  icon, children, style,
-}: { icon: SectionIconType; children: React.ReactNode; style?: React.CSSProperties }) {
-  return (
-    <span style={{ display: "inline-flex", alignItems: "center", gap: 10, ...style }}>
-      <SectionIcon type={icon} size={22} strokeWidth={2} />
-      {children}
-    </span>
-  );
-}

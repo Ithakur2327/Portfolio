@@ -441,7 +441,7 @@ export function SkillsSection() {
         .falling-icons-box {
           position: relative;
           overflow: hidden;
-          border: 1.3px dashed rgba(0, 0, 0, 0.85);
+          border: 1.3px dashed rgba(0, 0, 0, 0.9);
           border-radius: 14px;
           background: #ffffff;
           min-height: 300px;

@@ -209,18 +209,40 @@
       frame();
     }
 
+    // The cat sits idle far more often than it moves, so once render has
+    // caught up to the logical position there's nothing left to animate —
+    // writing the identical `transform` on every single frame forever was
+    // pure wasted style recalculation with zero visible effect. Do one
+    // final snap-write to land exactly on the target, then skip writes
+    // entirely until the target moves again.
     const lerpFactor = 0.28;
-    renderX += (nekoPosX - renderX) * lerpFactor;
-    renderY += (nekoPosY - renderY) * lerpFactor;
-    nekoEl.style.transform = `translate(${Math.round(renderX - 16)}px, ${Math.round(renderY - 16)}px)`;
+    const dx = nekoPosX - renderX;
+    const dy = nekoPosY - renderY;
+    if (Math.abs(dx) > 0.05 || Math.abs(dy) > 0.05) {
+      renderX += dx * lerpFactor;
+      renderY += dy * lerpFactor;
+      nekoEl.style.transform = `translate(${Math.round(renderX - 16)}px, ${Math.round(renderY - 16)}px)`;
+    } else if (renderX !== nekoPosX || renderY !== nekoPosY) {
+      renderX = nekoPosX;
+      renderY = nekoPosY;
+      nekoEl.style.transform = `translate(${Math.round(renderX - 16)}px, ${Math.round(renderY - 16)}px)`;
+    }
 
     window.requestAnimationFrame(onAnimationFrame);
   }
 
   // ── Sprite helpers ───────────────────────────────────────────────────────
+  // idle() re-calls setSprite('idle', 0) on every ~100ms logic tick even
+  // when nothing changed, which used to force a style write that often —
+  // caching the last-applied position and skipping no-op writes removes
+  // that waste without changing what's ever drawn.
+  let lastSpritePos = "";
   function setSprite(name, frame) {
     const sprite = spriteSets[name][frame % spriteSets[name].length];
-    nekoEl.style.backgroundPosition = `${sprite[0] * 32}px ${sprite[1] * 32}px`;
+    const pos = `${sprite[0] * 32}px ${sprite[1] * 32}px`;
+    if (pos === lastSpritePos) return;
+    lastSpritePos = pos;
+    nekoEl.style.backgroundPosition = pos;
   }
 
   function resetIdleAnimation() {

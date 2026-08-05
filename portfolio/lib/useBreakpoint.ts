@@ -25,15 +25,6 @@ export function useIsMobile(): boolean {
 export function useIsTablet(): boolean {
   return useMediaQuery(cond.tablet);
 }
-export function useIsLaptop(): boolean {
-  return useMediaQuery(cond.laptop);
-}
-export function useIsDesktop(): boolean {
-  return useMediaQuery(cond.desktop);
-}
-export function useIsNavCollapsed(): boolean {
-  return useMediaQuery(cond.navCollapse);
-}
 export function useIsLaptopUp(): boolean {
   return useMediaQuery(cond.laptopUp);
 }

@@ -917,7 +917,7 @@ export function StatsSection() {
           min-width: 0;
         }
         .dark .stat-card-3d {
-          border-color: rgba(255, 255, 255, 0.51);
+          border-color: rgba(255, 255, 255, 0.49);
         }
         .stat-card-3d:hover {
           border-color: var(--text-muted);

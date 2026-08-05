@@ -69,7 +69,6 @@ export const metadata: Metadata = {
 
   icons: {
     icon: "/favicon.ico",
-    apple: "/apple-touch-icon.png",
   },
 
   openGraph: {
@@ -80,16 +79,16 @@ export const metadata: Metadata = {
     type: "website",
     images: [
       {
-        url: "/og-image.png",
-        width: 1200,
-        height: 630,
+        url: "/portfolio-preview.png",
+        width: 1683,
+        height: 990,
       },
     ],
   },
 
   twitter: {
     card: "summary_large_image",
-    images: ["/og-image.png"],
+    images: ["/portfolio-preview.png"],
   },
 };
 
