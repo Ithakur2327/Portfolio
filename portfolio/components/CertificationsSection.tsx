@@ -52,7 +52,7 @@ const CERTIFICATIONS = [
   },
 ];
 
-const TILTS = [-3.5, 3, -2.5, 3.5, -3, 2.5];
+const TILT = -3.5;
 
 function useSharedTilt() {
   const wrapRef = useRef<HTMLDivElement>(null);
@@ -69,16 +69,16 @@ function useSharedTilt() {
   return { wrapRef, smooth };
 }
 
-function CertTLCard({ cert, smooth, fromDeg, visible, delay, onOpen }: {
+function CertTLCard({ cert, smooth, fromDeg, accent, visible, delay, onOpen }: {
   cert: (typeof CERTIFICATIONS)[number];
   smooth: MotionValue<number>;
   fromDeg: number;
+  accent: string;
   visible: boolean;
   delay: number;
   onOpen: () => void;
 }) {
   const rotate = useTransform(smooth, [0, 1], [fromDeg, 0]);
-  const accent = fromDeg < 0 ? TIFFANY : GOLD;
   const cardStyle: MotionStyle = { rotate, "--accent": accent } as MotionStyle;
 
   return (
@@ -89,17 +89,16 @@ function CertTLCard({ cert, smooth, fromDeg, visible, delay, onOpen }: {
       animate={visible ? { opacity: 1, y: 0 } : { opacity: 0, y: 14 }}
       transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1], delay: visible ? delay : 0 }}
     >
-      <span className="cert-tl-clip" aria-hidden="true" />
+      <div className="cert-tl-clip">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={cert.logo}
+          alt={cert.issuer}
+          loading="lazy"
+          onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+        />
+      </div>
       <div className="cert-tl-face">
-        <div className="cert-tl-badge">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={cert.logo}
-            alt={cert.issuer}
-            loading="lazy"
-            onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
-          />
-        </div>
         <button type="button" className="cert-tl-title" onClick={onOpen}>
           {cert.title}
         </button>
@@ -172,15 +171,15 @@ export function CertificationsSection() {
         .cert-tl-card {
           position: relative;
           box-sizing: border-box;
-          min-height: 150px;
-          max-width: 190px;
+          min-height: 128px;
+          max-width: 162px;
           width: 100%;
           justify-self: center;
           display: flex;
           flex-direction: column;
-          border-radius: 12px;
-          padding: 22px 12px 12px;
-          margin-top: 16px;
+          border-radius: 11px;
+          padding: 18px 10px 10px;
+          margin-top: 14px;
           transform-origin: top center;
           will-change: transform;
           z-index: 1;
@@ -198,7 +197,7 @@ export function CertificationsSection() {
         .cert-tl-card::before {
           content: "";
           position: absolute;
-          top: -14px;
+          top: -12px;
           left: -70px;
           right: -70px;
           height: 1.5px;
@@ -214,29 +213,21 @@ export function CertificationsSection() {
           background: linear-gradient(270deg, transparent, var(--border) 30%, var(--border) 100%);
         }
 
+        /* clip pinning the card to the rail — shows the company logo, square with curved corners */
         .cert-tl-clip {
           position: absolute;
-          top: -14px;
+          top: -13px;
           left: 50%;
           transform: translateX(-50%);
-          width: 0; height: 0;
-          border-left: 6px solid transparent;
-          border-right: 6px solid transparent;
-          border-top: 9px solid rgb(var(--accent));
-          filter: drop-shadow(0 2px 4px rgba(0,0,0,0.35));
+          width: 24px; height: 24px;
+          border-radius: 7px;
+          display: flex; align-items: center; justify-content: center;
+          background: var(--bg-card, var(--bg-hover));
+          border: 1.4px solid rgb(var(--accent));
+          box-shadow: 0 3px 8px rgba(0,0,0,0.35);
           z-index: 2;
         }
-
-        .cert-tl-badge {
-          width: 30px; height: 30px;
-          border-radius: 9px;
-          display: flex; align-items: center; justify-content: center;
-          background: rgba(var(--accent),0.16);
-          border: 1px solid rgba(var(--accent),0.35);
-          flex-shrink: 0;
-          margin-bottom: 8px;
-        }
-        .cert-tl-badge img { width: 15px; height: 15px; object-fit: contain; }
+        .cert-tl-clip img { width: 12px; height: 12px; object-fit: contain; }
 
         .cert-tl-face { flex: 1; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
         .cert-tl-title {
@@ -282,6 +273,23 @@ export function CertificationsSection() {
           .tl-sticky-wrap { padding-bottom: 40px; }
           .tl-sticky-inner { top: 68px; }
           .cert-tl-row { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+          .cert-tl-card { max-width: none; }
+          .cert-tl-card::before {
+            left: -40px; right: -40px;
+            background: var(--border);
+          }
+          .cert-tl-card:nth-child(3n+1)::before, .cert-tl-card:nth-child(3n)::before {
+            left: -40px; right: -40px;
+            background: var(--border);
+          }
+          .cert-tl-card:nth-child(2n+1)::before {
+            left: -16px;
+            background: linear-gradient(90deg, transparent, var(--border) 30%, var(--border) 100%);
+          }
+          .cert-tl-card:nth-child(2n)::before {
+            right: -16px;
+            background: linear-gradient(270deg, transparent, var(--border) 30%, var(--border) 100%);
+          }
         }
       `}</style>
 
@@ -308,7 +316,8 @@ export function CertificationsSection() {
                         key={i}
                         cert={cert}
                         smooth={smooth}
-                        fromDeg={TILTS[i]}
+                        fromDeg={TILT}
+                        accent={i % 2 === 0 ? TIFFANY : GOLD}
                         visible={visible}
                         delay={i * 0.06}
                         onOpen={() => openPdf(pdfSrc, cert.title)}
