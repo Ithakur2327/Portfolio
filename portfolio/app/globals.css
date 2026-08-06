@@ -284,24 +284,13 @@ a, button, [role="button"] {
   transition: background 0.2s ease;
   will-change: transform;
   transform: translateZ(0);
+  isolation: isolate;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
 }
 
 .nav-root.scrolled {
   background: var(--nav-bg-scrolled);
-  backdrop-filter: blur(14px) saturate(160%);
-  -webkit-backdrop-filter: blur(14px) saturate(160%);
-  border-bottom: none;
-  box-shadow: none;
-}
-html.light .nav-root {
-  background: var(--nav-bg);
-  border-bottom: none;
-  box-shadow: none;
-}
-html.light .nav-root.scrolled {
-  background: var(--nav-bg-scrolled);
-  border-bottom: none;
-  box-shadow: none;
 }
 
 .nav-inner {
@@ -819,11 +808,6 @@ img {
   content-visibility: auto;
 }
 
-.nav-root {
-  will-change: transform;
-  transform: translateZ(0);
-}
-
 .h-profile, .h-info-wrap, .h-avatar,
 .logo-avatar, .logo-i {
   backface-visibility: hidden;
@@ -873,7 +857,6 @@ html.light .stat-badge {
 }
 
 
-.nav-root,
 .theme-btn,
 .logo-area,
 .logo-i,
@@ -882,41 +865,6 @@ html.light .stat-badge {
   backface-visibility: hidden;
 }
 
-.nav-root { isolation: isolate; }
-
-
-
-/* ── Dark theme ── */
-.nav-root {
-  backdrop-filter: blur(14px) saturate(160%) !important;
-  -webkit-backdrop-filter: blur(14px) saturate(160%) !important;
-  background: var(--nav-bg) !important;
-  border-bottom: none !important;
-  box-shadow: none !important;
-}
-.nav-root.scrolled {
-  backdrop-filter: blur(14px) saturate(160%) !important;
-  -webkit-backdrop-filter: blur(14px) saturate(160%) !important;
-  background: var(--nav-bg-scrolled) !important;
-  border-bottom: none !important;
-  box-shadow: none !important;
-}
-
-/* ── Light theme ── */
-html.light .nav-root {
-  backdrop-filter: blur(14px) saturate(160%) !important;
-  -webkit-backdrop-filter: blur(14px) saturate(160%) !important;
-  background: var(--nav-bg) !important;
-  border-bottom: none !important;
-  box-shadow: none !important;
-}
-html.light .nav-root.scrolled {
-  backdrop-filter: blur(14px) saturate(160%) !important;
-  -webkit-backdrop-filter: blur(14px) saturate(160%) !important;
-  background: var(--nav-bg-scrolled) !important;
-  border-bottom: none !important;
-  box-shadow: none !important;
-}
 
 
 @media (--tablet-split-down) {

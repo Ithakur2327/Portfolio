@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import { motion, useAnimation } from "motion/react";
 import type { Transition, Variants } from "motion/react";
@@ -167,9 +167,19 @@ function CommandMenu({
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef  = useRef<HTMLDivElement>(null);
 
-  const filtered = query.trim()
-    ? PORTFOLIO_LINKS.filter(i => i.label.toLowerCase().includes(query.toLowerCase()))
-    : PORTFOLIO_LINKS;
+  const filtered = useMemo(() => (
+    query.trim()
+      ? PORTFOLIO_LINKS.filter(i => i.label.toLowerCase().includes(query.toLowerCase()))
+      : PORTFOLIO_LINKS
+  ), [query]);
+
+  // The list is always rendered sections-first, then everything else — so
+  // `selected` must be an index into this same grouped order everywhere,
+  // not into `filtered`'s original mixed order.
+  const flatFiltered = useMemo(() => [
+    ...filtered.filter(i => i.type === "section"),
+    ...filtered.filter(i => i.type !== "section"),
+  ], [filtered]);
 
   useEffect(() => {
     if (!open || !triggerRef.current) return;
@@ -185,7 +195,7 @@ function CommandMenu({
     if (open) {
       setVisible(true);
       setQuery("");
-      const startIdx = PORTFOLIO_LINKS.findIndex(i =>
+      const startIdx = flatFiltered.findIndex(i =>
         i.type === "section" && (i.href === "#" ? activeSection === "" : activeSection === i.href.slice(1))
       );
       setSelected(startIdx >= 0 ? startIdx : 0);
@@ -195,16 +205,17 @@ function CommandMenu({
       const t = setTimeout(() => setVisible(false), 200);
       return () => clearTimeout(t);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, activeSection]);
 
   useEffect(() => {
     if (!open) return;
     const fn = (e: KeyboardEvent) => {
       if (e.key === "Escape") { onClose(); }
-      if (e.key === "ArrowDown") { e.preventDefault(); setSelected(s => Math.min(s + 1, filtered.length - 1)); }
+      if (e.key === "ArrowDown") { e.preventDefault(); setSelected(s => Math.min(s + 1, flatFiltered.length - 1)); }
       if (e.key === "ArrowUp")   { e.preventDefault(); setSelected(s => Math.max(s - 1, 0)); }
-      if (e.key === "Enter" && filtered[selected]) {
-        const item = filtered[selected];
+      if (e.key === "Enter" && flatFiltered[selected]) {
+        const item = flatFiltered[selected];
         if (item.comingSoon) return;
         if (item.type === "pdf") { openPdf(item.href, item.label, item.href); onClose(); return; }
         if (item.type === "page") { onClose(); window.location.href = item.href; return; }
@@ -227,7 +238,7 @@ function CommandMenu({
     };
     window.addEventListener("keydown", fn);
     return () => window.removeEventListener("keydown", fn);
-  }, [open, filtered, selected, onClose, openPdf, isHome]);
+  }, [open, flatFiltered, selected, onClose, openPdf, isHome]);
 
   useEffect(() => { setSelected(0); }, [query]);
 
@@ -250,8 +261,6 @@ function CommandMenu({
 
   const sectionItems = filtered.filter(i => i.type === "section");
   const linkItems    = filtered.filter(i => i.type !== "section");
-
-  const flatFiltered = [...sectionItems, ...linkItems];
 
   const handleItemClick = (item: NavLink) => {
     if (item.comingSoon) return;
@@ -470,14 +479,6 @@ export function Navbar() {
 
   const showCornerAvatar = heroAvatarOutOfView;
 
-  useEffect(() => {
-    const fn = (e: KeyboardEvent) => {
-      if ((e.ctrlKey || e.metaKey) && e.key === "k") { e.preventDefault(); setCmdOpen(v => !v); }
-    };
-    window.addEventListener("keydown", fn);
-    return () => window.removeEventListener("keydown", fn);
-  }, []);
-
   const isDark = mounted ? theme === "dark" : true;
 
   const handleTheme = useCallback(() => {
@@ -490,6 +491,23 @@ export function Navbar() {
     playThemeToggleSound(next);
     setTheme(next ? "dark" : "light");
   }, [isDark, setTheme]);
+
+  useEffect(() => {
+    const fn = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === "k") { e.preventDefault(); setCmdOpen(v => !v); return; }
+      // "D" toggles the theme — matches the kbd hint shown in this
+      // button's own tooltip, which previously had no listener behind it.
+      if (e.key.toLowerCase() === "d" && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        const target = e.target as HTMLElement | null;
+        const tag = target?.tagName;
+        if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT" || target?.isContentEditable) return;
+        e.preventDefault();
+        handleTheme();
+      }
+    };
+    window.addEventListener("keydown", fn);
+    return () => window.removeEventListener("keydown", fn);
+  }, [handleTheme]);
 
   return (
     <>

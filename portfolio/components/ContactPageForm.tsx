@@ -71,26 +71,6 @@ export function ContactPageForm() {
           margin-top: 22px;
         }
 
-        .cpf-banner {
-          width: 100%;
-          padding: 18px 20px;
-          background: var(--bg-secondary);
-          border: 1px solid var(--border);
-          border-radius: 12px;
-          display: flex;
-          align-items: center;
-          gap: 16px;
-          margin-top: 32px;
-        }
-        .cpf-banner-icon { flex-shrink: 0; color: var(--text-primary); }
-        .cpf-banner-title {
-          font-size: 16px; font-weight: 700; color: var(--text-primary);
-          margin: 0 0 3px;
-        }
-        .cpf-banner-sub {
-          font-size: 13px; color: var(--text-secondary); margin: 0;
-        }
-
         ${mq.mobile} {
           .cpf-grid { grid-template-columns: 1fr; }
           .cpf-banner { flex-direction: column; align-items: flex-start; text-align: left; }

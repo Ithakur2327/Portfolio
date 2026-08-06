@@ -1,6 +1,7 @@
 "use client";
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
-import { BP } from "@/lib/breakpoints";
+import { cond } from "@/lib/breakpoints";
+import { useMediaQuery } from "@/lib/useBreakpoint";
 
 type PdfModalState = { src: string; title: string; downloadSrc: string } | null;
 type PdfModalContextValue = {
@@ -27,12 +28,12 @@ function CloseIcon() {
 
 export function PdfModalProvider({ children }: { children: React.ReactNode }) {
   const [modal, setModal] = useState<PdfModalState>(null);
-  const [isMobile, setIsMobile] = useState(false);
+  const isMobile = useMediaQuery(cond.tabletSplitDown);
   const [origin, setOrigin] = useState("");
 
-  // Detect mobile layout on the client.
+  // Grab the page origin on the client (needed to build an absolute URL
+  // for the Google Docs viewer fallback below).
   useEffect(() => {
-    setIsMobile(window.innerWidth <= BP.tabletSplitMax);
     setOrigin(window.location.origin);
   }, []);
 
