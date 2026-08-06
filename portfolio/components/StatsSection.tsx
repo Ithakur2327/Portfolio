@@ -276,12 +276,14 @@ function LeetCodeStats({ username = "IThakur09" }: { username?: string }) {
 
   useEffect(() => { setMounted(true); }, []);
 
+  const currentYear = new Date().getFullYear();
+
   useEffect(() => {
     (async () => {
      
       try {
         const r = await fetch(
-          `/api/leetcode-calendar?username=${encodeURIComponent(username)}&year=2026`,
+          `/api/leetcode-calendar?username=${encodeURIComponent(username)}&year=${currentYear}`,
           { signal: AbortSignal.timeout(9000) }
         );
         if (r.ok) {
@@ -295,7 +297,7 @@ function LeetCodeStats({ username = "IThakur09" }: { username?: string }) {
       } catch { }
       setLoading(false);
     })();
-  }, [username]);
+  }, [username, currentYear]);
 
   const d = data ?? { easySolved: 197, totalEasy: 947, mediumSolved: 223, totalMedium: 2063, hardSolved: 32, totalHard: 939, totalSolved: 452, ranking: GLOBAL_RANK };
 
@@ -305,13 +307,13 @@ function LeetCodeStats({ username = "IThakur09" }: { username?: string }) {
   const countMap = new Map<string, number>();
   calData.forEach(day => {
     const dt = new Date(day.date * 1000);
-    if (dt.getFullYear() === 2026) {
+    if (dt.getFullYear() === currentYear) {
       const k = dt.toISOString().split("T")[0];
       countMap.set(k, (countMap.get(k) ?? 0) + day.count);
     }
   });
 
-  const jan1 = new Date(2026, 0, 1);
+  const jan1 = new Date(currentYear, 0, 1);
   const startSun = new Date(jan1); startSun.setDate(startSun.getDate() - startSun.getDay());
   const today = mounted ? (() => { const t = new Date(); t.setHours(0, 0, 0, 0); return t; })() : startSun;
 
@@ -432,7 +434,7 @@ function LeetCodeStats({ username = "IThakur09" }: { username?: string }) {
       {loading ? <Spin color="#FFA116" /> : (
         <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
           <div className="lc-header-stats" style={{ display: "flex", alignItems: "center", flexWrap: "nowrap", gap: 8, marginBottom: 4 }}>
-            <span className="lc-activity-label" style={{ fontSize: 11, fontWeight: 700, color: "var(--text-primary)", fontFamily: MONO, flexShrink: 0, whiteSpace: "nowrap" }}>2026 activity <span style={{ color: "var(--text-muted)", fontWeight: 500 }}>—</span></span>
+            <span className="lc-activity-label" style={{ fontSize: 11, fontWeight: 700, color: "var(--text-primary)", fontFamily: MONO, flexShrink: 0, whiteSpace: "nowrap" }}>{currentYear} activity <span style={{ color: "var(--text-muted)", fontWeight: 500 }}>—</span></span>
             <div className="lc-header-stats-chips" style={{ display: "flex", alignItems: "center", gap: 5, flexWrap: "nowrap", minWidth: 0, flex: 1, justifyContent: "flex-end" }}>
               <div
                 className="lc-solved-box"
@@ -507,10 +509,12 @@ function GitHubGraph({ username = "Ithakur2327" }: { username?: string }) {
   const [hovered, setHovered] = useState<HoveredCell | null>(null);
   useDismissTooltipOnScroll(setHovered, hovered !== null);
 
+  const currentYear = new Date().getFullYear();
+
   useEffect(() => {
     (async () => {
       const apis = [
-        `https://github-contributions-api.jogruber.de/v4/${username}?y=2026`,
+        `https://github-contributions-api.jogruber.de/v4/${username}?y=${currentYear}`,
         `https://github-contributions-api.jogruber.de/v4/${username}`,
       ];
       for (const url of apis) {
@@ -520,14 +524,14 @@ function GitHubGraph({ username = "Ithakur2327" }: { username?: string }) {
           const json = await r.json();
           const c: { date: string; count: number }[] | undefined = json.contributions ?? json.data ?? json;
           if (!Array.isArray(c) || !c.length) continue;
-          const c2026 = c.filter(x => x.date?.startsWith("2026"));
-          if (!c2026.length) continue;
-          const tot = c2026.reduce((a, b) => a + b.count, 0);
+          const cYear = c.filter(x => x.date?.startsWith(String(currentYear)));
+          if (!cYear.length) continue;
+          const tot = cYear.reduce((a, b) => a + b.count, 0);
           setTotal(tot);
           const today = new Date(); today.setHours(0,0,0,0);
-          const jan1 = new Date(2026,0,1);
+          const jan1 = new Date(currentYear,0,1);
           const startSun = new Date(jan1); startSun.setDate(startSun.getDate() - startSun.getDay());
-          const dateMap = new Map(c2026.map(x => [x.date, x.count]));
+          const dateMap = new Map(cYear.map(x => [x.date, x.count]));
           const ws: Week[] = [];
           const cur = new Date(startSun);
           while (cur <= today) {
@@ -545,7 +549,7 @@ function GitHubGraph({ username = "Ithakur2327" }: { username?: string }) {
         } catch { }
       }
       const today = new Date(); today.setHours(0,0,0,0);
-      const jan1 = new Date(2026,0,1);
+      const jan1 = new Date(currentYear,0,1);
       const startSun = new Date(jan1); startSun.setDate(startSun.getDate() - startSun.getDay());
       const ws: Week[] = [];
       const cur = new Date(startSun);
@@ -560,7 +564,7 @@ function GitHubGraph({ username = "Ithakur2327" }: { username?: string }) {
       }
       setWeeks(ws); setIsLive(false); setLoading(false);
     })();
-  }, [username]);
+  }, [username, currentYear]);
 
  const lvl = (n: number) =>
   n === 0 ? 0 :
