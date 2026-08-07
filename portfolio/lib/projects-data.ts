@@ -2,8 +2,6 @@ export type Project = {
   name: string;
   year: string;
   accent: string;
-  accentBg: string;
-  accentBorder: string;
   img: string;
   description: string;
   features: string[];
@@ -57,8 +55,6 @@ export const PROJECTS: Project[] = [
     name: "I.Vision",
     year: "2026",
     accent: "#06b6d4",
-    accentBg: "rgba(6,182,212,0.10)",
-    accentBorder: "rgba(6,182,212,0.28)",
     img: "/ivision-preview.png",
     description: "Personal AI assistant that answers questions grounded in your own documents instead of general model memory. A type-safe Next.js frontend calls a FastAPI backend, where LangChain orchestrates retrieval over an embedded knowledge base before handing the query to an LLM.",
     features: [
@@ -75,8 +71,6 @@ export const PROJECTS: Project[] = [
     name: "Portfolio Website",
     year: "2025",
     accent: "#6366f1",
-    accentBg: "rgba(99,102,241,0.10)",
-    accentBorder: "rgba(99,102,241,0.30)",
     img: "/portfolio-preview.png",
     description: "Fully responsive developer portfolio with an animated dot-grid background, scroll-triggered reveal transitions, and a working contact form. Built with Next.js and Tailwind CSS, deployed on Vercel with automatic CI/CD.",
     features: [
@@ -93,8 +87,6 @@ export const PROJECTS: Project[] = [
     name: "HealthnexAI",
     year: "2025",
     accent: "#10b981",
-    accentBg: "rgba(16,185,129,0.10)",
-    accentBorder: "rgba(16,185,129,0.25)",
     img: "/healthnex-preview.png",
     description: "Preventive health platform that turns lifestyle and family-history intake into a personalized risk score. An LLM-powered assistant generates prevention plans, with interactive charts tracking health metrics over time.",
     features: [
@@ -111,8 +103,6 @@ export const PROJECTS: Project[] = [
     name: "FinLedgerAI",
     year: "2025",
     accent: "#f59e0b",
-    accentBg: "rgba(245,158,11,0.10)",
-    accentBorder: "rgba(245,158,11,0.25)",
     img: "/finledger-preview.png",
     description: "Personal finance tool that auto-categorizes transactions with the OpenAI API and flags unusual spending patterns. Chart.js dashboards visualize trends, with per-category budgets and threshold alerts.",
     features: [
@@ -129,8 +119,6 @@ export const PROJECTS: Project[] = [
     name: "SnipixAI",
     year: "2025",
     accent: "#8b5cf6",
-    accentBg: "rgba(139,92,246,0.10)",
-    accentBorder: "rgba(139,92,246,0.25)",
     img: "/snipix-preview.png",
     description: "Multimodal RAG pipeline that ingests PDFs, images, text and audio into a chunked vector database. LangChain orchestrates retrieval and generation for natural-language queries, with sub-200ms semantic search at production scale.",
     features: [
@@ -147,8 +135,6 @@ export const PROJECTS: Project[] = [
     name: "VidLearn",
     year: "2025",
     accent: "#ef4444",
-    accentBg: "rgba(239,68,68,0.10)",
-    accentBorder: "rgba(239,68,68,0.25)",
     img: "/vidlearn-preview.png",
     description: "AI study companion that turns any YouTube lecture into structured notes. Paste a URL and VidLearn pulls the transcript via the YouTube API, then uses an LLM to summarize key concepts and generate MCQ quizzes with explanations.",
     features: [
@@ -165,8 +151,6 @@ export const PROJECTS: Project[] = [
     name: "TrendCart",
     year: "2024",
     accent: "#ec4899",
-    accentBg: "rgba(236,72,153,0.10)",
-    accentBorder: "rgba(236,72,153,0.25)",
     img: "/ecommerce-preview.png",
     description: "Full-featured e-commerce platform for fashion and lifestyle products, with advanced filtering, autocomplete search, and a Redux-powered cart and wishlist. Includes a multi-step checkout flow with address and payment pages, fully responsive end to end.",
     features: [

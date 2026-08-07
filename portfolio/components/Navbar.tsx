@@ -1,7 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { usePathname } from "next/navigation";
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
 import { motion, useAnimation } from "motion/react";
 import type { Transition, Variants } from "motion/react";
 import { useTheme } from "./ThemeProvider";
@@ -163,6 +164,7 @@ function CommandMenu({
   const [query,    setQuery]    = useState("");
   const [selected, setSelected] = useState(0);
   const [visible,  setVisible]  = useState(false);
+  const router = useRouter();
   const [panelLeft, setPanelLeft] = useState<number | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef  = useRef<HTMLDivElement>(null);
@@ -218,7 +220,7 @@ function CommandMenu({
         const item = flatFiltered[selected];
         if (item.comingSoon) return;
         if (item.type === "pdf") { openPdf(item.href, item.label, item.href); onClose(); return; }
-        if (item.type === "page") { onClose(); window.location.href = item.href; return; }
+        if (item.type === "page") { onClose(); router.push(item.href); return; }
         if (item.external) {
           onClose();
           if (item.href.startsWith("mailto:")) window.location.href = item.href;
@@ -227,7 +229,7 @@ function CommandMenu({
         }
         onClose();
         setTimeout(() => {
-          if (!isHome) { window.location.href = item.href === "#" ? "/" : `/${item.href}`; return; }
+          if (!isHome) { router.push(item.href === "#" ? "/" : `/${item.href}`); return; }
           if (item.href === "#") { window.scrollTo({ top: 0, behavior: "smooth" }); return; }
           const el = document.querySelector<HTMLElement>(item.href);
           if (!el) return;
@@ -238,7 +240,7 @@ function CommandMenu({
     };
     window.addEventListener("keydown", fn);
     return () => window.removeEventListener("keydown", fn);
-  }, [open, flatFiltered, selected, onClose, openPdf, isHome]);
+  }, [open, flatFiltered, selected, onClose, openPdf, isHome, router]);
 
   useEffect(() => { setSelected(0); }, [query]);
 
@@ -271,7 +273,7 @@ function CommandMenu({
     }
     if (item.type === "page") {
       onClose();
-      window.location.href = item.href;
+      router.push(item.href);
       return;
     }
     if (item.external) {
@@ -282,7 +284,7 @@ function CommandMenu({
     }
     onClose();
     setTimeout(() => {
-      if (!isHome) { window.location.href = item.href === "#" ? "/" : `/${item.href}`; return; }
+      if (!isHome) { router.push(item.href === "#" ? "/" : `/${item.href}`); return; }
       if (item.href === "#") {
         window.scrollTo({ top: 0, behavior: "smooth" });
         return;
@@ -640,7 +642,7 @@ export function Navbar() {
       <header className={`nav-root${scrolled ? " scrolled" : ""}`}>
         <div className="nav-inner">
 
-          <a href={isHome ? "#" : "/"} aria-label="Home" style={{ display: "flex", alignItems: "center", textDecoration: "none" }}>
+          <Link href={isHome ? "#" : "/"} aria-label="Home" style={{ display: "flex", alignItems: "center", textDecoration: "none" }}>
             <div className="logo-area">
               <div className={`logo-i${showCornerAvatar ? " hide" : ""}`}>&lt;I&gt;</div>
               <div className={`logo-avatar${showCornerAvatar ? " show" : ""}`}>
@@ -657,13 +659,13 @@ export function Navbar() {
                 <div className="logo-avatar-fallback" style={{ display: "none" }}>IT</div>
               </div>
             </div>
-          </a>
+          </Link>
 
           <div style={{ display: "flex", alignItems: "center", gap: 2 }}>
 
             <nav className="nav-desktop-only" style={{ display: "flex", alignItems: "center", gap: 16, marginRight: 4 }}>
-              <a href={isHome ? "#" : "/"} className="nav-desktop-link">Home</a>
-              <a href="/projects" className="nav-desktop-link">Projects</a>
+              <Link href={isHome ? "#" : "/"} className="nav-desktop-link">Home</Link>
+              <Link href="/projects" className="nav-desktop-link">Projects</Link>
             </nav>
 
             <span className="nav-sep nav-desktop-only" style={{ margin: "0 6px" }}/>

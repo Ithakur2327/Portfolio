@@ -580,7 +580,7 @@ function GitHubGraph({ username = "Ithakur2327" }: { username?: string }) {
   weeks.forEach((w, wi) => {
     if (!w.days[0]) return;
     const d = new Date(w.days[0].date + "T00:00:00");
-    if (d.getFullYear() < 2026) return;
+    if (d.getFullYear() < currentYear) return;
     const lbl = MONTHS_GH[d.getMonth()];
     const last = monthLabels[monthLabels.length - 1];
     if (!last || last.label !== lbl) {
@@ -625,7 +625,7 @@ function GitHubGraph({ username = "Ithakur2327" }: { username?: string }) {
       {loading ? <Spin color="#FFA116" /> : (
         <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
           <div style={{ fontSize: 11, fontWeight: 700, color: "var(--text-primary)", fontFamily: MONO, marginBottom: 4 }}>
-            {isLive ? "2026 contributions" : "2026 activity (preview)"}
+            {isLive ? `${currentYear} contributions` : `${currentYear} activity (preview)`}
           </div>
           <div
             style={{ flex: 1, width: "100%", overflowX: "auto", overflowY: "visible", WebkitOverflowScrolling: "touch", scrollbarWidth: "thin", scrollbarColor: "rgba(10,186,181,0.45) transparent" }}
@@ -836,7 +836,6 @@ export function StatsSection() {
   return (
     <>
       <style suppressHydrationWarning>{`
-        @keyframes spin { to { transform: rotate(360deg); } }
         @keyframes statTooltipPop {
           from { opacity: 0; transform: translate(-50%, calc(-100% - 6px)) scale(0.94); }
           to   { opacity: 1; transform: translate(-50%, calc(-100% - 10px)) scale(1); }

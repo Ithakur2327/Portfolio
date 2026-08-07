@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useRef } from "react";
+import Link from "next/link";
 import { motion, useMotionValue, useSpring, type SpringOptions } from "motion/react";
 import { mq } from "@/lib/breakpoints";
 
@@ -205,7 +206,7 @@ export function SolidMagneticButton({
 
       <Magnetic intensity={0.2} range={100}>
         {as === "a" ? (
-          <a href={href} className={`hero-contact-btn ${className}`}>{inner}</a>
+          <Link href={href ?? "#"} className={`hero-contact-btn ${className}`}>{inner}</Link>
         ) : (
           <button type={type} onClick={onClick} className={`hero-contact-btn ${className}`}>{inner}</button>
         )}

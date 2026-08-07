@@ -72,7 +72,9 @@ export function SparklesBridge() {
     let dotColor = themeRef.current === "dark" ? "255,255,255" : "0,0,0";
     let lastTheme = themeRef.current;
 
-    let raf: number;
+    let raf = 0;
+    let running = false;
+    let inView = true;
 
     function draw() {
       raf = requestAnimationFrame(draw);
@@ -118,10 +120,36 @@ export function SparklesBridge() {
       }
     }
 
-    raf = requestAnimationFrame(draw);
+    function startLoop() {
+      if (running) return;
+      running = true;
+      raf = requestAnimationFrame(draw);
+    }
+    function stopLoop() {
+      running = false;
+      if (raf) cancelAnimationFrame(raf);
+    }
+
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        inView = !!entry?.isIntersecting;
+        if (inView && !document.hidden) startLoop();
+        else stopLoop();
+      },
+      { threshold: 0 }
+    );
+    io.observe(canvas);
+
+    const onVisibilityChange = () => {
+      if (!document.hidden && inView) startLoop();
+      else stopLoop();
+    };
+    document.addEventListener("visibilitychange", onVisibilityChange, { passive: true });
 
     return () => {
-      cancelAnimationFrame(raf);
+      stopLoop();
+      io.disconnect();
+      document.removeEventListener("visibilitychange", onVisibilityChange);
       window.removeEventListener("resize", resize);
     };
   }, []);
