@@ -197,7 +197,7 @@ export function SolidMagneticButton({
         .hero-contact-btn:disabled { cursor: default; opacity: 0.55; }
 
         ${mq.mobile} {
-          .hero-contact-btn { height: 38px; padding: 0 16px; font-size: 12.5px; }
+          .hero-contact-btn { height: 38px; padding: 0 16px; font-size: clamp(11.5px, calc(8px + 1.17vw), 15px); }
         }
         @media (prefers-reduced-motion: reduce) {
           .hero-contact-btn { transition: none; }
@@ -273,7 +273,7 @@ export function HeroActionButtons({
         }
 
         ${mq.mobile} {
-          .hero-liquid-btn { height: 38px; padding: 0 16px; font-size: 12.5px; width: 100%; }
+          .hero-liquid-btn { height: 38px; padding: 0 16px; font-size: clamp(11.5px, calc(8px + 1.17vw), 15px); width: 100%; }
           .hero-actions {
             display: grid !important;
             grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important;
@@ -287,6 +287,7 @@ export function HeroActionButtons({
           .hero-actions .hero-contact-btn {
             width: 100% !important;
             min-width: 0 !important;
+            font-size: clamp(11.5px, calc(8px + 1.17vw), 15px) !important;
           }
         }
         @media (prefers-reduced-motion: reduce) {

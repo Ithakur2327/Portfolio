@@ -6,7 +6,7 @@ import { useTheme } from "./ThemeProvider";
 import { usePdfModal } from "./PdfViewerModal";
 import { HeroActionButtons } from "./HeroActionButtons";
 import { SocialRow } from "./ui/SocialRow";
-import { BP, cond, mq } from "@/lib/breakpoints";
+import { mq } from "@/lib/breakpoints";
 
 const SENTENCES = [
   "AI Software Engineer",
@@ -392,13 +392,13 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
         }
 
         ${mq.mobile} {
-          .h-profile { flex-direction: row !important; --h-avatar-w: calc(clamp(117px, 31.7vw, 154px) + 1px); }
+          .h-profile { flex-direction: row !important; --h-avatar-w: calc(clamp(98px, calc(42px + 18.7vw), 154px) + 1px); }
 
           .h-avatar {
-            width: clamp(117px, 31.7vw, 154px) !important;
-            min-width: clamp(117px, 31.7vw, 154px) !important;
-            height: calc(clamp(117px, 31.7vw, 154px) - 8px) !important;
-            min-height: calc(clamp(117px, 31.7vw, 154px) - 8px) !important;
+            width: clamp(98px, calc(42px + 18.7vw), 154px) !important;
+            min-width: clamp(98px, calc(42px + 18.7vw), 154px) !important;
+            height: calc(clamp(98px, calc(42px + 18.7vw), 154px) - 8px) !important;
+            min-height: calc(clamp(98px, calc(42px + 18.7vw), 154px) - 8px) !important;
             border-right: 1px solid var(--border) !important;
             border-bottom: none !important;
             overflow: hidden !important;
@@ -416,13 +416,13 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
             margin-bottom: 0 !important;
           }
           .h-nameblock h1 {
-            font-size: clamp(19px, 6.5vw, 24px) !important;
+            font-size: clamp(18px, calc(12px + 2vw), 24px) !important;
             font-weight: 800 !important;
             letter-spacing: 0.015em !important;
             line-height: 1 !important;
             white-space: nowrap !important;
           }
-          .h-verified-badge { width: 16px !important; height: 16px !important; }
+          .h-verified-badge { width: clamp(14px, calc(12px + 0.67vw), 16px) !important; height: clamp(14px, calc(12px + 0.67vw), 16px) !important; }
           .h-name-row { gap: 4px !important; }
           .h-nameblock > div:nth-child(4) {
             padding: clamp(5px, 1.8vw, 8px) clamp(10px, 3.5vw, 16px) clamp(8px, 2.6vw, 12px) !important;
@@ -443,28 +443,6 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
           .h-grid > :nth-child(n+4) { padding-left: 0 !important; }
           .h-info-pad { padding: 14px 16px 12px 12px !important; }
           .h-social { padding: 14px 16px !important; justify-content: center !important; }
-        }
-
-        @media ${cond.down(BP.mobileXxsMax)} {
-          .h-profile { --h-avatar-w: calc(clamp(98px, 28vw, 126px) + 1px); }
-          .h-avatar {
-            width: clamp(98px, 28vw, 126px) !important;
-            min-width: clamp(98px, 28vw, 126px) !important;
-            height: calc(clamp(98px, 28vw, 126px) - 6px) !important;
-            min-height: calc(clamp(98px, 28vw, 126px) - 6px) !important;
-            border-radius: 16px !important;
-          }
-          .h-nameblock h1 {
-            font-size: clamp(18px, 6vw, 20px) !important;
-            font-weight: 800 !important;
-            letter-spacing: 0.015em !important;
-            line-height: 1 !important;
-          }
-          .h-verified-badge { width: 15px !important; height: 15px !important; }
-          .h-name-row { gap: 4px !important; }
-          .h-nameblock > div:nth-child(2) {
-            margin-bottom: 0 !important;
-          }
         }
 
         ${mq.mobile} {
