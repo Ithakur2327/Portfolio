@@ -870,11 +870,9 @@ export function StatsSection() {
         }
         .stat-chip-label-short { display: none; }
         .stat-chip-label-full { display: inline; }
-        ${mq.tablet} {
+        ${mq.mobile} {
           .stat-chip-label-short { display: inline; }
           .stat-chip-label-full { display: none; }
-        }
-        ${mq.mobile} {
           .stat-chip { padding: 2px 5px !important; gap: 3px !important; }
           .stat-chip-label { font-size: 8px !important; }
           .stat-chip-value { font-size: 9px !important; }
