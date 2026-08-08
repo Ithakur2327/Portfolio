@@ -38,7 +38,12 @@ function DotCanvas({
     const container = canvas?.parentElement;
     if (!canvas || !container) return;
 
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    // Reduced motion should only disable the interactive mouse-follow
+    // highlight (an actual animation) — the static dot pattern itself is
+    // just a background texture, not motion, so it still needs to be
+    // baked, painted, and revealed below like normal.
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const interactiveEffective = interactive && !reducedMotion;
 
     const ctx = canvas.getContext("2d", { willReadFrequently: false, colorSpace: "srgb" });
     if (!ctx) return;
@@ -98,7 +103,7 @@ function DotCanvas({
       ctx.clearRect(0, 0, w, h);
       ctx.drawImage(staticCanvas, 0, 0, w, h);
 
-      if (interactive && mouse.active) {
+      if (interactiveEffective && mouse.active) {
         const pad = RADIUS;
         const ix0 = Math.max(0, mouse.x - pad);
         const iy0 = Math.max(0, mouse.y - pad);
@@ -133,7 +138,7 @@ function DotCanvas({
     };
 
     const onMove = (e: MouseEvent) => {
-      if (!interactive) return;
+      if (!interactiveEffective) return;
       const rect = canvas.getBoundingClientRect();
       mouse.x = e.clientX - rect.left;
       mouse.y = e.clientY - rect.top;
@@ -203,7 +208,7 @@ function DotCanvas({
     }, { rootMargin: "200px 0px" });
     io.observe(canvas);
 
-    if (interactive) {
+    if (interactiveEffective) {
       window.addEventListener("mousemove",  onMove,  { passive: true });
       window.addEventListener("mouseleave", onLeave, { passive: true });
     }

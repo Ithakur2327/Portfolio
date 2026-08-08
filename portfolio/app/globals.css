@@ -621,8 +621,6 @@ img {
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
-  .marquee-inner { animation: none; }
-  .flip-item { animation: none; }
   .reveal { opacity: 1; transform: none; transition: none; }
 }
 
@@ -630,25 +628,9 @@ img {
 /* Force GPU layers only on elements that need it — avoid layer explosion */
 @media (--nav-collapse) {
 
-  .marquee-inner,
   .reveal.visible,
-  .s-tile,
-  .proj-card,
-  .cert-item,
-  .skill-chip,
   .edu-card {
     will-change: auto !important;
-  }
-
-  /* Lightweight hover states — no transform on mobile */
-  .proj-card:hover,
-  .cert-card:hover,
-  .stat-badge:hover,
-  .overview-item:hover,
-  .contact-row:hover,
-  .about-item:hover {
-    background: transparent !important;
-    transform: none !important;
   }
 
   /* No 3D lift on cards — causes compositing stutter */
@@ -659,18 +641,13 @@ img {
   }
 
   /* Touch momentum on all scroll containers */
-  .contrib-wrap,
-  .marquee-track,
   [style*="overflowX: auto"],
   [style*="overflow-x: auto"] {
     -webkit-overflow-scrolling: touch !important;
     scroll-behavior: smooth;
   }
 
-  .proj-card,
-  .cert-card,
-  .edu-card,
-  .exp-card {
+  .edu-card {
     contain: layout style;
   }
 }
@@ -688,11 +665,6 @@ img {
   html.light .nav-root {
     background: var(--nav-bg-scrolled) !important;
   }
-}
-
-.skills-strip-outer {
-  contain: layout style;
-  transform: translateZ(0);
 }
 
 /* Ensure modal backdrops don't repaint the main thread */
