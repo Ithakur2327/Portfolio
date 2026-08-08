@@ -918,6 +918,7 @@ export function StatsSection() {
           position: relative;
           display: flex;
           flex-direction: column;
+          justify-content: space-between;
           overflow: visible;
           box-shadow: none;
           transition: border-color 0.2s;
@@ -947,6 +948,7 @@ export function StatsSection() {
           align-items: stretch;
           grid-template-columns: 1fr 1fr;
           position: relative;
+          align-content: stretch;
         }
 
         ${mq.tablet} {
