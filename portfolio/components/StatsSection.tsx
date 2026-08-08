@@ -7,7 +7,7 @@ import { useReveal } from "./useReveal";
 import { useTheme } from "./ThemeProvider";
 import { SectionIcon } from "./SectionIcon";
 import { mq } from "@/lib/breakpoints";
-import { useIsTablet } from "@/lib/useBreakpoint";
+import { useIsLaptopUp, useIsTablet } from "@/lib/useBreakpoint";
 
 const SF = "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', sans-serif";
 const MONO = "'SF Mono', 'Geist Mono', monospace";
@@ -234,14 +234,15 @@ function StatChip({ label, shortLabel, solved, color, bold, onEnter, onLeave }: 
       style={{
         display: "flex",
         alignItems: "baseline",
-        gap: 4,
-        padding: bold ? "3px 9px" : "3px 8px",
+        gap: 2,
+        padding: bold ? "2px 6px" : "2px 5px",
         borderRadius: 6,
         background: "var(--bg-secondary)",
         border: `1px solid ${bold ? `${color}55` : "var(--border)"}`,
         cursor: "default",
         transition: "border-color 0.15s ease, transform 0.15s cubic-bezier(0.19,1,0.22,1)",
         whiteSpace: "nowrap",
+        minWidth: 0,
       }}
     >
       <span className="stat-chip-label" style={{ fontSize: 9, fontWeight: 700, color, fontFamily: MONO, letterSpacing: "-0.02em" }}>
@@ -302,6 +303,7 @@ function LeetCodeStats({ username = "IThakur09" }: { username?: string }) {
   const d = data ?? { easySolved: 197, totalEasy: 947, mediumSolved: 223, totalMedium: 2063, hardSolved: 32, totalHard: 939, totalSolved: 452, ranking: GLOBAL_RANK };
 
   const isTablet = useIsTablet();
+  const isLaptopUp = useIsLaptopUp();
   const CELL = isTablet ? 14 : 10, GAP = isTablet ? 4 : 3, STEP = CELL + GAP;
 
   const countMap = new Map<string, number>();
@@ -416,7 +418,7 @@ function LeetCodeStats({ username = "IThakur09" }: { username?: string }) {
     <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
       <PortalTooltip hovered={hovered} accentColor={solvedColor} label="submissions" />
       <StatTooltip hovered={statHover} accentColor={statHover?.label === "Total Solved" ? solvedColor : (diffColors as Record<string, string>)[statHover?.label ?? ""] ?? solvedColor} />
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10, flexWrap: "wrap", gap: 8 }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10, flexWrap: isLaptopUp ? "nowrap" : "wrap", gap: 8, minHeight: isLaptopUp ? 56 : undefined }}>
         <a href={`https://leetcode.com/${username}`} target="_blank" rel="noreferrer" style={{ display: "flex", alignItems: "center", gap: 8, textDecoration: "none" }}>
           <LeetCodeLogo size={34} isDark={isDark} />
           <div>
@@ -433,15 +435,16 @@ function LeetCodeStats({ username = "IThakur09" }: { username?: string }) {
 
       {loading ? <Spin color="#FFA116" /> : (
         <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
-          <div className="lc-header-stats" style={{ display: "flex", alignItems: "center", flexWrap: "nowrap", gap: 8, marginBottom: 4 }}>
-            <span className="lc-activity-label" style={{ fontSize: 11, fontWeight: 700, color: "var(--text-primary)", fontFamily: MONO, flexShrink: 0, whiteSpace: "nowrap" }}>{currentYear} activity <span style={{ color: "var(--text-muted)", fontWeight: 500 }}>—</span></span>
-            <div className="lc-header-stats-chips" style={{ display: "flex", alignItems: "center", gap: 5, flexWrap: "nowrap", minWidth: 0, flex: 1, justifyContent: "flex-end" }}>
+          <div className="lc-header-stats" style={{ display: "flex", alignItems: "center", flexWrap: "nowrap", gap: 8, marginBottom: 4, minWidth: 0, minHeight: isLaptopUp ? 56 : undefined }}>
+            <span className="lc-activity-label" style={{ fontSize: 11, fontWeight: 700, color: "var(--text-primary)", fontFamily: MONO, flexShrink: 0, minWidth: 0, whiteSpace: "nowrap" }}>{currentYear} activity <span style={{ color: "var(--text-muted)", fontWeight: 500 }}>—</span></span>
+            <div className="lc-header-stats-chips" style={{ display: "flex", alignItems: "center", gap: isLaptopUp ? 3 : 4, flexWrap: "nowrap", minWidth: 0, flex: "1 1 auto", justifyContent: "flex-end", overflow: "hidden", paddingRight: isLaptopUp ? 12 : 6 }}>
               <div
                 className="lc-solved-box"
                 style={{
                   display: "flex",
                   alignItems: "center",
-                  padding: "3px 6px",
+                  padding: "0 4px",
+                  gap: 2,
                   borderRadius: 7,
                   flexShrink: 1,
                   minWidth: 0,
@@ -458,9 +461,9 @@ function LeetCodeStats({ username = "IThakur09" }: { username?: string }) {
                 style={{
                   display: "flex",
                   alignItems: "center",
-                  gap: 5,
+                  gap: 3,
                   flexWrap: "nowrap",
-                  padding: "3px 6px",
+                  padding: "0 4px",
                   borderRadius: 7,
                   flexShrink: 1,
                   minWidth: 0,
@@ -573,6 +576,7 @@ function GitHubGraph({ username = "Ithakur2327" }: { username?: string }) {
   n <= 34 ? 3 :
   4;
   const isTablet = useIsTablet();
+  const isLaptopUp = useIsLaptopUp();
   const CELL = isTablet ? 14 : 10, GAP = isTablet ? 4 : 3, STEP = CELL + GAP;
   const contribColor = isDark ? "#ffffff" : "#000000";
 
@@ -603,12 +607,12 @@ function GitHubGraph({ username = "Ithakur2327" }: { username?: string }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
       <PortalTooltip hovered={hovered} accentColor={isDark ? "#4ade80" : "#1a7f37"} label="contributions" />
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10, flexWrap: "wrap", gap: 8 }}>
-        <a href={`https://github.com/${username}`} target="_blank" rel="noreferrer" style={{ display: "flex", alignItems: "center", gap: 8, textDecoration: "none" }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10, flexWrap: isLaptopUp ? "nowrap" : "wrap", gap: 8, minWidth: 0, minHeight: isLaptopUp ? 56 : undefined }}>
+        <a href={`https://github.com/${username}`} target="_blank" rel="noreferrer" style={{ display: "flex", alignItems: "center", gap: 8, textDecoration: "none", minWidth: 0, flexShrink: 1 }}>
           <GitHubLogo size={34} isDark={isDark} />
-          <div>
-            <div style={{ fontSize: 12, fontWeight: 700, color: "var(--text-primary)", fontFamily: SF }}>GitHub</div>
-            <div style={{ fontSize: 9, color: "var(--text-muted)", fontFamily: MONO }}>@{username} ↗</div>
+          <div style={{ minWidth: 0, overflow: "hidden" }}>
+            <div style={{ fontSize: 12, fontWeight: 700, color: "var(--text-primary)", fontFamily: SF, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>GitHub</div>
+            <div style={{ fontSize: 9, color: "var(--text-muted)", fontFamily: MONO, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>@{username} ↗</div>
           </div>
         </a>
         {isLive && total !== null && total > 0 ? (
@@ -624,7 +628,7 @@ function GitHubGraph({ username = "Ithakur2327" }: { username?: string }) {
 
       {loading ? <Spin color="#FFA116" /> : (
         <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
-          <div style={{ fontSize: 11, fontWeight: 700, color: "var(--text-primary)", fontFamily: MONO, marginBottom: 4 }}>
+          <div style={{ fontSize: 11, fontWeight: 700, color: "var(--text-primary)", fontFamily: MONO, marginBottom: 4, minHeight: isLaptopUp ? 56 : undefined, display: "flex", alignItems: "center" }}>
             {isLive ? `${currentYear} contributions` : `${currentYear} activity (preview)`}
           </div>
           <div
@@ -908,8 +912,8 @@ export function StatsSection() {
 
         .stat-card-3d {
           padding: 12px 14px;
-          background: transparent;
-          border: 1.3px dashed rgba(0, 0, 0, 0.9);
+          background: var(--bg-secondary);
+          border: 1.3px dashed rgba(10, 186, 181, 0.65);
           border-radius: 10px;
           position: relative;
           display: flex;
@@ -919,8 +923,17 @@ export function StatsSection() {
           transition: border-color 0.2s;
           min-width: 0;
         }
-        .dark .stat-card-3d {
-          border-color: rgba(255, 255, 255, 0.49);
+        .about-panels > .stat-card-3d:first-child {
+          border-color: rgba(10, 186, 181, 0.80);
+        }
+        .about-panels > .stat-card-3d:nth-child(2) {
+          border-color: rgba(212, 175, 55, 0.80);
+        }
+        html.light .about-panels > .stat-card-3d:first-child {
+          border-color: rgba(10, 186, 181, 0.95);
+        }
+        html.light .about-panels > .stat-card-3d:nth-child(2) {
+          border-color: rgba(212, 175, 55, 0.95);
         }
         .stat-card-3d:hover {
           border-color: var(--text-muted);

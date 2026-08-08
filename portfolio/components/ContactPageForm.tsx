@@ -73,7 +73,6 @@ export function ContactPageForm() {
 
         ${mq.mobile} {
           .cpf-grid { grid-template-columns: 1fr; }
-          .cpf-banner { flex-direction: column; align-items: flex-start; text-align: left; }
         }
       `}</style>
 

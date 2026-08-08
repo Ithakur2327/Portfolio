@@ -441,18 +441,26 @@ export function SkillsSection() {
         .falling-icons-box {
           position: relative;
           overflow: hidden;
-          border: 1.3px dashed rgba(0, 0, 0, 0.9);
+          border: 1.3px dashed rgba(10, 186, 181, 0.65);
           border-radius: 14px;
-          background: #ffffff;
+          background: var(--bg-secondary);
           min-height: 300px;
           flex: 1;
           user-select: none;
           -webkit-user-select: none;
           contain: layout paint;
         }
-        .dark .falling-icons-box {
-          border-color: rgba(255, 255, 255, 0.49);
-          background: #000000;
+        .falling-icons-row > div:nth-child(1) .falling-icons-box {
+          border-color: rgba(10, 186, 181, 0.80);
+        }
+        .falling-icons-row > div:nth-child(2) .falling-icons-box {
+          border-color: rgba(212, 175, 55, 0.80);
+        }
+        html.light .falling-icons-row > div:nth-child(1) .falling-icons-box {
+          border-color: rgba(10, 186, 181, 0.95);
+        }
+        html.light .falling-icons-row > div:nth-child(2) .falling-icons-box {
+          border-color: rgba(212, 175, 55, 0.95);
         }
         .falling-icons-flow {
           position: relative;

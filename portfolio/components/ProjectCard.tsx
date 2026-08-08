@@ -83,6 +83,9 @@ export function ProjectCard({ proj, index, visible, isDesktop, isHidden, onOpen,
   }, [isHidden]);
 
   const shown = isDesktop ? hovered : inView;
+  const cardBorder = index % 2 === 0 ? "rgba(10,186,181,0.70)" : "rgba(212,175,55,0.70)";
+  const lightCardBorder = index % 2 === 0 ? "rgba(10,186,181,0.95)" : "rgba(212,175,55,0.95)";
+  const dashedBorder = isDark ? cardBorder : lightCardBorder;
 
   const cid = (id: string) => (isDesktop ? id : undefined);
 
@@ -130,10 +133,9 @@ export function ProjectCard({ proj, index, visible, isDesktop, isHidden, onOpen,
       <div
         style={{
           width: "100%",
-         padding: 2,
-         borderRadius: 18,
-        border: `1.3px dashed ${
-        index % 2 === 0 ? "rgba(10,186,181,0.55)" : "rgba(212,175,55,0.55)" }`,
+          padding: 2,
+          borderRadius: 18,
+          border: `1.3px dashed ${dashedBorder}`,
           boxSizing: "border-box",
         }}
       >
