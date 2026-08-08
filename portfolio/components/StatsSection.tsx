@@ -871,10 +871,8 @@ export function StatsSection() {
         .stat-chip-label-short { display: none; }
         .stat-chip-label-full { display: inline; }
         ${mq.mobile} {
-          .stat-chip-label-short { display: inline; }
-          .stat-chip-label-full { display: none; }
-          .stat-chip { padding: 2px 5px !important; gap: 3px !important; }
-          .stat-chip-label { font-size: 8px !important; }
+          .stat-chip { padding: 2px 4px !important; gap: 2px !important; min-width: 0; }
+          .stat-chip-label { font-size: 8.5px !important; white-space: nowrap; }
           .stat-chip-value { font-size: 9px !important; }
         }
 
