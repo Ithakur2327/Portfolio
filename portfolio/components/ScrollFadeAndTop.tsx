@@ -67,12 +67,12 @@ export function ScrollFadeAndTop() {
         <div
           className="scroll-bottom-fade"
           style={{
-            height: 96,
+            height: 76,
             background: "linear-gradient(to bottom, transparent 0%, var(--bg-base) 100%)",
-            WebkitMaskImage: "linear-gradient(to top, var(--bg-base) 25%, transparent 100%)",
-            maskImage: "linear-gradient(to top, var(--bg-base) 25%, transparent 100%)",
-            backdropFilter: "blur(1px)",
-            WebkitBackdropFilter: "blur(1px)",
+            WebkitMaskImage: "linear-gradient(to top, var(--bg-base) 40%, transparent 100%)",
+            maskImage: "linear-gradient(to top, var(--bg-base) 40%, transparent 100%)",
+            backdropFilter: "blur(0.6px)",
+            WebkitBackdropFilter: "blur(0.6px)",
           }}
         />
         <div style={{ background: "var(--bg-base)", paddingBottom: "env(safe-area-inset-bottom, 0px)" }} />
