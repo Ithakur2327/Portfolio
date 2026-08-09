@@ -180,20 +180,7 @@ export function PdfModalProvider({ children }: { children: React.ReactNode }) {
                 />
               </div>
             ) : (
-              /*
-                MOBILE FIX:
-                Previously: CSS hid the iframe on mobile and showed a
-                "PDF preview not supported" fallback — useless UX.
-
-                Now: Google Docs Viewer URL is used on mobile.
-                This renders PDFs in ALL browsers including:
-                - Chrome Android ✓
-                - Samsung Internet ✓
-                - iOS Safari ✓
-                - Firefox Mobile ✓
-
-                Desktop: direct iframe with PDF toolbar (unchanged).
-              */
+            
               <iframe
                 key={isMobile ? "mobile" : "desktop"}
                 src={origin ? getPdfSrc(modal.src) : ""}
