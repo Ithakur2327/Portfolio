@@ -252,14 +252,17 @@ function CommandMenu({
 
   if (!visible) return null;
 
-  const bg     = isDark ? "hsl(0 0% 4%)"    : "hsl(0 0% 100%)";
-  const border = isDark ? "hsl(0 0% 15%)"   : "hsl(0 0% 89.8%)";
-  const fg     = isDark ? "hsl(0 0% 98%)"   : "hsl(0 0% 3.9%)";
-  const muted  = isDark ? "hsl(0 0% 45%)"   : "hsl(0 0% 45%)";
-  const accent = isDark ? "hsl(0 0% 14.9%)" : "hsl(0 0% 92%)";
-  const iconBg = isDark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.06)";
-  const rowBg  = isDark ? "hsl(0 0% 4%)"    : "hsl(0 0% 96.1%)";
+  const bg     = isDark ? "rgba(12, 13, 18, 0.72)" : "rgba(248, 250, 252, 0.72)";
+  const border = isDark ? "rgba(255,255,255,0.16)" : "rgba(255,255,255,0.82)";
+  const fg     = isDark ? "var(--text-primary)" : "var(--text-primary)";
+  const muted  = isDark ? "var(--text-secondary)" : "var(--text-secondary)";
+  const accent = isDark ? "rgba(255,255,255,0.12)" : "rgba(255,255,255,0.7)";
+  const iconBg = isDark ? "rgba(255,255,255,0.08)" : "rgba(255,255,255,0.88)";
+  const rowBg  = isDark ? "rgba(255,255,255,0.05)" : "rgba(255,255,255,0.60)";
   const panelW = typeof window !== "undefined" ? Math.min(480, window.innerWidth - 32) : 480;
+  const panelShadow = isDark
+    ? "0 24px 80px -26px rgba(0,0,0,0.95), inset 0 1px 0 rgba(255,255,255,0.12), inset 0 -12px 24px rgba(255,255,255,0.03), 0 0 0 1px rgba(255,255,255,0.05)"
+    : "0 24px 80px -26px rgba(15,15,20,0.24), inset 0 1px 0 rgba(255,255,255,0.95), inset 0 -12px 24px rgba(0,0,0,0.05), 0 0 0 1px rgba(255,255,255,0.55)";
 
   const sectionItems = filtered.filter(i => i.type === "section");
   const linkItems    = filtered.filter(i => i.type !== "section");
@@ -356,18 +359,29 @@ function CommandMenu({
   return (
     <>
       <div className={`cmdk-overlay${!open ? " closing" : ""}`} onClick={onClose}
-        style={{ position: "fixed", inset: 0, zIndex: 9998, background: "rgba(0,0,0,0.55)" }}
+        style={{
+          position: "fixed", inset: 0, zIndex: 9998,
+          background: isDark ? "rgba(0,0,0,0.22)" : "rgba(7,7,10,0.12)",
+          backdropFilter: typeof window !== "undefined" && window.matchMedia("(hover: none)").matches
+            ? "blur(8px) saturate(140%)"
+            : "none",
+          WebkitBackdropFilter: typeof window !== "undefined" && window.matchMedia("(hover: none)").matches
+            ? "blur(8px) saturate(140%)"
+            : "none",
+        }}
       />
       <div
         className={`cmdk-panel${!open ? " closing" : ""}`}
         style={{
           position: "fixed", top: 58,
           left: panelLeft !== null ? panelLeft : "50%",
-          transform: panelLeft !== null ? "none" : "translateX(-50%)",
+          transform: panelLeft !== null ? "none" : "translateX(-50%) perspective(1200px) rotateX(0.2deg)",
           zIndex: 9999, width: panelW,
           maxHeight: "min(520px, calc(100vh - 80px))",
-          background: bg, borderRadius: 14, border: `1px solid ${border}`,
-          boxShadow: "0 20px 50px -8px rgba(0,0,0,0.6)",
+          background: bg, borderRadius: 16, border: `1px solid ${border}`,
+          boxShadow: panelShadow,
+          backdropFilter: "blur(22px) saturate(190%) brightness(110%)",
+          WebkitBackdropFilter: "blur(22px) saturate(190%) brightness(110%)",
           overflow: "hidden", display: "flex", flexDirection: "column",
           padding: 4, outline: "none",
         }}
@@ -388,8 +402,10 @@ function CommandMenu({
         </div>
 
         <div ref={listRef} style={{
-          borderRadius: 10, background: rowBg, border: `1px solid ${border}`,
+          borderRadius: 12, background: rowBg, border: `1px solid ${border}`,
           overflow: "hidden", display: "flex", flexDirection: "column",
+          backdropFilter: "blur(14px) saturate(170%)",
+          WebkitBackdropFilter: "blur(14px) saturate(170%)",
         }}>
           <div className="scroll-fade" style={{ maxHeight: 340, overflowY: "auto", padding: "6px 0" }}>
             {flatFiltered.length === 0 ? (
