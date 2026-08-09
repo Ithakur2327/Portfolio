@@ -252,17 +252,17 @@ function CommandMenu({
 
   if (!visible) return null;
 
-  const bg     = isDark ? "rgba(12, 13, 18, 0.72)" : "rgba(248, 250, 252, 0.72)";
-  const border = isDark ? "rgba(255,255,255,0.16)" : "rgba(255,255,255,0.82)";
-  const fg     = isDark ? "var(--text-primary)" : "var(--text-primary)";
-  const muted  = isDark ? "var(--text-secondary)" : "var(--text-secondary)";
-  const accent = isDark ? "rgba(255,255,255,0.12)" : "rgba(255,255,255,0.7)";
-  const iconBg = isDark ? "rgba(255,255,255,0.08)" : "rgba(255,255,255,0.88)";
-  const rowBg  = isDark ? "rgba(255,255,255,0.05)" : "rgba(255,255,255,0.60)";
+  const bg     = isDark ? "var(--modal-glass-bg)" : "var(--modal-glass-bg)";
+  const border = isDark ? "var(--modal-glass-border)" : "var(--modal-glass-border)";
+  const fg     = "var(--text-primary)";
+  const muted  = "var(--text-secondary)";
+  const accent = isDark ? "var(--nav-link-active-bg)" : "var(--nav-link-active-bg)";
+  const iconBg = isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.04)";
+  const rowBg  = isDark ? "rgba(255,255,255,0.05)" : "rgba(255,255,255,0.58)";
   const panelW = typeof window !== "undefined" ? Math.min(480, window.innerWidth - 32) : 480;
   const panelShadow = isDark
-    ? "0 24px 80px -26px rgba(0,0,0,0.95), inset 0 1px 0 rgba(255,255,255,0.12), inset 0 -12px 24px rgba(255,255,255,0.03), 0 0 0 1px rgba(255,255,255,0.05)"
-    : "0 24px 80px -26px rgba(15,15,20,0.24), inset 0 1px 0 rgba(255,255,255,0.95), inset 0 -12px 24px rgba(0,0,0,0.05), 0 0 0 1px rgba(255,255,255,0.55)";
+    ? "0 24px 80px -26px rgba(0,0,0,0.95), inset 0 1px 0 rgba(255,255,255,0.10), inset 0 -12px 24px rgba(255,255,255,0.03), 0 0 0 1px rgba(255,255,255,0.04)"
+    : "0 24px 80px -26px rgba(15,15,20,0.24), inset 0 1px 0 rgba(255,255,255,0.70), inset 0 -12px 24px rgba(0,0,0,0.04), 0 0 0 1px rgba(0,0,0,0.04)";
 
   const sectionItems = filtered.filter(i => i.type === "section");
   const linkItems    = filtered.filter(i => i.type !== "section");
