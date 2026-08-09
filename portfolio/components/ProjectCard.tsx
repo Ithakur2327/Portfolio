@@ -87,18 +87,28 @@ export function ProjectCard({ proj, index, visible, isDesktop, isHidden, onOpen,
 
   const cid = (id: string) => (isDesktop ? id : undefined);
 
+  if (isHidden) {
+    return (
+      <div aria-hidden="true" style={{ width: "100%", visibility: "hidden" }}>
+        <div style={{ width: "100%", padding: 2, borderRadius: 18, boxSizing: "border-box" }}>
+          <div style={{ width: "100%", aspectRatio: "16 / 9", borderRadius: 16 }} />
+        </div>
+        <div style={{ width: "100%", padding: "12px 8px", display: "flex", flexDirection: "column", gap: 16 }}>
+          <div style={{ height: 20 }} />
+          <div style={{ height: 60 }} />
+          <div style={{ height: 46 }} />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <motion.div
       initial={false}
-      animate={{ opacity: visible && !isHidden ? 1 : 0, y: visible ? 0 : 20 }}
+      animate={{ opacity: visible ? 1 : 0, y: visible ? 0 : 20 }}
       transition={{ delay: visible ? 0.055 * index : 0, type: "spring", stiffness: 190, damping: 30, mass: 0.9 }}
       layoutId={cid(`card-container-${scope}-${proj.name}`)}
-      style={{
-        position: "relative",
-        width: "100%",
-        visibility: isHidden ? "hidden" : "visible",
-        pointerEvents: isHidden ? "none" : undefined,
-      }}
+      style={{ position: "relative", width: "100%" }}
     >
       <motion.div
         onClick={onOpen}
@@ -460,9 +470,9 @@ export function ProjectModal({ proj, index, onClose, isDesktop, scope = "grid" }
           aria-modal="true"
           aria-label={`${proj.name} project details`}
           layoutId={lid(`card-container-${scope}-${proj.name}`)}
-          initial={sheet ? { opacity: 0, y: "100%", scale: 0.97 } : undefined}
-          animate={sheet ? { opacity: 1, y: "0%", scale: 1 } : undefined}
-          exit={sheet ? { opacity: 0, y: "100%", scale: 0.97 } : undefined}
+          initial={sheet ? { opacity: 0, y: "100%", scale: 0.97 } : { opacity: 0, scale: 0.92 }}
+          animate={sheet ? { opacity: 1, y: "0%", scale: 1 } : { opacity: 1, scale: 1 }}
+          exit={sheet ? { opacity: 0, y: "100%", scale: 0.97 } : { opacity: 0, scale: 0.92, transition: { duration: 0.24, ease: [0.4, 0, 1, 1] } }}
           transition={sheet ? sheetTransition : SPRING}
           className="pm-shell"
           style={{
