@@ -6,11 +6,12 @@ import { ProjectCard, ProjectModal } from "./ProjectCard";
 import { BP, mq } from "@/lib/breakpoints";
 import { useIsLaptopUp } from "@/lib/useBreakpoint";
 
-export function ProjectsGrid({ projects, visible = true, mobileMax, wide }: {
+export function ProjectsGrid({ projects, visible = true, mobileMax, wide, scope = "grid" }: {
   projects: Project[];
   visible?: boolean;
   mobileMax?: number;
   wide?: boolean;
+  scope?: string;
 }) {
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
   const isDesktop = useIsLaptopUp();
@@ -44,7 +45,7 @@ export function ProjectsGrid({ projects, visible = true, mobileMax, wide }: {
 
       <div className="proj-grid2">
         {projects.map((proj, i) => (
-          <LayoutGroup key={proj.name} id={`project-${proj.name}`}>
+          <LayoutGroup key={proj.name} id={`project-${scope}-${proj.name}`}>
             <ProjectCard
               proj={proj}
               index={i}
@@ -53,6 +54,7 @@ export function ProjectsGrid({ projects, visible = true, mobileMax, wide }: {
               isHidden={isDesktop && active?.name === proj.name}
               onOpen={() => setActiveIndex(i)}
               imageSizes={imageSizes}
+              scope={scope}
             />
           </LayoutGroup>
         ))}
@@ -60,8 +62,8 @@ export function ProjectsGrid({ projects, visible = true, mobileMax, wide }: {
 
       <AnimatePresence>
         {active && activeIndex !== null && (
-          <LayoutGroup id={`project-${active.name}`}>
-            <ProjectModal key="modal" proj={active} index={activeIndex} isDesktop={isDesktop} onClose={() => setActiveIndex(null)} />
+          <LayoutGroup id={`project-${scope}-${active.name}`}>
+            <ProjectModal key="modal" proj={active} index={activeIndex} isDesktop={isDesktop} onClose={() => setActiveIndex(null)} scope={scope} />
           </LayoutGroup>
         )}
       </AnimatePresence>

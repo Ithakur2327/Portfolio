@@ -392,13 +392,13 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
         }
 
         ${mq.mobile} {
-          .h-profile { flex-direction: row !important; --h-avatar-w: calc(clamp(112px, calc(48px + 20vw), 170px) + 1px); }
+          .h-profile { flex-direction: row !important; --h-avatar-w: calc(clamp(98px, calc(42px + 18.7vw), 154px) + 1px); }
 
           .h-avatar {
-            width: clamp(112px, calc(48px + 20vw), 170px) !important;
-            min-width: clamp(112px, calc(48px + 20vw), 170px) !important;
-            height: calc(clamp(112px, calc(48px + 20vw), 170px) - 8px) !important;
-            min-height: calc(clamp(112px, calc(48px + 20vw), 170px) - 8px) !important;
+            width: clamp(98px, calc(42px + 18.7vw), 154px) !important;
+            min-width: clamp(98px, calc(42px + 18.7vw), 154px) !important;
+            height: calc(clamp(98px, calc(42px + 18.7vw), 154px) - 8px) !important;
+            min-height: calc(clamp(98px, calc(42px + 18.7vw), 154px) - 8px) !important;
             border-right: 1px solid var(--border) !important;
             border-bottom: none !important;
             overflow: hidden !important;
@@ -416,7 +416,7 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
             margin-bottom: 0 !important;
           }
           .h-nameblock h1 {
-            font-size: clamp(20px, calc(14px + 2.3vw), 26px) !important;
+            font-size: clamp(18px, calc(12px + 2vw), 24px) !important;
             font-weight: 800 !important;
             letter-spacing: 0.015em !important;
             line-height: 1 !important;

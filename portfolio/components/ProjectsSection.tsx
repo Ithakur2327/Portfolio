@@ -34,7 +34,7 @@ export function ProjectsSection() {
            ${mq.mobile} { .proj-inner { padding: 0 6px 28px !important; } }
           `}</style>
 
-          <ProjectsGrid projects={featured} visible={visible} mobileMax={MOBILE_COUNT} />
+          <ProjectsGrid projects={featured} visible={visible} mobileMax={MOBILE_COUNT} scope="home" />
 
           {PROJECTS.length > FEATURED_COUNT && (
             <div style={{ display: "flex", justifyContent: "center", marginTop: 26 }}>

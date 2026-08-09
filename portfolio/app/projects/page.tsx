@@ -61,7 +61,7 @@ export default function ProjectsPage() {
               </p>
             </div>
 
-            <ProjectsGrid projects={PROJECTS} wide />
+            <ProjectsGrid projects={PROJECTS} wide scope="all" />
           </div>
         </div>
       </main>

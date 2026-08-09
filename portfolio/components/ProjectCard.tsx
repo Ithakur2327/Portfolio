@@ -63,7 +63,7 @@ function ProjectLinks({ proj, size }: { proj: Project; size: number }) {
 
 
 
-export function ProjectCard({ proj, index, visible, isDesktop, isHidden, onOpen, imageSizes }: {
+export function ProjectCard({ proj, index, visible, isDesktop, isHidden, onOpen, imageSizes, scope = "grid" }: {
   proj: Project;
   index: number;
   visible: boolean;
@@ -71,6 +71,7 @@ export function ProjectCard({ proj, index, visible, isDesktop, isHidden, onOpen,
   isHidden?: boolean;
   onOpen: () => void;
   imageSizes?: string;
+  scope?: string;
 }) {
   const frameRef = useRef<HTMLDivElement>(null);
   const inView = useInView(frameRef, { amount: 0.6, once: true });
@@ -91,7 +92,7 @@ export function ProjectCard({ proj, index, visible, isDesktop, isHidden, onOpen,
       initial={false}
       animate={{ opacity: visible && !isHidden ? 1 : 0, y: visible ? 0 : 20 }}
       transition={{ delay: visible ? 0.055 * index : 0, type: "spring", stiffness: 190, damping: 30, mass: 0.9 }}
-      layoutId={cid(`card-container-${proj.name}`)}
+      layoutId={cid(`card-container-${scope}-${proj.name}`)}
       style={{
         position: "relative",
         width: "100%",
@@ -129,7 +130,7 @@ export function ProjectCard({ proj, index, visible, isDesktop, isHidden, onOpen,
       >
         <motion.div
           ref={frameRef}
-          layoutId={cid(`card-banner-${proj.name}`)}
+          layoutId={cid(`card-banner-${scope}-${proj.name}`)}
           transition={SPRING}
           style={{
             width: "100%", aspectRatio: "16 / 9", borderRadius: 16,
@@ -252,7 +253,7 @@ export function ProjectCard({ proj, index, visible, isDesktop, isHidden, onOpen,
   );
 }
 
-export function ProjectModal({ proj, index, onClose, isDesktop }: { proj: Project; index: number; onClose: () => void; isDesktop: boolean }) {
+export function ProjectModal({ proj, index, onClose, isDesktop, scope = "grid" }: { proj: Project; index: number; onClose: () => void; isDesktop: boolean; scope?: string }) {
   const dashColor = index % 2 === 0 ? "rgba(10,186,181,0.55)" : "rgba(212,175,55,0.55)";
   const modalRef = useRef<HTMLDivElement>(null);
   const closeBtnRef = useRef<HTMLButtonElement>(null);
@@ -328,7 +329,7 @@ export function ProjectModal({ proj, index, onClose, isDesktop }: { proj: Projec
   const imageBlock = (
     <div className="pm-image-border" style={sheet ? { position: "sticky", top: 0, zIndex: 2 } : undefined}>
       <motion.div
-        layoutId={lid(`card-banner-${proj.name}`)}
+        layoutId={lid(`card-banner-${scope}-${proj.name}`)}
         transition={SPRING}
         className="pm-image-frame"
         style={{ position: "relative" }}
@@ -458,7 +459,7 @@ export function ProjectModal({ proj, index, onClose, isDesktop }: { proj: Projec
           role="dialog"
           aria-modal="true"
           aria-label={`${proj.name} project details`}
-          layoutId={lid(`card-container-${proj.name}`)}
+          layoutId={lid(`card-container-${scope}-${proj.name}`)}
           initial={sheet ? { opacity: 0, y: "100%", scale: 0.97 } : undefined}
           animate={sheet ? { opacity: 1, y: "0%", scale: 1 } : undefined}
           exit={sheet ? { opacity: 0, y: "100%", scale: 0.97 } : undefined}
