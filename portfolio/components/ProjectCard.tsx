@@ -73,7 +73,7 @@ export function ProjectCard({ proj, index, visible, isDesktop, isHidden, onOpen,
   imageSizes?: string;
 }) {
   const frameRef = useRef<HTMLDivElement>(null);
-  const inView = useInView(frameRef, { amount: 0.6 });
+  const inView = useInView(frameRef, { amount: 0.6, once: true });
   const [hovered, setHovered] = useState(false);
   const { theme } = useTheme();
   const isDark = theme === "dark";
@@ -83,34 +83,21 @@ export function ProjectCard({ proj, index, visible, isDesktop, isHidden, onOpen,
   }, [isHidden]);
 
   const shown = isDesktop ? hovered : inView;
-  const cardBorder = index % 2 === 0 ? "rgba(10,186,181,0.70)" : "rgba(212,175,55,0.70)";
-  const lightCardBorder = index % 2 === 0 ? "rgba(10,186,181,0.95)" : "rgba(212,175,55,0.95)";
-  const dashedBorder = isDark ? cardBorder : lightCardBorder;
 
   const cid = (id: string) => (isDesktop ? id : undefined);
-
-  if (isHidden) {
-    return (
-      <div aria-hidden="true" style={{ width: "100%", visibility: "hidden" }}>
-        <div style={{ width: "100%", padding: 2, borderRadius: 18, boxSizing: "border-box" }}>
-          <div style={{ width: "100%", aspectRatio: "16 / 9", borderRadius: 16 }} />
-        </div>
-        <div style={{ width: "100%", padding: "12px 8px", display: "flex", flexDirection: "column", gap: 16 }}>
-          <div style={{ height: 20 }} />
-          <div style={{ height: 60 }} />
-          <div style={{ height: 46 }} />
-        </div>
-      </div>
-    );
-  }
 
   return (
     <motion.div
       initial={false}
-      animate={{ opacity: visible ? 1 : 0, y: visible ? 0 : 20 }}
+      animate={{ opacity: visible && !isHidden ? 1 : 0, y: visible ? 0 : 20 }}
       transition={{ delay: visible ? 0.055 * index : 0, type: "spring", stiffness: 190, damping: 30, mass: 0.9 }}
       layoutId={cid(`card-container-${proj.name}`)}
-      style={{ position: "relative", width: "100%" }}
+      style={{
+        position: "relative",
+        width: "100%",
+        visibility: isHidden ? "hidden" : "visible",
+        pointerEvents: isHidden ? "none" : undefined,
+      }}
     >
       <motion.div
         onClick={onOpen}
@@ -133,9 +120,10 @@ export function ProjectCard({ proj, index, visible, isDesktop, isHidden, onOpen,
       <div
         style={{
           width: "100%",
-          padding: 2,
-          borderRadius: 18,
-          border: `1.3px dashed ${dashedBorder}`,
+         padding: 2,
+         borderRadius: 18,
+        border: `1.3px dashed ${
+        index % 2 === 0 ? "rgba(10,186,181,0.55)" : "rgba(212,175,55,0.55)" }`,
           boxSizing: "border-box",
         }}
       >
@@ -155,7 +143,7 @@ export function ProjectCard({ proj, index, visible, isDesktop, isHidden, onOpen,
             animate={shown ? { scale: 1, y: 0 } : { scale: 0.8, y: "10%" }}
             transition={isDesktop
               ? { type: "spring", stiffness: 150, damping: 22, mass: 0.85 }
-              : { type: "tween", duration: 0.52, ease: [0.16, 1, 0.3, 1] }}
+              : { type: "tween", duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
             style={{ position: "absolute", inset: 0, transformOrigin: "50% 100%", willChange: "transform" }}
           >
             <motion.div
@@ -163,7 +151,7 @@ export function ProjectCard({ proj, index, visible, isDesktop, isHidden, onOpen,
               animate={shown ? { rotate: 0, borderRadius: 10 } : { rotate: -7, borderRadius: 6 }}
               transition={isDesktop
                 ? { type: "spring", stiffness: 150, damping: 22, mass: 0.85 }
-                : { type: "tween", duration: 0.52, ease: [0.16, 1, 0.3, 1] }}
+                : { type: "tween", duration: 0.85, delay: shown ? 0.06 : 0, ease: [0.16, 1, 0.3, 1] }}
               style={{
                 position: "absolute", inset: 0, overflow: "hidden",
                 boxShadow: "0 16px 30px -12px rgba(0,0,0,0.4)",

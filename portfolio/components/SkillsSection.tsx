@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, memo, forwardRef, useEffect, useState } from "react";
-import Matter from "matter-js";
+import type Matter from "matter-js";
 import { useReveal } from "./useReveal";
 import { SectionTitleIcon } from "./SectionIcon";
 import { BP, cond, mq } from "@/lib/breakpoints";
@@ -144,9 +144,16 @@ function FallingIconsBox({ title, items, index = 0 }: { title: string; items: st
     let cancelled = false;
     let cleanup: (() => void) | null = null;
 
-    const start = () => {
+    const start = async () => {
       if (cancelled) return;
-      const { Engine, World, Bodies, Body, Mouse, MouseConstraint, Events, Sleeping } = Matter;
+      // Fetch the physics engine only now — right before it's actually
+      // needed — instead of bundling it into every page load. This section
+      // is below the fold and often never scrolled to, so eagerly shipping
+      // a whole physics library up front was pure wasted weight on initial
+      // load for every visitor.
+      const { default: MatterLib } = await import("matter-js");
+      if (cancelled) return;
+      const { Engine, World, Bodies, Body, Mouse, MouseConstraint, Events, Sleeping } = MatterLib;
 
       let rect = box.getBoundingClientRect();
       if (rect.width <= 0 || rect.height <= 0) return;
@@ -294,8 +301,13 @@ function FallingIconsBox({ title, items, index = 0 }: { title: string; items: st
       }
 
       const rawKick = scrollImpulse !== 0 ? Math.max(-2.5, Math.min(2.5, -scrollImpulse * 0.045)) : 0;
-      // Ignore tiny scroll jitter — only a real scroll gesture should wake icons.
-      const kick = Math.abs(rawKick) > 0.15 ? rawKick : 0;
+      // Ignore tiny scroll jitter — only a real, deliberate scroll gesture
+      // should wake icons. The old threshold (0.15) triggered on almost any
+      // scroll motion through this section, which meant normal scrolling
+      // kept both panels' physics engines running for seconds at a time —
+      // a real source of scroll jank. This one needs a clearly intentional
+      // scroll/flick before it wakes anything up.
+      const kick = Math.abs(rawKick) > 0.4 ? rawKick : 0;
       scrollImpulse = 0;
 
       // Nothing awake and nothing to wake it — every icon is exactly where
@@ -441,26 +453,18 @@ export function SkillsSection() {
         .falling-icons-box {
           position: relative;
           overflow: hidden;
-          border: 1.3px dashed rgba(10, 186, 181, 0.65);
+          border: 1.3px dashed rgba(0, 0, 0, 0.9);
           border-radius: 14px;
-          background: var(--bg-secondary);
+          background: #ffffff;
           min-height: 300px;
           flex: 1;
           user-select: none;
           -webkit-user-select: none;
           contain: layout paint;
         }
-        .falling-icons-row > div:nth-child(1) .falling-icons-box {
-          border-color: rgba(10, 186, 181, 0.80);
-        }
-        .falling-icons-row > div:nth-child(2) .falling-icons-box {
-          border-color: rgba(212, 175, 55, 0.80);
-        }
-        html.light .falling-icons-row > div:nth-child(1) .falling-icons-box {
-          border-color: rgba(10, 186, 181, 0.95);
-        }
-        html.light .falling-icons-row > div:nth-child(2) .falling-icons-box {
-          border-color: rgba(212, 175, 55, 0.95);
+        .dark .falling-icons-box {
+          border-color: rgba(255, 255, 255, 0.49);
+          background: #000000;
         }
         .falling-icons-flow {
           position: relative;
