@@ -74,7 +74,7 @@ export function ProjectCard({ proj, index, visible, isDesktop, isHidden, onOpen,
   scope?: string;
 }) {
   const frameRef = useRef<HTMLDivElement>(null);
-  const inView = useInView(frameRef, { amount: 0.6, once: true });
+  const inView = useInView(frameRef, { amount: 0.6 });
   const [hovered, setHovered] = useState(false);
   const { theme } = useTheme();
   const isDark = theme === "dark";
@@ -159,12 +159,13 @@ export function ProjectCard({ proj, index, visible, isDesktop, isHidden, onOpen,
           >
             <motion.div
               initial={false}
-              animate={shown ? { rotate: 0, borderRadius: 10 } : { rotate: -7, borderRadius: 6 }}
+              animate={shown ? { rotate: 0 } : { rotate: -7 }}
               transition={isDesktop
                 ? { type: "spring", stiffness: 150, damping: 22, mass: 0.85 }
                 : { type: "tween", duration: 0.85, delay: shown ? 0.06 : 0, ease: [0.16, 1, 0.3, 1] }}
               style={{
                 position: "absolute", inset: 0, overflow: "hidden",
+                borderRadius: 10,
                 boxShadow: "0 16px 30px -12px rgba(0,0,0,0.4)",
                 willChange: "transform",
               }}
@@ -507,8 +508,20 @@ export function ProjectModal({ proj, index, onClose, isDesktop, scope = "grid" }
               max-height: 92vh;
               background: var(--modal-glass-bg);
               border: 1px solid var(--modal-glass-border);
-              backdrop-filter: blur(14px) saturate(160%);
-              -webkit-backdrop-filter: blur(14px) saturate(160%);
+            }
+            /* Same reasoning as .pm-overlay above: backdrop-filter is the
+               main source of jank during the bottom-sheet open/close
+               animation on phones/tablets, since it has to be recomputed
+               every frame while the sheet is translating/scaling in. It's
+               skipped there and only enabled from laptop width up, where
+               the modal no longer animates via a full-screen sheet
+               transform. --modal-glass-bg is already ~92% opaque, so it
+               still reads as a solid glass card without the blur. */
+            ${mq.laptopUp} {
+              .pm-shell {
+                backdrop-filter: blur(14px) saturate(160%);
+                -webkit-backdrop-filter: blur(14px) saturate(160%);
+              }
             }
             ${mq.laptopUp} {
               .pm-shell { max-height: 82vh; }

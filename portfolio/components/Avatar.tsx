@@ -127,14 +127,40 @@ export function Avatar({ version }: { version?: string } = {}) {
       // shader warp effect, but never an empty avatar.
       const ctx2d = canvas.getContext("2d");
       if (!ctx2d) return;
+      let currentImg: HTMLImageElement | null = null;
+      let fadeRaf = 0;
       const draw = (src: string) => {
         const img = new window.Image();
         img.crossOrigin = "anonymous";
         img.onload = () => {
           const size = canvas.width || 512;
-          canvas.height = size;
-          ctx2d.clearRect(0, 0, size, size);
-          ctx2d.drawImage(img, 0, 0, size, size);
+          const prevImg = currentImg;
+          currentImg = img;
+          cancelAnimationFrame(fadeRaf);
+
+          if (!prevImg) {
+            // First paint — nothing to fade from, just draw it.
+            ctx2d.clearRect(0, 0, size, size);
+            ctx2d.drawImage(img, 0, 0, size, size);
+            return;
+          }
+
+          // Same ~340ms crossfade the WebGL path uses, so a theme toggle
+          // never reads as an instant "pop" regardless of which rendering
+          // path this device ended up on.
+          const DURATION = 340;
+          const start = performance.now();
+          const step = (now: number) => {
+            const t = Math.min(1, (now - start) / DURATION);
+            ctx2d.clearRect(0, 0, size, size);
+            ctx2d.globalAlpha = 1;
+            ctx2d.drawImage(prevImg, 0, 0, size, size);
+            ctx2d.globalAlpha = t;
+            ctx2d.drawImage(img, 0, 0, size, size);
+            ctx2d.globalAlpha = 1;
+            if (t < 1) fadeRaf = requestAnimationFrame(step);
+          };
+          fadeRaf = requestAnimationFrame(step);
         };
         img.src = version ? `${src}?v=${version}` : src;
       };
@@ -145,7 +171,7 @@ export function Avatar({ version }: { version?: string } = {}) {
       // same as the WebGL path does via texD/texL.
       const mo = new MutationObserver(onThemeChange);
       mo.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
-      return () => mo.disconnect();
+      return () => { mo.disconnect(); cancelAnimationFrame(fadeRaf); };
     }
 
     gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);

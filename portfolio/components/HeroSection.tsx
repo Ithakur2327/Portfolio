@@ -392,18 +392,20 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
         }
 
         ${mq.mobile} {
-          .h-profile { flex-direction: row !important; --h-avatar-w: calc(clamp(98px, calc(42px + 18.7vw), 154px) + 1px); }
+          .h-profile { flex-direction: row !important; --h-avatar-w: calc(clamp(108px, calc(48px + 19.5vw), 164px) + 13px); }
 
           .h-avatar {
-            width: clamp(98px, calc(42px + 18.7vw), 154px) !important;
-            min-width: clamp(98px, calc(42px + 18.7vw), 154px) !important;
-            height: calc(clamp(98px, calc(42px + 18.7vw), 154px) - 8px) !important;
-            min-height: calc(clamp(98px, calc(42px + 18.7vw), 154px) - 8px) !important;
-            border-right: 1px solid var(--border) !important;
+            width: clamp(108px, calc(48px + 19.5vw), 164px) !important;
+            min-width: clamp(108px, calc(48px + 19.5vw), 164px) !important;
+            height: calc(clamp(108px, calc(48px + 19.5vw), 164px) - 8px) !important;
+            min-height: calc(clamp(108px, calc(48px + 19.5vw), 164px) - 8px) !important;
+            margin: 12px 0 12px 12px !important;
+            border-right: none !important;
+            border: 1px solid var(--border) !important;
             border-bottom: none !important;
             overflow: hidden !important;
             padding: 0 !important;
-            border-radius: 18px !important;
+            border-radius: 16px !important;
           }
           .h-nameblock {
             flex: 1 !important;
@@ -416,13 +418,13 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
             margin-bottom: 0 !important;
           }
           .h-nameblock h1 {
-            font-size: clamp(18px, calc(12px + 2vw), 24px) !important;
+            font-size: clamp(19px, calc(13px + 2.1vw), 25px) !important;
             font-weight: 800 !important;
             letter-spacing: 0.015em !important;
             line-height: 1 !important;
             white-space: nowrap !important;
           }
-          .h-verified-badge { width: clamp(14px, calc(12px + 0.67vw), 16px) !important; height: clamp(14px, calc(12px + 0.67vw), 16px) !important; }
+          .h-verified-badge { width: clamp(15px, calc(13px + 0.7vw), 17px) !important; height: clamp(15px, calc(13px + 0.7vw), 17px) !important; }
           .h-name-row { gap: 4px !important; }
           .h-nameblock > div:nth-child(4) {
             padding: clamp(5px, 1.8vw, 8px) clamp(10px, 3.5vw, 16px) clamp(8px, 2.6vw, 12px) !important;
