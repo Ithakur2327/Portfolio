@@ -418,7 +418,7 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
             margin-bottom: 0 !important;
           }
           .h-nameblock h1 {
-            font-size: clamp(19px, calc(13px + 2.1vw), 25px) !important;
+            font-size: clamp(21px, calc(15px + 2vw), 27px) !important;
             font-weight: 800 !important;
             letter-spacing: 0.015em !important;
             line-height: 1 !important;

@@ -1,5 +1,5 @@
 "use client";
-import { useRef, useEffect, useState } from "react";
+import { useRef, useEffect, useState, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { motion, useInView } from "motion/react";
 import Image from "next/image";
@@ -273,6 +273,8 @@ export function ProjectModal({ proj, index, onClose, isDesktop, scope = "grid" }
   const sheet = !isDesktop;
   const lid = (id: string) => (sheet ? undefined : id);
   const sheetTransition = { type: "spring" as const, stiffness: 280, damping: 30, mass: 0.85 };
+  const [settled, setSettled] = useState(!sheet);
+  const handleClose = useCallback(() => { setSettled(false); onClose(); }, [onClose]);
 
   useEffect(() => {
     document.documentElement.style.overflow = "hidden";
@@ -288,7 +290,7 @@ export function ProjectModal({ proj, index, onClose, isDesktop, scope = "grid" }
       focusTimer = setTimeout(() => closeBtnRef.current?.focus(), 50);
     });
 
-    const esc = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    const esc = (e: KeyboardEvent) => { if (e.key === "Escape") handleClose(); };
 
     const trapFocus = (e: KeyboardEvent) => {
       if (e.key !== "Tab" || !modalRef.current) return;
@@ -308,7 +310,7 @@ export function ProjectModal({ proj, index, onClose, isDesktop, scope = "grid" }
     window.addEventListener("keydown", esc);
     window.addEventListener("keydown", trapFocus);
     const handler = (e: MouseEvent) => {
-      if (modalRef.current && !modalRef.current.contains(e.target as Node)) onClose();
+      if (modalRef.current && !modalRef.current.contains(e.target as Node)) handleClose();
     };
     const t = setTimeout(() => {
       document.addEventListener("mousedown", handler);
@@ -327,7 +329,7 @@ export function ProjectModal({ proj, index, onClose, isDesktop, scope = "grid" }
       clearTimeout(focusTimer);
       previouslyFocused?.focus?.();
     };
-  }, [onClose]);
+  }, [handleClose]);
 
   const contentFade = sheet
     ? { initial: false as const, animate: { opacity: 1 }, exit: { opacity: 1 } }
@@ -406,7 +408,7 @@ export function ProjectModal({ proj, index, onClose, isDesktop, scope = "grid" }
 
         <button
           ref={closeBtnRef}
-          onClick={onClose}
+          onClick={handleClose}
           aria-label="Close"
           style={{
             flexShrink: 0,
@@ -455,7 +457,7 @@ export function ProjectModal({ proj, index, onClose, isDesktop, scope = "grid" }
         initial={{ opacity: 0 }}
         animate={{ opacity: 1, transition: { duration: 0.15 } }}
         exit={{ opacity: 0, transition: { duration: 0.35 } }}
-        onClick={onClose}
+        onClick={handleClose}
         className="pm-overlay"
         style={{
           position: "fixed", inset: 0, zIndex: 9000,
@@ -475,7 +477,8 @@ export function ProjectModal({ proj, index, onClose, isDesktop, scope = "grid" }
           animate={sheet ? { opacity: 1, y: "0%", scale: 1 } : undefined}
           exit={sheet ? { opacity: 0, y: "100%", scale: 0.97 } : { opacity: 0, scale: 0.92, transition: { duration: 0.24, ease: [0.4, 0, 1, 1] } }}
           transition={sheet ? sheetTransition : SPRING}
-          className="pm-shell"
+          onAnimationComplete={() => { if (sheet) setSettled(true); }}
+          className={`pm-shell${settled ? " pm-shell-settled" : ""}`}
           style={{
             pointerEvents: "auto",
             width: "100%", maxWidth: 960,
@@ -509,19 +512,18 @@ export function ProjectModal({ proj, index, onClose, isDesktop, scope = "grid" }
               background: var(--modal-glass-bg);
               border: 1px solid var(--modal-glass-border);
             }
-            /* Same reasoning as .pm-overlay above: backdrop-filter is the
-               main source of jank during the bottom-sheet open/close
-               animation on phones/tablets, since it has to be recomputed
-               every frame while the sheet is translating/scaling in. It's
-               skipped there and only enabled from laptop width up, where
-               the modal no longer animates via a full-screen sheet
-               transform. --modal-glass-bg is already ~92% opaque, so it
-               still reads as a solid glass card without the blur. */
-            ${mq.laptopUp} {
-              .pm-shell {
-                backdrop-filter: blur(14px) saturate(160%);
-                -webkit-backdrop-filter: blur(14px) saturate(160%);
-              }
+            /* backdrop-filter is compositor-heavy and has to be recomputed
+               every frame while the sheet is translating/scaling in or out
+               — that's the actual source of jank during the open/close
+               animation, not the blur effect itself. Rather than dropping
+               the blur (which loses the intended glass look), it's applied
+               only once .pm-shell-settled is added — right after the
+               entrance animation finishes — and removed again the instant
+               a close is requested, so the expensive part never runs while
+               the sheet is actually moving. */
+            .pm-shell.pm-shell-settled {
+              backdrop-filter: blur(14px) saturate(160%);
+              -webkit-backdrop-filter: blur(14px) saturate(160%);
             }
             ${mq.laptopUp} {
               .pm-shell { max-height: 82vh; }
