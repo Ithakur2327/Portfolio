@@ -226,6 +226,7 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
           justify-content: stretch;
           border-radius: 22px;
           background: var(--bg-base);
+          transition: background-color 0.25s ease;
         }
         .h-nameblock {
           flex: 1; display: flex; flex-direction: column;
