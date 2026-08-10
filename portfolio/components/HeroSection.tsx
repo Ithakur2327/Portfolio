@@ -393,20 +393,19 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
         }
 
         ${mq.mobile} {
-          .h-profile { flex-direction: row !important; --h-avatar-w: calc(clamp(108px, calc(48px + 19.5vw), 164px) + 13px); }
+          .h-profile { flex-direction: row !important; padding-left: 12px !important; --h-avatar-w: calc(clamp(110px, calc(52px + 19.4vw), 168px) + 1px); }
 
           .h-avatar {
-            width: clamp(108px, calc(48px + 19.5vw), 164px) !important;
-            min-width: clamp(108px, calc(48px + 19.5vw), 164px) !important;
-            height: calc(clamp(108px, calc(48px + 19.5vw), 164px) - 8px) !important;
-            min-height: calc(clamp(108px, calc(48px + 19.5vw), 164px) - 8px) !important;
-            margin: 12px 0 12px 12px !important;
-            border-right: none !important;
-            border: 1px solid var(--border) !important;
+            width: clamp(110px, calc(52px + 19.4vw), 168px) !important;
+            min-width: clamp(110px, calc(52px + 19.4vw), 168px) !important;
+            height: calc(clamp(110px, calc(52px + 19.4vw), 168px) - 8px) !important;
+            min-height: calc(clamp(110px, calc(52px + 19.4vw), 168px) - 8px) !important;
+            margin: 0 !important;
+            border-right: 1px solid var(--border) !important;
             border-bottom: none !important;
             overflow: hidden !important;
             padding: 0 !important;
-            border-radius: 16px !important;
+            border-radius: 14px !important;
           }
           .h-nameblock {
             flex: 1 !important;
