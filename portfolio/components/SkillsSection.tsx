@@ -528,7 +528,8 @@ export function SkillsSection() {
         }
         ${mq.tablet} {
           .skills-inner { max-width: 100% !important; padding: 0 24px 40px !important; }
-          .falling-icons-row { gap: 14px; }
+          .falling-icons-row { flex-direction: column; gap: 16px; }
+          .falling-icons-panel { width: 100%; }
           .falling-icons-box { min-height: 195px; }
           .falling-icons-flow { padding: 14px 12px; gap: 6px; }
           .falling-icon-chip {
