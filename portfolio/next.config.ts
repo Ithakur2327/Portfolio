@@ -1,5 +1,7 @@
 import type { NextConfig } from "next";
 
+const isDev = process.env.NODE_ENV !== "production";
+
 const nextConfig: NextConfig = {
 
   productionBrowserSourceMaps: false,
@@ -17,6 +19,22 @@ const nextConfig: NextConfig = {
   },
 
   async headers() {
+    if (isDev) {
+      return [
+        {
+          source: "/(.*)",
+          headers: [
+            { key: "X-Content-Type-Options", value: "nosniff" },
+            { key: "X-Frame-Options", value: "DENY" },
+            { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+            { key: "Cache-Control", value: "no-store, no-cache, must-revalidate, proxy-revalidate" },
+            { key: "Pragma", value: "no-cache" },
+            { key: "Expires", value: "0" },
+          ],
+        },
+      ];
+    }
+
     return [
       {
         source: "/(.*)",
@@ -27,7 +45,6 @@ const nextConfig: NextConfig = {
         ],
       },
       {
-       
         source: "/resume.pdf",
         headers: [
           { key: "X-Frame-Options", value: "SAMEORIGIN" },
