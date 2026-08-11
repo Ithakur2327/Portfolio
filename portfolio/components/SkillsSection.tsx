@@ -432,7 +432,7 @@ export function SkillsSection() {
         .falling-icons-row {
           display: flex;
           align-items: stretch;
-          gap: 14px;
+          gap: 20px;
         }
         .falling-icons-panel {
           flex: 1 1 0;
@@ -453,18 +453,28 @@ export function SkillsSection() {
         .falling-icons-box {
           position: relative;
           overflow: hidden;
-          border: 1.3px dashed rgba(0, 0, 0, 0.9);
+          border-width: 1.3px;
+          border-style: dashed;
+          border-color: rgba(10, 186, 181, 0.82);
           border-radius: 14px;
           background: #ffffff;
-          min-height: 300px;
+          min-height: 320px;
           flex: 1;
           user-select: none;
           -webkit-user-select: none;
           contain: layout paint;
         }
+        .falling-icons-panel:nth-child(2) .falling-icons-box {
+          border-color: rgba(212, 175, 55, 0.82);
+        }
         .dark .falling-icons-box {
-          border-color: rgba(255, 255, 255, 0.49);
           background: #000000;
+        }
+        .dark .falling-icons-panel:first-child .falling-icons-box {
+          border-color: rgba(10, 186, 181, 0.95);
+        }
+        .dark .falling-icons-panel:nth-child(2) .falling-icons-box {
+          border-color: rgba(212, 175, 55, 0.95);
         }
         .falling-icons-flow {
           position: relative;
@@ -478,10 +488,10 @@ export function SkillsSection() {
         }
 
         .falling-icon-chip {
-          width: 50px; height: 58px;
-          padding: 7px 3px 6px;
+          width: 56px; height: 64px;
+          padding: 8px 4px 7px;
           display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
-          gap: 4px;
+          gap: 5px;
           border-radius: 12px; border: 1px solid;
           position: relative; z-index: 1;
           cursor: grab; touch-action: none;
@@ -495,7 +505,7 @@ export function SkillsSection() {
         }
         .falling-icon-chip:active { cursor: grabbing; }
         .falling-icon-chip img {
-          width: 20px; height: 20px; object-fit: contain;
+          width: 22px; height: 22px; object-fit: contain;
           pointer-events: none; -webkit-user-drag: none;
           position: relative; z-index: 1;
           filter: drop-shadow(0 2px 3px rgba(0,0,0,0.28));
@@ -505,14 +515,14 @@ export function SkillsSection() {
         }
         .falling-icon-textmark {
           font-weight: 800;
-          font-size: 15px;
+          font-size: 16px;
           line-height: 1;
           letter-spacing: -0.01em;
           position: relative; z-index: 1;
         }
         .falling-icon-name {
           position: relative; z-index: 1;
-          font-family: ${MONO}; font-size: 7px; font-weight: 700; letter-spacing: 0.01em;
+          font-family: ${MONO}; font-size: 7.3px; font-weight: 700; letter-spacing: 0.01em;
           color: #161616; text-align: center; line-height: 1.15;
           display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
           overflow: hidden; width: 100%; max-width: 100%;
@@ -528,44 +538,44 @@ export function SkillsSection() {
         }
         ${mq.tablet} {
           .skills-inner { max-width: 100% !important; padding: 0 24px 40px !important; }
-          .falling-icons-row { flex-direction: column; gap: 16px; }
+          .falling-icons-row { flex-direction: column; gap: 18px; }
           .falling-icons-panel { width: 100%; }
-          .falling-icons-box { min-height: 195px; }
-          .falling-icons-flow { padding: 14px 12px; gap: 6px; }
+          .falling-icons-box { min-height: 220px; }
+          .falling-icons-flow { padding: 16px 14px; gap: 8px; }
           .falling-icon-chip {
-            width: 38px; height: 42px; border-radius: 10px; gap: 3px; padding: 5px 3px;
+            width: 44px; height: 52px; border-radius: 10px; gap: 4px; padding: 6px 3px;
           }
-          .falling-icon-chip img { width: 14px; height: 14px; }
-          .falling-icon-textmark { font-size: 12px; }
-          .falling-icon-name { font-size: 6px; }
+          .falling-icon-chip img { width: 16px; height: 16px; }
+          .falling-icon-textmark { font-size: 13px; }
+          .falling-icon-name { font-size: 6.5px; }
         }
         ${mq.mobile} {
           .skills-inner { padding: 0 13px 28px !important; }
-          .falling-icons-row { flex-direction: column; gap: 16px; }
+          .falling-icons-row { flex-direction: column; gap: 18px; }
           .falling-icons-box {
             border-radius: 12px;
-            min-height: 275px;
+            min-height: 290px;
             width: calc(100% + 14.5px);
             margin: 0 -8px;
           }
           .falling-icons-flow { padding: 18px 12px; gap: 8px; }
           .falling-icon-chip {
-            width: 45px; height: 51px; border-radius: 11px; gap: 4px; padding: 6px 3px 5px;
+            width: 49px; height: 58px; border-radius: 11px; gap: 4px; padding: 7px 3px 6px;
             box-shadow: 0 3px 6px -3px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.5);
           }
           .dark .falling-icon-chip { box-shadow: 0 3px 6px -3px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.1); }
-          .falling-icon-chip img { width: 17px; height: 17px; filter: none; }
+          .falling-icon-chip img { width: 18px; height: 18px; filter: none; }
           .dark .falling-icon-chip img.invert-in-dark { filter: invert(1); }
-          .falling-icon-textmark { font-size: 13px; }
-          .falling-icon-name { font-size: 6.6px; }
+          .falling-icon-textmark { font-size: 14px; }
+          .falling-icon-name { font-size: 6.8px; }
           .falling-icons-title { font-size: 12.5px; margin-bottom: 8px; }
         }
 
         @media ${cond.down(BP.mobileXsMax)} {
-          .falling-icons-box { min-height: 235px; }
-          .falling-icon-chip { width: 38px; height: 44px; border-radius: 10px; }
-          .falling-icon-chip img { width: 14px; height: 14px; }
-          .falling-icon-textmark { font-size: 11px; }
+          .falling-icons-box { min-height: 250px; }
+          .falling-icon-chip { width: 42px; height: 49px; border-radius: 10px; }
+          .falling-icon-chip img { width: 15px; height: 15px; }
+          .falling-icon-textmark { font-size: 12px; }
           .falling-icon-name { font-size: 6px; }
           .falling-icons-title { font-size: 11.5px; }
         }
