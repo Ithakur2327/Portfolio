@@ -488,41 +488,41 @@ export function SkillsSection() {
         }
 
         .falling-icon-chip {
-          width: 56px; height: 64px;
-          padding: 8px 4px 7px;
+          width: 52px; height: 60px;
+          padding: 7px 4px 6px;
           display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
-          gap: 5px;
-          border-radius: 12px; border: 1px solid;
+          gap: 4px;
+          border-radius: 11px; border: 1px solid;
           position: relative; z-index: 1;
           cursor: grab; touch-action: none;
           user-select: none; -webkit-user-select: none;
           backface-visibility: hidden;
           -webkit-backface-visibility: hidden;
-          box-shadow: 0 6px 12px -6px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.5);
+          box-shadow: 0 5px 10px -6px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.55);
         }
         .dark .falling-icon-chip {
           box-shadow: 0 6px 12px -6px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.1);
         }
         .falling-icon-chip:active { cursor: grabbing; }
         .falling-icon-chip img {
-          width: 22px; height: 22px; object-fit: contain;
+          width: 20px; height: 20px; object-fit: contain;
           pointer-events: none; -webkit-user-drag: none;
           position: relative; z-index: 1;
-          filter: drop-shadow(0 2px 3px rgba(0,0,0,0.28));
+          filter: drop-shadow(0 2px 3px rgba(0,0,0,0.24));
         }
         .dark .falling-icon-chip img.invert-in-dark {
           filter: invert(1) drop-shadow(0 2px 3px rgba(0,0,0,0.4));
         }
         .falling-icon-textmark {
           font-weight: 800;
-          font-size: 16px;
+          font-size: 15px;
           line-height: 1;
           letter-spacing: -0.01em;
           position: relative; z-index: 1;
         }
         .falling-icon-name {
           position: relative; z-index: 1;
-          font-family: ${MONO}; font-size: 7.3px; font-weight: 700; letter-spacing: 0.01em;
+          font-family: ${MONO}; font-size: 7px; font-weight: 700; letter-spacing: 0.01em;
           color: #161616; text-align: center; line-height: 1.15;
           display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
           overflow: hidden; width: 100%; max-width: 100%;
