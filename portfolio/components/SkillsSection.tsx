@@ -455,7 +455,7 @@ export function SkillsSection() {
           overflow: hidden;
           border-width: 1.3px;
           border-style: dashed;
-          border-color: rgba(10, 186, 181, 0.82);
+          border-color: rgba(10, 186, 181, 0.80);
           border-radius: 14px;
           background: #ffffff;
           min-height: 320px;
@@ -465,7 +465,7 @@ export function SkillsSection() {
           contain: layout paint;
         }
         .falling-icons-panel:nth-child(2) .falling-icons-box {
-          border-color: rgba(212, 175, 55, 0.82);
+          border-color: rgba(212, 175, 55, 0.80);
         }
         .dark .falling-icons-box {
           background: #000000;
@@ -474,6 +474,12 @@ export function SkillsSection() {
           border-color: rgba(10, 186, 181, 0.95);
         }
         .dark .falling-icons-panel:nth-child(2) .falling-icons-box {
+          border-color: rgba(212, 175, 55, 0.95);
+        }
+        html.light .falling-icons-panel:first-child .falling-icons-box {
+          border-color: rgba(10, 186, 181, 0.95);
+        }
+        html.light .falling-icons-panel:nth-child(2) .falling-icons-box {
           border-color: rgba(212, 175, 55, 0.95);
         }
         .falling-icons-flow {
