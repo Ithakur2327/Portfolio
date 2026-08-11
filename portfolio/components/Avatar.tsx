@@ -17,13 +17,7 @@ export function Avatar({ version }: { version?: string } = {}) {
     texD: WebGLTexture | null;
     texL: WebGLTexture | null;
     raf: number;
-    t: number;
-    blink: number;
-    blinkDir: number;
     state: { hover: boolean };
-    tid: ReturnType<typeof setTimeout> | null;
-    uTime: WebGLUniformLocation | null;
-    uBlink: WebGLUniformLocation | null;
     uTexA: WebGLUniformLocation | null;
     uTexB: WebGLUniformLocation | null;
     uMix: WebGLUniformLocation | null;
@@ -186,94 +180,16 @@ export function Avatar({ version }: { version?: string } = {}) {
         gl_Position = vec4(pos, 0.0, 1.0);
       }`;
 
-    /*
-      TWO-PASS hair detection:
-
-      Pass 1 — geometric zone:
-        Hair only lives in top 33% of the image (uv.y < 0.33).
-        Below that is face or background — never warp it.
-
-      Pass 2 — pixel color test (sampled at REST position), as a
-        CONTINUOUS mask rather than a hard yes/no cutoff:
-          brightness fades in below ~0.46, out above ~0.30 (not bright skin)
-          red channel warm relative to blue (not cool shadow)
-          not pure black background
-        Using smoothstep here instead of a hard if/else means a
-        borderline pixel (e.g. a bright hair highlight right at the
-        threshold) gets a *partial* warp instead of staying completely
-        frozen next to fully-warped neighbours — that hard edge was what
-        made the hair look patchy/glitchy instead of like it was moving
-        as one piece.
-
-      Only pixels that pass BOTH tests get warped (partially or fully).
-      Face and background pixels always sample from original uv.
-    */
     const FRAG = `
       precision highp float;
       varying vec2 uv;
       uniform sampler2D texA;
       uniform sampler2D texB;
       uniform float mixAmt;
-      uniform float time;
-      uniform float blink;
-
-      float h(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
-      float n(vec2 p){
-        vec2 i = floor(p), f = fract(p);
-        vec2 u = f * f * (3.0 - 2.0 * f);
-        return mix(
-          mix(h(i), h(i + vec2(1,0)), u.x),
-          mix(h(i + vec2(0,1)), h(i + vec2(1,1)), u.x),
-          u.y
-        );
-      }
-      float fbm(vec2 p){
-        float v = 0.0, a = 0.5;
-        for(int i = 0; i < 4; i++){
-          v += a * n(p);
-          p = p * 2.1 + vec2(1.7, 9.2);
-          a *= 0.5;
-        }
-        return v;
-      }
 
       void main(){
-        /* ── Step 1: geometric zone gate ──
-           Hair is ONLY in the top 33% of the image.
-           Transition zone softens the cutoff. */
-        float zoneWeight = smoothstep(0.36, 0.23, uv.y);
-
-        /* ── Step 2: compute warp offset ──
-           Slower, gentler than before — a calm sway instead of a fast
-           ripple reads as natural hair movement rather than a "wave". */
-        float t  = time * 0.4;
-        float dx = (fbm(uv * vec2(3.2, 2.6) + vec2(t * 0.5, t * 0.28)) - 0.5) * 2.0 * 0.013;
-        float dy = (fbm(uv * vec2(2.6, 3.2) + vec2(-t * 0.28, t * 0.4) + 4.3) - 0.5) * 2.0 * 0.006;
-
-        /* ── Step 3: sample pixel at REST uv (texA) to classify it ──
-           We need to know what this pixel IS before warping it. */
-        vec4 restColor = texture2D(texA, uv);
-        float r = restColor.r;
-        float g = restColor.g;
-        float b = restColor.b;
-        float brightness = (r + g + b) / 3.0;
-
-        /* Continuous hair mask — smoothstep gates instead of hard cuts */
-        float darkEnough = smoothstep(0.46, 0.30, brightness);
-        float notBlack   = smoothstep(0.02, 0.07, brightness);
-        float warmEnough = smoothstep(1.10, 1.45, r / max(b, 0.02));
-        float isHair = darkEnough * notBlack * warmEnough;
-
-        /* Final mask = geometry AND color, both continuous now */
-        float mask = zoneWeight * isHair;
-
-        /* ── Step 4: apply warp only where mask > 0 ── */
-        vec2 warpedUV  = clamp(uv + vec2(dx, dy), 0.001, 0.999);
-        vec2 finalUV   = mix(uv, warpedUV, mask);
-
-        /* ── Step 5: crossfade between the dark/light theme textures ── */
-        vec4 colA = texture2D(texA, finalUV);
-        vec4 colB = texture2D(texB, finalUV);
+        vec4 colA = texture2D(texA, uv);
+        vec4 colB = texture2D(texB, uv);
         gl_FragColor = mix(colA, colB, mixAmt);
       }`;
 
@@ -360,12 +276,8 @@ export function Avatar({ version }: { version?: string } = {}) {
       uTexA:  gl.getUniformLocation(prog, "texA"),
       uTexB:  gl.getUniformLocation(prog, "texB"),
       uMix:   gl.getUniformLocation(prog, "mixAmt"),
-      uTime:  gl.getUniformLocation(prog, "time"),
-      uBlink: gl.getUniformLocation(prog, "blink"),
-      raf: 0, t: 0,
-      blink: 0, blinkDir: 0,
+      raf: 0,
       state: { hover: false },
-      tid: null as ReturnType<typeof setTimeout> | null,
       activeIsDark: isDarkRef.current,
       mixFrom: null as WebGLTexture | null,
       mixTo: null as WebGLTexture | null,
@@ -428,32 +340,13 @@ export function Avatar({ version }: { version?: string } = {}) {
         // previously running forever even when nobody could see it,
         // stealing frame budget from every other section.
         if (!isVisible || document.hidden) { G.raf = 0; return; }
-        // Throttle to ~2fps when idle (not hovered, not blinking) — saves massive CPU/GPU
-        const isIdle = !G.state.hover && G.blinkDir === 0 && G.blink === 0;
+        // Throttle to ~2fps when idle (not hovered) — saves massive CPU/GPU
+        const isIdle = !G.state.hover;
         const minInterval = isIdle ? 500 : 0; // 2fps idle, 60fps active
         if (ts - last < minInterval) { G.raf = requestAnimationFrame(loop); return; }
         G.raf = requestAnimationFrame(loop);
         const dt = Math.min((ts - last) / 1000, 0.033);
         last = ts;
-        G.t += dt;
-
-        if (G.blinkDir === 1) {
-          G.blink = Math.min(1, G.blink + dt * 14);
-          if (G.blink >= 1) {
-            G.blinkDir = 0;
-            G.tid = setTimeout(() => { G.blinkDir = -1; }, 65);
-          }
-        } else if (G.blinkDir === -1) {
-          G.blink = Math.max(0, G.blink - dt * 10);
-          if (G.blink <= 0) {
-            G.blink = 0; G.blinkDir = 0;
-            if (G.state.hover) {
-              G.tid = setTimeout(() => {
-                if (G.state.hover && G.blinkDir === 0) G.blinkDir = 1;
-              }, 700 + Math.random() * 900);
-            }
-          }
-        }
 
         // Advance the theme crossfade (kicked off by the isDark effect
         // above, which sets mixFrom/mixTo/mixProgress=0 on toggle). When
@@ -477,8 +370,6 @@ export function Avatar({ version }: { version?: string } = {}) {
         gl.bindTexture(gl.TEXTURE_2D, texB);
         gl.uniform1i(G.uTexB, 1);
         gl.uniform1f(G.uMix,   G.mixProgress);
-        gl.uniform1f(G.uTime,  G.t);
-        gl.uniform1f(G.uBlink, G.blink);
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
       };
       loopFn = loop;
@@ -487,11 +378,9 @@ export function Avatar({ version }: { version?: string } = {}) {
 
     const onEnter = () => {
       G.state.hover = true;
-      if (G.blinkDir === 0 && G.blink < 0.01) G.blinkDir = 1;
     };
     const onLeave = () => {
       G.state.hover = false;
-      if (G.tid) { clearTimeout(G.tid); G.tid = null; }
     };
     canvas.addEventListener("mouseenter", onEnter);
     canvas.addEventListener("mouseleave", onLeave);
@@ -510,7 +399,6 @@ export function Avatar({ version }: { version?: string } = {}) {
 
     return () => {
       cancelAnimationFrame(G.raf);
-      if (G.tid) clearTimeout(G.tid);
       io.disconnect();
       ro.disconnect();
       document.removeEventListener("visibilitychange", onVisibilityChange);
