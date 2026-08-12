@@ -499,13 +499,13 @@ export function SkillsSection() {
           display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
           gap: 4px;
           border-radius: 12px; border: 1px solid;
-          background: linear-gradient(180deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.04) 46%, rgba(0,0,0,0.04) 100%), var(--bg-secondary);
+          background: linear-gradient(180deg, #f9fafb 0%, #e7eaee 36%, #dfe3e8 100%);
           position: relative; z-index: 1;
           cursor: grab; touch-action: none;
           user-select: none; -webkit-user-select: none;
           backface-visibility: hidden;
           -webkit-backface-visibility: hidden;
-          box-shadow: inset 0 1px 0 rgba(255,255,255,0.30), inset 0 -3px 0 rgba(0,0,0,0.12), 0 10px 12px -10px rgba(0,0,0,0.52);
+          box-shadow: inset 0 1px 0 rgba(255,255,255,0.9), inset 0 -4px 0 rgba(0,0,0,0.08), 0 8px 10px -12px rgba(0,0,0,0.38), 0 0 0 1px rgba(255,255,255,0.25);
         }
         .dark .falling-icon-chip {
           background: linear-gradient(180deg, #1a1a1d 0%, #111214 28%, #090a0b 100%);
@@ -553,13 +553,14 @@ export function SkillsSection() {
           .falling-icons-box { min-height: 240px; }
           .falling-icons-flow { padding: 16px 14px; gap: 8px; }
           .falling-icon-chip {
-            width: 66px; height: 60px; border-radius: 12px; gap: 5px; padding: 7px 5px; background: var(--bg-secondary);
-            box-shadow: inset 0 1px 0 rgba(255,255,255,0.20), inset 0 -4px 0 rgba(0,0,0,0.08), 0 10px 14px -12px rgba(0,0,0,0.56);
+            width: 66px; height: 60px; border-radius: 12px; gap: 5px; padding: 7px 5px;
+            background: linear-gradient(180deg, #f9fafb 0%, #e7eaee 36%, #dfe3e8 100%);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.9), inset 0 -4px 0 rgba(0,0,0,0.08), 0 8px 10px -12px rgba(0,0,0,0.38), 0 0 0 1px rgba(255,255,255,0.25);
           }
           .dark .falling-icon-chip {
             background: linear-gradient(180deg, #1a1a1d 0%, #111214 28%, #090a0b 100%);
             border-color: rgba(255,255,255,0.10);
-            box-shadow: inset 0 1px 0 rgba(255,255,255,0.16), inset 0 -4px 0 rgba(0,0,0,0.46), 0 10px 14px -12px rgba(0,0,0,0.9);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.16), inset 0 -3px 0 rgba(0,0,0,0.42), 0 8px 12px -12px rgba(0,0,0,0.84);
           }
           .falling-icon-chip img { width: 20px; height: 20px; }
           .falling-icon-textmark { font-size: 14px; }
@@ -576,13 +577,14 @@ export function SkillsSection() {
           }
           .falling-icons-flow { padding: 18px 12px; gap: 8px; }
           .falling-icon-chip {
-            width: 54px; height: 58px; border-radius: 12px; gap: 4px; padding: 7px 4px 6px; background: var(--bg-secondary);
-            box-shadow: inset 0 1px 0 rgba(255,255,255,0.18), inset 0 -4px 0 rgba(0,0,0,0.08), 0 10px 14px -12px rgba(0,0,0,0.52);
+            width: 54px; height: 58px; border-radius: 12px; gap: 4px; padding: 7px 4px 6px;
+            background: linear-gradient(180deg, #f9fafb 0%, #e7eaee 36%, #dfe3e8 100%);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.9), inset 0 -4px 0 rgba(0,0,0,0.08), 0 8px 10px -12px rgba(0,0,0,0.38), 0 0 0 1px rgba(255,255,255,0.25);
           }
           .dark .falling-icon-chip {
             background: linear-gradient(180deg, #1a1a1d 0%, #111214 28%, #090a0b 100%);
             border-color: rgba(255,255,255,0.10);
-            box-shadow: inset 0 1px 0 rgba(255,255,255,0.16), inset 0 -4px 0 rgba(0,0,0,0.46), 0 10px 14px -12px rgba(0,0,0,0.9);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.16), inset 0 -3px 0 rgba(0,0,0,0.42), 0 8px 12px -12px rgba(0,0,0,0.84);
           }
           .falling-icon-chip img { width: 18px; height: 18px; filter: none; }
           .dark .falling-icon-chip img.invert-in-dark { filter: invert(1); }
