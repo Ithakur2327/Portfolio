@@ -508,9 +508,9 @@ export function SkillsSection() {
           box-shadow: inset 0 1px 0 rgba(255,255,255,0.30), inset 0 -3px 0 rgba(0,0,0,0.12), 0 10px 12px -10px rgba(0,0,0,0.52);
         }
         .dark .falling-icon-chip {
-          background: linear-gradient(180deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.02) 32%, rgba(0,0,0,0.52) 100%), #080808;
-          border-color: rgba(255,255,255,0.16);
-          box-shadow: inset 0 1px 0 rgba(255,255,255,0.22), inset 0 -5px 0 rgba(0,0,0,0.42), 0 12px 16px -12px rgba(0,0,0,0.9), 0 0 0 1px rgba(255,255,255,0.02);
+          background: linear-gradient(180deg, #1a1a1d 0%, #111214 28%, #090a0b 100%);
+          border-color: rgba(255,255,255,0.10);
+          box-shadow: inset 0 1px 0 rgba(255,255,255,0.18), inset 0 -3px 0 rgba(0,0,0,0.52), 0 8px 14px -10px rgba(0,0,0,0.95), 0 0 0 1px rgba(255,255,255,0.02);
         }
         .falling-icon-chip:active { cursor: grabbing; }
         .falling-icon-chip img {
@@ -557,8 +557,9 @@ export function SkillsSection() {
             box-shadow: inset 0 1px 0 rgba(255,255,255,0.20), inset 0 -4px 0 rgba(0,0,0,0.08), 0 10px 14px -12px rgba(0,0,0,0.56);
           }
           .dark .falling-icon-chip {
-            background: #111111;
-            box-shadow: inset 0 1px 0 rgba(255,255,255,0.16), inset 0 -5px 0 rgba(0,0,0,0.36), 0 12px 16px -12px rgba(0,0,0,0.82);
+            background: linear-gradient(180deg, #1a1a1d 0%, #111214 28%, #090a0b 100%);
+            border-color: rgba(255,255,255,0.10);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.16), inset 0 -4px 0 rgba(0,0,0,0.46), 0 10px 14px -12px rgba(0,0,0,0.9);
           }
           .falling-icon-chip img { width: 20px; height: 20px; }
           .falling-icon-textmark { font-size: 14px; }
@@ -578,7 +579,11 @@ export function SkillsSection() {
             width: 54px; height: 58px; border-radius: 12px; gap: 4px; padding: 7px 4px 6px; background: var(--bg-secondary);
             box-shadow: inset 0 1px 0 rgba(255,255,255,0.18), inset 0 -4px 0 rgba(0,0,0,0.08), 0 10px 14px -12px rgba(0,0,0,0.52);
           }
-          .dark .falling-icon-chip { background: #111111; box-shadow: inset 0 1px 0 rgba(255,255,255,0.18), inset 0 -5px 0 rgba(0,0,0,0.36), 0 12px 16px -12px rgba(0,0,0,0.82); }
+          .dark .falling-icon-chip {
+            background: linear-gradient(180deg, #1a1a1d 0%, #111214 28%, #090a0b 100%);
+            border-color: rgba(255,255,255,0.10);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.16), inset 0 -4px 0 rgba(0,0,0,0.46), 0 10px 14px -12px rgba(0,0,0,0.9);
+          }
           .falling-icon-chip img { width: 18px; height: 18px; filter: none; }
           .dark .falling-icon-chip img.invert-in-dark { filter: invert(1); }
           .falling-icon-textmark { font-size: 14px; }
