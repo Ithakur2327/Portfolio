@@ -499,17 +499,18 @@ export function SkillsSection() {
           display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
           gap: 4px;
           border-radius: 12px; border: 1px solid;
-          background: var(--bg-secondary);
+          background: linear-gradient(180deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.04) 46%, rgba(0,0,0,0.04) 100%), var(--bg-secondary);
           position: relative; z-index: 1;
           cursor: grab; touch-action: none;
           user-select: none; -webkit-user-select: none;
           backface-visibility: hidden;
           -webkit-backface-visibility: hidden;
-          box-shadow: none;
+          box-shadow: inset 0 1px 0 rgba(255,255,255,0.30), inset 0 -3px 0 rgba(0,0,0,0.12), 0 10px 12px -10px rgba(0,0,0,0.52);
         }
         .dark .falling-icon-chip {
-          background: #111111;
-          box-shadow: none;
+          background: linear-gradient(180deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.02) 32%, rgba(0,0,0,0.52) 100%), #080808;
+          border-color: rgba(255,255,255,0.16);
+          box-shadow: inset 0 1px 0 rgba(255,255,255,0.22), inset 0 -5px 0 rgba(0,0,0,0.42), 0 12px 16px -12px rgba(0,0,0,0.9), 0 0 0 1px rgba(255,255,255,0.02);
         }
         .falling-icon-chip:active { cursor: grabbing; }
         .falling-icon-chip img {
