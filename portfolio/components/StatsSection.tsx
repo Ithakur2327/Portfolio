@@ -909,7 +909,7 @@ export function StatsSection() {
         .stat-card-3d {
           padding: 12px 14px;
           background: var(--bg-secondary);
-          border: 1.3px dashed rgba(10, 186, 181, 0.65);
+          border: 1.3px dashed rgba(10, 186, 181, 0.55);
           border-radius: 10px;
           position: relative;
           display: flex;
@@ -921,16 +921,16 @@ export function StatsSection() {
           min-width: 0;
         }
         .about-panels > .stat-card-3d:first-child {
-          border-color: rgba(10, 186, 181, 0.80);
+          border-color: rgba(10, 186, 181, 0.55);
         }
         .about-panels > .stat-card-3d:nth-child(2) {
-          border-color: rgba(212, 175, 55, 0.80);
+          border-color: rgba(212, 175, 55, 0.55);
         }
         html.light .about-panels > .stat-card-3d:first-child {
-          border-color: rgba(10, 186, 181, 0.95);
+          border-color: rgba(10, 186, 181, 0.55);
         }
         html.light .about-panels > .stat-card-3d:nth-child(2) {
-          border-color: rgba(212, 175, 55, 0.95);
+          border-color: rgba(212, 175, 55, 0.55);
         }
         .stat-card-3d:hover {
           border-color: var(--text-muted);
