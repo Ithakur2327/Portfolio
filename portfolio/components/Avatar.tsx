@@ -16,43 +16,33 @@ export function Avatar({ version }: { version?: string } = {}) {
     prog: WebGLProgram;
     texD: WebGLTexture | null;
     texL: WebGLTexture | null;
-    raf: number;
-    state: { hover: boolean };
-    uTexA: WebGLUniformLocation | null;
-    uTexB: WebGLUniformLocation | null;
-    uMix: WebGLUniformLocation | null;
+    uTex: WebGLUniformLocation | null;
     activeIsDark: boolean;
-    mixFrom: WebGLTexture | null;
-    mixTo: WebGLTexture | null;
-    mixProgress: number;
+    activeTex: WebGLTexture | null;
   } | null>(null);
+  const renderRef = useRef<(() => void) | null>(null);
 
   useEffect(() => { isDarkRef.current = isDark; }, [isDark]);
 
-  // On theme toggle, start a smooth crossfade between the dark/light
-  // textures instead of a hard instant swap. The two photos look
-  // noticeably different (different background/lighting), so an instant
-  // cut reads as a "glitch" — fading between them over ~340ms reads as an
-  // intentional transition instead. This also keeps the render loop at
-  // full framerate for the duration of the fade so it doesn't get caught
-  // by the idle throttle partway through.
+  // Theme changes are handled by the site-wide View Transition (see
+  // ThemeProvider) — it already smooths the whole page, including this
+  // canvas, via its own snapshot-based wipe. Running a SEPARATE internal
+  // crossfade here (as this used to) meant the view-transition's "after"
+  // snapshot froze the avatar mid-fade (since it's captured synchronously,
+  // before the fade had progressed), then the live canvas finished its own
+  // fade invisibly behind that frozen snapshot — producing a visible snap
+  // right as the outer wipe finished. Switching the active texture
+  // instantly keeps this in sync with how every other color on the page
+  // updates (no transition of their own, smoothed entirely by the outer
+  // wipe), so there's exactly one transition system instead of two
+  // fighting each other.
   useEffect(() => {
     const G = glRef.current;
     if (!G) return;
     const nextTex = isDark ? G.texD : G.texL;
     if (!nextTex) return; // textures not loaded yet — boot() sets initial state directly
-    const curTex = G.activeIsDark ? G.texD : G.texL;
-    if (nextTex === G.mixTo && G.activeIsDark === isDark) return; // no real change
-
-    G.mixFrom = curTex ?? nextTex;
-    G.mixTo = nextTex;
-    G.mixProgress = 0;
+    G.activeTex = nextTex;
     G.activeIsDark = isDark;
-
-    const prevHover = G.state.hover;
-    G.state.hover = true;
-    const t = setTimeout(() => { G.state.hover = prevHover; }, 420);
-    return () => clearTimeout(t);
   }, [isDark]);
 
   // Waits for the intro overlay to finish before doing ANY of the heavy
@@ -183,14 +173,10 @@ export function Avatar({ version }: { version?: string } = {}) {
     const FRAG = `
       precision highp float;
       varying vec2 uv;
-      uniform sampler2D texA;
-      uniform sampler2D texB;
-      uniform float mixAmt;
+      uniform sampler2D tex;
 
       void main(){
-        vec4 colA = texture2D(texA, uv);
-        vec4 colB = texture2D(texB, uv);
-        gl_FragColor = mix(colA, colB, mixAmt);
+        gl_FragColor = texture2D(tex, uv);
       }`;
 
     const mkS = (type: number, src: string) => {
@@ -273,30 +259,35 @@ export function Avatar({ version }: { version?: string } = {}) {
       gl, prog,
       texD: null as WebGLTexture | null,
       texL: null as WebGLTexture | null,
-      uTexA:  gl.getUniformLocation(prog, "texA"),
-      uTexB:  gl.getUniformLocation(prog, "texB"),
-      uMix:   gl.getUniformLocation(prog, "mixAmt"),
+      uTex: gl.getUniformLocation(prog, "tex"),
       raf: 0,
       state: { hover: false },
       activeIsDark: isDarkRef.current,
-      mixFrom: null as WebGLTexture | null,
-      mixTo: null as WebGLTexture | null,
-      mixProgress: 1,
+      activeTex: null as WebGLTexture | null,
     };
     glRef.current = G;
+
+    const render = () => {
+      const tex = G.activeTex;
+      if (!tex) return;
+      gl.viewport(0, 0, canvas.width, canvas.height);
+      gl.clearColor(0, 0, 0, 0);
+      gl.clear(gl.COLOR_BUFFER_BIT);
+      gl.activeTexture(gl.TEXTURE0);
+      gl.bindTexture(gl.TEXTURE_2D, tex);
+      gl.uniform1i(G.uTex, 0);
+      gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+    };
+    renderRef.current = render;
 
     let loaded = 0;
     const boot = () => {
       if (++loaded < 2) return;
       // Both textures are ready — settle directly on the correct theme's
-      // texture with no fade (a fade only makes sense for a genuine
-      // toggle after the avatar is already visible).
+      // texture and paint once.
       G.activeIsDark = isDarkRef.current;
-      const initTex = G.activeIsDark ? G.texD : G.texL;
-      G.mixFrom = initTex;
-      G.mixTo = initTex;
-      G.mixProgress = 1;
-      startLoop();
+      G.activeTex = G.activeIsDark ? G.texD : G.texL;
+      render();
     };
 
     const imgD = new window.Image();
@@ -313,78 +304,6 @@ export function Avatar({ version }: { version?: string } = {}) {
     imgL.onerror = () => { G.texL = makeFallback(false); boot(); };
     imgL.src = version ? `/avatar-light.jpg?v=${version}` : "/avatar-light.jpg";
 
-    let isVisible = true;
-    let loopFn: ((ts: number) => void) | null = null;
-
-    const resumeIfNeeded = () => {
-      if (isVisible && !document.hidden && G.raf === 0 && loopFn) {
-        G.raf = requestAnimationFrame(loopFn);
-      }
-    };
-
-    const io = new IntersectionObserver(
-      ([entry]) => { isVisible = entry.isIntersecting; resumeIfNeeded(); },
-      { threshold: 0 }
-    );
-    io.observe(canvas);
-
-    const onVisibilityChange = () => resumeIfNeeded();
-    document.addEventListener("visibilitychange", onVisibilityChange);
-
-    const startLoop = () => {
-      let last = 0;
-      const loop = (ts: number) => {
-        // Don't keep scheduling frames while off-screen or the tab is
-        // backgrounded — the shader work (per-pixel noise warp) is the
-        // single most expensive thing running on the page, and it was
-        // previously running forever even when nobody could see it,
-        // stealing frame budget from every other section.
-        if (!isVisible || document.hidden) { G.raf = 0; return; }
-        // Throttle to ~2fps when idle (not hovered) — saves massive CPU/GPU
-        const isIdle = !G.state.hover;
-        const minInterval = isIdle ? 500 : 0; // 2fps idle, 60fps active
-        if (ts - last < minInterval) { G.raf = requestAnimationFrame(loop); return; }
-        G.raf = requestAnimationFrame(loop);
-        const dt = Math.min((ts - last) / 1000, 0.033);
-        last = ts;
-
-        // Advance the theme crossfade (kicked off by the isDark effect
-        // above, which sets mixFrom/mixTo/mixProgress=0 on toggle). When
-        // no fade is in progress mixProgress just sits at 1 and mixFrom
-        // === mixTo, so this is a no-op the rest of the time.
-        if (G.mixProgress < 1) {
-          G.mixProgress = Math.min(1, G.mixProgress + dt / 0.34); // ~340ms fade
-        }
-
-        const texA = G.mixFrom;
-        const texB = G.mixTo;
-        if (!texA || !texB) return;
-
-        gl.viewport(0, 0, canvas.width, canvas.height);
-        gl.clearColor(0, 0, 0, 0);
-        gl.clear(gl.COLOR_BUFFER_BIT);
-        gl.activeTexture(gl.TEXTURE0);
-        gl.bindTexture(gl.TEXTURE_2D, texA);
-        gl.uniform1i(G.uTexA, 0);
-        gl.activeTexture(gl.TEXTURE1);
-        gl.bindTexture(gl.TEXTURE_2D, texB);
-        gl.uniform1i(G.uTexB, 1);
-        gl.uniform1f(G.uMix,   G.mixProgress);
-        gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
-      };
-      loopFn = loop;
-      G.raf = requestAnimationFrame(loop);
-    };
-
-    const onEnter = () => {
-      G.state.hover = true;
-    };
-    const onLeave = () => {
-      G.state.hover = false;
-    };
-    canvas.addEventListener("mouseenter", onEnter);
-    canvas.addEventListener("mouseleave", onLeave);
-
     const ro = new ResizeObserver((entries) => {
       const r = entries[0]?.contentRect;
       if (!r) return;
@@ -394,16 +313,13 @@ export function Avatar({ version }: { version?: string } = {}) {
       SIZE = next;
       canvas.width  = SIZE;
       canvas.height = SIZE;
+      render();
     });
     ro.observe(canvas);
 
     return () => {
-      cancelAnimationFrame(G.raf);
-      io.disconnect();
+      renderRef.current = null;
       ro.disconnect();
-      document.removeEventListener("visibilitychange", onVisibilityChange);
-      canvas.removeEventListener("mouseenter", onEnter);
-      canvas.removeEventListener("mouseleave", onLeave);
       if (G.texD) gl.deleteTexture(G.texD);
       if (G.texL) gl.deleteTexture(G.texL);
       gl.deleteBuffer(buf);
