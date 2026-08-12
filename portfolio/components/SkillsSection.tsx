@@ -494,8 +494,8 @@ export function SkillsSection() {
         }
 
         .falling-icon-chip {
-          width: 64px; height: 58px;
-          padding: 7px 5px 6px;
+          width: 60px; height: 56px;
+          padding: 6px 4px 5px;
           display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
           gap: 4px;
           border-radius: 12px; border: 1px solid;
@@ -567,7 +567,7 @@ export function SkillsSection() {
           }
           .falling-icons-flow { padding: 18px 12px; gap: 8px; }
           .falling-icon-chip {
-            width: 49px; height: 58px; border-radius: 11px; gap: 4px; padding: 7px 3px 6px;
+            width: 52px; height: 60px; border-radius: 11px; gap: 4px; padding: 7px 4px 6px;
             box-shadow: 0 3px 6px -3px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.5);
           }
           .dark .falling-icon-chip { box-shadow: 0 3px 6px -3px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.1); }
