@@ -548,21 +548,25 @@ export function SkillsSection() {
         }
         ${mq.tablet} {
           .skills-inner { max-width: 100% !important; padding: 0 24px 40px !important; }
-          .falling-icons-row { flex-direction: column; gap: 18px; }
+          .falling-icons-row { flex-direction: column; gap: 24px; }
           .falling-icons-panel { width: 100%; }
-          .falling-icons-box { min-height: 220px; }
+          .falling-icons-box { min-height: 240px; }
           .falling-icons-flow { padding: 16px 14px; gap: 8px; }
           .falling-icon-chip {
-            width: 66px; height: 58px; border-radius: 12px; gap: 5px; padding: 7px 5px; background: var(--bg-secondary); box-shadow: none;
+            width: 66px; height: 60px; border-radius: 12px; gap: 5px; padding: 7px 5px; background: var(--bg-secondary);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.20), inset 0 -4px 0 rgba(0,0,0,0.08), 0 10px 14px -12px rgba(0,0,0,0.56);
           }
-          .dark .falling-icon-chip { background: #111111; }
+          .dark .falling-icon-chip {
+            background: #111111;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.16), inset 0 -5px 0 rgba(0,0,0,0.36), 0 12px 16px -12px rgba(0,0,0,0.82);
+          }
           .falling-icon-chip img { width: 20px; height: 20px; }
           .falling-icon-textmark { font-size: 14px; }
           .falling-icon-name { font-size: 7.5px; }
         }
         ${mq.mobile} {
           .skills-inner { padding: 0 13px 28px !important; }
-          .falling-icons-row { flex-direction: column; gap: 18px; }
+          .falling-icons-row { flex-direction: column; gap: 22px; }
           .falling-icons-box {
             border-radius: 12px;
             min-height: 290px;
@@ -571,9 +575,10 @@ export function SkillsSection() {
           }
           .falling-icons-flow { padding: 18px 12px; gap: 8px; }
           .falling-icon-chip {
-            width: 54px; height: 58px; border-radius: 12px; gap: 4px; padding: 7px 4px 6px; background: var(--bg-secondary); box-shadow: none;
+            width: 54px; height: 58px; border-radius: 12px; gap: 4px; padding: 7px 4px 6px; background: var(--bg-secondary);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.18), inset 0 -4px 0 rgba(0,0,0,0.08), 0 10px 14px -12px rgba(0,0,0,0.52);
           }
-          .dark .falling-icon-chip { background: #111111; box-shadow: none; }
+          .dark .falling-icon-chip { background: #111111; box-shadow: inset 0 1px 0 rgba(255,255,255,0.18), inset 0 -5px 0 rgba(0,0,0,0.36), 0 12px 16px -12px rgba(0,0,0,0.82); }
           .falling-icon-chip img { width: 18px; height: 18px; filter: none; }
           .dark .falling-icon-chip img.invert-in-dark { filter: invert(1); }
           .falling-icon-textmark { font-size: 14px; }
