@@ -577,7 +577,7 @@ export function SkillsSection() {
           }
           .falling-icons-flow { padding: 18px 12px; gap: 8px; }
           .falling-icon-chip {
-            width: 54px; height: 58px; border-radius: 12px; gap: 4px; padding: 7px 4px 6px;
+            width: 54px; height: 58px; border-radius: 12px; gap: 4px; padding: 6px 4px 6px;
             background: linear-gradient(180deg, #f9fafb 0%, #e7eaee 36%, #dfe3e8 100%);
             box-shadow: inset 0 1px 0 rgba(255,255,255,0.9), inset 0 -4px 0 rgba(0,0,0,0.08), 0 8px 10px -12px rgba(0,0,0,0.38), 0 0 0 1px rgba(255,255,255,0.25);
           }
@@ -586,10 +586,10 @@ export function SkillsSection() {
             border-color: rgba(255,255,255,0.10);
             box-shadow: inset 0 1px 0 rgba(255,255,255,0.16), inset 0 -3px 0 rgba(0,0,0,0.42), 0 8px 12px -12px rgba(0,0,0,0.84);
           }
-          .falling-icon-chip img { width: 18px; height: 18px; filter: none; }
+          .falling-icon-chip img { width: 20px; height: 20px; filter: none; }
           .dark .falling-icon-chip img.invert-in-dark { filter: invert(1); }
           .falling-icon-textmark { font-size: 14px; }
-          .falling-icon-name { font-size: 6.8px; }
+          .falling-icon-name { font-size: 7.5px; }
           .falling-icons-title { font-size: 12.5px; margin-bottom: 8px; }
         }
 
