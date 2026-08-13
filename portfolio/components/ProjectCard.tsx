@@ -79,28 +79,9 @@ export function ProjectCard({ proj, index, visible, isDesktop, isHidden, onOpen,
   const { theme } = useTheme();
   const isDark = theme === "dark";
 
-  useEffect(() => {
-    if (isHidden) setHovered(false);
-  }, [isHidden]);
-
   const shown = isDesktop ? hovered : inView;
 
   const cid = (id: string) => (isDesktop ? id : undefined);
-
-  if (isHidden) {
-    return (
-      <div aria-hidden="true" style={{ width: "100%", visibility: "hidden" }}>
-        <div style={{ width: "100%", padding: 2, borderRadius: 18, boxSizing: "border-box" }}>
-          <div style={{ width: "100%", aspectRatio: "16 / 9", borderRadius: 16 }} />
-        </div>
-        <div style={{ width: "100%", padding: "12px 8px", display: "flex", flexDirection: "column", gap: 16 }}>
-          <div style={{ height: 20 }} />
-          <div style={{ height: 60 }} />
-          <div style={{ height: 46 }} />
-        </div>
-      </div>
-    );
-  }
 
   return (
     <motion.div
@@ -108,7 +89,12 @@ export function ProjectCard({ proj, index, visible, isDesktop, isHidden, onOpen,
       animate={{ opacity: visible ? 1 : 0, y: visible ? 0 : 20 }}
       transition={{ delay: visible ? 0.055 * index : 0, type: "spring", stiffness: 190, damping: 30, mass: 0.9 }}
       layoutId={cid(`card-container-${scope}-${proj.name}`)}
-      style={{ position: "relative", width: "100%" }}
+      style={{
+        position: "relative",
+        width: "100%",
+        visibility: isHidden ? "hidden" : "visible",
+        pointerEvents: isHidden ? "none" : undefined,
+      }}
     >
       <motion.div
         onClick={onOpen}
