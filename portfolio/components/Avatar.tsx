@@ -43,6 +43,7 @@ export function Avatar({ version }: { version?: string } = {}) {
     if (!nextTex) return; // textures not loaded yet — boot() sets initial state directly
     G.activeTex = nextTex;
     G.activeIsDark = isDark;
+    renderRef.current?.();
   }, [isDark]);
 
   // Waits for the intro overlay to finish before doing ANY of the heavy
@@ -111,40 +112,13 @@ export function Avatar({ version }: { version?: string } = {}) {
       // shader warp effect, but never an empty avatar.
       const ctx2d = canvas.getContext("2d");
       if (!ctx2d) return;
-      let currentImg: HTMLImageElement | null = null;
-      let fadeRaf = 0;
       const draw = (src: string) => {
         const img = new window.Image();
         img.crossOrigin = "anonymous";
         img.onload = () => {
           const size = canvas.width || 512;
-          const prevImg = currentImg;
-          currentImg = img;
-          cancelAnimationFrame(fadeRaf);
-
-          if (!prevImg) {
-            // First paint — nothing to fade from, just draw it.
-            ctx2d.clearRect(0, 0, size, size);
-            ctx2d.drawImage(img, 0, 0, size, size);
-            return;
-          }
-
-          // Same ~340ms crossfade the WebGL path uses, so a theme toggle
-          // never reads as an instant "pop" regardless of which rendering
-          // path this device ended up on.
-          const DURATION = 340;
-          const start = performance.now();
-          const step = (now: number) => {
-            const t = Math.min(1, (now - start) / DURATION);
-            ctx2d.clearRect(0, 0, size, size);
-            ctx2d.globalAlpha = 1;
-            ctx2d.drawImage(prevImg, 0, 0, size, size);
-            ctx2d.globalAlpha = t;
-            ctx2d.drawImage(img, 0, 0, size, size);
-            ctx2d.globalAlpha = 1;
-            if (t < 1) fadeRaf = requestAnimationFrame(step);
-          };
-          fadeRaf = requestAnimationFrame(step);
+          ctx2d.clearRect(0, 0, size, size);
+          ctx2d.drawImage(img, 0, 0, size, size);
         };
         img.src = version ? `${src}?v=${version}` : src;
       };
@@ -155,7 +129,7 @@ export function Avatar({ version }: { version?: string } = {}) {
       // same as the WebGL path does via texD/texL.
       const mo = new MutationObserver(onThemeChange);
       mo.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
-      return () => { mo.disconnect(); cancelAnimationFrame(fadeRaf); };
+      return () => mo.disconnect();
     }
 
     gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
@@ -203,8 +177,8 @@ export function Avatar({ version }: { version?: string } = {}) {
     gl.enableVertexAttribArray(aPos);
     gl.vertexAttribPointer(aPos, 2, gl.FLOAT, false, 0, 0);
 
-    // Anisotropic filtering keeps the texture sharp at glancing angles/warp
-    // instead of blurring — most desktop/mobile GPUs expose this extension.
+    // Anisotropic filtering keeps the minified texture sharp instead of
+    // blurring — most desktop/mobile GPUs expose this extension.
     const anisoExt =
       gl.getExtension("EXT_texture_filter_anisotropic") ||
       gl.getExtension("MOZ_EXT_texture_filter_anisotropic") ||
@@ -216,10 +190,11 @@ export function Avatar({ version }: { version?: string } = {}) {
       gl.bindTexture(gl.TEXTURE_2D, tx);
       gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, src);
 
-      // Source images are 1024x1024 (power-of-two), so mipmaps are normally
-      // available — trilinear minification removes the faint shimmer/moire
-      // the noise-warp shader could otherwise pick up when the avatar is
-      // displayed smaller than its native resolution. generateMipmap can
+      // The source photos (1024-1256px) are often larger than the canvas
+      // render target (560-1280px, floored/capped above), so this is
+      // genuine texture minification — trilinear mipmapping avoids the
+      // shimmer/aliasing that plain linear filtering would show on fine
+      // detail (hair, skin texture) at that scale. generateMipmap can
       // still fail for a specific image/GPU combo (e.g. certain JPEG
       // chroma-subsampling or color-profile variants), so this must be
       // defensive per-texture — one bad image must never leave that
@@ -260,8 +235,6 @@ export function Avatar({ version }: { version?: string } = {}) {
       texD: null as WebGLTexture | null,
       texL: null as WebGLTexture | null,
       uTex: gl.getUniformLocation(prog, "tex"),
-      raf: 0,
-      state: { hover: false },
       activeIsDark: isDarkRef.current,
       activeTex: null as WebGLTexture | null,
     };

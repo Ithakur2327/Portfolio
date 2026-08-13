@@ -226,7 +226,6 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
           justify-content: stretch;
           border-radius: 22px;
           background: var(--bg-base);
-          transition: background-color 0.25s ease;
         }
         .h-nameblock {
           flex: 1; display: flex; flex-direction: column;
@@ -476,31 +475,13 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
             <div
               className="h-avatar"
               id="hero-avatar-anchor"
-              style={{ position: "relative" }}
+              style={{
+                backgroundImage: `url(${isDark ? "/avatar-dark.jpg" : "/avatar-light.jpg"}${avatarVersion ? `?v=${avatarVersion}` : ""})`,
+                backgroundSize: "cover",
+                backgroundPosition: "58% 40%",
+              }}
             >
-              {/* Two stacked layers crossfaded via opacity — background-image
-                  itself can't be transitioned by CSS (browsers don't animate
-                  between two different url()s), so swapping a single
-                  background-image on theme toggle always snaps instantly.
-                  This peeks through at the avatar box's edges since the box
-                  isn't a perfect square like the canvas above it, so an
-                  instant snap here reads as a flash on every device,
-                  independent of the canvas's own crossfade. */}
-              <div style={{
-                position: "absolute", inset: 0,
-                backgroundImage: `url(/avatar-dark.jpg${avatarVersion ? `?v=${avatarVersion}` : ""})`,
-                backgroundSize: "cover", backgroundPosition: "58% 40%",
-                opacity: isDark ? 1 : 0,
-                transition: "opacity 0.34s ease",
-              }} />
-              <div style={{
-                position: "absolute", inset: 0,
-                backgroundImage: `url(/avatar-light.jpg${avatarVersion ? `?v=${avatarVersion}` : ""})`,
-                backgroundSize: "cover", backgroundPosition: "58% 40%",
-                opacity: isDark ? 0 : 1,
-                transition: "opacity 0.34s ease",
-              }} />
-              <div style={{width:"100%", aspectRatio:"1 / 1", flexShrink:0, position: "relative"}}>
+              <div style={{width:"100%", aspectRatio:"1 / 1", flexShrink:0}}>
                 <Avatar version={avatarVersion} />
               </div>
             </div>
