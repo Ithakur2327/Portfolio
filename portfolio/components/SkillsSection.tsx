@@ -550,10 +550,10 @@ export function SkillsSection() {
           .skills-inner { max-width: 100% !important; padding: 0 24px 40px !important; }
           .falling-icons-row { flex-direction: column; gap: 24px; }
           .falling-icons-panel { width: 100%; }
-          .falling-icons-box { min-height: 240px; }
+          .falling-icons-box { min-height: 280px; }
           .falling-icons-flow { padding: 16px 14px; gap: 8px; }
           .falling-icon-chip {
-            width: 66px; height: 60px; border-radius: 12px; gap: 5px; padding: 7px 5px;
+            width: 66px; height: 65px; border-radius: 12px; gap: 5px; padding: 5px 5px 7px;
             background: linear-gradient(180deg, #f9fafb 0%, #e7eaee 36%, #dfe3e8 100%);
             box-shadow: inset 0 1px 0 rgba(255,255,255,0.9), inset 0 -4px 0 rgba(0,0,0,0.08), 0 8px 10px -12px rgba(0,0,0,0.38), 0 0 0 1px rgba(255,255,255,0.25);
           }

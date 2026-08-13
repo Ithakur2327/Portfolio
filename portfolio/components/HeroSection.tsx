@@ -301,7 +301,7 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
             border-radius: 28px !important;
           }
           .h-nameblock h1 {
-            font-size: clamp(36px, 6vw, 64px) !important;
+            font-size: clamp(32px, 5.8vw, 56px) !important;
             font-weight: 800 !important;
             line-height: 1 !important;
             letter-spacing: 0.02em !important;
@@ -358,7 +358,7 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
             min-height: calc(clamp(178px, 19.5vw, 199px) - 14px) !important;
           }
           .h-nameblock h1 {
-            font-size: clamp(32px, 3.9vw, 46px) !important;
+            font-size: clamp(30px, 3.7vw, 42px) !important;
             font-weight: 800 !important;
             line-height: 1 !important;
           }
@@ -381,7 +381,7 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
             min-height: clamp(125px, calc(363.3px - 15.1vw), 185px) !important;
           }
           .h-nameblock h1 {
-            font-size: clamp(28px, calc(98.9px - 4.44vw), 46px) !important;
+            font-size: clamp(26px, calc(96px - 4.44vw), 42px) !important;
             font-weight: 900 !important;
           }
           .h-verified-badge {
