@@ -1,5 +1,5 @@
 "use client";
-import { useRef, useEffect, useState, useCallback } from "react";
+import { useRef, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { motion, useInView } from "motion/react";
 import Image from "next/image";
@@ -140,7 +140,7 @@ export function ProjectCard({ proj, index, visible, isDesktop, isHidden, onOpen,
             animate={shown ? { scale: 1, y: 0 } : { scale: 0.8, y: "10%" }}
             transition={isDesktop
               ? { type: "spring", stiffness: 150, damping: 22, mass: 0.85 }
-              : { type: "tween", duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+              : { type: "tween", duration: 0.95, ease: [0.16, 1, 0.3, 1] }}
             style={{ position: "absolute", inset: 0, transformOrigin: "50% 100%", willChange: "transform" }}
           >
             <motion.div
@@ -148,7 +148,7 @@ export function ProjectCard({ proj, index, visible, isDesktop, isHidden, onOpen,
               animate={shown ? { rotate: 0 } : { rotate: -7 }}
               transition={isDesktop
                 ? { type: "spring", stiffness: 150, damping: 22, mass: 0.85 }
-                : { type: "tween", duration: 0.85, delay: shown ? 0.06 : 0, ease: [0.16, 1, 0.3, 1] }}
+                : { type: "tween", duration: 1.0, delay: shown ? 0.08 : 0, ease: [0.16, 1, 0.3, 1] }}
               style={{
                 position: "absolute", inset: 0, overflow: "hidden",
                 borderRadius: 10,
@@ -172,7 +172,7 @@ export function ProjectCard({ proj, index, visible, isDesktop, isHidden, onOpen,
         </motion.div>
       </div>
 
-      <div style={{ width: "100%", padding: "12px 8px", display: "flex", flexDirection: "column", gap: 16 }}>
+      <div style={{ width: "100%", padding: "12px 3px", display: "flex", flexDirection: "column", gap: 16, boxSizing: "border-box" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <span
             style={{ fontSize: 20, fontWeight: 600, color: "var(--text-primary)", letterSpacing: "-0.01em", fontFamily: SF, lineHeight: 1.3 }}
@@ -259,8 +259,6 @@ export function ProjectModal({ proj, index, onClose, isDesktop, scope = "grid" }
   const sheet = !isDesktop;
   const lid = (id: string) => (sheet ? undefined : id);
   const sheetTransition = { type: "spring" as const, stiffness: 280, damping: 30, mass: 0.85 };
-  const [settled, setSettled] = useState(!sheet);
-  const handleClose = useCallback(() => { setSettled(false); onClose(); }, [onClose]);
 
   useEffect(() => {
     document.documentElement.style.overflow = "hidden";
@@ -276,7 +274,7 @@ export function ProjectModal({ proj, index, onClose, isDesktop, scope = "grid" }
       focusTimer = setTimeout(() => closeBtnRef.current?.focus(), 50);
     });
 
-    const esc = (e: KeyboardEvent) => { if (e.key === "Escape") handleClose(); };
+    const esc = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
 
     const trapFocus = (e: KeyboardEvent) => {
       if (e.key !== "Tab" || !modalRef.current) return;
@@ -296,7 +294,7 @@ export function ProjectModal({ proj, index, onClose, isDesktop, scope = "grid" }
     window.addEventListener("keydown", esc);
     window.addEventListener("keydown", trapFocus);
     const handler = (e: MouseEvent) => {
-      if (modalRef.current && !modalRef.current.contains(e.target as Node)) handleClose();
+      if (modalRef.current && !modalRef.current.contains(e.target as Node)) onClose();
     };
     const t = setTimeout(() => {
       document.addEventListener("mousedown", handler);
@@ -315,7 +313,7 @@ export function ProjectModal({ proj, index, onClose, isDesktop, scope = "grid" }
       clearTimeout(focusTimer);
       previouslyFocused?.focus?.();
     };
-  }, [handleClose]);
+  }, [onClose]);
 
   const contentFade = sheet
     ? { initial: false as const, animate: { opacity: 1 }, exit: { opacity: 1 } }
@@ -394,7 +392,7 @@ export function ProjectModal({ proj, index, onClose, isDesktop, scope = "grid" }
 
         <button
           ref={closeBtnRef}
-          onClick={handleClose}
+          onClick={onClose}
           aria-label="Close"
           style={{
             flexShrink: 0,
@@ -443,7 +441,7 @@ export function ProjectModal({ proj, index, onClose, isDesktop, scope = "grid" }
         initial={{ opacity: 0 }}
         animate={{ opacity: 1, transition: { duration: 0.15 } }}
         exit={{ opacity: 0, transition: { duration: 0.35 } }}
-        onClick={handleClose}
+        onClick={onClose}
         className="pm-overlay"
         style={{
           position: "fixed", inset: 0, zIndex: 9000,
@@ -463,8 +461,7 @@ export function ProjectModal({ proj, index, onClose, isDesktop, scope = "grid" }
           animate={sheet ? { opacity: 1, y: "0%", scale: 1 } : undefined}
           exit={sheet ? { opacity: 0, y: "100%", scale: 0.97 } : { opacity: 0, scale: 0.92, transition: { duration: 0.24, ease: [0.4, 0, 1, 1] } }}
           transition={sheet ? sheetTransition : SPRING}
-          onAnimationComplete={() => { if (sheet) setSettled(true); }}
-          className={`pm-shell${settled ? " pm-shell-settled" : ""}`}
+          className="pm-shell"
           style={{
             pointerEvents: "auto",
             width: "100%", maxWidth: 960,
@@ -495,24 +492,22 @@ export function ProjectModal({ proj, index, onClose, isDesktop, scope = "grid" }
               display: flex;
               flex-direction: column;
               max-height: 92vh;
-              background: var(--modal-glass-bg);
+              background: var(--modal-solid-bg);
               border: 1px solid var(--modal-glass-border);
             }
-            /* backdrop-filter is compositor-heavy and has to be recomputed
-               every frame while the sheet is translating/scaling in or out
-               — that's the actual source of jank during the open/close
-               animation, not the blur effect itself. Rather than dropping
-               the blur (which loses the intended glass look), it's applied
-               only once .pm-shell-settled is added — right after the
-               entrance animation finishes — and removed again the instant
-               a close is requested, so the expensive part never runs while
-               the sheet is actually moving. */
-            .pm-shell.pm-shell-settled {
-              backdrop-filter: blur(14px) saturate(160%);
-              -webkit-backdrop-filter: blur(14px) saturate(160%);
-            }
+            /* Mobile/tablet gets a fully solid background (above) — no
+               translucency and no backdrop-filter at all, so nothing behind
+               the sheet is ever visible and there's zero blur cost during
+               the open/close slide animation. The glass/blur look is only
+               used from laptop width up, where the modal isn't driven by a
+               full-screen sliding sheet transform. */
             ${mq.laptopUp} {
-              .pm-shell { max-height: 82vh; }
+              .pm-shell {
+                max-height: 82vh;
+                background: var(--modal-glass-bg);
+                backdrop-filter: blur(14px) saturate(160%);
+                -webkit-backdrop-filter: blur(14px) saturate(160%);
+              }
             }
 
             /* Body is a plain, non-layout-animated div that actually scrolls */
