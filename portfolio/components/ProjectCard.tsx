@@ -81,21 +81,25 @@ export function ProjectCard({ proj, index, visible, isDesktop, isHidden, onOpen,
   const { theme } = useTheme();
   const isDark = theme === "dark";
 
+  const cardRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
     if (wasHiddenRef.current && !isHidden) {
       // The modal that was covering this card just started closing —
       // keep the image in its full/untitled look for exactly as long as
-      // the modal's own close animation takes (240ms), then let it settle
-      // into the resting tilted pose. This is timer-driven rather than
-      // relying on a real mouseleave, since the click that closes the
-      // modal (close button, backdrop, Escape) usually isn't physically
-      // over this card, so a hover-based reset wouldn't reliably fire —
-      // and hovered is reset here too, since it could otherwise be stuck
-      // stale at true (set before the modal opened, never cleared while
-      // pointer-events was off) with nothing left to ever clear it.
-      setHovered(false);
+      // the modal's own close animation takes (240ms), regardless of
+      // where the mouse is. Once that's done, check where the mouse
+      // *actually* is right now: still over the card → stay full; not
+      // over it → tilt back smoothly. This is timer + real-position
+      // driven rather than relying on a mouseleave event firing, since
+      // the click that closes the modal (close button, backdrop, Escape)
+      // usually isn't physically over this card, so a plain hover-based
+      // reset wouldn't reliably fire either way.
       setJustClosed(true);
-      const t = setTimeout(() => setJustClosed(false), 240);
+      const t = setTimeout(() => {
+        setJustClosed(false);
+        setHovered(cardRef.current?.matches(":hover") ?? false);
+      }, 240);
       wasHiddenRef.current = isHidden;
       return () => clearTimeout(t);
     }
@@ -120,6 +124,7 @@ export function ProjectCard({ proj, index, visible, isDesktop, isHidden, onOpen,
       }}
     >
       <motion.div
+        ref={cardRef}
         onClick={onOpen}
         onHoverStart={() => setHovered(true)}
         onHoverEnd={() => setHovered(false)}
@@ -162,16 +167,16 @@ export function ProjectCard({ proj, index, visible, isDesktop, isHidden, onOpen,
             initial={false}
             animate={shown ? { scale: 1, y: 0 } : { scale: 0.8, y: "10%" }}
             transition={isDesktop
-              ? { type: "spring", stiffness: 150, damping: 22, mass: 0.85 }
-              : { type: "tween", duration: 0.95, ease: [0.16, 1, 0.3, 1] }}
+              ? { type: "spring", stiffness: 115, damping: 24, mass: 1 }
+              : { type: "tween", duration: 1.05, ease: [0.16, 1, 0.3, 1] }}
             style={{ position: "absolute", inset: 0, transformOrigin: "50% 100%", willChange: "transform" }}
           >
             <motion.div
               initial={false}
               animate={shown ? { rotate: 0 } : { rotate: -7 }}
               transition={isDesktop
-                ? { type: "spring", stiffness: 150, damping: 22, mass: 0.85 }
-                : { type: "tween", duration: 1.0, delay: shown ? 0.08 : 0, ease: [0.16, 1, 0.3, 1] }}
+                ? { type: "spring", stiffness: 115, damping: 24, mass: 1 }
+                : { type: "tween", duration: 1.1, delay: shown ? 0.08 : 0, ease: [0.16, 1, 0.3, 1] }}
               style={{
                 position: "absolute", inset: 0, overflow: "hidden",
                 borderRadius: 10,
