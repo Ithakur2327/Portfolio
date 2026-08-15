@@ -76,10 +76,33 @@ export function ProjectCard({ proj, index, visible, isDesktop, isHidden, onOpen,
   const frameRef = useRef<HTMLDivElement>(null);
   const inView = useInView(frameRef, { amount: 0.6 });
   const [hovered, setHovered] = useState(false);
+  const [justClosed, setJustClosed] = useState(false);
+  const wasHiddenRef = useRef(isHidden);
   const { theme } = useTheme();
   const isDark = theme === "dark";
 
-  const shown = isDesktop ? hovered : inView;
+  useEffect(() => {
+    if (wasHiddenRef.current && !isHidden) {
+      // The modal that was covering this card just started closing —
+      // keep the image in its full/untitled look for exactly as long as
+      // the modal's own close animation takes (240ms), then let it settle
+      // into the resting tilted pose. This is timer-driven rather than
+      // relying on a real mouseleave, since the click that closes the
+      // modal (close button, backdrop, Escape) usually isn't physically
+      // over this card, so a hover-based reset wouldn't reliably fire —
+      // and hovered is reset here too, since it could otherwise be stuck
+      // stale at true (set before the modal opened, never cleared while
+      // pointer-events was off) with nothing left to ever clear it.
+      setHovered(false);
+      setJustClosed(true);
+      const t = setTimeout(() => setJustClosed(false), 240);
+      wasHiddenRef.current = isHidden;
+      return () => clearTimeout(t);
+    }
+    wasHiddenRef.current = isHidden;
+  }, [isHidden]);
+
+  const shown = isDesktop ? (hovered || justClosed) : inView;
 
   const cid = (id: string) => (isDesktop ? id : undefined);
 
