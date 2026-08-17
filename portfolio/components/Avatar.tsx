@@ -24,35 +24,17 @@ export function Avatar({ version }: { version?: string } = {}) {
 
   useEffect(() => { isDarkRef.current = isDark; }, [isDark]);
 
-  // Theme changes are handled by the site-wide View Transition (see
-  // ThemeProvider) — it already smooths the whole page, including this
-  // canvas, via its own snapshot-based wipe. Running a SEPARATE internal
-  // crossfade here (as this used to) meant the view-transition's "after"
-  // snapshot froze the avatar mid-fade (since it's captured synchronously,
-  // before the fade had progressed), then the live canvas finished its own
-  // fade invisibly behind that frozen snapshot — producing a visible snap
-  // right as the outer wipe finished. Switching the active texture
-  // instantly keeps this in sync with how every other color on the page
-  // updates (no transition of their own, smoothed entirely by the outer
-  // wipe), so there's exactly one transition system instead of two
-  // fighting each other.
+
   useEffect(() => {
     const G = glRef.current;
     if (!G) return;
     const nextTex = isDark ? G.texD : G.texL;
-    if (!nextTex) return; // textures not loaded yet — boot() sets initial state directly
+    if (!nextTex) return; 
     G.activeTex = nextTex;
     G.activeIsDark = isDark;
     renderRef.current?.();
   }, [isDark]);
 
-  // Waits for the intro overlay to finish before doing ANY of the heavy
-  // work below (shader compile, texture upload, starting the render
-  // loop). This mounts at the same time as the intro overlay, and all of
-  // that setup running on the main thread right as the intro's ring is
-  // trying to spin is what was causing the ring to visibly stutter mid-
-  // animation — moving it here removes the contention entirely instead
-  // of trying to out-optimize it.
   const [introDone, setIntroDone] = useState(
     typeof document === "undefined" ||
       !document.documentElement.classList.contains("intro-active"),
@@ -64,13 +46,6 @@ export function Avatar({ version }: { version?: string } = {}) {
     return () => window.removeEventListener("intro:flightStart", onDone);
   }, [introDone]);
 
-  // Kick off the avatar image downloads immediately on mount instead of
-  // waiting for the intro overlay to finish — the WebGL/shader setup below
-  // still waits for introDone (to avoid contending with the intro's ring
-  // animation), but there's no reason the *network fetch* needs to wait
-  // too. Prefetching here means the images are already decoded/cached by
-  // the time the real effect runs, so the avatar doesn't visibly pop in
-  // late.
   useEffect(() => {
     const d = new window.Image();
     d.src = version ? `/avatar-dark.jpg?v=${version}` : "/avatar-dark.jpg";
@@ -83,13 +58,6 @@ export function Avatar({ version }: { version?: string } = {}) {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    // Size the backing store generously above the actual displayed size —
-    // this shader is a per-pixel noise/fbm warp, and under-sampling it
-    // (rendering close to 1:1 with the display size) makes the noise look
-    // visibly grainy/low-quality instead of the smooth, "8k-ish" look it's
-    // meant to have. We still avoid the old flat 768*DPR3 (~2300px) render
-    // for every avatar regardless of how small it's shown, but keep a
-    // generous supersampling floor so quality never visibly drops.
     const DPR = Math.min(window.devicePixelRatio || 1, 3);
     const rect0 = canvas.getBoundingClientRect();
     const displayed = Math.round(Math.max(rect0.width, rect0.height)) || 300;
@@ -104,12 +72,7 @@ export function Avatar({ version }: { version?: string } = {}) {
       powerPreference: "high-performance",
     });
     if (!gl) {
-      // No WebGL on this device/browser (disabled GPU acceleration, some
-      // older or locked-down mobile browsers, certain in-app webviews,
-      // etc.) — without a fallback this canvas just stays blank forever,
-      // which is exactly the "avatar works on some devices, not others"
-      // report. Draw the plain photo with plain 2D canvas instead: no
-      // shader warp effect, but never an empty avatar.
+
       const ctx2d = canvas.getContext("2d");
       if (!ctx2d) return;
       const draw = (src: string) => {
@@ -125,8 +88,7 @@ export function Avatar({ version }: { version?: string } = {}) {
       canvas.width = canvas.height = 512;
       draw(isDarkRef.current ? "/avatar-dark.jpg" : "/avatar-light.jpg");
       const onThemeChange = () => draw(isDarkRef.current ? "/avatar-dark.jpg" : "/avatar-light.jpg");
-      // Re-draw on theme toggle so the fallback still tracks dark/light,
-      // same as the WebGL path does via texD/texL.
+
       const mo = new MutationObserver(onThemeChange);
       mo.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
       return () => mo.disconnect();
@@ -177,8 +139,7 @@ export function Avatar({ version }: { version?: string } = {}) {
     gl.enableVertexAttribArray(aPos);
     gl.vertexAttribPointer(aPos, 2, gl.FLOAT, false, 0, 0);
 
-    // Anisotropic filtering keeps the minified texture sharp instead of
-    // blurring — most desktop/mobile GPUs expose this extension.
+    
     const anisoExt =
       gl.getExtension("EXT_texture_filter_anisotropic") ||
       gl.getExtension("MOZ_EXT_texture_filter_anisotropic") ||
@@ -190,15 +151,6 @@ export function Avatar({ version }: { version?: string } = {}) {
       gl.bindTexture(gl.TEXTURE_2D, tx);
       gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, src);
 
-      // The source photos (1024-1256px) are often larger than the canvas
-      // render target (560-1280px, floored/capped above), so this is
-      // genuine texture minification — trilinear mipmapping avoids the
-      // shimmer/aliasing that plain linear filtering would show on fine
-      // detail (hair, skin texture) at that scale. generateMipmap can
-      // still fail for a specific image/GPU combo (e.g. certain JPEG
-      // chroma-subsampling or color-profile variants), so this must be
-      // defensive per-texture — one bad image must never leave that
-      // texture (and therefore that theme's avatar) blank.
       let mipmapped = false;
       try {
         gl.generateMipmap(gl.TEXTURE_2D);
@@ -256,8 +208,7 @@ export function Avatar({ version }: { version?: string } = {}) {
     let loaded = 0;
     const boot = () => {
       if (++loaded < 2) return;
-      // Both textures are ready — settle directly on the correct theme's
-      // texture and paint once.
+     
       G.activeIsDark = isDarkRef.current;
       G.activeTex = G.activeIsDark ? G.texD : G.texL;
       render();
@@ -298,7 +249,7 @@ export function Avatar({ version }: { version?: string } = {}) {
       gl.deleteBuffer(buf);
       gl.deleteProgram(prog);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional one-time WebGL setup (gated on introDone); `version` is a stable build-time value and re-running this effect would tear down and rebuild the whole WebGL scene unnecessarily
+   
   }, [introDone]);
 
   return (

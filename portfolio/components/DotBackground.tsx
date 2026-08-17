@@ -38,10 +38,6 @@ function DotCanvas({
     const container = canvas?.parentElement;
     if (!canvas || !container) return;
 
-    // Reduced motion should only disable the interactive mouse-follow
-    // highlight (an actual animation) — the static dot pattern itself is
-    // just a background texture, not motion, so it still needs to be
-    // baked, painted, and revealed below like normal.
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const interactiveEffective = interactive && !reducedMotion;
 
