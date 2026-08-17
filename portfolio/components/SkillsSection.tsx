@@ -286,20 +286,11 @@ function FallingIconsBox({ title, items, index = 0 }: { title: string; items: st
       }
 
       const rawKick = scrollImpulse !== 0 ? Math.max(-2.5, Math.min(2.5, -scrollImpulse * 0.045)) : 0;
-      // Ignore tiny scroll jitter — only a real, deliberate scroll gesture
-      // should wake icons. The old threshold (0.15) triggered on almost any
-      // scroll motion through this section, which meant normal scrolling
-      // kept both panels' physics engines running for seconds at a time —
-      // a real source of scroll jank. This one needs a clearly intentional
-      // scroll/flick before it wakes anything up.
+     
       const kick = Math.abs(rawKick) > 0.4 ? rawKick : 0;
       scrollImpulse = 0;
 
-      // Nothing awake and nothing to wake it — every icon is exactly where
-      // it was painted, so there's nothing to simulate or repaint this
-      // frame. Skipping Engine.update here (rather than just skipping the
-      // per-icon work below) is what keeps the section at ~0% CPU while
-      // it's just sitting on screen untouched.
+   
       const anyAwake = kick !== 0 || pieces.some(p => !p.body.isSleeping) || !!mouseConstraint.body || pointerDownRef.current;
       if (!anyAwake) {
         lastTime = time;
