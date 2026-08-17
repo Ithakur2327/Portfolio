@@ -246,10 +246,6 @@ function FallingIconsBox({ title, items, index = 0 }: { title: string; items: st
     };
     const handleTouchEnd = (e: TouchEvent) => { pointerDownRef.current = false; mouse.mouseup(e); };
 
-    // Matter's own native mousedown/mouseup listeners (attached by Mouse.create)
-    // handle the actual drag; these just track "is a pointer currently down"
-    // so the tick loop below knows to keep Engine.update running long enough
-    // for Matter's hit-test to find and attach to a body.
     const handleMouseDown = () => { pointerDownRef.current = true; };
     const handleMouseUp = () => { pointerDownRef.current = false; };
     box.addEventListener("mousedown", handleMouseDown);
