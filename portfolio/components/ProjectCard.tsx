@@ -85,16 +85,6 @@ export function ProjectCard({ proj, index, visible, isDesktop, isHidden, onOpen,
 
   useEffect(() => {
     if (wasHiddenRef.current && !isHidden) {
-      // The modal that was covering this card just started closing —
-      // keep the image in its full/untitled look for exactly as long as
-      // the modal's own close animation takes (240ms), regardless of
-      // where the mouse is. Once that's done, check where the mouse
-      // *actually* is right now: still over the card → stay full; not
-      // over it → tilt back smoothly. This is timer + real-position
-      // driven rather than relying on a mouseleave event firing, since
-      // the click that closes the modal (close button, backdrop, Escape)
-      // usually isn't physically over this card, so a plain hover-based
-      // reset wouldn't reliably fire either way.
       setJustClosed(true);
       const t = setTimeout(() => {
         setJustClosed(false);

@@ -34,12 +34,6 @@ const LANGUAGES = [
   { name: "ENGLISH" },
 ];
 
-/**
- * Drives the "tilted → straightens" motion for a sticky note card.
- * `wrapRef` sits on a tall, non-sticky wrapper so its scroll pass through
- * the viewport can be measured; the sticky card inside reads the smoothed
- * progress and un-tilts as it settles into its pinned position.
- */
 function useStickyTilt(fromDeg: number) {
   const wrapRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({

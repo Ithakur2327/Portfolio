@@ -169,12 +169,7 @@ function FallingIconsBox({ title, items, index = 0 }: { title: string; items: st
       velocityIterations: isMobile ? 2 : 4,
       constraintIterations: isMobile ? 1 : 2,
     });
-    // Resting bodies stop being simulated entirely — big win since icons
-    // now sit still until dragged instead of tumbling in on load.
     engine.enableSleeping = true;
-    // Start with gravity off so icons don't fall on load — they sit exactly
-    // where they were laid out. Gravity turns on the moment the user first
-    // drags an icon, after which everything behaves as before.
     engine.world.gravity.y = 0;
     let gravityEnabled = false;
 
@@ -196,8 +191,6 @@ function FallingIconsBox({ title, items, index = 0 }: { title: string; items: st
         chamfer: { radius: 10 },
         inertia: Infinity,
       });
-      // Spawn already asleep — nothing to simulate until it's touched, so
-      // there's no "warm up" period of full physics right after mount.
       Sleeping.set(body, true);
       return { el, body, hw: r.width / 2, hh: r.height / 2, awake: false };
     });
@@ -207,10 +200,6 @@ function FallingIconsBox({ title, items, index = 0 }: { title: string; items: st
       el.style.left = "0px";
       el.style.top = "0px";
       el.style.margin = "0";
-      // Paint the icon at its real (laid-out) position right away. Without
-      // this, the element sits at the box's (0,0) corner — on top of every
-      // other icon — until the tick loop first wakes its body via a drag
-      // or scroll kick, which is what caused icons to pile up at the start.
       el.style.transform = `translate3d(${Math.round(body.position.x)}px, ${Math.round(body.position.y)}px, 0) translate(-50%, -50%)`;
     });
 
