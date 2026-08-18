@@ -4,7 +4,7 @@ const useIsomorphicLayoutEffect =
 typeof window !== "undefined" ? useLayoutEffect : useEffect;
 
 const SESSION_KEY = "introPlayed:v1";
-const LOADING_MS = 900;
+const LOADING_MS = 1200;
 const FLIGHT_MS = 550; 
 const BACKDROP_FADE_MS = 480; 
 
