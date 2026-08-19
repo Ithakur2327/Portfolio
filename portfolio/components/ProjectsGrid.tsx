@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { AnimatePresence, LayoutGroup } from "motion/react";
 import type { Project } from "@/lib/projects-data";
 import { ProjectCard, ProjectModal } from "./ProjectCard";
@@ -14,8 +14,13 @@ export function ProjectsGrid({ projects, visible = true, mobileMax, wide, scope 
   scope?: string;
 }) {
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
+  const [coveredName, setCoveredName] = useState<string | null>(null);
   const isDesktop = useIsLaptopUp();
   const active = activeIndex === null ? null : projects[activeIndex] ?? null;
+
+  useEffect(() => {
+    if (active) setCoveredName(active.name);
+  }, [active]);
 
   const imageSizes = wide
     ? "(max-width: 599px) 94vw, (max-width: 1299px) min(48vw, 438px), min(32vw, 284px)"
@@ -51,7 +56,7 @@ export function ProjectsGrid({ projects, visible = true, mobileMax, wide, scope 
               index={i}
               visible={visible}
               isDesktop={isDesktop}
-              isHidden={isDesktop && active?.name === proj.name}
+              isHidden={isDesktop && coveredName === proj.name}
               onOpen={() => setActiveIndex(i)}
               imageSizes={imageSizes}
               scope={scope}
@@ -60,7 +65,7 @@ export function ProjectsGrid({ projects, visible = true, mobileMax, wide, scope 
         ))}
       </div>
 
-      <AnimatePresence>
+      <AnimatePresence onExitComplete={() => setCoveredName(null)}>
         {active && activeIndex !== null && (
           <LayoutGroup id={`project-${scope}-${active.name}`}>
             <ProjectModal key="modal" proj={active} index={activeIndex} isDesktop={isDesktop} onClose={() => setActiveIndex(null)} scope={scope} />

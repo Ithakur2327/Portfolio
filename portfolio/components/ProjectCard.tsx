@@ -76,7 +76,6 @@ export function ProjectCard({ proj, index, visible, isDesktop, isHidden, onOpen,
   const frameRef = useRef<HTMLDivElement>(null);
   const inView = useInView(frameRef, { amount: 0.6 });
   const [hovered, setHovered] = useState(false);
-  const [justClosed, setJustClosed] = useState(false);
   const wasHiddenRef = useRef(isHidden);
   const { theme } = useTheme();
   const isDark = theme === "dark";
@@ -85,18 +84,20 @@ export function ProjectCard({ proj, index, visible, isDesktop, isHidden, onOpen,
 
   useEffect(() => {
     if (wasHiddenRef.current && !isHidden) {
-      setJustClosed(true);
-      const t = setTimeout(() => {
-        setJustClosed(false);
-        setHovered(cardRef.current?.matches(":hover") ?? false);
-      }, 240);
-      wasHiddenRef.current = isHidden;
-      return () => clearTimeout(t);
+      // This card is being revealed again — the parent only clears
+      // isHidden once the modal that was covering it has fully finished
+      // closing (see ProjectsGrid's onExitComplete), so by this point the
+      // close animation is genuinely done. hovered may be stale (frozen
+      // from whatever it was before the modal opened, since pointer
+      // events were off the whole time it was hidden), so sync it to
+      // where the mouse actually is right now rather than relying on a
+      // mouseleave that may never fire.
+      setHovered(cardRef.current?.matches(":hover") ?? false);
     }
     wasHiddenRef.current = isHidden;
   }, [isHidden]);
 
-  const shown = isDesktop ? (hovered || justClosed) : inView;
+  const shown = isDesktop ? hovered : inView;
 
   const cid = (id: string) => (isDesktop ? id : undefined);
 
