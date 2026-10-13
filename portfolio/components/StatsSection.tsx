@@ -25,13 +25,14 @@ interface HoveredCell { date: string; count: number; x: number; y: number; }
 interface StatHover { label: string; solved: number; total: number; x: number; y: number; }
 
 type PaletteKey = "tiffany" | "blue" | "green" | "original";
-interface HeatPalette { label: string; swatch: string; c1: string; c2: string; c3: string; c4: string; }
+type HeatLevels = [string, string, string, string, string, string, string];
+interface HeatPalette { label: string; swatch: string; dark: HeatLevels; light: HeatLevels; }
 
 const HEAT_PALETTES: Record<PaletteKey, HeatPalette> = {
-  tiffany:  { label: "Tiffany",  swatch: "#0abab5", c1: "#a6e8e3", c2: "#4fd0c7", c3: "#0abab5", c4: "#067b76" },
-  blue:     { label: "Blue",     swatch: "#1262c4", c1: "#8fc6fa", c2: "#1262c4", c3: "#104b98", c4: "#0d0a6b" },
-  green:    { label: "Green",    swatch: "#30a14e", c1: "#9be9a8", c2: "#40c463", c3: "#30a14e", c4: "#216e39" },
-  original: { label: "Original", swatch: "#c46212", c1: "#fac68f", c2: "#c46212", c3: "#984b10", c4: "#000000" },
+  tiffany:  { label: "Tiffany", swatch: "#0abab5", dark: ["#123a3a", "#155451", "#176e69", "#198b84", "#20aaa1", "#35c8bd", "#65e5d9"], light: ["#d9f5f1", "#b8ebe5", "#91ded6", "#65cec5", "#35bdb3", "#169f97", "#08756f"] },
+  blue:     { label: "Blue", swatch: "#1262c4", dark: ["#172b45", "#1b3c60", "#20507e", "#24639d", "#2c79bc", "#4292dc", "#68b2fa"], light: ["#e4f0ff", "#c9e1ff", "#a8cefa", "#80b7f2", "#5599e5", "#3479cf", "#1d5eae"] },
+  green:    { label: "Green", swatch: "#30a14e", dark: ["#183823", "#1d4b2d", "#226239", "#287a45", "#319454", "#40b566", "#5bd780"], light: ["#e2f7e7", "#c5edcf", "#a2e1b1", "#7bd292", "#50bd70", "#2e9e53", "#19763a"] },
+  original: { label: "Original", swatch: "#c46212", dark: ["#402a18", "#593719", "#74461b", "#90551c", "#ad661e", "#ce7e28", "#f0a345"], light: ["#fff0dc", "#ffdfba", "#f8c992", "#edae68", "#df9145", "#ca742b", "#a95517"] },
 };
 const HEAT_PALETTE_ORDER: PaletteKey[] = ["tiffany", "blue", "green", "original"];
 const HEAT_STORAGE_KEY = "heatmap-palettes-v1";
@@ -343,10 +344,13 @@ function LeetCodeStats({ username = "IThakur09" }: { username?: string }) {
 
   const lcLvl = (c: number) =>
   c === 0 ? 0 :
-  c <= 3 ? 1 :
-  c <= 6 ? 2 :
-  c <= 11 ? 3 :
-  4;
+  c <= 1 ? 1 :
+  c <= 2 ? 2 :
+  c <= 4 ? 3 :
+  c <= 6 ? 4 :
+  c <= 10 ? 5 :
+  c <= 15 ? 6 :
+  7;
   const diffColors = { Easy: "#00b8a3", Medium: "#ffc01e", Hard: "#ef4743" };
   const solvedColor = isDark ? "#FFA116" : "#C77600";
 
@@ -408,7 +412,7 @@ function LeetCodeStats({ username = "IThakur09" }: { username?: string }) {
       </div>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 3, marginTop: 8 }}>
         <span style={{ fontSize: 9, color: "var(--text-muted)", fontFamily: MONO, marginRight: 3 }}>Less</span>
-        {[0,1,2,3,4].map(l => <div key={l} className={`lc-cell lc-cell-${l}`} style={{ width: 10, height: 10, borderRadius: 2 }} />)}
+        {[0,1,2,3,4,5,6,7].map(l => <div key={l} className={`lc-cell lc-cell-${l}`} style={{ width: 10, height: 10, borderRadius: 2 }} />)}
         <span style={{ fontSize: 9, color: "var(--text-muted)", fontFamily: MONO, marginLeft: 3 }}>More</span>
       </div>
     </div>
@@ -571,10 +575,13 @@ function GitHubGraph({ username = "Ithakur2327" }: { username?: string }) {
 
  const lvl = (n: number) =>
   n === 0 ? 0 :
-  n <= 8 ? 1 :
-  n <= 18 ? 2 :
-  n <= 34 ? 3 :
-  4;
+  n <= 1 ? 1 :
+  n <= 2 ? 2 :
+  n <= 3 ? 3 :
+  n <= 5 ? 4 :
+  n <= 8 ? 5 :
+  n <= 12 ? 6 :
+  7;
   const isTablet = useIsTablet();
   const isLaptopUp = useIsLaptopUp();
   const CELL = isTablet ? 14 : 10, GAP = isTablet ? 4 : 3, STEP = CELL + GAP;
@@ -673,7 +680,7 @@ function GitHubGraph({ username = "Ithakur2327" }: { username?: string }) {
                 <span style={{ fontSize: 9, color: "var(--text-muted)", fontFamily: MONO }}>{isLive ? "Contribution activity" : "preview"}</span>
                 <div style={{ display: "flex", alignItems: "center", gap: 3 }}>
                   <span style={{ fontSize: 9, color: "var(--text-muted)", fontFamily: MONO, marginRight: 3 }}>Less</span>
-                  {[0,1,2,3,4].map(l => <div key={l} className={`gh-cell gh-cell-${l}`} style={{ width: 10, height: 10, borderRadius: 2 }} />)}
+                  {[0,1,2,3,4,5,6,7].map(l => <div key={l} className={`gh-cell gh-cell-${l}`} style={{ width: 10, height: 10, borderRadius: 2 }} />)}
                   <span style={{ fontSize: 9, color: "var(--text-muted)", fontFamily: MONO, marginLeft: 3 }}>More</span>
                 </div>
               </div>
@@ -795,7 +802,7 @@ function HeatmapPaletteButton({
                   }}
                 >
                   <span style={{ display: "flex", gap: 2, flexShrink: 0 }}>
-                    {[p.c1, p.c2, p.c3, p.c4].map((c, i) => (
+                    {p[isDark ? "dark" : "light"].map((c, i) => (
                       <span key={i} style={{ width: 9, height: 9, borderRadius: 2, background: c }} />
                     ))}
                   </span>
@@ -828,6 +835,7 @@ export function StatsSection() {
 
   const activeKey = palettes[isDark ? "dark" : "light"];
   const active = HEAT_PALETTES[activeKey];
+  const activeLevels = active[isDark ? "dark" : "light"];
 
   const selectPalette = useCallback((key: PaletteKey) => {
     setPalettes(prev => {
@@ -888,10 +896,18 @@ export function StatsSection() {
         .gh-cell-0, .lc-cell-0 { background: rgba(255,255,255,0.04); outline: 1px solid rgba(255,255,255,0.10); outline-offset: -1px; }
         html.light .gh-cell-0, html.light .lc-cell-0 { background: #e8eaec; outline: 1px solid rgba(0,0,0,0.08); outline-offset: -1px; }
 
+        .gh-cell, .lc-cell {
+          box-shadow: inset 0 1px 0 rgba(255,255,255,0.28), inset 0 -1px 0 rgba(0,0,0,0.16), 0 1px 1px rgba(0,0,0,0.18);
+          transition: transform 0.1s, filter 0.15s, box-shadow 0.15s;
+        }
+        .gh-cell:hover, .lc-cell:hover { filter: brightness(1.12); z-index: 1; }
         .gh-cell-1, .lc-cell-1 { background: var(--heat-1); }
         .gh-cell-2, .lc-cell-2 { background: var(--heat-2); }
         .gh-cell-3, .lc-cell-3 { background: var(--heat-3); }
         .gh-cell-4, .lc-cell-4 { background: var(--heat-4); }
+        .gh-cell-5, .lc-cell-5 { background: var(--heat-5); }
+        .gh-cell-6, .lc-cell-6 { background: var(--heat-6); }
+        .gh-cell-7, .lc-cell-7 { background: var(--heat-7); }
 
         .stat-chip, .stat-chip-label, .stat-chip-value, .lc-solved-box, .lc-emh-box {
           -webkit-user-select: none;
@@ -988,10 +1004,7 @@ export function StatsSection() {
               className="about-panels"
               style={{
                 paddingBottom: 32,
-                ["--heat-1" as string]: active.c1,
-                ["--heat-2" as string]: active.c2,
-                ["--heat-3" as string]: active.c3,
-                ["--heat-4" as string]: active.c4,
+                ...Object.fromEntries(activeLevels.map((color, index) => [`--heat-${index + 1}`, color])),
               } as React.CSSProperties}
             >
               <div className="stat-card-3d">
