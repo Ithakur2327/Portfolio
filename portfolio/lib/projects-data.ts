@@ -38,6 +38,8 @@ export const TECH_MAP: Record<string, { color: string; logo: string; logoLight?:
   "Tailwind CSS":  { color: "#38BDF8", logo: officialLogo("tailwindcss", "38BDF8") },
   "Redux":         { color: "#764ABC", logo: officialLogo("redux", "764ABC") },
   "LangChain":     { color: "#1C3C3C", logo: officialLogo("langchain", "3AAFA9") },
+  "LangGraph":     { color: "#1C3C3C", logo: officialLogo("langchain", "3AAFA9") },
+  "Python":        { color: "#3776AB", logo: officialLogo("python", "3776AB") },
   "Vercel":        { color: "#ffffff", logo: officialLogo("vercel", "ffffff"), logoLight: officialLogo("vercel", "000000") },
   "YouTube API":   { color: "#FF0000", logo: officialLogo("youtube", "FF0000") },
   "Chart.js":      { color: "#FF6384", logo: officialLogo("chartdotjs", "FF6384") },
@@ -52,6 +54,23 @@ export const TECH_MAP: Record<string, { color: string; logo: string; logoLight?:
 
 export const PROJECTS: Project[] = [
   {
+    name: "FlowForge",
+    year: "2026",
+    accent: "#34d399",
+    img: "/flowforge-preview.png",
+    description: "AI workflow orchestration platform that coordinates specialized agents through durable, multi-step business workflows. Built with LangGraph and FastAPI, it combines human approvals, PostgreSQL-backed checkpointing, MCP integrations, fault tolerance, and real-time monitoring.",
+    features: [
+      "Coordinates specialized LangGraph agents across structured business workflows",
+      "Pauses for human approval before sensitive actions",
+      "Persists workflow state with PostgreSQL checkpointing for recovery after interruptions",
+      "Connects external business tools through MCP integrations",
+      "Combines retries, circuit breakers, JWT and role-based access, audit logs, and cost monitoring",
+    ],
+    tags: ["Python", "FastAPI", "LangGraph", "PostgreSQL", "pgvector", "React", "TypeScript", "MCP", "Redis Streams", "Kafka", "Docker"],
+    github: "https://github.com/Ithakur2327",
+    live: "",
+  },
+  {
     name: "I.Vision",
     year: "2026",
     accent: "#06b6d4",
@@ -65,6 +84,24 @@ export const PROJECTS: Project[] = [
     ],
     tags: ["Next.js", "TypeScript", "FastAPI", "LangChain", "RAG", "LLM APIs"],
     github: "https://github.com/Ithakur2327",
+    live: "",
+  },
+  {
+    name: "QueryPilot",
+    year: "2026",
+    accent: "#38bdf8",
+    img: "/querypilot-preview.png",
+    description: "AI-powered data analytics assistant that turns natural-language questions into validated SQL, executes queries across supported databases, and explains results. LangGraph coordinates query generation and correction, while SQLGlot validation and human review help safeguard execution.",
+    features: [
+      "Converts natural-language questions into executable SQL",
+      "Uses LangGraph to coordinate query generation, execution, and iterative correction",
+      "Parses and validates generated SQL with SQLGlot before execution",
+      "Supports human review or editing of SQL before it runs",
+      "Connects to PostgreSQL, MySQL, and DuckDB with streamed FastAPI responses",
+      "Explains and optimizes existing SQL; documents encrypted credentials and read-only safeguards",
+    ],
+    tags: ["Python", "FastAPI", "LangGraph", "PostgreSQL", "MySQL", "DuckDB", "SQLGlot", "Next.js", "TypeScript", "Tailwind CSS", "Docker"],
+    github: "https://github.com/shreyabaid007/text-to-sql-agent",
     live: "",
   },
   {
