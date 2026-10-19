@@ -8,8 +8,7 @@ import { mq } from "@/lib/breakpoints";
 
 const SF = "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', sans-serif";
 
-const FEATURED_COUNT = 4;
-const MOBILE_COUNT   = 3;
+const FEATURED_COUNT = 6;
 
 // Projects section
 export function ProjectsSection() {
@@ -32,27 +31,44 @@ export function ProjectsSection() {
           <style suppressHydrationWarning>{`
             ${mq.navCollapse} { .proj-inner { padding: 0 22px 34px !important; } }
            ${mq.mobile} { .proj-inner { padding: 0 6px 28px !important; } }
+            .view-more-link {
+              display: inline-flex; align-items: center; gap: 7px;
+              padding: 10px 24px; border-radius: 10px;
+              border: 1px solid rgba(10,186,181,0.55);
+              background: linear-gradient(180deg, rgba(10,186,181,0.22), rgba(10,186,181,0.09));
+              box-shadow: inset 0 1px 0 rgba(255,255,255,0.28), 0 3px 0 rgba(7,111,107,0.72), 0 8px 18px rgba(0,0,0,0.22);
+              color: #63e4dc; font-family: ${SF}; font-size: 13px; font-weight: 700;
+              text-decoration: none; transform: translateY(0);
+              transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease, border-color 0.18s ease;
+            }
+            html.light .view-more-link {
+              color: #087d79;
+              background: linear-gradient(180deg, rgba(10,186,181,0.18), rgba(10,186,181,0.08));
+              box-shadow: inset 0 1px 0 rgba(255,255,255,0.75), 0 3px 0 rgba(10,130,125,0.38), 0 8px 16px rgba(10,80,78,0.14);
+            }
+            .view-more-link:hover {
+              transform: translateY(-2px);
+              border-color: rgba(10,186,181,0.8);
+              background: linear-gradient(180deg, rgba(10,186,181,0.3), rgba(10,186,181,0.13));
+              box-shadow: inset 0 1px 0 rgba(255,255,255,0.34), 0 5px 0 rgba(7,111,107,0.68), 0 12px 22px rgba(0,0,0,0.24);
+            }
+            .view-more-link:active {
+              transform: translateY(2px);
+              box-shadow: inset 0 1px 0 rgba(255,255,255,0.2), 0 1px 0 rgba(7,111,107,0.72), 0 3px 8px rgba(0,0,0,0.18);
+            }
+            .view-more-link:focus-visible { outline: 2px solid #0abab5; outline-offset: 4px; }
+            @media (prefers-reduced-motion: reduce) {
+              .view-more-link { transition: none; }
+            }
           `}</style>
 
-          <ProjectsGrid projects={featured} visible={visible} mobileMax={MOBILE_COUNT} scope="home" />
+          <ProjectsGrid projects={featured} visible={visible} mobileMax={FEATURED_COUNT} scope="home" />
 
           {PROJECTS.length > FEATURED_COUNT && (
             <div style={{ display: "flex", justifyContent: "center", marginTop: 26 }}>
               <Link
                 href="/projects"
-                style={{
-                  display: "inline-flex", alignItems: "center", gap: 7,
-                  padding: "10px 24px", borderRadius: 10,
-                  border: "1px solid var(--border)",
-                  background: "var(--nav-bg)",
-                  backdropFilter: "blur(12px) saturate(180%)",
-                  WebkitBackdropFilter: "blur(12px) saturate(180%)",
-                  boxShadow: "0 8px 24px -8px rgba(0,0,0,0.35)",
-                  color: "var(--text-secondary)", fontFamily: SF, fontSize: 13, fontWeight: 600,
-                  textDecoration: "none", transition: "color 0.15s, border-color 0.15s, background 0.2s, transform 0.15s, box-shadow 0.2s",
-                }}
-                onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.color = "var(--text-primary)"; el.style.borderColor = "var(--text-muted)"; el.style.background = "var(--nav-bg-scrolled)"; el.style.transform = "translateY(-1.5px)"; el.style.boxShadow = "0 12px 28px -8px rgba(0,0,0,0.45)"; }}
-                onMouseLeave={e => { const el = e.currentTarget as HTMLElement; el.style.color = "var(--text-secondary)"; el.style.borderColor = "var(--border)"; el.style.background = "var(--nav-bg)"; el.style.transform = "none"; el.style.boxShadow = "0 8px 24px -8px rgba(0,0,0,0.35)"; }}
+                className="view-more-link"
               >
                 View More
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
