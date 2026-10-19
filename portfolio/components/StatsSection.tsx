@@ -29,10 +29,10 @@ type HeatLevels = [string, string, string, string, string, string, string];
 interface HeatPalette { label: string; swatch: string; dark: HeatLevels; light: HeatLevels; }
 
 const HEAT_PALETTES: Record<PaletteKey, HeatPalette> = {
-  tiffany:  { label: "Tiffany", swatch: "#0abab5", dark: ["#123a3a", "#155451", "#176e69", "#198b84", "#20aaa1", "#35c8bd", "#65e5d9"], light: ["#d9f5f1", "#b8ebe5", "#91ded6", "#65cec5", "#35bdb3", "#169f97", "#08756f"] },
-  blue:     { label: "Blue", swatch: "#1262c4", dark: ["#172b45", "#1b3c60", "#20507e", "#24639d", "#2c79bc", "#4292dc", "#68b2fa"], light: ["#e4f0ff", "#c9e1ff", "#a8cefa", "#80b7f2", "#5599e5", "#3479cf", "#1d5eae"] },
-  green:    { label: "Green", swatch: "#30a14e", dark: ["#183823", "#1d4b2d", "#226239", "#287a45", "#319454", "#40b566", "#5bd780"], light: ["#e2f7e7", "#c5edcf", "#a2e1b1", "#7bd292", "#50bd70", "#2e9e53", "#19763a"] },
-  original: { label: "Original", swatch: "#c46212", dark: ["#402a18", "#593719", "#74461b", "#90551c", "#ad661e", "#ce7e28", "#f0a345"], light: ["#fff0dc", "#ffdfba", "#f8c992", "#edae68", "#df9145", "#ca742b", "#a95517"] },
+  tiffany:  { label: "Tiffany", swatch: "#0abab5", dark: ["#123f42", "#155c5d", "#167775", "#15938e", "#18b3aa", "#29d3c7", "#63f2df"], light: ["#b4eee7", "#8be4db", "#5bd7cc", "#32c8bb", "#16b4a8", "#09998e", "#08756d"] },
+  blue:     { label: "Blue", swatch: "#1262c4", dark: ["#16385c", "#174d7b", "#1a639b", "#207abd", "#2995df", "#43b1f5", "#72ccff"], light: ["#c5ddfb", "#9fc8f5", "#78b1ed", "#5599e0", "#347fd0", "#2067b7", "#14539a"] },
+  green:    { label: "Green", swatch: "#30a14e", dark: ["#174226", "#1b5a30", "#20743c", "#278f4a", "#32ad5c", "#48cc73", "#75ed98"], light: ["#bde9c8", "#95d8a8", "#6cc987", "#48b36a", "#329d53", "#22833f", "#186c32"] },
+  original: { label: "Original", swatch: "#c46212", dark: ["#492812", "#65320e", "#823b0b", "#a1470a", "#c3560a", "#e76d10", "#ff9a32"], light: ["#ffe0a3", "#ffcd76", "#ffb94f", "#ffa32f", "#ef8518", "#d76a0d", "#ad4d08"] },
 };
 const HEAT_PALETTE_ORDER: PaletteKey[] = ["tiffany", "blue", "green", "original"];
 const HEAT_STORAGE_KEY = "heatmap-palettes-v1";
@@ -148,22 +148,26 @@ function PortalTooltip({ hovered, accentColor, label }: {
         transform: "translate(-50%, calc(-100% - 9px))",
         pointerEvents: "none",
         zIndex: 2147483647,
-        background: "var(--text-primary)",
-        color: "var(--bg-base)",
-        padding: "5px 8px",
-        borderRadius: 7,
+        background: "var(--bg-card)",
+        color: "var(--text-primary)",
+        backdropFilter: "blur(14px)",
+        WebkitBackdropFilter: "blur(14px)",
+        border: `1px solid ${accentColor}55`,
+        padding: "7px 10px",
+        borderRadius: 9,
         whiteSpace: "nowrap",
         width: "max-content",
-        boxShadow: "0 4px 14px rgba(0,0,0,0.22)",
-        animation: "statTooltipPop 0.14s cubic-bezier(0.19,1,0.22,1) forwards",
+        boxShadow: `0 8px 20px rgba(0,0,0,0.24), inset 0 1px 0 rgba(255,255,255,0.1), 0 0 0 1px ${accentColor}14`,
+        animation: "statTooltipPop 0.2s cubic-bezier(0.16,1,0.3,1) forwards",
+        transformStyle: "preserve-3d",
         textAlign: "center",
       }}
     >
-      <span className="stat-tooltip-arrow" style={{ left: `calc(50% + ${arrowOffset}px)` }} />
+      <span className="stat-tooltip-arrow" style={{ left: `calc(50% + ${arrowOffset}px)`, borderTopColor: "var(--bg-card)", filter: `drop-shadow(0 1px 0 ${accentColor}88)` }} />
       <div style={{ fontSize: 11, fontWeight: 700, fontFamily: MONO, letterSpacing: "-0.02em", lineHeight: 1.2, color: accentColor }}>
         {hovered.count}
       </div>
-      <div style={{ fontSize: 9, fontWeight: 500, fontFamily: "-apple-system,'SF Pro Display','Helvetica Neue',sans-serif", opacity: 0.7, marginTop: 1 }}>
+      <div style={{ fontSize: 9, fontWeight: 500, fontFamily: "-apple-system,'SF Pro Display','Helvetica Neue',sans-serif", color: "var(--text-secondary)", opacity: 0.82, marginTop: 2 }}>
         {label} · {hovered.date}
       </div>
     </div>,
@@ -194,7 +198,7 @@ function StatTooltip({ hovered, accentColor }: { hovered: StatHover | null; acce
         borderRadius: 11,
         padding: "8px 13px",
         minWidth: 66,
-        boxShadow: `0 12px 32px rgba(0,0,0,0.38), 0 0 0 1px ${accentColor}12`,
+        boxShadow: `0 8px 22px rgba(0,0,0,0.28), 0 0 0 1px ${accentColor}10`,
         animation: "statChipTooltipPop 0.16s cubic-bezier(0.19,1,0.22,1) forwards",
         textAlign: "center",
       }}
@@ -356,7 +360,7 @@ function LeetCodeStats({ username = "IThakur09" }: { username?: string }) {
 
   const handleCellEnter = useCallback((e: React.MouseEvent<HTMLDivElement>, date: string, count: number) => {
     const el = e.currentTarget as HTMLElement;
-    el.style.transform = "scale(1.5)";
+    el.style.transform = "scale(1.18)";
     const cr = el.getBoundingClientRect();
     setHovered({ date, count, x: cr.left + cr.width / 2, y: cr.top });
   }, []);
@@ -409,11 +413,6 @@ function LeetCodeStats({ username = "IThakur09" }: { username?: string }) {
             </div>
           ))}
         </div>
-      </div>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 3, marginTop: 8 }}>
-        <span style={{ fontSize: 9, color: "var(--text-muted)", fontFamily: MONO, marginRight: 3 }}>Less</span>
-        {[0,1,2,3,4,5,6,7].map(l => <div key={l} className={`lc-cell lc-cell-${l}`} style={{ width: 10, height: 10, borderRadius: 2 }} />)}
-        <span style={{ fontSize: 9, color: "var(--text-muted)", fontFamily: MONO, marginLeft: 3 }}>More</span>
       </div>
     </div>
   );
@@ -496,6 +495,11 @@ function LeetCodeStats({ username = "IThakur09" }: { username?: string }) {
             onMouseLeave={() => setHovered(null)}
           >
             {gridContent}
+          </div>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 3, marginTop: 8, flexShrink: 0 }}>
+            <span style={{ fontSize: 9, color: "var(--text-muted)", fontFamily: MONO, marginRight: 3 }}>Less</span>
+            {[0,1,2,3,4,5,6,7].map(l => <div key={l} className={`lc-cell lc-cell-${l}`} style={{ width: 10, height: 10, borderRadius: 2 }} />)}
+            <span style={{ fontSize: 9, color: "var(--text-muted)", fontFamily: MONO, marginLeft: 3 }}>More</span>
           </div>
         </div>
       )}
@@ -601,7 +605,7 @@ function GitHubGraph({ username = "Ithakur2327" }: { username?: string }) {
 
   const handleCellEnter = useCallback((e: React.MouseEvent<HTMLDivElement>, date: string, count: number) => {
     const el = e.currentTarget as HTMLElement;
-    el.style.transform = "scale(1.35)";
+    el.style.transform = "translateY(-1px) scale(1.18)";
     const cr = el.getBoundingClientRect();
     setHovered({ date, count, x: cr.left + cr.width / 2, y: cr.top });
   }, []);
@@ -667,7 +671,7 @@ function GitHubGraph({ username = "Ithakur2327" }: { username?: string }) {
                         <div
                           key={di}
                           className={`gh-cell gh-cell-${lvl(day.contributionCount)}`}
-                          style={{ width: CELL, height: CELL, borderRadius: 2, cursor: "default", transition: "transform 0.1s" }}
+                          style={{ width: CELL, height: CELL, borderRadius: 2, cursor: "default" }}
                           onMouseEnter={e => handleCellEnter(e, day.date, day.contributionCount)}
                           onMouseLeave={handleCellLeave}
                         />
@@ -676,14 +680,14 @@ function GitHubGraph({ username = "Ithakur2327" }: { username?: string }) {
                   ))}
                 </div>
               </div>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 8 }}>
-                <span style={{ fontSize: 9, color: "var(--text-muted)", fontFamily: MONO }}>{isLive ? "Contribution activity" : "preview"}</span>
-                <div style={{ display: "flex", alignItems: "center", gap: 3 }}>
-                  <span style={{ fontSize: 9, color: "var(--text-muted)", fontFamily: MONO, marginRight: 3 }}>Less</span>
-                  {[0,1,2,3,4,5,6,7].map(l => <div key={l} className={`gh-cell gh-cell-${l}`} style={{ width: 10, height: 10, borderRadius: 2 }} />)}
-                  <span style={{ fontSize: 9, color: "var(--text-muted)", fontFamily: MONO, marginLeft: 3 }}>More</span>
-                </div>
-              </div>
+            </div>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 6, marginTop: 8, flexShrink: 0 }}>
+            <span style={{ fontSize: 9, color: "var(--text-muted)", fontFamily: MONO }}>{isLive ? "Contribution activity" : "preview"}</span>
+            <div style={{ display: "flex", alignItems: "center", gap: 3, marginLeft: "auto" }}>
+              <span style={{ fontSize: 9, color: "var(--text-muted)", fontFamily: MONO, marginRight: 3 }}>Less</span>
+              {[0,1,2,3,4,5,6,7].map(l => <div key={l} className={`gh-cell gh-cell-${l}`} style={{ width: 10, height: 10, borderRadius: 2 }} />)}
+              <span style={{ fontSize: 9, color: "var(--text-muted)", fontFamily: MONO, marginLeft: 3 }}>More</span>
             </div>
           </div>
         </div>
@@ -803,7 +807,7 @@ function HeatmapPaletteButton({
                 >
                   <span style={{ display: "flex", gap: 2, flexShrink: 0 }}>
                     {p[isDark ? "dark" : "light"].map((c, i) => (
-                      <span key={i} style={{ width: 9, height: 9, borderRadius: 2, background: c }} />
+                      <span key={i} style={{ width: 9, height: 9, borderRadius: 2, background: c, transition: "background-color 0.24s cubic-bezier(0.2,0.8,0.2,1)" }} />
                     ))}
                   </span>
                   <span style={{ flex: 1, fontSize: 12.5, fontWeight: 600, color: "var(--text-primary)", fontFamily: SF }}>
@@ -849,12 +853,12 @@ export function StatsSection() {
     <>
       <style suppressHydrationWarning>{`
         @keyframes statTooltipPop {
-          from { opacity: 0; transform: translate(-50%, calc(-100% - 6px)) scale(0.94); }
-          to   { opacity: 1; transform: translate(-50%, calc(-100% - 10px)) scale(1); }
+          from { opacity: 0; transform: perspective(500px) translate(-50%, calc(-100% - 6px)) rotateX(6deg) scale(0.97); }
+          to   { opacity: 1; transform: perspective(500px) translate(-50%, calc(-100% - 10px)) rotateX(0) scale(1); }
         }
         @keyframes statChipTooltipPop {
-          from { opacity: 0; transform: translate(-50%, calc(-100% - 8px)) scale(0.92); }
-          to   { opacity: 1; transform: translate(-50%, calc(-100% - 12px)) scale(1); }
+          from { opacity: 0; transform: perspective(500px) translate(-50%, calc(-100% - 8px)) rotateX(6deg) scale(0.97); }
+          to   { opacity: 1; transform: perspective(500px) translate(-50%, calc(-100% - 12px)) rotateX(0) scale(1); }
         }
         .stat-tooltip-arrow {
           position: absolute; top: 100%; transform: translateX(-50%);
@@ -894,13 +898,17 @@ export function StatsSection() {
         }
 
         .gh-cell-0, .lc-cell-0 { background: rgba(255,255,255,0.04); outline: 1px solid rgba(255,255,255,0.10); outline-offset: -1px; }
-        html.light .gh-cell-0, html.light .lc-cell-0 { background: #e8eaec; outline: 1px solid rgba(0,0,0,0.08); outline-offset: -1px; }
+        html.light .gh-cell-0, html.light .lc-cell-0 { background: #d5dce4; outline: 1px solid rgba(35,48,62,0.2); outline-offset: -1px; }
 
         .gh-cell, .lc-cell {
-          box-shadow: inset 0 1px 0 rgba(255,255,255,0.28), inset 0 -1px 0 rgba(0,0,0,0.16), 0 1px 1px rgba(0,0,0,0.18);
-          transition: transform 0.1s, filter 0.15s, box-shadow 0.15s;
+          box-shadow: inset 0 1px 0 rgba(255,255,255,0.32), inset 0 -1px 0 rgba(0,0,0,0.14), 0 1px 2px rgba(0,0,0,0.14);
+          transition: background-color 0.24s cubic-bezier(0.2,0.8,0.2,1), transform 0.16s cubic-bezier(0.2,0.8,0.2,1), filter 0.15s, box-shadow 0.15s;
         }
-        .gh-cell:hover, .lc-cell:hover { filter: brightness(1.12); z-index: 1; }
+        .gh-cell:not(.gh-cell-0):hover, .lc-cell:not(.lc-cell-0):hover {
+          filter: brightness(1.08) saturate(1.08);
+          box-shadow: inset 0 1px 0 rgba(255,255,255,0.42), inset 0 -1px 0 rgba(0,0,0,0.12), 0 2px 4px rgba(0,0,0,0.18), 0 0 4px var(--heat-7);
+          z-index: 1;
+        }
         .gh-cell-1, .lc-cell-1 { background: var(--heat-1); }
         .gh-cell-2, .lc-cell-2 { background: var(--heat-2); }
         .gh-cell-3, .lc-cell-3 { background: var(--heat-3); }
