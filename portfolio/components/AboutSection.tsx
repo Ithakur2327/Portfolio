@@ -95,16 +95,21 @@ export function AboutSection() {
       <style suppressHydrationWarning>{`
         .name-highlight {
           display: inline; color: ${TIFFANY}; font-weight: 600; white-space: nowrap;
-          background: rgba(10,186,181,0.12); border: 1px solid rgba(10,186,181,0.35);
-          border-radius: 5px; padding: 1px 7px 2px;
+          animation: aboutWaterFlicker 5.5s ease-in-out infinite;
         }
         .gold-box-word {
           display: inline; color: ${GOLD}; font-weight: 600;
-          background: rgba(212,175,55,0.10); border: 1px solid rgba(212,175,55,0.30);
-          border-radius: 5px; padding: 1px 5px 2px; margin: 0 1px;
+          animation: aboutWaterFlicker 5.5s ease-in-out infinite;
         }
-        html.light .name-highlight  { color: #0f766e !important; background: rgba(10,186,181,0.14) !important; border-color: rgba(10,186,181,0.45) !important; }
-        html.light .gold-box-word   { color: #b8860b !important; background: rgba(212,175,55,0.14) !important; border-color: rgba(184,134,11,0.45) !important; }
+        html.light .name-highlight  { color: #0f766e !important; }
+        html.light .gold-box-word   { color: #b8860b !important; }
+        @keyframes aboutWaterFlicker {
+          0%, 100% { text-shadow: 0 0 0 transparent; }
+          50% { text-shadow: 0 0 4px color-mix(in srgb, currentColor 18%, transparent); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .name-highlight, .gold-box-word { animation: none; }
+        }
 
         .about-content {
           max-width: var(--content-width); margin: 0 auto; padding: 0 20px 64px;
