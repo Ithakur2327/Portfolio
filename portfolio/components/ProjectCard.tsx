@@ -139,7 +139,9 @@ export function ProjectCard({ proj, index, visible, isDesktop, isHidden, onOpen,
          padding: 2,
          borderRadius: 18,
          border: `1px dashed ${
-        index % 2 === 0 ? "rgba(10,186,181,0.35)" : "rgba(212,175,55,0.35)" }`,
+        index % 2 === 0
+          ? `rgba(10,186,181,${isDark ? 0.35 : 0.65})`
+          : `rgba(212,175,55,${isDark ? 0.35 : 0.65})` }`,
           boxSizing: "border-box",
         }}
       >
@@ -270,11 +272,13 @@ export function ProjectCard({ proj, index, visible, isDesktop, isHidden, onOpen,
 }
 
 export function ProjectModal({ proj, index, onClose, isDesktop, scope = "grid" }: { proj: Project; index: number; onClose: () => void; isDesktop: boolean; scope?: string }) {
-  const dashColor = index % 2 === 0 ? "rgba(10,186,181,0.35)" : "rgba(212,175,55,0.35)";
   const modalRef = useRef<HTMLDivElement>(null);
   const closeBtnRef = useRef<HTMLButtonElement>(null);
   const { theme } = useTheme();
   const isDark = theme === "dark";
+  const dashColor = index % 2 === 0
+    ? `rgba(10,186,181,${isDark ? 0.35 : 0.65})`
+    : `rgba(212,175,55,${isDark ? 0.35 : 0.65})`;
   const sheet = !isDesktop;
   const lid = (id: string) => (sheet ? undefined : id);
   const sheetTransition = { type: "spring" as const, stiffness: 280, damping: 30, mass: 0.85 };

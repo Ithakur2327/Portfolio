@@ -951,10 +951,10 @@ export function StatsSection() {
           border-color: rgba(212, 175, 55, 0.35);
         }
         html.light .about-panels > .stat-card-3d:first-child {
-          border-color: rgba(10, 186, 181, 0.35);
+          border-color: rgba(10, 186, 181, 0.65);
         }
         html.light .about-panels > .stat-card-3d:nth-child(2) {
-          border-color: rgba(212, 175, 55, 0.35);
+          border-color: rgba(212, 175, 55, 0.65);
         }
         .stat-card-3d:hover {
           border-color: var(--text-muted);

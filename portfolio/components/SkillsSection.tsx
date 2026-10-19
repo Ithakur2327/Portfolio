@@ -453,10 +453,10 @@ export function SkillsSection() {
           border-color: rgba(212, 175, 55, 0.35);
         }
         html.light .falling-icons-panel:first-child .falling-icons-box {
-          border-color: rgba(10, 186, 181, 0.35);
+          border-color: rgba(10, 186, 181, 0.65);
         }
         html.light .falling-icons-panel:nth-child(2) .falling-icons-box {
-          border-color: rgba(212, 175, 55, 0.35);
+          border-color: rgba(212, 175, 55, 0.65);
         }
         .falling-icons-flow {
           position: relative;

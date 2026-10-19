@@ -189,6 +189,7 @@ export function CertificationsSection() {
           transition: box-shadow 0.3s ease;
         }
         html.light .cert-tl-card {
+          border-color: rgba(var(--accent),0.65);
           background: rgba(var(--accent),0.06);
           box-shadow: 0 10px 22px rgba(0,0,0,0.09), 0 2px 6px rgba(0,0,0,0.06), 0 0 0 1px rgba(var(--accent),0.09) inset;
         }

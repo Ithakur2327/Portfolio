@@ -211,7 +211,7 @@ export function EducationSection() {
           will-change: transform;
         }
         html.light .note-card {
-          border-color: rgba(10,186,181,0.35);
+          border-color: rgba(10,186,181,0.65);
           background: rgba(10,186,181,0.055);
           box-shadow:
             0 14px 30px rgba(0,0,0,0.10),
@@ -353,7 +353,7 @@ export function EducationSection() {
         html.light .lang-pill-item {
           color: #0f766e;
           background: rgba(10,186,181,0.10);
-          border-color: rgba(10,186,181,0.35);
+          border-color: rgba(10,186,181,0.65);
         }
 
         ${mq.navCollapse} {

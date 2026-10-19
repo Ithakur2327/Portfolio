@@ -129,7 +129,7 @@ export function AboutSection() {
           background: var(--bg-base);
           padding: 12px 12px;
         }
-        html.light .about-box { border-color: rgba(0, 0, 0, 0.35); }
+        html.light .about-box { border-color: rgba(0, 0, 0, 0.65); }
         ${mq.navCollapse} {
           .about-box { padding: 16px 16px; }
         }
