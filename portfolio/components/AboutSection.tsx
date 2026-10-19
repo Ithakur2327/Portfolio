@@ -119,12 +119,12 @@ export function AboutSection() {
           width: 100%;
           max-width: 100%;
           box-sizing: border-box;
-          border: 1.3px dashed rgba(255, 255, 255, 0.49);
+          border: 1px dashed rgba(255, 255, 255, 0.35);
           border-radius: 10px;
           background: var(--bg-base);
           padding: 12px 12px;
         }
-        html.light .about-box { border-color: rgba(0, 0, 0, 0.9); }
+        html.light .about-box { border-color: rgba(0, 0, 0, 0.35); }
         ${mq.navCollapse} {
           .about-box { padding: 16px 16px; }
         }

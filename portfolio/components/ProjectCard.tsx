@@ -138,8 +138,8 @@ export function ProjectCard({ proj, index, visible, isDesktop, isHidden, onOpen,
           width: "100%",
          padding: 2,
          borderRadius: 18,
-        border: `1.3px dashed ${
-        index % 2 === 0 ? "rgba(10,186,181,0.55)" : "rgba(212,175,55,0.55)" }`,
+         border: `1px dashed ${
+        index % 2 === 0 ? "rgba(10,186,181,0.35)" : "rgba(212,175,55,0.35)" }`,
           boxSizing: "border-box",
         }}
       >
@@ -270,7 +270,7 @@ export function ProjectCard({ proj, index, visible, isDesktop, isHidden, onOpen,
 }
 
 export function ProjectModal({ proj, index, onClose, isDesktop, scope = "grid" }: { proj: Project; index: number; onClose: () => void; isDesktop: boolean; scope?: string }) {
-  const dashColor = index % 2 === 0 ? "rgba(10,186,181,0.55)" : "rgba(212,175,55,0.55)";
+  const dashColor = index % 2 === 0 ? "rgba(10,186,181,0.35)" : "rgba(212,175,55,0.35)";
   const modalRef = useRef<HTMLDivElement>(null);
   const closeBtnRef = useRef<HTMLButtonElement>(null);
   const { theme } = useTheme();
@@ -567,7 +567,7 @@ export function ProjectModal({ proj, index, onClose, isDesktop, scope = "grid" }
               width: 100%;
               padding: 2px;
               border-radius: 18px;
-              border: 1.3px dashed ${dashColor};
+              border: 1px dashed ${dashColor};
               box-sizing: border-box;
               overflow: hidden;
               flex-shrink: 0;

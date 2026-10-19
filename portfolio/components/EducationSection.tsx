@@ -199,7 +199,7 @@ export function EducationSection() {
           position: sticky;
           top: 78px;
           box-sizing: border-box;
-          border: 1.3px dashed rgba(10,186,181,0.45);
+          border: 1px dashed rgba(10,186,181,0.35);
           border-radius: 12px;
           background: rgba(10,186,181,0.045);
           box-shadow:
@@ -211,7 +211,7 @@ export function EducationSection() {
           will-change: transform;
         }
         html.light .note-card {
-          border-color: rgba(10,186,181,0.65);
+          border-color: rgba(10,186,181,0.35);
           background: rgba(10,186,181,0.055);
           box-shadow:
             0 14px 30px rgba(0,0,0,0.10),
@@ -344,7 +344,7 @@ export function EducationSection() {
           font-weight: 600;
           font-family: ${SF};
           letter-spacing: 0.06em;
-          border: 1px dashed rgba(10,186,181,0.45);
+          border: 1px dashed rgba(10,186,181,0.35);
           color: #2dd4c8;
           background: rgba(10,186,181,0.08);
           cursor: default;
@@ -353,7 +353,7 @@ export function EducationSection() {
         html.light .lang-pill-item {
           color: #0f766e;
           background: rgba(10,186,181,0.10);
-          border-color: rgba(10,186,181,0.45);
+          border-color: rgba(10,186,181,0.35);
         }
 
         ${mq.navCollapse} {

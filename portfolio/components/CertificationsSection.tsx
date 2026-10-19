@@ -183,7 +183,7 @@ export function CertificationsSection() {
           transform-origin: top center;
           will-change: transform;
           z-index: 1;
-          border: 1.3px dashed rgba(var(--accent),0.5);
+          border: 1px dashed rgba(var(--accent),0.35);
           background: rgba(var(--accent),0.05);
           box-shadow: 0 10px 24px rgba(0,0,0,0.26), 0 2px 8px rgba(0,0,0,0.18), 0 0 0 1px rgba(var(--accent),0.07) inset;
           transition: box-shadow 0.3s ease;
