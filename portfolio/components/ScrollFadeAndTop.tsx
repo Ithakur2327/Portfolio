@@ -54,7 +54,7 @@ export function ScrollFadeAndTop() {
     <>
       {!footerVisible && (
         <GradualBlur
-          height="calc(64px + env(safe-area-inset-bottom, 0px))"
+          height="calc(48px + env(safe-area-inset-bottom, 0px))"
           strength={1.5}
           layers={4}
           zIndex={40}

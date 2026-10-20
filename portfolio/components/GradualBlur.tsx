@@ -27,7 +27,7 @@ const GradualBlur = ({
       const from = level(i / count);
       const to = level((i + 1) / count);
       const radius = Math.sqrt(Math.max(to * to - from * from, 0));
-      const mask = `linear-gradient(to top, transparent ${((i / count) * 100).toFixed(2)}%, #000 ${(((i + 1) / count) * 100).toFixed(2)}%)`;
+      const mask = `linear-gradient(to bottom, transparent ${((i / count) * 100).toFixed(2)}%, #000 ${(((i + 1) / count) * 100).toFixed(2)}%)`;
       steps.push({
         position: 'absolute',
         inset: 0,
