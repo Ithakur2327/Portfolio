@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
+import GradualBlur from "./GradualBlur";
 
 function ArrowUpIcon() {
   return (
@@ -51,32 +52,17 @@ export function ScrollFadeAndTop() {
 
   return (
     <>
-      <div
-        aria-hidden="true"
-        style={{
-          position: "fixed",
-          left: 0, right: 0, bottom: 0,
-          zIndex: 40,
-          pointerEvents: "none",
-          opacity: footerVisible ? 0 : 1,
-          transition: "opacity 0.35s ease",
-          transform: "translateZ(0)",
-          willChange: "opacity",
-        }}
-      >
-        <div
-          className="scroll-bottom-fade"
-          style={{
-            height: 76,
-            background: "linear-gradient(to bottom, transparent 0%, var(--bg-base) 100%)",
-            WebkitMaskImage: "linear-gradient(to top, var(--bg-base) 40%, transparent 100%)",
-            maskImage: "linear-gradient(to top, var(--bg-base) 40%, transparent 100%)",
-            backdropFilter: "blur(0.6px)",
-            WebkitBackdropFilter: "blur(0.6px)",
-          }}
+      {!footerVisible && (
+        <GradualBlur
+          position="bottom"
+          target="page"
+          height="calc(76px + env(safe-area-inset-bottom, 0px))"
+          strength={1.5}
+          layers={8}
+          autoHide
+          zIndex={40}
         />
-        <div style={{ background: "var(--bg-base)", paddingBottom: "env(safe-area-inset-bottom, 0px)" }} />
-      </div>
+      )}
 
       <button
         type="button"

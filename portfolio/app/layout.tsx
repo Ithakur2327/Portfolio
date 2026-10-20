@@ -5,6 +5,7 @@ import { PdfModalProvider } from "@/components/PdfViewerModal";
 import { IntroLoader } from "@/components/IntroLoader";
 import OnekoCatLoader from "@/components/OnekoCatLoader";
 import { Navbar } from "@/components/Navbar";
+import ClickSpark from "@/components/ClickSpark";
 import { createHash } from "crypto";
 import { readFileSync } from "fs";
 import path from "path";
@@ -230,10 +231,20 @@ export default function RootLayout({
                 "fixed" relative to the wrapper instead of the viewport and
                 scrolled away with the page. Keeping it here, as a true
                 sibling of that wrapper, is what keeps it pinned. */}
-            <Navbar />
-            <div style={{ position: "relative", zIndex: 1 }}>
-              {children}
-            </div>
+            <ClickSpark
+              sparkColor={["#0ABAB5", "#D4AF37"]}
+              sparkSize={8}
+              sparkRadius={36}
+              sparkCount={8}
+              sparkWidth={1.5}
+              duration={480}
+              glow={0.25}
+            >
+              <Navbar />
+              <div style={{ position: "relative", zIndex: 1 }}>
+                {children}
+              </div>
+            </ClickSpark>
 
             {/* 🐱 Pixel cat — client-only, loaded after hydration */}
             <OnekoCatLoader />
