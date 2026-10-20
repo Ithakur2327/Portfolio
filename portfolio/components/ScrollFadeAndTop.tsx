@@ -56,8 +56,7 @@ export function ScrollFadeAndTop() {
         <GradualBlur
           height="calc(64px + env(safe-area-inset-bottom, 0px))"
           strength={1.5}
-          layers={8}
-          autoHide
+          layers={4}
           zIndex={40}
         />
       )}

@@ -1,28 +1,23 @@
 'use client';
 
-import { useEffect, useLayoutEffect, useMemo, useRef, type CSSProperties } from 'react';
+import { useMemo, type CSSProperties } from 'react';
 
 export interface GradualBlurProps {
   height?: string | number;
   strength?: number;
   layers?: number;
-  autoHide?: boolean;
   zIndex?: number;
 }
 
-const useIsomorphicLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
 const clamp01 = (value: number) => Math.min(Math.max(value, 0), 1);
 const toLength = (value: string | number) => (typeof value === 'number' ? `${value}px` : value);
 
 const GradualBlur = ({
   height = 64,
   strength = 1.5,
-  layers = 8,
-  autoHide = false,
+  layers = 4,
   zIndex = 40
 }: GradualBlurProps) => {
-  const rootRef = useRef<HTMLDivElement>(null);
-
   const stack = useMemo(() => {
     const count = Math.min(Math.max(Math.round(layers) || 1, 1), 16);
     const maxBlur = Math.max(strength, 0) * 12;
@@ -36,39 +31,14 @@ const GradualBlur = ({
       steps.push({
         position: 'absolute',
         inset: 0,
-        backdropFilter: `blur(calc(${radius.toFixed(3)}px * var(--gradual-blur-reveal, 1)))`,
-        WebkitBackdropFilter: `blur(calc(${radius.toFixed(3)}px * var(--gradual-blur-reveal, 1)))`,
+        backdropFilter: `blur(${radius.toFixed(3)}px)`,
+        WebkitBackdropFilter: `blur(${radius.toFixed(3)}px)`,
         maskImage: mask,
-        WebkitMaskImage: mask,
-        transition: 'backdrop-filter 0.3s ease-out, -webkit-backdrop-filter 0.3s ease-out'
+        WebkitMaskImage: mask
       });
     }
     return steps;
   }, [layers, strength]);
-
-  useIsomorphicLayoutEffect(() => {
-    const root = rootRef.current;
-    if (!root) return undefined;
-    if (!autoHide) {
-      root.style.removeProperty('--gradual-blur-reveal');
-      return undefined;
-    }
-    const update = () => {
-      const limit = document.documentElement.scrollHeight - window.innerHeight;
-      const box = root.getBoundingClientRect();
-      const reach = Math.max(box.height, 1);
-      const room = limit - window.scrollY;
-      root.style.setProperty('--gradual-blur-reveal', clamp01(room / reach).toFixed(3));
-    };
-
-    update();
-    window.addEventListener('scroll', update, { passive: true });
-    window.addEventListener('resize', update);
-    return () => {
-      window.removeEventListener('scroll', update);
-      window.removeEventListener('resize', update);
-    };
-  }, [autoHide]);
 
   const rootStyle: CSSProperties = {
     position: 'fixed',
@@ -81,7 +51,7 @@ const GradualBlur = ({
   };
 
   return (
-    <div ref={rootRef} style={rootStyle} aria-hidden="true">
+    <div style={rootStyle} aria-hidden="true">
       {stack.map((layer, index) => (
         <div key={index} style={layer} />
       ))}
