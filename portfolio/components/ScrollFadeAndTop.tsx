@@ -56,7 +56,7 @@ export function ScrollFadeAndTop() {
         <GradualBlur
           position="bottom"
           target="page"
-          height="calc(76px + env(safe-area-inset-bottom, 0px))"
+          height="calc(64px + env(safe-area-inset-bottom, 0px))"
           strength={1.5}
           layers={8}
           autoHide

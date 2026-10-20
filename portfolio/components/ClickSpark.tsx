@@ -418,13 +418,13 @@ const ClickSpark = forwardRef<ClickSparkHandle, ClickSparkProps>(
       };
 
       const onPointerDown = (event: PointerEvent) => {
-        if (event.pointerType !== 'mouse' || event.button !== 0) return;
+        if (!event.isPrimary || event.button !== 0) return;
         lastPress = { time: performance.now(), x: event.clientX, y: event.clientY };
         spawn(event.clientX, event.clientY);
       };
 
       const onClick = (event: MouseEvent) => {
-        if ('pointerType' in event && event.pointerType === 'mouse') return;
+        if ('pointerType' in event) return;
         if (event.detail === 0) {
           const target = event.target instanceof Element ? event.target : root;
           const rect = target.getBoundingClientRect();
@@ -437,8 +437,8 @@ const ClickSpark = forwardRef<ClickSparkHandle, ClickSparkProps>(
         if (!recent) spawn(event.clientX, event.clientY);
       };
 
-      root.addEventListener('pointerdown', onPointerDown);
-      root.addEventListener('click', onClick);
+      document.addEventListener('pointerdown', onPointerDown, true);
+      document.addEventListener('click', onClick, true);
 
       engineRef.current = {
         spark: (x?: number, y?: number) => {
@@ -449,8 +449,8 @@ const ClickSpark = forwardRef<ClickSparkHandle, ClickSparkProps>(
 
       return () => {
         cancelAnimationFrame(raf);
-        root.removeEventListener('pointerdown', onPointerDown);
-        root.removeEventListener('click', onClick);
+        document.removeEventListener('pointerdown', onPointerDown, true);
+        document.removeEventListener('click', onClick, true);
         for (const burst of [...bursts]) remove(burst);
         engineRef.current = null;
       };
