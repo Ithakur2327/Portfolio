@@ -390,18 +390,11 @@ h1, h2, h3 {
 @keyframes spin { to { transform: rotate(360deg); } }
 
 .reveal {
-  opacity: 0;
-  transform: translate3d(0, 22px, 0);
-  transition:
-    opacity 0.7s var(--expo-out),
-    transform 0.75s var(--expo-out);
   will-change: opacity, transform;
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
 }
 .reveal.visible {
-  opacity: 1;
-  transform: translate3d(0, 0, 0);
   will-change: auto;
 }
 

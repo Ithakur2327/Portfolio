@@ -3,6 +3,7 @@ import React from "react";
 import { useTheme } from "./ThemeProvider";
 import { motion, useMotionValue, useSpring, useTransform, animate } from "motion/react";
 import { SocialRow } from "./ui/SocialRow";
+import { useReveal } from "./useReveal";
 import { BP, mq as MQ } from "@/lib/breakpoints";
 import { useIsMobile } from "@/lib/useBreakpoint";
 
@@ -186,6 +187,7 @@ function FluidGradientText({ text }: { text: string }) {
 // Footer section
 export function Footer() {
   const [year, setYear] = React.useState(2026);
+  const { ref, revealClass } = useReveal<HTMLElementTagNameMap["footer"]>();
   React.useEffect(() => { setYear(new Date().getFullYear()); }, []);
 
   return (
@@ -325,7 +327,7 @@ export function Footer() {
         }
       `}</style>
 
-      <footer id="site-footer-root" className="footer-root">
+      <footer id="site-footer-root" ref={ref} className={`footer-root ${revealClass}`}>
         <div className="footer-bottom-band">
           <span className="footer-copy">© {year} Indresh Thakur. All rights reserved.</span>
           <SocialRow size={22} gap={16} bright thinBorder />

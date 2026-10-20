@@ -1,39 +1,50 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { gsap } from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 
-export function useReveal(threshold = 0.08) {
-  const ref = useRef<HTMLElement>(null);
+gsap.registerPlugin(ScrollTrigger);
+
+const useIsomorphicLayoutEffect = typeof window !== "undefined" ? useLayoutEffect : useEffect;
+
+export function useReveal<T extends HTMLElement = HTMLElement>(threshold = 0.08) {
+  const ref = useRef<T>(null);
   const [visible, setVisible] = useState(false);
   const [mounted, setMounted] = useState(false);
 
-  useEffect(() => {
+  useIsomorphicLayoutEffect(() => {
     setMounted(true);
     const el = ref.current;
     if (!el) return;
 
-    const obs = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setVisible(true);
-          obs.disconnect();
-        }
-      },
-      { threshold, rootMargin: "0px 0px -10% 0px" }
-    );
-
-    if ("requestIdleCallback" in window) {
-      const handle = (window as unknown as {
-        requestIdleCallback: (cb: () => void, opts?: { timeout: number }) => number;
-      }).requestIdleCallback(() => obs.observe(el), { timeout: 200 });
-      return () => {
-        (window as unknown as { cancelIdleCallback: (id: number) => void })
-          .cancelIdleCallback(handle);
-        obs.disconnect();
-      };
-    } else {
-      const raf = requestAnimationFrame(() => obs.observe(el));
-      return () => { cancelAnimationFrame(raf); obs.disconnect(); };
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      setVisible(true);
+      return;
     }
+
+    const context = gsap.context(() => {
+      gsap.set(el, { autoAlpha: 0, y: 100 });
+      const tween = gsap.to(el, {
+        autoAlpha: 1,
+        y: 0,
+        duration: 0.8,
+        ease: "power3.out",
+        paused: true,
+        clearProps: "opacity,transform,visibility",
+      });
+
+      ScrollTrigger.create({
+        trigger: el,
+        start: `top ${(1 - threshold) * 100}%`,
+        once: true,
+        onEnter: () => {
+          setVisible(true);
+          tween.play();
+        },
+      });
+    }, el);
+
+    return () => context.revert();
   }, [threshold]);
 
   return {
