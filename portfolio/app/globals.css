@@ -141,8 +141,8 @@ html {
   scroll-padding-top: 64px;
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
-  overflow-y: scroll;
-  overflow-x: hidden;
+  overflow-y: auto;
+  overflow-x: clip;
   overscroll-behavior-y: auto;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -154,7 +154,7 @@ html {
 body {
   background: transparent;
   color: var(--text-primary);
-  overflow-x: hidden;
+  overflow-x: clip;
   font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text',
                'Helvetica Neue', Arial, sans-serif;
   font-size: 15px;
