@@ -125,7 +125,7 @@ export function AboutSection() {
 
       <section id="about" ref={ref} className={revealClass}>
         <div style={{ position: "relative", left: "50%", marginLeft: "-50vw", width: "100vw", background: "var(--bg-base)" }}>
-          <Panel3D>
+          <Panel3D tilt={false}>
             <div className="ab-content">
               <span style={{ display: "inline-flex", alignItems: "center", gap: 10, fontSize: 28, fontWeight: 700, letterSpacing: "-0.03em", lineHeight: 1, fontFamily: SF, color: "var(--text-primary)" }}>
                 <SectionTitleIcon type="about" />

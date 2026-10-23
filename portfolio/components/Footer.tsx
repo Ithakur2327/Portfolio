@@ -327,7 +327,7 @@ export function Footer() {
       `}</style>
 
       <footer id="site-footer-root" ref={ref} className={`footer-root ${revealClass}`}>
-        <Panel3D>
+        <Panel3D tilt={false}>
           <div className="footer-bottom-band">
             <span className="footer-copy">© {year} Indresh Thakur. All rights reserved.</span>
             <SocialRow size={22} gap={16} bright thinBorder />
