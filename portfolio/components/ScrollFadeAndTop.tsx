@@ -1,6 +1,5 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import GradualBlur from "./GradualBlur";
 
 function ArrowUpIcon() {
   return (
@@ -52,14 +51,20 @@ export function ScrollFadeAndTop() {
 
   return (
     <>
-      {!footerVisible && (
-        <GradualBlur
-          height="calc(48px + env(safe-area-inset-bottom, 0px))"
-          strength={1.5}
-          layers={4}
-          zIndex={40}
-        />
-      )}
+      {/* Soft fade at the bottom edge. A plain gradient — the old version
+          stacked four backdrop-filter blur layers that the GPU had to
+          re-blur on every scrolled frame. */}
+      <div
+        aria-hidden="true"
+        style={{
+          position: "fixed", left: 0, right: 0, bottom: 0,
+          height: "calc(44px + env(safe-area-inset-bottom, 0px))",
+          zIndex: 40, pointerEvents: "none",
+          background: "linear-gradient(to top, color-mix(in srgb, var(--bg-base) 82%, transparent), transparent)",
+          opacity: footerVisible ? 0 : 1,
+          transition: "opacity 0.25s ease",
+        }}
+      />
 
       <button
         type="button"
@@ -80,10 +85,9 @@ export function ScrollFadeAndTop() {
           display: "flex", alignItems: "center", justifyContent: "center",
           cursor: "pointer",
           opacity: show ? (dimmed && !hovered ? 0.3 : 1) : 0,
-          transform: show ? "translateY(0) translateZ(0)" : "translateY(8px) translateZ(0)",
+          transform: show ? "translateY(0)" : "translateY(8px)",
           pointerEvents: show ? "auto" : "none",
           transition: "opacity 0.3s ease, transform 0.3s ease, background 0.15s ease, color 0.15s ease, border-color 0.15s ease",
-          willChange: "opacity, transform",
         }}
       >
         <ArrowUpIcon />

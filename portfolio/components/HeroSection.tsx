@@ -1,12 +1,66 @@
 "use client";
 import { useEffect, useState } from "react";
-import { Avatar } from "./Avatar";
+import dynamic from "next/dynamic";
 import { DotField } from "./DotBackground";
 import { useTheme } from "./ThemeProvider";
 import { usePdfModal } from "./PdfViewerModal";
 import { HeroActionButtons } from "./HeroActionButtons";
 import { SocialRow } from "./ui/SocialRow";
 import { mq } from "@/lib/breakpoints";
+import { whenIdle } from "@/lib/idle";
+import { Panel3D } from "./Panel3D";
+
+// GSAP + the draw animation load after first paint / the intro, never before.
+const StrokeText = dynamic(() => import("./StrokeText"), { ssr: false });
+
+const NAME = "Indresh Thakur";
+const NAME_REPLAY_SECONDS = 120; // the name re-draws itself every 2 minutes
+const NAME_PLAY_ON_LOAD = true;  // false → first draw happens only after the first 2 minutes
+
+/**
+ * The h1's text. Server + first paint = plain text (instant, no layout shift).
+ * Once the intro is done and the browser is idle, the outline-draw animation
+ * (StrokeText) takes over in place — same font, same size, same baseline —
+ * and replays every 2 minutes.
+ */
+function AnimatedName() {
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    let cancelIdle: (() => void) | null = null;
+    const go = () => { cancelIdle = whenIdle(() => setReady(true), 1500); };
+    if (document.documentElement.classList.contains("intro-active")) {
+      window.addEventListener("intro:complete", go, { once: true });
+    } else {
+      go();
+    }
+    return () => {
+      window.removeEventListener("intro:complete", go);
+      cancelIdle?.();
+    };
+  }, []);
+
+  if (!ready) return <>{NAME}</>;
+  return (
+    <StrokeText
+      text={NAME}
+      fluid
+      settle
+      shadow
+      fontSize={100}
+      fontFamily="inherit"
+      fontWeight="inherit"
+      letterSpacing={2}
+      strokeColor="#0abab5"
+      strokeWidth={5}
+      drawDuration={1.7}
+      stagger={0.055}
+      fillDelay={0.1}
+      startDelay={NAME_PLAY_ON_LOAD ? 0.35 : NAME_REPLAY_SECONDS}
+      replayEvery={NAME_REPLAY_SECONDS}
+    />
+  );
+}
 
 const SENTENCES = [
   "AI Software Engineer",
@@ -159,12 +213,7 @@ const CW = "var(--content-width-inset)";
 
 // Hero section
 export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) {
-  const [vis, setVis] = useState<"ssr" | "visible">("ssr");
   const { openPdf } = usePdfModal();
-  const { theme } = useTheme();
-  const isDark = theme === "dark";
-
-  useEffect(() => { setTimeout(() => setVis("visible"), 50); }, []);
 
   const BG = "var(--bg-base)";
   const B  = "1px solid var(--border)";
@@ -225,7 +274,16 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
           align-items: flex-start;
           justify-content: stretch;
           border-radius: 22px;
-          background: var(--bg-base);
+          background-color: var(--bg-base);
+          /* Theme-switched in CSS: only the matching photo is ever fetched and
+             there is no flash on load. The photo is square and top-aligned. */
+          background-image: url(/avatar-dark.jpg${avatarVersion ? `?v=${avatarVersion}` : ""});
+          background-repeat: no-repeat;
+          background-size: 100% auto;
+          background-position: 0 0;
+        }
+        html.light .h-avatar {
+          background-image: url(/avatar-light.jpg${avatarVersion ? `?v=${avatarVersion}` : ""});
         }
         .h-nameblock {
           flex: 1; display: flex; flex-direction: column;
@@ -458,9 +516,7 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
         }
       `}</style>
 
-      <section id="home"
-        className={vis === "ssr" ? "" : "reveal visible"}
-      >
+      <section id="home">
         <div style={{ position: "relative", left: "50%", marginLeft: "-50vw", width: "100vw" }}>
           <div style={{ position: "absolute", inset: 0, zIndex: 0 }}>
             <DotField interactive />
@@ -475,16 +531,9 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
             <div
               className="h-avatar"
               id="hero-avatar-anchor"
-              style={{
-                backgroundImage: `url(${isDark ? "/avatar-dark.jpg" : "/avatar-light.jpg"}${avatarVersion ? `?v=${avatarVersion}` : ""})`,
-                backgroundSize: "cover",
-                backgroundPosition: "58% 40%",
-              }}
-            >
-              <div style={{width:"100%", aspectRatio:"1 / 1", flexShrink:0}}>
-                <Avatar version={avatarVersion} />
-              </div>
-            </div>
+              role="img"
+              aria-label="Portrait of Indresh Thakur"
+            />
 
             <div className="h-nameblock">
               <div style={{flex:1}}/>
@@ -496,7 +545,7 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
                   fontFamily:"'Geist Pixel Square','Geist Mono',monospace", display:"inline-block",
                   WebkitFontSmoothing:"antialiased", MozOsxFontSmoothing:"grayscale",
                   textRendering:"optimizeLegibility",
-                }}>Indresh Thakur</h1>
+                }}><AnimatedName /></h1>
                 <VerifiedBadge className="h-verified-badge" />
               </div>
               <div className="h-full-divider" style={{height:1, background:"var(--border)"}}/>
@@ -510,6 +559,7 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
         <div style={{height:38, maxWidth:CW, margin:"0 auto"}}/>
 
         <div className="h-info-wrap">
+          <Panel3D variant="lift">
           <HoverBorderGradient>
             <div className="h-info-box" style={{background:BG, border:B, borderRadius:8.5, overflow:"hidden"}}>
 
@@ -553,6 +603,7 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
               </div>
             </div>
           </HoverBorderGradient>
+          </Panel3D>
         </div>
 
         <div style={{ height: 38, maxWidth: CW, margin: "0 auto" }} />

@@ -18,17 +18,16 @@ type NavLink = {
   icon: string;
   external: boolean;
   type: NavLinkType;
-  comingSoon?: boolean;
 };
 
 const PORTFOLIO_LINKS: NavLink[] = [
   { label: "Home",           href: "#",                                       icon: "home",     external: false, type: "section" },
   { label: "About",          href: "#about",                                  icon: "about",    external: false, type: "section" },
+  { label: "Experience",     href: "#experience",                             icon: "briefcase",external: false, type: "section" },
   { label: "Stats",          href: "#stats",                                  icon: "chart",    external: false, type: "section" },
   { label: "Skills",         href: "#skills",                                 icon: "layers",   external: false, type: "section" },
   { label: "Projects",       href: "/projects",                               icon: "box",      external: false, type: "page"    },
   { label: "Education",      href: "#education",                              icon: "book",     external: false, type: "section" },
-  { label: "Experience",     href: "#experience",                             icon: "briefcase",external: false, type: "section", comingSoon: true },
   { label: "Certifications", href: "#certifications",                         icon: "badge",    external: false, type: "section" },
   { label: "Contact",        href: "/contact",                               icon: "mail",     external: false, type: "page"    },
   { label: "Resume",         href: "/resume.pdf",                             icon: "resume",   external: false, type: "pdf"     },
@@ -218,7 +217,6 @@ function CommandMenu({
       if (e.key === "ArrowUp")   { e.preventDefault(); setSelected(s => Math.max(s - 1, 0)); }
       if (e.key === "Enter" && flatFiltered[selected]) {
         const item = flatFiltered[selected];
-        if (item.comingSoon) return;
         if (item.type === "pdf") { openPdf(item.href, item.label, item.href); onClose(); return; }
         if (item.type === "page") { onClose(); router.push(item.href); return; }
         if (item.external) {
@@ -268,7 +266,6 @@ function CommandMenu({
   const linkItems    = filtered.filter(i => i.type !== "section");
 
   const handleItemClick = (item: NavLink) => {
-    if (item.comingSoon) return;
     if (item.type === "pdf") {
       openPdf(item.href, item.label, item.href);
       onClose();
@@ -313,11 +310,9 @@ function CommandMenu({
         style={{
           display: "flex", alignItems: "center", gap: 8,
           padding: "7px 10px", margin: "0 4px", borderRadius: 7,
-          background: isActive && !item.comingSoon ? accent : "transparent",
-          color: fg, cursor: item.comingSoon ? "default" : "pointer",
+          background: isActive ? accent : "transparent",
+          color: fg, cursor: "pointer",
           transition: "background 0.1s",
-          opacity: item.comingSoon ? 0.45 : 1,
-          filter: item.comingSoon ? "blur(0.4px)" : "none",
         }}
       >
         <div style={{
@@ -336,16 +331,6 @@ function CommandMenu({
         }}>
           {item.label}
         </span>
-        {item.comingSoon && (
-          <span style={{
-            fontSize: 10, fontWeight: 700, letterSpacing: "0.04em",
-            padding: "2px 6px", borderRadius: 5,
-            color: muted, border: `1px solid ${border}`,
-            fontFamily: "-apple-system,sans-serif", flexShrink: 0,
-          }}>
-            SOON
-          </span>
-        )}
         {item.external && (
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke={muted} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
             <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>

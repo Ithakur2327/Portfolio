@@ -6,6 +6,7 @@ import { PROJECTS } from "@/lib/projects-data";
 import { ProjectsGrid } from "./ProjectsGrid";
 import { mq } from "@/lib/breakpoints";
 
+import { Panel3D } from "./Panel3D";
 const SF = "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', sans-serif";
 
 const FEATURED_COUNT = 6;
@@ -18,8 +19,9 @@ export function ProjectsSection() {
   return (
     <div id="projects" ref={revealRef as unknown as React.Ref<HTMLDivElement>} className={revealClass}>
       <div style={{ position: "relative", left: "50%", marginLeft: "-50vw", width: "100vw", background: "var(--bg-base)" }}>
-        <div className="proj-inner" style={{ maxWidth: "var(--content-width)", margin: "0 auto", padding: "0 20px 60px" }}>
-          <div style={{ paddingTop: 50, marginBottom: 4 }}>
+        <Panel3D tilt={false}>
+        <div className="proj-inner" style={{ maxWidth: "var(--content-width)", margin: "0 auto", padding: "26px 20px 26px" }}>
+          <div style={{ paddingTop: 0, marginBottom: 4 }}>
             <span style={{ display: "inline-flex", alignItems: "center", gap: 10, fontSize: 28, fontWeight: 700, letterSpacing: "-0.03em", lineHeight: 1, fontFamily: SF, color: "var(--text-primary)" }}>
               <SectionTitleIcon type="box" />
               Projects
@@ -29,8 +31,8 @@ export function ProjectsSection() {
           <div style={{ height: 1, background: "var(--border)", margin: "20px 0 20px" }} />
 
           <style suppressHydrationWarning>{`
-            ${mq.navCollapse} { .proj-inner { padding: 0 22px 34px !important; } }
-           ${mq.mobile} { .proj-inner { padding: 0 6px 28px !important; } }
+            ${mq.navCollapse} { .proj-inner { padding: 22px 16px 22px !important; } }
+           ${mq.mobile} { .proj-inner { padding: 18px 4px 20px !important; } }
             .view-more-link {
               display: inline-flex; align-items: center; gap: 7px;
               padding: 10px 24px; border-radius: 10px;
@@ -78,6 +80,7 @@ export function ProjectsSection() {
             </div>
           )}
         </div>
+        </Panel3D>
       </div>
     </div>
   );

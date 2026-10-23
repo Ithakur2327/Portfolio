@@ -6,6 +6,7 @@ import { SocialRow } from "./ui/SocialRow";
 import { useReveal } from "./useReveal";
 import { BP, mq as MQ } from "@/lib/breakpoints";
 import { useIsMobile } from "@/lib/useBreakpoint";
+import { Panel3D } from "./Panel3D";
 
 const MONO = "'Geist Mono', monospace";
 
@@ -193,8 +194,6 @@ export function Footer() {
   return (
     <>
       <style suppressHydrationWarning>{`
-        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
-
         .footer-root {
           position: relative;
           left: 50%;
@@ -209,7 +208,7 @@ export function Footer() {
         .footer-bottom-band {
           max-width: var(--content-width);
           margin: 0 auto;
-          padding: 62px 32px 12px;
+          padding: 22px 28px;
           display: flex;
           align-items: center;
           justify-content: space-between;
@@ -280,7 +279,7 @@ export function Footer() {
         }
 
         @media (max-width: ${BP.footerCompactMax}px) {
-          .footer-bottom-band  { padding: 54px 22px 10px; gap: 16px; }
+          .footer-bottom-band  { padding: 20px 22px; gap: 16px; }
         }
 
         
@@ -288,12 +287,12 @@ export function Footer() {
           .footer-bottom-band {
             flex-direction: column-reverse;
             justify-content: center;
-            padding: 54px 16px 10px;
+            padding: 20px 16px;
             gap: 12px;
           }
         }
         ${MQ.mobile} {
-          .footer-bottom-band { padding: 54px 13px 10px; }
+          .footer-bottom-band { padding: 18px 10px; }
         }
         @media (min-width: ${BP.laptopMin}px) {
           .fgt-outer {
@@ -319,7 +318,7 @@ export function Footer() {
             margin-top: -10px;
           }
           .footer-bottom-band {
-            padding: 60px 32px 14px;
+            padding: 22px 28px;
             justify-content: center;
             gap: 28px;
             flex-wrap: nowrap;
@@ -328,10 +327,12 @@ export function Footer() {
       `}</style>
 
       <footer id="site-footer-root" ref={ref} className={`footer-root ${revealClass}`}>
-        <div className="footer-bottom-band">
-          <span className="footer-copy">© {year} Indresh Thakur. All rights reserved.</span>
-          <SocialRow size={22} gap={16} bright thinBorder />
-        </div>
+        <Panel3D>
+          <div className="footer-bottom-band">
+            <span className="footer-copy">© {year} Indresh Thakur. All rights reserved.</span>
+            <SocialRow size={22} gap={16} bright thinBorder />
+          </div>
+        </Panel3D>
 
         <div className="footer-full-line" />
 

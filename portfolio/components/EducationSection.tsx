@@ -5,6 +5,7 @@ import { useReveal } from "./useReveal";
 import { SectionIcon, SectionTitleIcon } from "./SectionIcon";
 import { mq } from "@/lib/breakpoints";
 
+import { Panel3D } from "./Panel3D";
 const SF = "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', sans-serif";
 const MONO = "'Geist Mono', monospace";
 
@@ -159,11 +160,11 @@ export function EducationSection() {
         .edu-inner {
           max-width: var(--content-width);
           margin: 0 auto;
-          padding: 0 20px 64px;
+          padding: 26px 22px 24px;
         }
 
         .edu-sec-titlerow {
-          padding-top: 50px;
+          padding-top: 0;
           margin-bottom: 20px;
         }
         .edu-sec-title {
@@ -191,8 +192,8 @@ export function EducationSection() {
           align-items: start;
         }
 
-        .sticky-wrap { padding-bottom: 110px; }
-        .lang-sticky-wrap { padding-bottom: 80px; }
+        .sticky-wrap { padding-bottom: 64px; }
+        .lang-sticky-wrap { padding-bottom: 40px; }
 
         /* ── sticky note card shell ───────────────────────────────── */
         .note-card {
@@ -357,7 +358,7 @@ export function EducationSection() {
         }
 
         ${mq.navCollapse} {
-          .edu-inner { padding: 0 22px 34px; }
+          .edu-inner { padding: 22px 16px 22px; }
         }
         ${mq.tablet} {
           .edu-lang-row { grid-template-columns: 1fr 1fr; gap: 16px; }
@@ -365,7 +366,7 @@ export function EducationSection() {
           .lang-note-card { padding: 18px; }
         }
         ${mq.mobile} {
-          .edu-inner { padding: 0 13px 28px; }
+          .edu-inner { padding: 18px 8px 18px; }
           .edu-sec-title { font-size: 22px; }
           .edu-lang-row { grid-template-columns: 1fr; gap: 34px; }
           .sticky-wrap { padding-bottom: 70px; }
@@ -382,6 +383,7 @@ export function EducationSection() {
         className={revealClass}
       >
         <div className="edu-outer">
+          <Panel3D tilt={false}>
           <div className="edu-inner">
             <div className="edu-sec-titlerow">
               <h2 className="edu-sec-title">
@@ -397,6 +399,7 @@ export function EducationSection() {
               <LangNoteCard visible={visible} />
             </div>
           </div>
+          </Panel3D>
         </div>
       </section>
     </>

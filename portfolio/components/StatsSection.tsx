@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { createPortal } from "react-dom";
 
 import { useReveal } from "./useReveal";
@@ -9,6 +9,7 @@ import { SectionIcon } from "./SectionIcon";
 import { mq } from "@/lib/breakpoints";
 import { useIsLaptopUp, useIsTablet } from "@/lib/useBreakpoint";
 
+import { Panel3D } from "./Panel3D";
 const SF = "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', sans-serif";
 const MONO = "'SF Mono', 'Geist Mono', monospace";
 
@@ -311,40 +312,43 @@ function LeetCodeStats({ username = "IThakur09" }: { username?: string }) {
   const isLaptopUp = useIsLaptopUp();
   const CELL = isTablet ? 14 : 10, GAP = isTablet ? 4 : 3, STEP = CELL + GAP;
 
-  const countMap = new Map<string, number>();
-  calData.forEach(day => {
-    const dt = new Date(day.date * 1000);
-    if (dt.getFullYear() === currentYear) {
-      const k = dt.toISOString().split("T")[0];
-      countMap.set(k, (countMap.get(k) ?? 0) + day.count);
-    }
-  });
+  const { lcWeeks, lcMonthLabels } = useMemo(() => {
+    const countMap = new Map<string, number>();
+    calData.forEach(day => {
+      const dt = new Date(day.date * 1000);
+      if (dt.getFullYear() === currentYear) {
+        const k = dt.toISOString().split("T")[0];
+        countMap.set(k, (countMap.get(k) ?? 0) + day.count);
+      }
+    });
 
-  const jan1 = new Date(currentYear, 0, 1);
-  const startSun = new Date(jan1); startSun.setDate(startSun.getDate() - startSun.getDay());
-  const today = mounted ? (() => { const t = new Date(); t.setHours(0, 0, 0, 0); return t; })() : startSun;
+    const jan1 = new Date(currentYear, 0, 1);
+    const startSun = new Date(jan1); startSun.setDate(startSun.getDate() - startSun.getDay());
+    const today = mounted ? (() => { const t = new Date(); t.setHours(0, 0, 0, 0); return t; })() : startSun;
 
-  const lcWeeks: { date: Date; count: number }[][] = [];
-  const cur = new Date(startSun);
-  while (cur <= today) {
-    const wk: { date: Date; count: number }[] = [];
-    for (let i = 0; i < 7; i++) {
-      const dt = new Date(cur); dt.setDate(cur.getDate() + i);
-      const k = dt.toISOString().split("T")[0];
-      wk.push({ date: dt, count: countMap.get(k) ?? 0 });
+    const lcWeeks: { date: Date; count: number }[][] = [];
+    const cur = new Date(startSun);
+    while (cur <= today) {
+      const wk: { date: Date; count: number }[] = [];
+      for (let i = 0; i < 7; i++) {
+        const dt = new Date(cur); dt.setDate(cur.getDate() + i);
+        const k = dt.toISOString().split("T")[0];
+        wk.push({ date: dt, count: countMap.get(k) ?? 0 });
+      }
+      lcWeeks.push(wk);
+      cur.setDate(cur.getDate() + 7);
     }
-    lcWeeks.push(wk);
-    cur.setDate(cur.getDate() + 7);
-  }
 
-  const lcMonthLabels: { label: string; col: number }[] = [];
-  lcWeeks.forEach((wk, wi) => {
-    const lbl = MON_SHORT[wk[0].date.getMonth()];
-    const last = lcMonthLabels[lcMonthLabels.length - 1];
-    if (!last || last.label !== lbl) {
-      if (!last || wi - last.col >= 2) lcMonthLabels.push({ label: lbl, col: wi });
-    }
-  });
+    const lcMonthLabels: { label: string; col: number }[] = [];
+    lcWeeks.forEach((wk, wi) => {
+      const lbl = MON_SHORT[wk[0].date.getMonth()];
+      const last = lcMonthLabels[lcMonthLabels.length - 1];
+      if (!last || last.label !== lbl) {
+        if (!last || wi - last.col >= 2) lcMonthLabels.push({ label: lbl, col: wi });
+      }
+    });
+    return { lcWeeks, lcMonthLabels };
+  }, [calData, currentYear, mounted]);
 
   const lcLvl = (c: number) =>
   c === 0 ? 0 :
@@ -376,7 +380,7 @@ function LeetCodeStats({ username = "IThakur09" }: { username?: string }) {
   }, []);
   const handleStatLeave = useCallback(() => setStatHover(null), []);
 
-  const gridContent = (
+  const gridContent = useMemo(() => (
     <div style={{ display: "inline-flex", flexDirection: "column", paddingBottom: 4, minWidth: "max-content" }}>
       <div style={{ display: "flex", marginBottom: 4, paddingLeft: 26 }}>
         {lcMonthLabels.map((m, i) => {
@@ -415,7 +419,8 @@ function LeetCodeStats({ username = "IThakur09" }: { username?: string }) {
         </div>
       </div>
     </div>
-  );
+  ), [lcWeeks, lcMonthLabels, CELL, GAP, STEP, handleCellEnter, handleCellLeave]);
+
 
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
@@ -592,6 +597,21 @@ function GitHubGraph({ username = "Ithakur2327" }: { username?: string }) {
   const CELL = isTablet ? 14 : 10, GAP = isTablet ? 4 : 3, STEP = CELL + GAP;
   const contribColor = isDark ? "#ffffff" : "#000000";
 
+  const handleCellEnter = useCallback((e: React.MouseEvent<HTMLDivElement>, date: string, count: number) => {
+    const el = e.currentTarget as HTMLElement;
+    el.style.transform = "translateY(-1px) scale(1.18)";
+    const cr = el.getBoundingClientRect();
+    setHovered({ date, count, x: cr.left + cr.width / 2, y: cr.top });
+  }, []);
+
+  const handleCellLeave = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    (e.currentTarget as HTMLElement).style.transform = "";
+    setHovered(null);
+  }, []);
+
+  // The ~370 cells never depend on the tooltip state, so they are built once
+  // and React skips them entirely when a hover re-renders this component.
+  const ghGrid = useMemo(() => {
   const monthLabels: { label: string; col: number }[] = [];
   weeks.forEach((w, wi) => {
     if (!w.days[0]) return;
@@ -604,17 +624,44 @@ function GitHubGraph({ username = "Ithakur2327" }: { username?: string }) {
     }
   });
 
-  const handleCellEnter = useCallback((e: React.MouseEvent<HTMLDivElement>, date: string, count: number) => {
-    const el = e.currentTarget as HTMLElement;
-    el.style.transform = "translateY(-1px) scale(1.18)";
-    const cr = el.getBoundingClientRect();
-    setHovered({ date, count, x: cr.left + cr.width / 2, y: cr.top });
-  }, []);
-
-  const handleCellLeave = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
-    (e.currentTarget as HTMLElement).style.transform = "";
-    setHovered(null);
-  }, []);
+    return (
+      <div style={{ display: "inline-flex", flexDirection: "column", paddingBottom: 4, minWidth: "max-content" }}>
+        <div style={{ display: "flex", marginBottom: 4, paddingLeft: 26 }}>
+          {monthLabels.map((m, i) => {
+            const nextCol = monthLabels[i + 1]?.col ?? weeks.length;
+            const boxW = (nextCol - m.col) * STEP;
+            return (
+              <div key={i} style={{ width: boxW, flexShrink: 0, fontSize: 9, color: "var(--text-muted)", fontFamily: MONO, overflow: "visible", whiteSpace: "nowrap", lineHeight: "16px" }}>
+                {m.label}
+              </div>
+            );
+          })}
+        </div>
+        <div style={{ display: "flex", gap: 0 }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: GAP, marginRight: 4 }}>
+            {DAYS_GH.map((lbl, i) => (
+              <div key={i} style={{ height: CELL, fontSize: 9, color: "var(--text-muted)", fontFamily: MONO, lineHeight: `${CELL}px`, userSelect: "none", width: 22 }}>{lbl}</div>
+            ))}
+          </div>
+          <div style={{ display: "flex", gap: GAP }}>
+            {weeks.map((w, wi) => (
+              <div key={wi} style={{ display: "flex", flexDirection: "column", gap: GAP }}>
+                {w.days.map((day, di) => (
+                  <div
+                    key={di}
+                    className={`gh-cell gh-cell-${lvl(day.contributionCount)}`}
+                    style={{ width: CELL, height: CELL, borderRadius: 2, cursor: "default" }}
+                    onMouseEnter={e => handleCellEnter(e, day.date, day.contributionCount)}
+                    onMouseLeave={handleCellLeave}
+                  />
+                ))}
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }, [weeks, currentYear, CELL, GAP, STEP, handleCellEnter, handleCellLeave]);
 
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
@@ -648,41 +695,7 @@ function GitHubGraph({ username = "Ithakur2327" }: { username?: string }) {
             style={{ flex: 1, width: "100%", overflowX: "auto", overflowY: "visible", WebkitOverflowScrolling: "touch" }}
             onMouseLeave={() => setHovered(null)}
           >
-            <div style={{ display: "inline-flex", flexDirection: "column", paddingBottom: 4, minWidth: "max-content" }}>
-              <div style={{ display: "flex", marginBottom: 4, paddingLeft: 26 }}>
-                {monthLabels.map((m, i) => {
-                  const nextCol = monthLabels[i + 1]?.col ?? weeks.length;
-                  const boxW = (nextCol - m.col) * STEP;
-                  return (
-                    <div key={i} style={{ width: boxW, flexShrink: 0, fontSize: 9, color: "var(--text-muted)", fontFamily: MONO, overflow: "visible", whiteSpace: "nowrap", lineHeight: "16px" }}>
-                      {m.label}
-                    </div>
-                  );
-                })}
-              </div>
-              <div style={{ display: "flex", gap: 0 }}>
-                <div style={{ display: "flex", flexDirection: "column", gap: GAP, marginRight: 4 }}>
-                  {DAYS_GH.map((lbl, i) => (
-                    <div key={i} style={{ height: CELL, fontSize: 9, color: "var(--text-muted)", fontFamily: MONO, lineHeight: `${CELL}px`, userSelect: "none", width: 22 }}>{lbl}</div>
-                  ))}
-                </div>
-                <div style={{ display: "flex", gap: GAP }}>
-                  {weeks.map((w, wi) => (
-                    <div key={wi} style={{ display: "flex", flexDirection: "column", gap: GAP }}>
-                      {w.days.map((day, di) => (
-                        <div
-                          key={di}
-                          className={`gh-cell gh-cell-${lvl(day.contributionCount)}`}
-                          style={{ width: CELL, height: CELL, borderRadius: 2, cursor: "default" }}
-                          onMouseEnter={e => handleCellEnter(e, day.date, day.contributionCount)}
-                          onMouseLeave={handleCellLeave}
-                        />
-                      ))}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
+            {ghGrid}
           </div>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 6, marginTop: 8, flexShrink: 0 }}>
             <span style={{ fontSize: 9, color: "var(--text-muted)", fontFamily: MONO }}>{isLive ? "Contribution activity" : "preview"}</span>
@@ -985,11 +998,11 @@ export function StatsSection() {
         }
 
         .about-content {
-          max-width: var(--content-width); margin: 0 auto; padding: 0 20px 64px;
+          max-width: var(--content-width); margin: 0 auto; padding: 26px 22px 24px;
         }
-        ${mq.navCollapse} { .about-content { padding: 0 22px 34px; } }
+        ${mq.navCollapse} { .about-content { padding: 22px 16px 22px; } }
         ${mq.mobile} {
-          .about-content  { padding: 0 13px 28px; }
+          .about-content  { padding: 18px 8px 18px; }
           .stat-card-3d   { width: 100% !important; min-width: 0 !important; }
           .lc-activity-label { font-size: 10px !important; }
           .lc-solved-box, .lc-emh-box { padding: 2px 4px !important; gap: 3px !important; }
@@ -1004,8 +1017,9 @@ export function StatsSection() {
 
       <section id="stats" ref={statsRef} className={revealClass}>
         <div style={{ position: "relative", left: "50%", marginLeft: "-50vw", width: "100vw", background: "var(--bg-base)" }}>
+          <Panel3D>
           <div className="about-content">
-            <div style={{ paddingTop: 50 }}>
+            <div>
               <span style={{ display: "inline-flex", alignItems: "center", gap: 10, fontSize: 28, fontWeight: 700, letterSpacing: "-0.03em", lineHeight: 1, fontFamily: SF, color: "var(--text-primary)" }}>
                 <HeatmapPaletteButton isDark={isDark} activeKey={activeKey} onSelect={selectPalette} />
                 Stats
@@ -1027,6 +1041,7 @@ export function StatsSection() {
               </div>
             </div>
           </div>
+          </Panel3D>
         </div>
       </section>
     </>

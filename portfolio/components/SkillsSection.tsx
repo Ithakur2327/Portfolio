@@ -6,6 +6,7 @@ import { useReveal } from "./useReveal";
 import { SectionTitleIcon } from "./SectionIcon";
 import { BP, cond, mq } from "@/lib/breakpoints";
 
+import { Panel3D } from "./Panel3D";
 // Fonts
 const MONO = "'Geist Mono', 'SF Mono', monospace";
 const SF   = "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', sans-serif";
@@ -119,7 +120,10 @@ function FallingIconsBox({ title, items, index = 0 }: { title: string; items: st
   useEffect(() => { if (inView) setHasAppeared(true); }, [inView]);
 
   const inViewRef = useRef(inView);
-  useEffect(() => { inViewRef.current = inView; }, [inView]);
+  // The physics loop parks itself whenever nothing is moving / on screen and is
+  // woken through this ref — no idle requestAnimationFrame churn while scrolling past.
+  const wakeRef = useRef<() => void>(() => {});
+  useEffect(() => { inViewRef.current = inView; if (inView) wakeRef.current(); }, [inView]);
 
   // While the theme's view-transition screenshot/cross-fade is running, the
   // browser is already doing heavy work — pause the physics loop for that
@@ -127,7 +131,7 @@ function FallingIconsBox({ title, items, index = 0 }: { title: string; items: st
   const themePausedRef = useRef(false);
   useEffect(() => {
     const onStart = () => { themePausedRef.current = true; };
-    const onEnd = () => { themePausedRef.current = false; };
+    const onEnd = () => { themePausedRef.current = false; wakeRef.current(); };
     window.addEventListener("theme-transition-start", onStart);
     window.addEventListener("theme-transition-end", onEnd);
     return () => {
@@ -238,7 +242,7 @@ function FallingIconsBox({ title, items, index = 0 }: { title: string; items: st
       }
     );
 
-    const handleTouchStart = (e: TouchEvent) => { pointerDownRef.current = true; mouse.mousedown(e); };
+    const handleTouchStart = (e: TouchEvent) => { pointerDownRef.current = true; wake(); mouse.mousedown(e); };
     const handleTouchMove = (e: TouchEvent) => {
       if (!mouseConstraint.body) return;
       e.preventDefault();
@@ -246,7 +250,7 @@ function FallingIconsBox({ title, items, index = 0 }: { title: string; items: st
     };
     const handleTouchEnd = (e: TouchEvent) => { pointerDownRef.current = false; mouse.mouseup(e); };
 
-    const handleMouseDown = () => { pointerDownRef.current = true; };
+    const handleMouseDown = () => { pointerDownRef.current = true; wake(); };
     const handleMouseUp = () => { pointerDownRef.current = false; };
     box.addEventListener("mousedown", handleMouseDown);
     window.addEventListener("mouseup", handleMouseUp);
@@ -273,15 +277,24 @@ function FallingIconsBox({ title, items, index = 0 }: { title: string; items: st
       const delta = Math.max(-80, Math.min(80, currentY - lastScrollY));
       lastScrollY = currentY;
       scrollImpulse += delta;
+      wake();
     };
     window.addEventListener("scroll", handleScroll, { passive: true });
 
     let rafId = 0;
     let lastTime = performance.now();
+    let running = true;
+    const wake = () => {
+      if (running) return;
+      running = true;
+      lastTime = performance.now();
+      rafId = requestAnimationFrame(tick);
+    };
+    wakeRef.current = wake;
     const tick = (time: number) => {
       if (!inViewRef.current || themePausedRef.current) {
         lastTime = time;
-        rafId = requestAnimationFrame(tick);
+        running = false;
         return;
       }
 
@@ -294,7 +307,7 @@ function FallingIconsBox({ title, items, index = 0 }: { title: string; items: st
       const anyAwake = kick !== 0 || pieces.some(p => !p.body.isSleeping) || !!mouseConstraint.body || pointerDownRef.current;
       if (!anyAwake) {
         lastTime = time;
-        rafId = requestAnimationFrame(tick);
+        running = false;
         return;
       }
 
@@ -366,6 +379,7 @@ function FallingIconsBox({ title, items, index = 0 }: { title: string; items: st
         Events.off(mouseConstraint, "startdrag", enableGravity);
         clearTimeout(resizeTimer);
         cancelAnimationFrame(rafId);
+        wakeRef.current = () => {};
         World.clear(engine.world, false);
         Engine.clear(engine);
       };
@@ -520,10 +534,10 @@ export function SkillsSection() {
         }
 
         ${mq.navCollapse} {
-          .skills-inner { padding: 0 22px 34px !important; }
+          .skills-inner { padding: 22px 18px 22px !important; }
         }
         ${mq.tablet} {
-          .skills-inner { max-width: 100% !important; padding: 0 24px 40px !important; }
+          .skills-inner { max-width: 100% !important; padding: 22px 20px 24px !important; }
           .falling-icons-row { flex-direction: column; gap: 24px; }
           .falling-icons-panel { width: 100%; }
           .falling-icons-box { min-height: 260px; }
@@ -543,7 +557,7 @@ export function SkillsSection() {
           .falling-icon-name { font-size: 7.8px; }
         }
         ${mq.mobile} {
-          .skills-inner { padding: 0 13px 28px !important; }
+          .skills-inner { padding: 18px 8px 18px !important; }
           .falling-icons-row { flex-direction: column; gap: 22px; }
           .falling-icons-box {
             border-radius: 12px;
@@ -586,8 +600,9 @@ export function SkillsSection() {
           width:"100vw",
           background:"var(--bg-base)",
         }}>
-          <div className="skills-inner" style={{ maxWidth: "var(--content-width)", margin:"0 auto", padding:"0 20px 64px" }}>
-            <div style={{ paddingTop:50, marginBottom:4, display:"flex", alignItems:"center", gap:10 }}>
+          <Panel3D tilt={false}>
+          <div className="skills-inner" style={{ maxWidth: "var(--content-width)", margin:"0 auto", padding:"26px 20px 24px" }}>
+            <div style={{ paddingTop:0, marginBottom:4, display:"flex", alignItems:"center", gap:10 }}>
               <span style={{
                 fontSize:28, fontWeight:700,
                 letterSpacing:"-0.03em", lineHeight:1,
@@ -605,6 +620,7 @@ export function SkillsSection() {
               <FallingIconsBox title="GenAI, DevOps & Tools" items={GENAI_DEVOPS_TOOLS_TECH} index={1} />
             </div>
           </div>
+          </Panel3D>
         </div>
       </section>
     </>

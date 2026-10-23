@@ -2,261 +2,203 @@
 import { useEffect, useRef } from "react";
 import { useTheme } from "./ThemeProvider";
 
+/**
+ * Dot grid.
+ *
+ *  • The static grid is a CSS radial-gradient pattern (rasterised once by the
+ *    browser, zero JS, zero per-frame cost).
+ *  • The interactive "glow near the cursor" is a transparent canvas that only
+ *    draws while the cursor is actually near that field.
+ *  • ONE shared pointer listener serves every field on the page (there used to
+ *    be one window listener + one forced layout read per field per mouse move).
+ */
+
 const SPACING = 4.5;
 const RADIUS = 110;
 const RADIUS2 = RADIUS * RADIUS;
 const DOT_R = 1;
 const TAU = Math.PI * 2;
 
-function smoothstep(t: number) {
+const smoothstep = (t: number) => {
   const c = t < 0 ? 0 : t > 1 ? 1 : t;
   return c * c * (3 - 2 * c);
+};
+
+/* ── shared pointer hub ─────────────────────────────────────────────── */
+type Field = {
+  el: HTMLElement;
+  visible: boolean;
+  onPointer: (clientX: number, clientY: number, active: boolean) => void;
+};
+
+const fields = new Set<Field>();
+const pointer = { x: -9999, y: -9999, active: false };
+let hubFrame = 0;
+let hubBound = false;
+
+function hubFlush() {
+  hubFrame = 0;
+  fields.forEach(f => {
+    if (f.visible) f.onPointer(pointer.x, pointer.y, pointer.active);
+  });
+}
+function hubSchedule() {
+  if (!hubFrame) hubFrame = requestAnimationFrame(hubFlush);
+}
+function hubBind() {
+  if (hubBound) return;
+  hubBound = true;
+  window.addEventListener(
+    "pointermove",
+    e => {
+      if (e.pointerType === "touch") return;
+      pointer.x = e.clientX;
+      pointer.y = e.clientY;
+      pointer.active = true;
+      hubSchedule();
+    },
+    { passive: true },
+  );
+  const off = () => {
+    pointer.active = false;
+    hubSchedule();
+  };
+  document.documentElement.addEventListener("mouseleave", off);
+  // Scrolling moves fields under a stationary cursor; just drop the glow.
+  window.addEventListener("scroll", off, { passive: true });
 }
 
-function DotCanvas({
-  dotColor,
-  activeDotColor,
-  interactive,
-}: {
-  dotColor: string;
-  activeDotColor: string;
-  interactive: boolean;
-}) {
-  const ref = useRef<HTMLCanvasElement>(null);
-  const dotColorRef = useRef(dotColor);
-  const activeDotColorRef = useRef(activeDotColor);
+/* ── one field ──────────────────────────────────────────────────────── */
+export function DotField({ interactive = true }: { interactive?: boolean }) {
+  const { theme } = useTheme();
+  const activeColor = theme === "dark" ? "rgba(255,255,255,0.18)" : "rgba(0,0,0,0.24)";
+  const activeRef = useRef(activeColor);
+  activeRef.current = activeColor;
 
-  const repaintRef = useRef<(() => void) | null>(null);
-  useEffect(() => {
-    dotColorRef.current = dotColor;
-    activeDotColorRef.current = activeDotColor;
-    repaintRef.current?.();
-  }, [dotColor, activeDotColor]);
+  const rootRef = useRef<HTMLDivElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
-    const canvas = ref.current;
-    const container = canvas?.parentElement;
-    if (!canvas || !container) return;
+    if (!interactive) return;
+    const root = rootRef.current;
+    const canvas = canvasRef.current;
+    if (!root || !canvas) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    if (window.matchMedia("(hover: none)").matches) return;
 
-    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const interactiveEffective = interactive && !reducedMotion;
-
-    const ctx = canvas.getContext("2d", { willReadFrequently: false, colorSpace: "srgb" });
+    const ctx = canvas.getContext("2d");
     if (!ctx) return;
+    hubBind();
 
-    let w = 0, h = 0, dpr = 1;
-    let dotPositions: Float32Array | null = null;
-    let staticCanvas: OffscreenCanvas | null = null;
-    let staticCtx: OffscreenCanvasRenderingContext2D | null = null;
-    let raf: number | null = null;
-    let needsDraw = false;
-    let isVisible = true;
-    let inViewport = true;
-    let colorDirty = false;
-    let idleTimer: ReturnType<typeof setTimeout> | null = null;
-    const mouse = { x: -9999, y: -9999, active: false };
+    let w = 0;
+    let h = 0;
+    let dpr = 1;
+    let sized = false;
+    let drawn = false;
 
-    const bakeDots = () => {
-      const ox = (w % SPACING) / 2;
-      const oy = (h % SPACING) / 2;
-      const cols = Math.ceil(w / SPACING) + 2;
-      const rows = Math.ceil(h / SPACING) + 2;
+    // The glow only ever covers a RADIUS-sized window, so the canvas is that
+    // window (not the whole 100vw field) and is moved with the cursor.
+    const SIZE = RADIUS * 2;
+    const resize = () => {
+      dpr = Math.min(window.devicePixelRatio || 1, 2);
+      const rect = root.getBoundingClientRect();
+      w = rect.width;
+      h = rect.height;
+      canvas.width = Math.round(SIZE * dpr);
+      canvas.height = Math.round(SIZE * dpr);
+      canvas.style.width = `${SIZE}px`;
+      canvas.style.height = `${SIZE}px`;
+      sized = true;
+    };
 
-      const arr = new Float32Array(cols * rows * 2);
-      let i = 0;
-      for (let x = ox; x <= w + SPACING; x += SPACING) {
-        for (let y = oy; y <= h + SPACING; y += SPACING) {
-          arr[i++] = x;
-          arr[i++] = y;
+    const clear = () => {
+      if (!drawn) return;
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      drawn = false;
+    };
+
+    const field: Field = {
+      el: root,
+      visible: false,
+      onPointer(cx, cy, active) {
+        const rect = root.getBoundingClientRect();
+        const mx = cx - rect.left;
+        const my = cy - rect.top;
+        if (!active || mx < -RADIUS || mx > rect.width + RADIUS || my < -RADIUS || my > rect.height + RADIUS) {
+          clear();
+          return;
         }
-      }
-      dotPositions = arr.subarray(0, i);
-    };
+        if (!sized || Math.abs(rect.width - w) > 1 || Math.abs(rect.height - h) > 1) resize();
 
-    const paintStatic = () => {
-      if (!dotPositions || !staticCtx || !staticCanvas) return;
-      staticCtx.clearRect(0, 0, w, h);
-      staticCtx.fillStyle = dotColorRef.current;
-      staticCtx.beginPath();
-      for (let i = 0; i < dotPositions.length; i += 2) {
-        const x = dotPositions[i], y = dotPositions[i + 1];
-        staticCtx.moveTo(x + DOT_R, y);
-        staticCtx.arc(x, y, DOT_R, 0, TAU);
-      }
-      staticCtx.fill();
-    };
+        // Dots sit at  centre + k·SPACING  — exactly like the CSS pattern below.
+        const cxm = rect.width / 2;
+        const cym = rect.height / 2;
+        const x0 = mx - RADIUS;
+        const y0 = my - RADIUS;
+        canvas.style.transform = `translate3d(${x0}px, ${y0}px, 0)`;
 
-    repaintRef.current = () => {
-      if (!inViewport) { colorDirty = true; return; }
-      paintStatic();
-      needsDraw = true;
-      schedule();
-    };
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        ctx.clearRect(0, 0, SIZE, SIZE);
+        ctx.fillStyle = activeRef.current;
 
-    const draw = () => {
-      if (!dotPositions || !staticCanvas) return;
-
-      ctx.clearRect(0, 0, w, h);
-      ctx.drawImage(staticCanvas, 0, 0, w, h);
-
-      if (interactiveEffective && mouse.active) {
-        const pad = RADIUS;
-        const ix0 = Math.max(0, mouse.x - pad);
-        const iy0 = Math.max(0, mouse.y - pad);
-        const ix1 = Math.min(w, mouse.x + pad);
-        const iy1 = Math.min(h, mouse.y + pad);
-
-        ctx.fillStyle = activeDotColorRef.current;
-        for (let i = 0; i < dotPositions.length; i += 2) {
-          const x = dotPositions[i], y = dotPositions[i + 1];
-          if (x < ix0 || x > ix1 || y < iy0 || y > iy1) continue;
-          const dx = x - mouse.x, dy = y - mouse.y;
-          const d2 = dx * dx + dy * dy;
-          if (d2 >= RADIUS2) continue;
-          const t = 1 - Math.sqrt(d2) / RADIUS;
-          const f = smoothstep(t);
-          if (f <= 0.001) continue;
-          ctx.globalAlpha = f;
-          ctx.beginPath();
-          ctx.arc(x, y, DOT_R + f, 0, TAU);
-          ctx.fill();
+        const kx0 = Math.ceil((x0 - cxm) / SPACING);
+        const kx1 = Math.floor((x0 + SIZE - cxm) / SPACING);
+        const ky0 = Math.ceil((y0 - cym) / SPACING);
+        const ky1 = Math.floor((y0 + SIZE - cym) / SPACING);
+        for (let kx = kx0; kx <= kx1; kx++) {
+          const x = cxm + kx * SPACING;
+          if (x < 0 || x > rect.width) continue;
+          for (let ky = ky0; ky <= ky1; ky++) {
+            const y = cym + ky * SPACING;
+            if (y < 0 || y > rect.height) continue;
+            const dx = x - mx;
+            const dy = y - my;
+            const d2 = dx * dx + dy * dy;
+            if (d2 >= RADIUS2) continue;
+            const f = smoothstep(1 - Math.sqrt(d2) / RADIUS);
+            if (f <= 0.001) continue;
+            ctx.globalAlpha = f;
+            ctx.beginPath();
+            ctx.arc(x - x0, y - y0, DOT_R + f, 0, TAU);
+            ctx.fill();
+          }
         }
         ctx.globalAlpha = 1;
-      }
-
-      needsDraw = false;
-      raf = null;
+        drawn = true;
+      },
     };
 
-    const schedule = () => {
-      if (!isVisible || !inViewport || !needsDraw || raf) return;
-      raf = requestAnimationFrame(() => { draw(); raf = null; });
-    };
-
-    const onMove = (e: MouseEvent) => {
-      if (!interactiveEffective) return;
-      const rect = canvas.getBoundingClientRect();
-      mouse.x = e.clientX - rect.left;
-      mouse.y = e.clientY - rect.top;
-      mouse.active = mouse.x >= -50 && mouse.x <= w + 50 && mouse.y >= -50 && mouse.y <= h + 50;
-      needsDraw = true;
-      schedule();
-      if (idleTimer) clearTimeout(idleTimer);
-      idleTimer = setTimeout(() => { needsDraw = false; }, 2000);
-    };
-
-    const onLeave = () => {
-      mouse.active = false;
-      needsDraw = true;
-      schedule();
-    };
-
-    const onScroll = () => {
-      if (!mouse.active) return;
-      mouse.active = false;
-      needsDraw = true;
-      schedule();
-    };
-
-    const onVisibilityChange = () => {
-      isVisible = !document.hidden;
-      if (isVisible) { needsDraw = true; schedule(); }
-      else if (raf)  { cancelAnimationFrame(raf); raf = null; }
-    };
-
-    const setup = () => {
-      dpr = Math.min(window.devicePixelRatio || 1, 2);
-      const rect = container.getBoundingClientRect();
-      w = Math.max(1, Math.round(rect.width));
-      h = Math.max(1, Math.round(rect.height));
-
-      canvas.width  = Math.round(w * dpr);
-      canvas.height = Math.round(h * dpr);
-      canvas.style.width  = `${w}px`;
-      canvas.style.height = `${h}px`;
-      ctx.resetTransform();
-      ctx.scale(dpr, dpr);
-
-      staticCanvas = new OffscreenCanvas(Math.round(w * dpr), Math.round(h * dpr));
-      staticCtx = staticCanvas.getContext("2d") as OffscreenCanvasRenderingContext2D;
-      staticCtx.scale(dpr, dpr);
-
-      bakeDots();
-      paintStatic();
-      needsDraw = true;
-      if (raf) { cancelAnimationFrame(raf); raf = null; }
-      draw();
-      canvas.style.opacity = "1";
-    };
-
-    const ro = new ResizeObserver(setup);
-    ro.observe(container);
-
-    const io = new IntersectionObserver((entries) => {
-      const entry = entries[0];
-      inViewport = !!entry?.isIntersecting;
-      if (inViewport && colorDirty) {
-        colorDirty = false;
-        paintStatic();
-        needsDraw = true;
-        schedule();
-      }
-    }, { rootMargin: "200px 0px" });
-    io.observe(canvas);
-
-    if (interactiveEffective) {
-      window.addEventListener("mousemove",  onMove,  { passive: true });
-      window.addEventListener("mouseleave", onLeave, { passive: true });
-    }
-    window.addEventListener("scroll", onScroll, { passive: true, capture: true });
-    document.addEventListener("visibilitychange", onVisibilityChange, { passive: true });
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        field.visible = !!entry?.isIntersecting;
+        if (!field.visible) clear();
+      },
+      { rootMargin: `${RADIUS}px 0px` },
+    );
+    io.observe(root);
+    fields.add(field);
 
     return () => {
-      repaintRef.current = null;
-      ro.disconnect();
       io.disconnect();
-      window.removeEventListener("mousemove",  onMove);
-      window.removeEventListener("mouseleave", onLeave);
-      window.removeEventListener("scroll", onScroll, true);
-      document.removeEventListener("visibilitychange", onVisibilityChange);
-      if (raf)       cancelAnimationFrame(raf);
-      if (idleTimer) clearTimeout(idleTimer);
+      fields.delete(field);
     };
   }, [interactive]);
 
   return (
-    <canvas
-      ref={ref}
+    <div
+      ref={rootRef}
       aria-hidden="true"
-      style={{
-        position: "absolute", inset: 0,
-        width: "100%", height: "100%",
-        pointerEvents: "none",
-        opacity: 0, transition: "opacity 0.5s ease",
-        willChange: "transform",
-        display: "block",
-      }}
-    />
-  );
-}
-
-function useDotColors() {
-  const { theme } = useTheme();
-  const isDark = theme === "dark";
-  return {
-    dotColor: isDark ? "rgba(255,255,255,0.09)" : "rgba(0,0,0,0.12)",
-    activeDotColor: isDark ? "rgba(255,255,255,0.18)" : "rgba(0,0,0,0.24)",
-  };
-}
-
-export function DotField({ interactive = true }: { interactive?: boolean }) {
-  const { dotColor, activeDotColor } = useDotColors();
-  return (
-    <DotCanvas
-      interactive={interactive}
-      dotColor={dotColor}
-      activeDotColor={activeDotColor}
-    />
+      className="dot-field"
+      style={{ position: "absolute", inset: 0, pointerEvents: "none", overflow: "hidden" }}
+    >
+      {interactive && (
+        <canvas
+          ref={canvasRef}
+          style={{ position: "absolute", left: 0, top: 0, display: "block", willChange: "transform" }}
+        />
+      )}
+    </div>
   );
 }
 

@@ -7,6 +7,7 @@ import { usePdfModal } from "./PdfViewerModal";
 import { slugify } from "@/lib/utils";
 import { mq } from "@/lib/breakpoints";
 
+import { Panel3D } from "./Panel3D";
 const SF = "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', sans-serif";
 const MONO = "'Geist Mono', monospace";
 
@@ -128,9 +129,9 @@ export function CertificationsSection() {
         .edu-inner {
           max-width: var(--content-width);
           margin: 0 auto;
-          padding: 0 20px 44px;
+          padding: 26px 22px 24px;
         }
-        .edu-sec-titlerow { padding-top: 50px; margin-bottom: 20px; }
+        .edu-sec-titlerow { padding-top: 0; margin-bottom: 20px; }
         .edu-sec-title {
           font-size: 28px;
           font-weight: 700;
@@ -266,9 +267,9 @@ export function CertificationsSection() {
           padding-top: 6px;
         }
 
-        ${mq.navCollapse} { .edu-inner { padding: 0 22px 30px; } }
+        ${mq.navCollapse} { .edu-inner { padding: 22px 16px 22px; } }
         ${mq.mobile} {
-          .edu-inner { padding: 0 13px 26px; }
+          .edu-inner { padding: 18px 8px 18px; }
           .edu-sec-title { font-size: 22px; }
           .edu-sec-divider { margin-bottom: 26px; }
           .tl-sticky-wrap { padding-bottom: 40px; }
@@ -296,6 +297,7 @@ export function CertificationsSection() {
 
       <section id="certifications" ref={ref} className={revealClass}>
         <div className="edu-outer">
+          <Panel3D tilt={false}>
           <div className="edu-inner">
             <div className="edu-sec-titlerow">
               <h2 className="edu-sec-title">
@@ -329,6 +331,7 @@ export function CertificationsSection() {
               </div>
             </div>
           </div>
+          </Panel3D>
         </div>
       </section>
     </>

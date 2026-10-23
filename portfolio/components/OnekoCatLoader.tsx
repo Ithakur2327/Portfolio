@@ -16,7 +16,7 @@ export default function OnekoCatLoader() {
     <Script
       id="oneko-script"
       src="/oneko.js"
-      strategy="afterInteractive"
+      strategy="lazyOnload"
     />
   );
 }
