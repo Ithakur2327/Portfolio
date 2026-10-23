@@ -25,7 +25,7 @@ export function IntroLoader() {
   const [rects, setRects] = useState<{ start: Rect; target: Rect } | null>(null);
   const [exiting, setExiting] = useState(false);
   const [noTarget, setNoTarget] = useState(false);
-  const srcRef = useRef<string | null>(null);
+  const isDarkRef = useRef(true);
   const animatedRef = useRef(false); 
 
   useIsomorphicLayoutEffect(() => {
@@ -63,6 +63,7 @@ export function IntroLoader() {
       sessionStorage.setItem(SESSION_KEY, "1");
     } catch {}
 
+    isDarkRef.current = document.documentElement.classList.contains("dark");
     document.documentElement.classList.add("intro-active");
     setMounted(true);
 
@@ -70,8 +71,6 @@ export function IntroLoader() {
       window.dispatchEvent(new Event("intro:flightStart"));
 
       const shellAvatar = document.querySelector(".intro-shell-avatar");
-      srcRef.current =
-        document.querySelector<HTMLImageElement>("#intro-shell img")?.getAttribute("src") ?? null;
       const target = document.getElementById("hero-avatar-anchor");
 
       if (!shellAvatar || !target) {
@@ -91,9 +90,7 @@ export function IntroLoader() {
       document.getElementById("intro-shell")?.remove();
       setRects({ start, target: targetRect });
       setPhase("flying");
-      // Flip to the exit state two frames later so the overlay actually
-      // mounts opaque first and the opacity transition has something to fade.
-      requestAnimationFrame(() => requestAnimationFrame(() => setExiting(true)));
+      setExiting(true);
     }, LOADING_MS);
 
     return () => {
@@ -137,24 +134,30 @@ export function IntroLoader() {
 
   if (!mounted || phase === "done" || phase === "loading") return null;
 
-  const src =
-    srcRef.current ??
-    (document.documentElement.classList.contains("light") ? "/avatar-light.jpg" : "/avatar-dark.jpg");
+  const isDark = isDarkRef.current;
+  const src = isDark ? "/avatar-dark.jpg" : "/avatar-light.jpg";
 
   return (
     <div className={`intro-overlay${exiting ? " intro-overlay--exit" : ""}`} aria-hidden>
       <style suppressHydrationWarning>{`
         .intro-overlay {
           position: fixed; inset: 0; z-index: 100000;
-          /* Identical to #intro-shell (globals.css) so the hand-off is
-             seamless. No backdrop-filter: animating a full-screen blur is
-             one of the most expensive things a browser can do, so the exit
-             is a plain compositor-only opacity fade instead. */
-          background: color-mix(in srgb, var(--bg-base) 94%, transparent);
+          /* Matches #intro-shell's own backdrop exactly (see globals.css)
+             so the very first frame this renders is visually identical to
+             what the shell was already showing — the fade to transparent
+             only starts once "exiting" flips true a frame later. */
+          background: color-mix(in srgb, var(--bg-base) 45%, transparent);
+          backdrop-filter: blur(14px) saturate(130%);
+          -webkit-backdrop-filter: blur(14px) saturate(130%);
           pointer-events: none;
-          transition: opacity ${BACKDROP_FADE_MS}ms ease;
+          transition: background-color ${BACKDROP_FADE_MS}ms ease, backdrop-filter ${BACKDROP_FADE_MS}ms ease,
+                      -webkit-backdrop-filter ${BACKDROP_FADE_MS}ms ease;
         }
-        .intro-overlay--exit { opacity: 0; }
+        .intro-overlay--exit {
+          background: transparent;
+          backdrop-filter: blur(0px);
+          -webkit-backdrop-filter: blur(0px);
+        }
 
         .intro-flip-avatar {
           position: fixed;
@@ -194,7 +197,6 @@ export function IntroLoader() {
           }}
         >
           
-          {/* eslint-disable-next-line @next/next/no-img-element -- must be the exact same already-fetched file the shell showed */}
           <img src={src} alt="" />
         </div>
       )}
