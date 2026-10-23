@@ -6,22 +6,8 @@ import { IntroLoader } from "@/components/IntroLoader";
 import OnekoCatLoader from "@/components/OnekoCatLoader";
 import { Navbar } from "@/components/Navbar";
 import ClickSpark from "@/components/ClickSpark";
-import { createHash } from "crypto";
-import { readFileSync } from "fs";
-import path from "path";
+import { getAvatarVersion } from "@/lib/avatar";
 import "./globals.css";
-
-// Same content-hash approach as app/page.tsx — kept in sync so the
-// preloaded URL is byte-identical to what Avatar.tsx actually requests.
-function getAvatarVersion(): string {
-  try {
-    const dark = readFileSync(path.join(process.cwd(), "public", "avatar-dark.jpg"));
-    const light = readFileSync(path.join(process.cwd(), "public", "avatar-light.jpg"));
-    return createHash("md5").update(dark).update(light).digest("hex").slice(0, 10);
-  } catch {
-    return "0";
-  }
-}
 
 // ─── Viewport ─────────────────────────────────────────────
 export const viewport: Viewport = {
@@ -99,6 +85,7 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const avatarVersion = getAvatarVersion();
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
@@ -109,15 +96,14 @@ export default function RootLayout({
         {/* Preconnect for the actual project card photos — bigger payload than the logo icons */}
         <link rel="preconnect" href="https://images.unsplash.com" crossOrigin="anonymous" />
 
-        {/* Avatar photos — preloaded so the browser starts fetching them the
-            instant HTML parsing begins, in parallel with JS download/parse/
-            hydration. Without this, the WebGL avatar component only starts
-            requesting these images after it mounts and its effect runs,
-            which is the actual source of the visible render delay on
-            refresh (network round-trip + decode, on top of hydration time,
-            all happening serially instead of in parallel). */}
-        <link rel="preload" as="image" href={`/avatar-dark.jpg?v=${getAvatarVersion()}`} fetchPriority="high" crossOrigin="anonymous" />
-        <link rel="preload" as="image" href={`/avatar-light.jpg?v=${getAvatarVersion()}`} fetchPriority="high" crossOrigin="anonymous" />
+        {/* Preload only the avatar the visitor will actually see (theme is read
+            from localStorage exactly like next-themes does) so the hero photo
+            is fetched in parallel with JS instead of after hydration. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var t=localStorage.getItem('theme');var d=t?t==='dark':true;var l=document.createElement('link');l.rel='preload';l.as='image';l.fetchPriority='high';l.href='/avatar-'+(d?'dark':'light')+'.jpg?v=${avatarVersion}';document.head.appendChild(l);}catch(e){}})();`,
+          }}
+        />
 
         {/* Fonts — the site references 'Geist' and 'Geist Mono' by name
             throughout its components, but neither was ever actually loaded,
@@ -141,12 +127,12 @@ export default function RootLayout({
         <link
           rel="preload"
           as="style"
-          href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&family=Fraunces:opsz,wght,SOFT@9..144,100..900,0..100&family=Press+Start+2P&display=swap"
         />
         <link
           id="gfonts-stylesheet"
           rel="stylesheet"
-          href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&family=Fraunces:opsz,wght,SOFT@9..144,100..900,0..100&family=Press+Start+2P&display=swap"
           media="print"
         />
         <script
@@ -158,7 +144,7 @@ export default function RootLayout({
         <noscript>
           <link
             rel="stylesheet"
-            href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap"
+            href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&family=Fraunces:opsz,wght,SOFT@9..144,100..900,0..100&family=Press+Start+2P&display=swap"
           />
         </noscript>
         {/* eslint-enable @next/next/no-page-custom-font */}
@@ -196,7 +182,7 @@ export default function RootLayout({
                 var stored = null;
                 try { stored = localStorage.getItem('theme'); } catch (e) {}
                 var isDark = stored ? stored === 'dark' : true;
-                var src = isDark ? '/avatar-dark.jpg' : '/avatar-light.jpg';
+                var src = (isDark ? '/avatar-dark.jpg' : '/avatar-light.jpg') + '?v=${avatarVersion}';
                 var shell = document.createElement('div');
                 shell.id = 'intro-shell';
                 // This shell owns the entire loading-hold visual by
@@ -222,16 +208,7 @@ export default function RootLayout({
 
         <ThemeProvider>
           <PdfModalProvider>
-            {/* Rendered here (outside template.tsx's animated motion.div in
-                `children`) on purpose: that wrapper animates `scale`/`y`/
-                `filter`, and any of those on an ancestor turns it into the
-                containing block for `position: fixed` descendants per the
-                CSS spec. Navbar used to be the first child inside each
-                page.tsx — i.e. inside that animated div — so it was
-                "fixed" relative to the wrapper instead of the viewport and
-                scrolled away with the page. Keeping it here, as a true
-                sibling of that wrapper, is what keeps it pinned. */}
-            <ClickSpark
+                        <ClickSpark
               sparkColor={["#0ABAB5", "#D4AF37"]}
               sparkSize={8}
               sparkRadius={36}

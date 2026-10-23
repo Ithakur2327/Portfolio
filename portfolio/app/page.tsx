@@ -1,28 +1,21 @@
+import dynamic from "next/dynamic";
 import { HeroSection }     from "@/components/HeroSection";
 import { SparklesBridge }  from "@/components/SparklesBridge";
 import { AboutSection }    from "@/components/AboutSection";
-import { StatsSection }    from "@/components/StatsSection";
 import { DotDivider } from "@/components/DotBackground";
-import { SkillsSection }   from "@/components/SkillsSection";
-import { ProjectsSection } from "@/components/ProjectsSection";
-import { EducationSection} from "@/components/EducationSection";
-import { CertificationsSection } from "@/components/CertificationsSection";
-import { Footer }          from "@/components/Footer";
 import { ScrollFadeAndTop } from "@/components/ScrollFadeAndTop";
-import { createHash }      from "crypto";
-import { readFileSync }    from "fs";
-import path                from "path";
+import { ExperienceSection } from "@/components/ExperienceSection";
+import { getAvatarVersion }  from "@/lib/avatar";
 
-
-function getAvatarVersion(): string {
-  try {
-    const dark = readFileSync(path.join(process.cwd(), "public", "avatar-dark.jpg"));
-    const light = readFileSync(path.join(process.cwd(), "public", "avatar-light.jpg"));
-    return createHash("md5").update(dark).update(light).digest("hex").slice(0, 10);
-  } catch {
-    return "0";
-  }
-}
+// Everything below the first screens is code-split: still server-rendered (so the
+// HTML is complete and SEO is unchanged) but its JavaScript is downloaded and
+// hydrated as separate, smaller tasks instead of one big block at startup.
+const StatsSection          = dynamic(() => import("@/components/StatsSection").then(m => m.StatsSection));
+const SkillsSection         = dynamic(() => import("@/components/SkillsSection").then(m => m.SkillsSection));
+const ProjectsSection       = dynamic(() => import("@/components/ProjectsSection").then(m => m.ProjectsSection));
+const EducationSection      = dynamic(() => import("@/components/EducationSection").then(m => m.EducationSection));
+const CertificationsSection = dynamic(() => import("@/components/CertificationsSection").then(m => m.CertificationsSection));
+const Footer                = dynamic(() => import("@/components/Footer").then(m => m.Footer));
 
 export default function Home() {
   const avatarVersion = getAvatarVersion();
@@ -33,6 +26,8 @@ export default function Home() {
         <div className="page-wrapper">
           <HeroSection avatarVersion={avatarVersion} />
           <AboutSection />
+          <DotDivider />
+          <ExperienceSection />
           <DotDivider />
           <StatsSection />
           <DotDivider />

@@ -1,85 +1,78 @@
 "use client";
 
-import React, { useRef } from "react";
-import {
-  motion,
-  useScroll,
-  useSpring,
-  useTransform,
-  MotionValue,
-} from "motion/react";
+import React, { useEffect, useRef } from "react";
+import { useMotionValueEvent, useScroll } from "motion/react";
 
 import { useReveal } from "./useReveal";
 import { SectionTitleIcon } from "./SectionIcon";
+import { Panel3D } from "./Panel3D";
+import VariableProximity, { type VariableProximityPiece } from "./VariableProximity";
 import { mq } from "@/lib/breakpoints";
 
 const SF = "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', sans-serif";
+// Fraunces (loaded in app/layout.tsx) — a soft, characterful variable serif with
+// weight / optical-size / "softness" axes, which is what the hover effect animates.
+const ABOUT_FONT = "'Fraunces', 'Iowan Old Style', 'Palatino Linotype', Georgia, serif";
 
 const TIFFANY = "#0ABAB5";
 const GOLD = "#D4AF37";
 
-const ABOUT_TEXT = `Hi, I'm [[Indresh Thakur]], currently pursuing [[B.Tech]] in [[Computer Science & Engineering (AI)]] at [[NIET Greater Noida]]. I'm a [[motivated]] and [[growth oriented]] [[Full-Stack]] & [[AI Developer]] passionate about building [[modern]], [[scalable]], and [[user]]-[[focused]] digital experiences.
+// [[double brackets]] = highlighted words (they light up one after another as you scroll)
+const PARAGRAPHS = [
+  `Hi, I'm [[Indresh Thakur]], a [[Full-Stack]] & [[AI Developer]] currently pursuing [[B.Tech]] in [[Computer Science & Engineering (AI)]] at [[NIET Greater Noida]]. I'm [[motivated]] and [[growth oriented]], and I love building [[modern]], [[scalable]] and [[user]]-[[focused]] digital experiences.`,
+  `I design and ship [[intelligent web applications]] and [[AI-powered systems]], from polished interfaces to robust backends. Alongside [[freelance]] client work and a recent [[full-stack internship]], I sharpen my [[problem]]-[[solving]] every day through [[Data Structures and Algorithms]] and keep exploring [[emerging technologies]] to turn ideas into [[impactful]] [[solutions]].`,
+  `I bring a unique blend of [[technical expertise]], [[adaptability]] and [[creativity]], with a genuine enthusiasm for building software that creates [[real]] [[impact]].`,
+];
 
-My work focuses on developing [[intelligent web applications]] and [[AI-powered systems]] while continuously improving my [[problem]]-[[solving]] abilities through active [[Data Structures and Algorithms]] practice and real-world project development. I enjoy exploring [[emerging technologies]], learning new tech stacks, and turning ideas into [[impactful]] [[solutions]].
+const countHighlights = (s: string) => (s.match(/\[\[/g) ?? []).length;
+const STARTS = PARAGRAPHS.map((_, i) => PARAGRAPHS.slice(0, i).reduce((n, p) => n + countHighlights(p), 0));
+const TOTAL = PARAGRAPHS.reduce((n, p) => n + countHighlights(p), 0);
 
-I bring a unique blend of [[technical expertise]], [[adaptability]], [[creativity]], and a genuine enthusiasm for building software that creates [[real]] [[impact]].`;
+const FROM = "'wght' 400, 'opsz' 14, 'SOFT' 0";
+const TO = "'wght' 840, 'opsz' 64, 'SOFT' 100";
 
-interface Token { text: string; hl: boolean; idx: number; isName: boolean; }
+const pieceClass = (piece: VariableProximityPiece) => {
+  if (piece.hl < 0) return undefined;
+  return piece.group === "Indresh Thakur" ? "ab-hl ab-name" : "ab-hl ab-gold";
+};
 
-function parse(raw: string): Token[][] {
-  let g = 0;
-  return raw.split("\n\n").map((para) => {
-    const tokens: Token[] = [];
-    const re = /\[\[(.+?)\]\]|([^\[]+)/g;
-    let m: RegExpExecArray | null;
-    while ((m = re.exec(para)) !== null) {
-      if (m[1]) tokens.push({ text: m[1], hl: true, idx: g++, isName: m[1] === "Indresh Thakur" });
-      else tokens.push({ text: m[2], hl: false, idx: -1, isName: false });
-    }
-    return tokens;
-  });
-}
-
-function GoldWord({ text, idx, total, progress, isName }: {
-  text: string; idx: number; total: number; progress: MotionValue<number>; isName: boolean;
-}) {
-  const s = Math.max(0, (idx - 0.2) / total);
-  const e = Math.min(1, (idx + 0.4) / total);
-  const raw = useTransform(progress, [s, e], [0, 1]);
-  const p = useSpring(raw, { stiffness: 200, damping: 30, mass: 0.5 });
-  const opacity = useTransform(p, [0, 0.15, 1], [0.25, 0.65, 1]);
-  if (isName) return (
-    <motion.span style={{ opacity, display: "inline", verticalAlign: "baseline" }}>
-      <span className="name-highlight">{text}</span>
-    </motion.span>
-  );
-  return (
-    <motion.span className="gold-box-word" style={{ opacity, display: "inline", verticalAlign: "baseline" }}>
-      {text}
-    </motion.span>
-  );
-}
-
-function ScrollRevealText() {
+function ScrollRevealText({ boxRef }: { boxRef: React.RefObject<HTMLDivElement | null> }) {
   const ref = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start 0.85", "center 0.6"] });
-  const smooth = useSpring(scrollYProgress, { stiffness: 80, damping: 25, restDelta: 0.001 });
-  const paras = parse(ABOUT_TEXT);
-  const total = paras.flat().filter((t) => t.hl).length;
+
+  // One CSS variable drives every highlight's opacity (see .ab-hl). No springs,
+  // no per-word motion values: a single style write per scroll frame, and only
+  // while the paragraph is inside its short reveal window.
+  const write = (v: number) => ref.current?.style.setProperty("--p", v.toFixed(4));
+  useMotionValueEvent(scrollYProgress, "change", write);
+  useEffect(() => {
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    write(reduced ? 1 : scrollYProgress.get());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   return (
-    <div ref={ref} style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-      {paras.map((tokens, pi) => (
-        <p key={pi} className="about-para" style={{
-          margin: 0, lineHeight: 1.7, fontFamily: SF, fontSize: 16,
-          letterSpacing: "-0.01em", fontWeight: 600, color: "var(--text-primary)",
-          textAlign: "justify", textJustify: "inter-word" as React.CSSProperties["textJustify"],
-          hyphens: "auto", wordBreak: "normal", overflowWrap: "break-word",
-        }}>
-          {tokens.map((t, ti) =>
-            t.hl
-              ? <GoldWord key={ti} text={t.text} idx={t.idx} total={total} progress={smooth} isName={t.isName} />
-              : <span key={ti} style={{ color: "var(--text-primary)", display: "inline" }}>{t.text}</span>
-          )}
+    <div
+      ref={ref}
+      className="ab-text"
+      style={{ ["--p" as string]: 0, ["--n" as string]: TOTAL, display: "flex", flexDirection: "column", gap: 20 } as React.CSSProperties}
+    >
+      {PARAGRAPHS.map((para, i) => (
+        <p key={i} className="ab-para" style={{ margin: 0 }}>
+          <VariableProximity
+            label={para}
+            startIndex={STARTS[i]}
+            containerRef={boxRef}
+            fontFamily={ABOUT_FONT}
+            fromFontVariationSettings={FROM}
+            toFontVariationSettings={TO}
+            radius={95}
+            falloff="gaussian"
+            smoothing={0.16}
+            scale={1.06}
+            lift={0.035}
+            pieceClassName={pieceClass}
+          />
         </p>
       ))}
     </div>
@@ -89,69 +82,61 @@ function ScrollRevealText() {
 // About section
 export function AboutSection() {
   const { ref, revealClass } = useReveal();
+  const boxRef = useRef<HTMLDivElement>(null);
 
   return (
     <>
       <style suppressHydrationWarning>{`
-        .name-highlight {
-          display: inline; color: ${TIFFANY}; font-weight: 600; white-space: nowrap;
-          animation: aboutWaterFlicker 5.5s ease-in-out infinite;
+        .ab-para {
+          line-height: 1.78; font-family: ${ABOUT_FONT}; font-size: 17px;
+          letter-spacing: -0.005em; color: var(--text-primary);
+          text-align: left; overflow-wrap: break-word;
+          font-optical-sizing: none;
         }
-        .gold-box-word {
-          display: inline; color: ${GOLD}; font-weight: 600;
-          animation: aboutWaterFlicker 5.5s ease-in-out infinite;
+        /* highlights: colour + the scroll-driven fade-in (0.25 → 1) */
+        .ab-hl {
+          font-weight: 600;
+          opacity: calc(0.25 + 0.75 * clamp(0, (var(--p) * var(--n) - var(--i) + 0.2) / 0.6, 1));
         }
-        html.light .name-highlight  { color: #0f766e !important; }
-        html.light .gold-box-word   { color: #b8860b !important; }
-        @keyframes aboutWaterFlicker {
-          0%, 100% { text-shadow: 0 0 0 transparent; }
-          50% { text-shadow: 0 0 4px color-mix(in srgb, currentColor 18%, transparent); }
-        }
-        @media (prefers-reduced-motion: reduce) {
-          .name-highlight, .gold-box-word { animation: none; }
-        }
+        .ab-name { color: ${TIFFANY}; text-shadow: 0 0 6px color-mix(in srgb, ${TIFFANY} 22%, transparent); }
+        .ab-gold { color: ${GOLD}; text-shadow: 0 0 5px color-mix(in srgb, ${GOLD} 16%, transparent); }
+        html.light .ab-name { color: #0f766e; text-shadow: none; }
+        html.light .ab-gold { color: #b8860b; text-shadow: none; }
 
-        .about-content {
-          max-width: var(--content-width); margin: 0 auto; padding: 0 20px 64px;
-        }
-        ${mq.navCollapse} { .about-content { padding: 0 22px 34px; } }
+        .ab-content { padding: 24px 24px 26px; }
+        ${mq.navCollapse} { .ab-content { padding: 20px 16px 20px; } }
         ${mq.mobile} {
-          .about-content { padding: 0 13px 28px; }
-          .about-para    { font-size: 14px !important; }
+          .ab-content { padding: 16px 8px 16px; }
+          .ab-para    { font-size: 15px !important; line-height: 1.72; }
         }
 
-        .about-box {
+        .ab-box {
           width: 100%;
           max-width: 100%;
           box-sizing: border-box;
           border: 1px dashed rgba(255, 255, 255, 0.35);
           border-radius: 10px;
-          background: var(--bg-base);
-          padding: 12px 12px;
+          padding: 14px 14px;
         }
-        html.light .about-box { border-color: rgba(0, 0, 0, 0.65); }
-        ${mq.navCollapse} {
-          .about-box { padding: 16px 16px; }
-        }
-        ${mq.mobile} {
-          .about-box { padding: 14px 12px; border-radius: 8px; }
-        }
+        html.light .ab-box { border-color: rgba(0, 0, 0, 0.5); }
+        ${mq.navCollapse} { .ab-box { padding: 14px 14px; } }
+        ${mq.mobile} { .ab-box { padding: 12px 10px; border-radius: 8px; } }
       `}</style>
 
       <section id="about" ref={ref} className={revealClass}>
         <div style={{ position: "relative", left: "50%", marginLeft: "-50vw", width: "100vw", background: "var(--bg-base)" }}>
-          <div className="about-content">
-            <div style={{ paddingTop: 28 }}>
+          <Panel3D>
+            <div className="ab-content">
               <span style={{ display: "inline-flex", alignItems: "center", gap: 10, fontSize: 28, fontWeight: 700, letterSpacing: "-0.03em", lineHeight: 1, fontFamily: SF, color: "var(--text-primary)" }}>
                 <SectionTitleIcon type="about" />
                 About
               </span>
+              <div style={{ height: 1, background: "var(--border)", margin: "18px 0 20px" }} />
+              <div className="ab-box" ref={boxRef}>
+                <ScrollRevealText boxRef={boxRef} />
+              </div>
             </div>
-            <div style={{ height: 1, background: "var(--border)", margin: "18px 0 20px" }} />
-            <div className="about-box">
-              <ScrollRevealText />
-            </div>
-          </div>
+          </Panel3D>
         </div>
       </section>
     </>

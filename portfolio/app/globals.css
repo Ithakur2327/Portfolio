@@ -123,7 +123,6 @@ html {
 html.light {
   background: #edf1f5;
 }
-html { transition: background-color 0.12s ease; }
 /* ═══════════════════════════════════════════════════════════
    RESET
 ═══════════════════════════════════════════════════════════ */
@@ -146,8 +145,6 @@ html {
   overscroll-behavior-y: auto;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  text-rendering: optimizeLegibility;
-  -webkit-overflow-scrolling: touch;
   scrollbar-gutter: stable;
 }
 
@@ -161,8 +158,6 @@ body {
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  text-rendering: optimizeLegibility;
-  transition: color 0.1s ease;
 }
 
 img, svg, canvas {
@@ -259,16 +254,12 @@ a, button, [role="button"] {
   position: fixed; top: 0; left: 0; right: 0; z-index: 100;
   height: 52px;
   background: var(--nav-bg);
-  backdrop-filter: blur(14px) saturate(160%);
-  -webkit-backdrop-filter: blur(14px) saturate(160%);
+  backdrop-filter: blur(10px) saturate(140%);
+  -webkit-backdrop-filter: blur(10px) saturate(140%);
   border-bottom: none;
   box-shadow: none;
   transition: background 0.2s ease;
-  will-change: transform;
-  transform: translateZ(0);
   isolation: isolate;
-  -webkit-backface-visibility: hidden;
-  backface-visibility: hidden;
 }
 
 .nav-root.scrolled {
@@ -317,9 +308,7 @@ html.intro-active #hero-avatar-anchor { opacity: 0; pointer-events: none; }
 #intro-shell {
   position: fixed; inset: 0; z-index: 100000;
   display: flex; align-items: center; justify-content: center; gap: 16px;
-  background: color-mix(in srgb, var(--bg-base) 45%, transparent);
-  backdrop-filter: blur(14px) saturate(130%);
-  -webkit-backdrop-filter: blur(14px) saturate(130%);
+  background: color-mix(in srgb, var(--bg-base) 94%, transparent);
 }
 .intro-shell-avatar {
   width: 84px; height: 84px; border-radius: 22px;
@@ -376,7 +365,6 @@ html.intro-active #hero-avatar-anchor { opacity: 0; pointer-events: none; }
 h1, h2, h3 {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  text-rendering: geometricPrecision;
   font-feature-settings: "kern" 1, "liga" 1, "calt" 1;
 }
 
@@ -389,12 +377,146 @@ h1, h2, h3 {
 }
 @keyframes spin { to { transform: rotate(360deg); } }
 
+/* ═══════════════════════════════════════════════════════════
+   3D SLAB — a section's content area  (see components/Panel3D.tsx)
+   Every dimension is in container units (cqw) of the slab's own stage, so
+   thickness, radius and shadow re-proportion automatically with its width.
+═══════════════════════════════════════════════════════════ */
+:root, html.dark {
+  --s3d-face-a:   #111114;
+  --s3d-face-b:   #0a0a0c;
+  --s3d-edge:     rgba(255,255,255,0.09);
+  --s3d-hi:       rgba(255,255,255,0.11);
+  --s3d-lo:       rgba(0,0,0,0.55);
+  --s3d-wall-a:   #22222a;
+  --s3d-wall-b:   #0f0f13;
+  --s3d-wall-edge: rgba(255,255,255,0.07);
+  --s3d-shadow:   rgba(0,0,0,0.95);
+  --s3d-contact:  rgba(0,0,0,0.9);
+  --s3d-glow:     rgba(10,186,181,0.10);
+  --s3d-gloss:    rgba(255,255,255,0.075);
+}
+html.light {
+  --s3d-face-a:   #ffffff;
+  --s3d-face-b:   #f7f9fc;
+  --s3d-edge:     rgba(20,40,80,0.10);
+  --s3d-hi:       rgba(255,255,255,1);
+  --s3d-lo:       rgba(20,40,80,0.06);
+  --s3d-wall-a:   #c3ccd8;
+  --s3d-wall-b:   #aab6c5;
+  --s3d-wall-edge: rgba(20,40,80,0.14);
+  --s3d-shadow:   rgba(36,58,96,0.30);
+  --s3d-contact:  rgba(36,58,96,0.35);
+  --s3d-glow:     rgba(10,186,181,0.07);
+  --s3d-gloss:    rgba(255,255,255,0.55);
+}
+
+.s3d {
+  position: relative;
+  container-type: inline-size;
+  max-width: var(--content-width);
+  margin: 0 auto;
+  padding: clamp(12px, 3.2cqw, 26px) clamp(6px, 1.8vw, 20px) clamp(18px, 4.4cqw, 34px);
+}
+.s3d__body {
+  --d: clamp(3px, 0.8cqw, 8px);      /* thickness of the slab */
+  --r: clamp(14px, 2.6cqw, 24px);      /* corner radius */
+  position: relative;
+  border-radius: var(--r);
+}
+.s3d__body.is-hot     { will-change: transform; transition: transform 0.16s cubic-bezier(0.22, 0.61, 0.36, 1); }
+.s3d__body.is-leaving { transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1); }
+
+/* ground shadow — painted once, never re-rastered while content changes */
+.s3d__shadow {
+  position: absolute; inset: 0; border-radius: var(--r); pointer-events: none;
+  transform: translateY(calc(var(--d) * 0.8));
+  box-shadow:
+    0 calc(var(--d) * 0.55) calc(var(--d) * 0.9) calc(var(--d) * -0.2) var(--s3d-contact),
+    0 calc(var(--d) * 2) calc(var(--d) * 3) calc(var(--d) * -0.9) var(--s3d-shadow),
+    0 calc(var(--d) * 3.5) calc(var(--d) * 5.5) calc(var(--d) * -2) var(--s3d-glow);
+}
+/* side wall — the slab's visible thickness */
+.s3d__wall {
+  position: absolute; inset: 0; border-radius: var(--r); pointer-events: none;
+  transform: translateY(calc(var(--d) * 0.8));
+  background: linear-gradient(180deg, var(--s3d-wall-a), var(--s3d-wall-b));
+  box-shadow: inset 0 0 0 1px var(--s3d-wall-edge);
+}
+.s3d__face {
+  position: relative;
+  isolation: isolate;
+  border-radius: var(--r);
+  background: linear-gradient(180deg, var(--s3d-face-a), var(--s3d-face-b));
+  border: 1px solid var(--s3d-edge);
+  box-shadow: inset 0 1px 0 var(--s3d-hi), inset 0 -1px 0 var(--s3d-lo);
+}
+/* soft light that follows the pointer across the surface */
+.s3d__gloss {
+  position: absolute; inset: 0; border-radius: inherit; overflow: hidden; pointer-events: none; z-index: -1;
+}
+.s3d__gloss i {
+  position: absolute; left: 0; top: 0; width: 70%; aspect-ratio: 1; border-radius: 50%;
+  background: radial-gradient(circle, var(--s3d-gloss), transparent 62%);
+  opacity: 0; transition: opacity 0.35s ease; will-change: transform, opacity;
+}
+
+/* "lift": depth + shadow only, around something that already has a surface */
+.s3d[data-variant="lift"] { padding: 0 0 clamp(8px, 2cqw, 14px); }
+.s3d[data-variant="lift"] .s3d__body { --d: clamp(2px, 0.5cqw, 5px); --r: 10px; }
+.s3d[data-variant="lift"] .s3d__face { background: none; border: 0; box-shadow: none; }
+
+/* ═══════════════════════════════════════════════════════════
+   SKY BRIDGE (navbar ↔ hero) — height steps with the breakpoints
+═══════════════════════════════════════════════════════════ */
+:root { --bridge-h: 92px; }
+@media (--tablet-up)        { :root { --bridge-h: 128px; } }
+@media (--tablet-split-up)  { :root { --bridge-h: 152px; } }
+@media (--laptop-up)        { :root { --bridge-h: 176px; } }
+@media (--laptop-wide)      { :root { --bridge-h: 128px; } }
+@media (--desktop)          { :root { --bridge-h: 140px; } }
+
+.bridge {
+  position: relative;
+  --bridge-trim: 52px;
+  height: calc(var(--bridge-h) - var(--bridge-trim));
+  background: #000;
+  overflow: hidden;
+}
+@media (--tablet-split-down) { .bridge { --bridge-trim: 58px; } }
+@media (--nav-roomy)          { .bridge { --bridge-trim: 70px; } }
+@media (--nav-tiny)           { .bridge { --bridge-trim: 46px; } }
+.bridge-layer { position: absolute; inset: 0; }
+.bridge-canvas { display: block; width: 100%; height: 100%; }
+/* light → sky + clouds only;  dark → black sparkles only */
+html.light .bridge { background: #66bcdf; }
+html.light .bridge-dark { display: none; }
+html:not(.light) .bridge-sky { display: none; }
+
+/* ═══════════════════════════════════════════════════════════
+   DOT FIELD — static grid is a pure-CSS pattern (see DotBackground.tsx).
+   Dots sit at  centre + k × 4.5px,  matching the interactive canvas.
+═══════════════════════════════════════════════════════════ */
+.dot-field {
+  background-image: radial-gradient(circle at center, var(--pattern-dot) 0.85px, transparent 1.15px);
+  background-size: 4.5px 4.5px;
+  background-position: center;
+}
+
+/* Section entrance — a short 3D "tip-up" (opacity + transform only, so it
+   runs entirely on the compositor). useReveal() removes the class once the
+   transition ends so nothing keeps a layer or a transform afterwards. */
 .reveal {
+  opacity: 0;
+  transform: perspective(1200px) translate3d(0, 34px, 0) rotateX(7deg);
+  transform-origin: 50% 0;
+  transition: opacity 0.6s cubic-bezier(0.22, 1, 0.36, 1),
+              transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
   will-change: opacity, transform;
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
 }
 .reveal.visible {
+  opacity: 1;
+  transform: none;
   will-change: auto;
 }
 
@@ -477,7 +599,6 @@ h1, h2, h3 {
 
 
 canvas {
-  transform: translateZ(0);
   image-rendering: auto;
 }
 
@@ -488,7 +609,6 @@ svg {
 
 img {
   image-rendering: auto;
-  content-visibility: auto;
 }
 
 .h-profile, .h-info-wrap, .h-avatar,
@@ -556,11 +676,7 @@ img {
 }
 
 
-/* Reduce will-change on small screens */
 @media (--mobile) {
-  .nav-root {
-    will-change: auto !important;
-  }
   .stat-card-3d { transform: none !important; }
   .stat-card-3d:hover { transform: translateY(-2px) !important; }
 }
@@ -583,14 +699,11 @@ img {
   .about-panels { grid-template-columns: 1fr !important; }
   .stat-card-3d { transform: none !important; transition: box-shadow 0.2s, background 0.2s; }
   .stat-card-3d:hover { transform: translateY(-3px) translateZ(0) !important; }
-  .name-highlight { box-shadow: none !important; }
 }
 
 @media (--mobile) {
   section { padding-left: 0 !important; padding-right: 0 !important; }
   section#about { padding-left: 0 !important; padding-right: 0 !important; }
-  .about-para { text-align: justify !important; text-justify: inter-word !important; }
-  .about-content { padding-left: 6px !important; padding-right: 6px !important; }
 }
 
 @media (--nav-tiny) {
