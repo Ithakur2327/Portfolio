@@ -88,10 +88,7 @@ const FallingIcon = memo(forwardRef<HTMLDivElement, { name: string }>(function F
     <div
       ref={ref}
       className="falling-icon-chip"
-      style={{
-        background: `linear-gradient(155deg, var(--bg-secondary) 0%, var(--bg-secondary) 52%, ${tech.color}22 100%)`,
-        borderColor: `${tech.color}4d`,
-      }}
+      style={{ ["--tint" as string]: tech.color } as React.CSSProperties}
     >
       {tech.logo ? (
         // eslint-disable-next-line @next/next/no-img-element
@@ -447,7 +444,11 @@ export function SkillsSection() {
           border-style: dashed;
           border-color: rgba(10, 186, 181, 0.35);
           border-radius: 14px;
-          background: #ffffff;
+          background:
+            radial-gradient(55% 45% at 18% 12%, rgba(10,186,181,0.20), transparent 70%),
+            radial-gradient(50% 45% at 86% 88%, rgba(212,175,55,0.20), transparent 70%),
+            radial-gradient(40% 35% at 80% 10%, rgba(99,102,241,0.12), transparent 70%),
+            #ffffff;
           min-height: 320px;
           flex: 1;
           user-select: none;
@@ -458,7 +459,11 @@ export function SkillsSection() {
           border-color: rgba(212, 175, 55, 0.35);
         }
         .dark .falling-icons-box {
-          background: #000000;
+          background:
+            radial-gradient(55% 45% at 18% 12%, rgba(10,186,181,0.22), transparent 70%),
+            radial-gradient(50% 45% at 86% 88%, rgba(212,175,55,0.17), transparent 70%),
+            radial-gradient(40% 35% at 80% 10%, rgba(99,102,241,0.14), transparent 70%),
+            #000000;
         }
         .dark .falling-icons-panel:first-child .falling-icons-box {
           border-color: rgba(10, 186, 181, 0.35);
@@ -488,19 +493,38 @@ export function SkillsSection() {
           padding: 6px 4px 5px;
           display: flex; flex-direction: column; align-items: center; justify-content: center;
           gap: 4px;
-          border-radius: 12px; border: 1px solid;
-          background: linear-gradient(180deg, #f9fafb 0%, #e7eaee 36%, #dfe3e8 100%);
+          border-radius: 12px;
           position: relative; z-index: 1;
           cursor: grab; touch-action: none;
           user-select: none; -webkit-user-select: none;
           backface-visibility: hidden;
           -webkit-backface-visibility: hidden;
-          box-shadow: inset 0 1px 0 rgba(255,255,255,0.9), inset 0 -4px 0 rgba(0,0,0,0.08), 0 8px 10px -12px rgba(0,0,0,0.38), 0 0 0 1px rgba(255,255,255,0.25);
+        }
+        /* ── glass chips ─────────────────────────────────────────────
+           Translucent tinted pane + specular sheen + bright rim. Deliberately
+           NO backdrop-filter: these chips are moved by the physics engine every
+           frame, and a live blur behind ~40 moving elements would be costly. */
+        .falling-icon-chip {
+          border: 1px solid color-mix(in srgb, var(--tint, #8a8a8a) 38%, rgba(255,255,255,0.55));
+          background:
+            radial-gradient(130% 80% at 18% -8%, rgba(255,255,255,0.75) 0%, rgba(255,255,255,0.18) 38%, rgba(255,255,255,0) 62%),
+            linear-gradient(160deg, color-mix(in srgb, var(--tint, #8a8a8a) 24%, rgba(255,255,255,0.55)) 0%, color-mix(in srgb, var(--tint, #8a8a8a) 9%, rgba(255,255,255,0.35)) 62%, color-mix(in srgb, var(--tint, #8a8a8a) 16%, rgba(255,255,255,0.4)) 100%);
+          box-shadow:
+            inset 0 1px 0 rgba(255,255,255,0.95),
+            inset 0 -9px 14px -10px color-mix(in srgb, var(--tint, #8a8a8a) 55%, transparent),
+            inset 0 0 0 1px rgba(255,255,255,0.35),
+            0 10px 16px -10px rgba(30,50,90,0.45);
         }
         .dark .falling-icon-chip {
-          background: linear-gradient(180deg, #1a1a1d 0%, #111214 28%, #090a0b 100%);
-          border-color: rgba(255,255,255,0.10);
-          box-shadow: inset 0 1px 0 rgba(255,255,255,0.18), inset 0 -3px 0 rgba(0,0,0,0.52), 0 8px 14px -10px rgba(0,0,0,0.95), 0 0 0 1px rgba(255,255,255,0.02);
+          border-color: color-mix(in srgb, var(--tint, #8a8a8a) 42%, rgba(255,255,255,0.16));
+          background:
+            radial-gradient(130% 80% at 18% -8%, rgba(255,255,255,0.28) 0%, rgba(255,255,255,0.07) 38%, rgba(255,255,255,0) 62%),
+            linear-gradient(160deg, color-mix(in srgb, var(--tint, #8a8a8a) 30%, rgba(255,255,255,0.06)) 0%, color-mix(in srgb, var(--tint, #8a8a8a) 10%, rgba(255,255,255,0.03)) 62%, color-mix(in srgb, var(--tint, #8a8a8a) 18%, rgba(255,255,255,0.04)) 100%);
+          box-shadow:
+            inset 0 1px 0 rgba(255,255,255,0.42),
+            inset 0 -9px 14px -10px color-mix(in srgb, var(--tint, #8a8a8a) 60%, transparent),
+            inset 0 0 0 1px rgba(255,255,255,0.05),
+            0 12px 18px -10px rgba(0,0,0,0.9);
         }
         .falling-icon-chip:active { cursor: grabbing; }
         .falling-icon-chip img {
@@ -544,13 +568,6 @@ export function SkillsSection() {
           .falling-icons-flow { padding: 16px 14px; gap: 8px; }
           .falling-icon-chip {
             width: 63px; height: 62px; border-radius: 12px; gap: 5px; padding: 5px 5px 7px;
-            background: linear-gradient(180deg, #f9fafb 0%, #e7eaee 36%, #dfe3e8 100%);
-            box-shadow: inset 0 1px 0 rgba(255,255,255,0.9), inset 0 -4px 0 rgba(0,0,0,0.08), 0 8px 10px -12px rgba(0,0,0,0.38), 0 0 0 1px rgba(255,255,255,0.25);
-          }
-          .dark .falling-icon-chip {
-            background: linear-gradient(180deg, #1a1a1d 0%, #111214 28%, #090a0b 100%);
-            border-color: rgba(255,255,255,0.10);
-            box-shadow: inset 0 1px 0 rgba(255,255,255,0.16), inset 0 -3px 0 rgba(0,0,0,0.42), 0 8px 12px -12px rgba(0,0,0,0.84);
           }
           .falling-icon-chip img { width: 24px; height: 24px; }
           .falling-icon-textmark { font-size: 15px; }
@@ -568,13 +585,6 @@ export function SkillsSection() {
           .falling-icons-flow { padding: 18px 12px; gap: 8px; }
           .falling-icon-chip {
             width: 54px; height: 58px; border-radius: 12px; gap: 4px; padding: 6px 4px 6px;
-            background: linear-gradient(180deg, #f9fafb 0%, #e7eaee 36%, #dfe3e8 100%);
-            box-shadow: inset 0 1px 0 rgba(255,255,255,0.9), inset 0 -4px 0 rgba(0,0,0,0.08), 0 8px 10px -12px rgba(0,0,0,0.38), 0 0 0 1px rgba(255,255,255,0.25);
-          }
-          .dark .falling-icon-chip {
-            background: linear-gradient(180deg, #1a1a1d 0%, #111214 28%, #090a0b 100%);
-            border-color: rgba(255,255,255,0.10);
-            box-shadow: inset 0 1px 0 rgba(255,255,255,0.16), inset 0 -3px 0 rgba(0,0,0,0.42), 0 8px 12px -12px rgba(0,0,0,0.84);
           }
           .falling-icon-chip img { width: 22px; height: 22px; filter: none; }
           .dark .falling-icon-chip img.invert-in-dark { filter: invert(1); }

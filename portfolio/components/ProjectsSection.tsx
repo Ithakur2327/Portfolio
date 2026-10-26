@@ -7,6 +7,7 @@ import { ProjectsGrid } from "./ProjectsGrid";
 import { mq } from "@/lib/breakpoints";
 
 import { Panel3D } from "./Panel3D";
+import { MagneticButton } from "./MagneticButton";
 const SF = "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', sans-serif";
 
 const FEATURED_COUNT = 6;
@@ -68,15 +69,17 @@ export function ProjectsSection() {
 
           {PROJECTS.length > FEATURED_COUNT && (
             <div style={{ display: "flex", justifyContent: "center", marginTop: 26 }}>
-              <Link
-                href="/projects"
-                className="view-more-link"
-              >
-                View More
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M5 12h14"/><path d="M13 6l6 6-6 6"/>
-                </svg>
-              </Link>
+              <MagneticButton color="#0ABAB5">
+                <Link
+                  href="/projects"
+                  className="view-more-link"
+                >
+                  View More
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M5 12h14"/><path d="M13 6l6 6-6 6"/>
+                  </svg>
+                </Link>
+              </MagneticButton>
             </div>
           )}
         </div>

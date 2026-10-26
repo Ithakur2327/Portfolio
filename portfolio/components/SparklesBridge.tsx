@@ -3,17 +3,20 @@ import { useEffect, useRef } from "react";
 import { CloudShader } from "./CloudShader";
 
 /**
- * The strip between the navbar and the hero.
+ * The strip between the navbar and the hero — exactly one navbar tall
+ * (`--nav-h`, see globals.css) on every device.
  *   • dark theme  → black sky with slowly breathing sparkles (2D canvas)
  *   • light theme → blue sky + small drifting clouds (WebGL shader)
- * Which layer shows is decided by CSS (`html.light`), so there is no theme
- * flash on load, and the hidden layer is never initialised or animated
- * (IntersectionObserver sees a `display: none` canvas as not visible).
+ * The layer that shows is chosen by CSS (`html.light`), so there is no theme
+ * flash on load; the inactive layer is paused (not destroyed), so switching
+ * theme is instant and never shows a half-initialised canvas.
  */
 
 // Sampled from public/avatar-light.jpg so the sky melts into the portrait.
 const SKY_BOTTOM = "#66bcdf";
 const SKY_TOP = "#4ea6d9";
+
+const isLight = () => document.documentElement.classList.contains("light");
 
 function Sparkles() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -49,7 +52,7 @@ function Sparkles() {
       canvas.width = Math.round(W * dpr);
       canvas.height = Math.round(H * dpr);
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      const count = H > 100 ? 70 : 40;
+      const count = Math.max(18, Math.min(90, Math.round((W * H) / 1500)));
       dots = Array.from({ length: count }, spawn);
     };
     const ro = new ResizeObserver(resize);
@@ -81,7 +84,8 @@ function Sparkles() {
       ctx.globalAlpha = 1;
     };
     const sync = () => {
-      const run = inView && !document.hidden;
+      const run =
+        inView && !document.hidden && !isLight() && !document.documentElement.classList.contains("intro-active");
       if (run && !raf) raf = requestAnimationFrame(draw);
       else if (!run && raf) {
         cancelAnimationFrame(raf);
@@ -93,13 +97,18 @@ function Sparkles() {
       sync();
     });
     io.observe(canvas);
+    const mo = new MutationObserver(sync);
+    mo.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
     document.addEventListener("visibilitychange", sync);
+    window.addEventListener("intro:complete", sync);
 
     return () => {
       if (raf) cancelAnimationFrame(raf);
       io.disconnect();
+      mo.disconnect();
       ro.disconnect();
       document.removeEventListener("visibilitychange", sync);
+      window.removeEventListener("intro:complete", sync);
     };
   }, []);
 
@@ -114,11 +123,10 @@ export function SparklesBridge() {
       </div>
       <div className="bridge-layer bridge-sky" style={{ background: `linear-gradient(to top, ${SKY_BOTTOM}, ${SKY_TOP})` }}>
         <CloudShader
-          cloudColor="#fdfbf7"
+          cloudColor="#ffffff"
           skyTopColor={SKY_TOP}
           skyBottomColor={SKY_BOTTOM}
-          count={6}
-          speed={1}
+          isActive={isLight}
         />
       </div>
     </div>

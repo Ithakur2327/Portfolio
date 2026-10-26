@@ -43,6 +43,8 @@ export interface StrokeTextProps {
   startDelay?: number;
   /** After a draw, fade the outline + shadow away so the word rests as plain text. */
   settle?: boolean;
+  /** While true the word waits (blank) and the first draw is not started — e.g. until an intro finishes. */
+  hold?: boolean;
   className?: string;
   style?: CSSProperties;
 }
@@ -112,6 +114,7 @@ const StrokeText = ({
   replayEvery,
   startDelay = 0,
   settle = false,
+  hold = false,
   className = '',
   style = {}
 }: StrokeTextProps) => {
@@ -300,9 +303,11 @@ const StrokeText = ({
         timeline.play(0);
       });
     } else {
-      // Until the first play starts, show the finished word (not the blank
-      // "start" frame) so there is never a flash of nothing.
-      setEnd();
+      // Like the original `mount` trigger: start blank, then draw.
+      setStart();
+      if (hold) {
+        return () => gsap.killTweensOf(targets);
+      }
       const play = () => {
         if (document.hidden) return; // don't burn frames in a background tab
         timeline?.kill();
@@ -366,7 +371,8 @@ const StrokeText = ({
     fontSize,
     replayEvery,
     startDelay,
-    settle
+    settle,
+    hold
   ]);
 
   const viewBox = box ? `${box.x} ${box.y} ${box.width} ${box.height}` : `0 ${-fontSize} 600 ${fontSize * 1.3}`;
@@ -446,7 +452,7 @@ const StrokeText = ({
           (same font / size / spacing) so the name is never blank and nothing
           shifts when the SVG takes over. */}
       {fluid && !box && (
-        <span aria-hidden="true" style={{ lineHeight: 1 }}>
+        <span aria-hidden="true" style={{ lineHeight: 1, visibility: 'hidden' }}>
           {text}
         </span>
       )}

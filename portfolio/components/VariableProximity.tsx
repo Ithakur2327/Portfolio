@@ -1,18 +1,24 @@
 'use client';
 
-import {
-  Fragment,
-  forwardRef,
-  useCallback,
-  useEffect,
-  useLayoutEffect,
-  useMemo,
-  useRef,
-  useState,
-  type CSSProperties,
-  type HTMLAttributes,
-  type RefObject
-} from 'react';
+import { whenIdle } from '@/lib/idle';
+import { Fragment, forwardRef, useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type HTMLAttributes } from 'react';
+
+/**
+ * Variable Proximity — letters swell (weight, a touch of size + lift) as the
+ * pointer comes near them.
+ *
+ * Built so it costs nothing when it can't be used and very little when it can:
+ *  • Touch / coarse-pointer / reduced-motion devices render the plain text — no
+ *    per-letter DOM, no listeners, nothing to lag while you scroll.
+ *  • On a mouse, every letter is pinned to the width it has at rest, so growing
+ *    its weight never re-flows the paragraph. The text wraps naturally inside
+ *    whatever box it lives in and always fits it.
+ *  • Letter positions are measured once (and on resize / font load), cached in
+ *    document coordinates, and the pointer maths per frame is plain arithmetic
+ *    — no getBoundingClientRect in the animation loop.
+ *  • One shared pointer listener + one rAF loop serves every instance, and an
+ *    instance only works while it is on screen.
+ */
 
 type Falloff = 'linear' | 'exponential' | 'gaussian';
 
@@ -27,77 +33,39 @@ export interface VariableProximityPiece {
 interface VariableProximityProps extends HTMLAttributes<HTMLSpanElement> {
   /** Text to render. Wrap words in [[double brackets]] to mark them as highlights. */
   label?: string;
-  fromFontVariationSettings?: string;
-  toFontVariationSettings?: string;
-  containerRef?: RefObject<HTMLElement | null>;
+  /** Pointer reach in px. */
   radius?: number;
   falloff?: Falloff;
+  /** 0 = snap, higher = softer easing (seconds-ish, like the original prop). */
   smoothing?: number;
-  fromColor?: string;
-  toColor?: string;
+  /** font-weight at rest / for highlights at rest / at full proximity. */
+  baseWeight?: number;
+  highlightWeight?: number;
+  maxWeight?: number;
+  /** Extra scale at full proximity (1 = none). */
   scale?: number;
+  /** Lift in em at full proximity. */
   lift?: number;
-  idleWave?: boolean;
-  fontSize?: number | string;
-  /** Font family (must be a variable font that has the axes used in the settings). */
-  fontFamily?: string;
   /** Global index of this label's first [[highlight]] (so several labels can share one sequence). */
   startIndex?: number;
   /** Return a class for a piece — used to colour [[highlights]]. Each piece also gets `--i` = its highlight index. */
   pieceClassName?: (piece: VariableProximityPiece) => string | undefined;
   className?: string;
-  onClick?: () => void;
   style?: CSSProperties;
 }
 
-interface ProximityState {
-  pointer: { x: number; y: number; active: boolean };
-  levels: number[];
-  targets: number[];
-}
-
-const useIsoLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
-
 const GAUSSIAN_EDGE = Math.exp(-2);
-const WAVE_PERIOD = 3.2;
-const WAVE_PEAK = 0.7;
-
-const SR_ONLY: CSSProperties = {
-  position: 'absolute',
-  width: 1,
-  height: 1,
-  padding: 0,
-  margin: -1,
-  overflow: 'hidden',
-  clip: 'rect(0,0,0,0)',
-  whiteSpace: 'nowrap',
-  border: 0
+const strengthAt = (d: number, r: number, f: Falloff) => {
+  if (d >= r) return 0;
+  const n = 1 - d / r;
+  if (f === 'exponential') return n * n;
+  if (f === 'gaussian') return (Math.exp(-2 * (d / r) ** 2) - GAUSSIAN_EDGE) / (1 - GAUSSIAN_EDGE);
+  return n;
 };
 
-const parseSettings = (settings: string) =>
-  new Map(
-    settings
-      .split(',')
-      .map(part => part.trim())
-      .filter(Boolean)
-      .map(part => {
-        const [name, value] = part.split(/\s+/);
-        return [name.replace(/['"]/g, ''), parseFloat(value)] as [string, number];
-      })
-  );
-
-const strengthAt = (distance: number, radius: number, falloff: Falloff) => {
-  if (distance >= radius) return 0;
-  const norm = 1 - distance / radius;
-  switch (falloff) {
-    case 'exponential':
-      return norm * norm;
-    case 'gaussian':
-      return (Math.exp(-2 * (distance / radius) ** 2) - GAUSSIAN_EDGE) / (1 - GAUSSIAN_EDGE);
-    case 'linear':
-    default:
-      return norm;
-  }
+const SR_ONLY: CSSProperties = {
+  position: 'absolute', width: 1, height: 1, padding: 0, margin: -1,
+  overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap', border: 0
 };
 
 /** "Hi [[Indresh Thakur]]," → words → pieces. Spaces inside a highlight still split words. */
@@ -114,18 +82,11 @@ const parseLabel = (label: string, startIndex: number): VariableProximityPiece[]
       for (const ch of m[2]) chars.push({ ch, hl: -1, group: '' });
     }
   }
-
   const words: VariableProximityPiece[][] = [];
   let word: VariableProximityPiece[] = [];
-  const flush = () => {
-    if (word.length) words.push(word);
-    word = [];
-  };
+  const flush = () => { if (word.length) words.push(word); word = []; };
   chars.forEach(({ ch, hl, group }) => {
-    if (ch === ' ') {
-      flush();
-      return;
-    }
+    if (ch === ' ') { flush(); return; }
     const last = word[word.length - 1];
     if (last && last.hl === hl && last.group === group) last.text += ch;
     else word.push({ text: ch, hl, group });
@@ -134,34 +95,142 @@ const parseLabel = (label: string, startIndex: number): VariableProximityPiece[]
   return words;
 };
 
+/* ────────────────────────── shared engine ────────────────────────── */
+
+interface Instance {
+  el: HTMLElement;
+  letters: HTMLElement[];
+  hlFlags: boolean[];
+  radius: number;
+  falloff: Falloff;
+  smoothing: number;
+  baseWeight: number;
+  hlWeight: number;
+  maxWeight: number;
+  growth: number;
+  rise: number;
+  // cached geometry (document coordinates)
+  ax: Float32Array;
+  ay: Float32Array;
+  box: { l: number; t: number; r: number; b: number };
+  level: Float32Array;
+  written: Int16Array;
+  visible: boolean;
+  measure: () => void;
+}
+
+const instances = new Set<Instance>();
+const pointer = { x: -1e6, y: -1e6, active: false };
+let frame = 0;
+let lastT = 0;
+let bound = false;
+
+function stepInstance(inst: Instance, dt: number): boolean {
+  const { letters, level, written, ax, ay } = inst;
+  const px = pointer.x + window.scrollX;
+  const py = pointer.y + window.scrollY;
+  const R = inst.radius;
+  const near =
+    pointer.active &&
+    px > inst.box.l - R && px < inst.box.r + R &&
+    py > inst.box.t - R && py < inst.box.b + R;
+  const ease = inst.smoothing > 0 ? 1 - Math.exp(-dt / (inst.smoothing * 400)) : 1;
+  let busy = false;
+
+  for (let i = 0; i < letters.length; i++) {
+    let target = 0;
+    if (near) {
+      const dx = px - ax[i];
+      const dy = py - ay[i];
+      const d2 = dx * dx + dy * dy;
+      if (d2 < R * R) target = strengthAt(Math.sqrt(d2), R, inst.falloff);
+    }
+    const cur = level[i];
+    if (cur === 0 && target === 0) continue;
+    let next = cur + (target - cur) * ease;
+    if (Math.abs(target - next) < 0.004) next = target;
+    else busy = true;
+    level[i] = next;
+
+    // quantise to whole weights so unchanged letters are never rewritten
+    const base = inst.hlFlags[i] ? inst.hlWeight : inst.baseWeight;
+    const w = next === 0 ? 0 : Math.round(base + (inst.maxWeight - base) * next);
+    if (written[i] !== w) {
+      written[i] = w;
+      const el = letters[i];
+      if (w === 0) {
+        el.style.fontWeight = '';
+        el.style.transform = '';
+      } else {
+        el.style.fontWeight = String(w);
+        el.style.transform =
+          inst.growth || inst.rise
+            ? `translateY(${(-inst.rise * next).toFixed(3)}em) scale(${(1 + inst.growth * next).toFixed(3)})`
+            : '';
+      }
+    }
+  }
+  return busy;
+}
+
+function tick(now: number) {
+  frame = 0;
+  const dt = lastT ? Math.min(now - lastT, 64) : 16;
+  lastT = now;
+  let busy = false;
+  instances.forEach(inst => {
+    if (!inst.visible) return;
+    if (stepInstance(inst, dt)) busy = true;
+  });
+  // keep running while letters are still easing; otherwise sleep until the next pointer move
+  if (busy) frame = requestAnimationFrame(tick);
+  else lastT = 0;
+}
+
+function wake() {
+  if (!frame) frame = requestAnimationFrame(tick);
+}
+
+function bindPointer() {
+  if (bound) return;
+  bound = true;
+  window.addEventListener('pointermove', e => {
+    if (e.pointerType === 'touch') return;
+    pointer.x = e.clientX;
+    pointer.y = e.clientY;
+    pointer.active = true;
+    wake();
+  }, { passive: true });
+  document.documentElement.addEventListener('mouseleave', () => {
+    pointer.active = false;
+    wake();
+  });
+  // Scrolling moves text under a still pointer — re-evaluate, still no layout reads.
+  window.addEventListener('scroll', () => { if (pointer.active) wake(); }, { passive: true });
+}
+
+/* ────────────────────────── component ────────────────────────── */
+
 const VariableProximity = forwardRef<HTMLSpanElement, VariableProximityProps>((props, ref) => {
   const {
     label = '',
-    fromFontVariationSettings = "'wght' 400, 'opsz' 9",
-    toFontVariationSettings = "'wght' 1000, 'opsz' 40",
-    containerRef,
-    radius = 50,
-    falloff = 'linear',
-    smoothing = 0.2,
-    fromColor,
-    toColor,
+    radius = 90,
+    falloff = 'gaussian',
+    smoothing = 0.16,
+    baseWeight = 400,
+    highlightWeight = 600,
+    maxWeight = 800,
     scale = 1,
     lift = 0,
-    idleWave = false,
-    fontSize,
-    fontFamily = '"Roboto Flex", sans-serif',
     startIndex = 0,
     pieceClassName,
     className = '',
-    onClick,
     style,
     ...restProps
   } = props;
 
   const rootRef = useRef<HTMLSpanElement | null>(null);
-  const letterRefs = useRef<(HTMLSpanElement | null)[]>([]);
-  const stateRef = useRef<ProximityState>({ pointer: { x: 0, y: 0, active: false }, levels: [], targets: [] });
-  const [lineStarts, setLineStarts] = useState<string | null>(null);
+  const [interactive, setInteractive] = useState(false);
 
   const setRoot = useCallback(
     (node: HTMLSpanElement | null) => {
@@ -172,352 +241,155 @@ const VariableProximity = forwardRef<HTMLSpanElement, VariableProximityProps>((p
     [ref]
   );
 
-  const axes = useMemo(() => {
-    const fromSettings = parseSettings(fromFontVariationSettings);
-    const toSettings = parseSettings(toFontVariationSettings);
-    return Array.from(fromSettings.entries()).map(([axis, fromValue]) => ({
-      axis,
-      fromValue,
-      toValue: toSettings.get(axis) ?? fromValue
-    }));
-  }, [fromFontVariationSettings, toFontVariationSettings]);
-
-  useIsoLayoutEffect(() => {
-    const root = rootRef.current;
-    if (!root) return;
-    let frame = 0;
-    let live = true;
-    let lastWidth = -1;
-
-    const measure = () => {
-      frame = 0;
-      if (!live) return;
-      const words = Array.from(root.querySelectorAll<HTMLElement>('[data-word]'));
-      const breaks = Array.from(root.querySelectorAll<HTMLElement>('br'));
-      const letters = letterRefs.current.filter((letter): letter is HTMLSpanElement => Boolean(letter));
-      const saved = letters.map(letter => letter.style.fontVariationSettings);
-      const wrap = root.style.whiteSpace;
-      root.style.whiteSpace = 'normal';
-      breaks.forEach(node => (node.style.display = 'none'));
-      letters.forEach(letter => (letter.style.fontVariationSettings = fromFontVariationSettings));
-      const starts: number[] = [];
-      let lastTop: number | null = null;
-      words.forEach((word, index) => {
-        const top = word.getBoundingClientRect().top;
-        if (lastTop !== null && top > lastTop + 2) starts.push(index);
-        lastTop = top;
-      });
-      letters.forEach((letter, index) => (letter.style.fontVariationSettings = saved[index]));
-      breaks.forEach(node => (node.style.display = ''));
-      root.style.whiteSpace = wrap;
-      const key = starts.join(',');
-      setLineStarts(previous => (previous === key ? previous : key));
-    };
-
-    const queue = (entries?: ResizeObserverEntry[]) => {
-      const width = entries?.[0]?.contentRect.width;
-      if (width !== undefined) {
-        if (Math.abs(width - lastWidth) < 1) return;
-        lastWidth = width;
-      }
-      if (!frame) frame = requestAnimationFrame(measure);
-    };
-
-    measure();
-    const parent = root.parentElement;
-    const observer = parent && typeof ResizeObserver !== 'undefined' ? new ResizeObserver(queue) : null;
-    if (parent) observer?.observe(parent);
-    document.fonts?.ready.then(() => queue());
-
-    return () => {
-      live = false;
-      cancelAnimationFrame(frame);
-      observer?.disconnect();
-    };
-  }, [label, fromFontVariationSettings, fontSize, fontFamily]);
-
+  // Only mouse-driven, motion-OK devices get the per-letter version — and it is
+  // switched on once the browser is idle, so building ~600 letter nodes never
+  // competes with hydration / first paint.
   useEffect(() => {
-    const { pointer, levels, targets } = stateRef.current;
-    const written: string[] = [];
-    const painted: string[] = [];
-    const moved: string[] = [];
-    const anchors: { x: number; y: number }[] = [];
-    const tinted = Boolean(fromColor || toColor);
-    const restColor = fromColor || 'currentColor';
-    const nearColor = toColor || 'currentColor';
-    const growth = (Number(scale) || 1) - 1;
-    const rise = Number(lift) || 0;
-    const transformed = growth !== 0 || rise !== 0;
-    const reduced = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
-    const waving = idleWave && !reduced;
-    let frame = 0;
-    let lastTime = 0;
-    let dirty = true;
-    let layoutDirty = true;
-    let nearAny = false;
-    let lastNear = -Infinity;
-    let waveMix = 0;
-    let span = 1;
-    let visible = true;
-
-    letterRefs.current.forEach(letter => {
-      if (!letter) return;
-      if (!tinted) letter.style.color = '';
-      if (!transformed) letter.style.transform = '';
-    });
-
-    const settingsAt = (level: number) =>
-      axes.map(({ axis, fromValue, toValue }) => `'${axis}' ${fromValue + (toValue - fromValue) * level}`).join(', ');
-
-    const measureAnchors = () => {
-      const letters = letterRefs.current;
-      let left = Infinity;
-      let top = Infinity;
-      let right = -Infinity;
-      letters.forEach((letter, index) => {
-        if (!letter) return;
-        const rect = letter.getBoundingClientRect();
-        anchors[index] = { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
-        left = Math.min(left, rect.left);
-        top = Math.min(top, rect.top);
-        right = Math.max(right, rect.right);
-      });
-      anchors.forEach(anchor => {
-        anchor.x -= left;
-        anchor.y -= top;
-      });
-      span = Math.max(220, (right - left) * 0.85);
-    };
-
-    const measure = () => {
-      const letters = letterRefs.current;
-      targets.length = letters.length;
-      targets.fill(0);
-      nearAny = false;
-      if (!pointer.active) return;
-
-      const area = containerRef?.current?.getBoundingClientRect();
-      if (area) {
-        const dx = Math.max(area.left - pointer.x, 0, pointer.x - area.right);
-        const dy = Math.max(area.top - pointer.y, 0, pointer.y - area.bottom);
-        if (dx * dx + dy * dy >= radius * radius) return;
-      }
-
-      letters.forEach((letter, index) => {
-        if (!letter) return;
-        const rect = letter.getBoundingClientRect();
-        const distance = Math.hypot(pointer.x - (rect.left + rect.width / 2), pointer.y - (rect.top + rect.height / 2));
-        targets[index] = strengthAt(distance, radius, falloff);
-        if (targets[index] > 0) nearAny = true;
-      });
-    };
-
-    const waveAt = (index: number, time: number) => {
-      const anchor = anchors[index];
-      if (!anchor) return 0;
-      const phase = ((anchor.x + anchor.y * 0.6) / span - time / WAVE_PERIOD) * Math.PI * 2;
-      return WAVE_PEAK * ((1 + Math.cos(phase)) / 2) ** 2.2;
-    };
-
-    const tick = (now: number) => {
-      frame = 0;
-      const delta = lastTime ? Math.min(now - lastTime, 64) : 16;
-      lastTime = now;
-
-      if (dirty) {
-        measure();
-        dirty = false;
-      }
-      if (waving && layoutDirty) {
-        measureAnchors();
-        layoutDirty = false;
-      }
-
-      if (nearAny) lastNear = now;
-      const idle = waving && visible && !nearAny && now - lastNear > 500;
-      const goal = idle ? 1 : 0;
-      waveMix += (goal - waveMix) * (1 - Math.exp(-delta / 600));
-      if (Math.abs(goal - waveMix) < 0.002) waveMix = goal;
-
-      const ease = smoothing > 0 ? 1 - Math.exp(-delta / (smoothing * 400)) : 1;
-      const time = now / 1000;
-      let settling = false;
-
-      letterRefs.current.forEach((letter, index) => {
-        if (!letter) return;
-        let target = targets[index] ?? 0;
-        if (waveMix > 0) target = Math.max(target, waveMix * waveAt(index, time));
-        const current = levels[index] ?? 0;
-        let next = current + (target - current) * ease;
-        if (Math.abs(target - next) < 0.002) {
-          next = target;
-        } else {
-          settling = true;
-        }
-        levels[index] = next;
-
-        const settings = next === 0 ? fromFontVariationSettings : settingsAt(next);
-        if (written[index] !== settings) {
-          written[index] = settings;
-          letter.style.fontVariationSettings = settings;
-        }
-
-        if (tinted) {
-          const paint =
-            next === 0
-              ? fromColor || ''
-              : `color-mix(in oklab, ${restColor} ${((1 - next) * 100).toFixed(1)}%, ${nearColor})`;
-          if (painted[index] !== paint) {
-            painted[index] = paint;
-            letter.style.color = paint;
-          }
-        }
-
-        if (transformed) {
-          const shift =
-            next === 0 ? '' : `translateY(${(-rise * next).toFixed(3)}em) scale(${(1 + growth * next).toFixed(3)})`;
-          if (moved[index] !== shift) {
-            moved[index] = shift;
-            letter.style.transform = shift;
-          }
-        }
-      });
-
-      if (settling || waveMix > 0 || (waving && visible && !nearAny)) {
-        frame = requestAnimationFrame(tick);
-      } else {
-        lastTime = 0;
-      }
-    };
-
-    const schedule = () => {
-      dirty = true;
-      if (!frame) frame = requestAnimationFrame(tick);
-    };
-
-    const relayout = () => {
-      layoutDirty = true;
-      schedule();
-    };
-
-    const handleMove = (x: number, y: number) => {
-      pointer.x = x;
-      pointer.y = y;
-      pointer.active = true;
-      schedule();
-    };
-
-    const handleMouseMove = (event: MouseEvent) => handleMove(event.clientX, event.clientY);
-    const handleTouchMove = (event: TouchEvent) => {
-      const touch = event.touches[0];
-      if (touch) handleMove(touch.clientX, touch.clientY);
-    };
-    const handleLeave = () => {
-      pointer.active = false;
-      schedule();
-    };
-
-    const root = document.documentElement;
-    window.addEventListener('mousemove', handleMouseMove, { passive: true });
-    window.addEventListener('touchmove', handleTouchMove, { passive: true });
-    window.addEventListener('touchend', handleLeave);
-    window.addEventListener('touchcancel', handleLeave);
-    window.addEventListener('scroll', schedule, { capture: true, passive: true });
-    window.addEventListener('resize', relayout);
-    root.addEventListener('mouseleave', handleLeave);
-
-    let observer: IntersectionObserver | null = null;
-    if (waving && rootRef.current && 'IntersectionObserver' in window) {
-      observer = new IntersectionObserver(entries => {
-        visible = entries.some(entry => entry.isIntersecting);
-        schedule();
-      });
-      observer.observe(rootRef.current);
-    }
-    if (waving) document.fonts?.ready.then(relayout);
-
-    schedule();
-
-    return () => {
-      cancelAnimationFrame(frame);
-      observer?.disconnect();
-      window.removeEventListener('mousemove', handleMouseMove);
-      window.removeEventListener('touchmove', handleTouchMove);
-      window.removeEventListener('touchend', handleLeave);
-      window.removeEventListener('touchcancel', handleLeave);
-      window.removeEventListener('scroll', schedule, { capture: true });
-      window.removeEventListener('resize', relayout);
-      root.removeEventListener('mouseleave', handleLeave);
-    };
-  }, [
-    axes,
-    fromFontVariationSettings,
-    containerRef,
-    radius,
-    falloff,
-    smoothing,
-    fromColor,
-    toColor,
-    scale,
-    lift,
-    idleWave,
-    fontSize,
-    label,
-    lineStarts
-  ]);
+    const ok =
+      window.matchMedia('(hover: hover) and (pointer: fine)').matches &&
+      !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (!ok) return;
+    return whenIdle(() => setInteractive(true), 2500);
+  }, []);
 
   const words = useMemo(() => parseLabel(label, startIndex), [label, startIndex]);
   const plainLabel = useMemo(() => label.replace(/\[\[|\]\]/g, ''), [label]);
-  const breakSet = new Set(lineStarts ? lineStarts.split(',').map(Number) : []);
-  let letterIndex = 0;
+
+  useEffect(() => {
+    if (!interactive) return;
+    const root = rootRef.current;
+    if (!root) return;
+    bindPointer();
+
+    const letters = Array.from(root.querySelectorAll<HTMLElement>('[data-l]'));
+    const n = letters.length;
+    const inst: Instance = {
+      el: root,
+      letters,
+      hlFlags: letters.map(l => l.dataset.h === '1'),
+      radius,
+      falloff,
+      smoothing,
+      baseWeight,
+      hlWeight: highlightWeight,
+      maxWeight,
+      growth: (Number(scale) || 1) - 1,
+      rise: Number(lift) || 0,
+      ax: new Float32Array(n),
+      ay: new Float32Array(n),
+      box: { l: 0, t: 0, r: 0, b: 0 },
+      level: new Float32Array(n),
+      written: new Int16Array(n),
+      visible: false,
+      measure: () => {}
+    };
+
+    // Pin each letter to its resting width (so weight changes never re-flow the
+    // text) and cache where every letter sits in document coordinates.
+    let measureTimer: ReturnType<typeof setTimeout> | undefined;
+    let refTop = 0;
+    let refLeft = 0;
+    let refWidth = 0;
+    inst.measure = () => {
+      letters.forEach(l => { l.style.width = ''; });
+      const sx = window.scrollX;
+      const sy = window.scrollY;
+      const rects = letters.map(l => l.getBoundingClientRect());
+      let L = Infinity, T = Infinity, Rr = -Infinity, B = -Infinity;
+      rects.forEach((r, i) => {
+        inst.ax[i] = r.left + r.width / 2 + sx;
+        inst.ay[i] = r.top + r.height / 2 + sy;
+        L = Math.min(L, r.left + sx); T = Math.min(T, r.top + sy);
+        Rr = Math.max(Rr, r.right + sx); B = Math.max(B, r.bottom + sy);
+      });
+      inst.box = { l: L, t: T, r: Rr, b: B };
+      letters.forEach((l, i) => { l.style.width = `${rects[i].width}px`; });
+      const rr = root.getBoundingClientRect();
+      refTop = rr.top + sy;
+      refLeft = rr.left + sx;
+      refWidth = rr.width;
+    };
+    // Something changed (document height, fonts, …). If the text itself kept its
+    // width it only moved — shift the cached coordinates by the offset and skip
+    // the expensive per-letter pass.
+    const revalidate = () => {
+      const rr = root.getBoundingClientRect();
+      if (Math.abs(rr.width - refWidth) > 0.5) {
+        inst.measure();
+      } else {
+        const dy = rr.top + window.scrollY - refTop;
+        const dx = rr.left + window.scrollX - refLeft;
+        if (Math.abs(dy) > 0.5 || Math.abs(dx) > 0.5) {
+          for (let i = 0; i < n; i++) { inst.ax[i] += dx; inst.ay[i] += dy; }
+          inst.box = { l: inst.box.l + dx, t: inst.box.t + dy, r: inst.box.r + dx, b: inst.box.b + dy };
+          refTop += dy;
+          refLeft += dx;
+        }
+      }
+      wake();
+    };
+    const queueMeasure = () => {
+      clearTimeout(measureTimer);
+      measureTimer = setTimeout(revalidate, 150);
+    };
+    // fonts arriving change glyph widths → a real re-measure is needed
+    const onFonts = () => { clearTimeout(measureTimer); measureTimer = setTimeout(() => { inst.measure(); wake(); }, 60); };
+
+    inst.measure();
+    instances.add(inst);
+    document.fonts?.ready.then(onFonts).catch(() => {});
+
+    const io = new IntersectionObserver(([e]) => {
+      inst.visible = !!e?.isIntersecting;
+      if (inst.visible) wake();
+    });
+    io.observe(root);
+
+    // width changes (rotation, resize) and content-height changes both move the letters
+    const ro = new ResizeObserver(queueMeasure);
+    ro.observe(document.documentElement);
+    if (root.parentElement) ro.observe(root.parentElement);
+
+    return () => {
+      clearTimeout(measureTimer);
+      io.disconnect();
+      ro.disconnect();
+      instances.delete(inst);
+      letters.forEach(l => { l.style.width = ''; l.style.fontWeight = ''; l.style.transform = ''; });
+    };
+  }, [interactive, label, radius, falloff, smoothing, baseWeight, highlightWeight, maxWeight, scale, lift]);
 
   return (
     <span
       ref={setRoot}
       className={className}
-      onClick={onClick}
-      style={{
-        display: 'inline',
-        fontFamily,
-        ...(fontSize !== undefined ? { fontSize: typeof fontSize === 'number' ? `${fontSize}px` : fontSize } : {}),
-        ...(lineStarts !== null ? { whiteSpace: 'nowrap' } : {}),
-        ...style
-      }}
+      style={{ display: 'inline', ...style }}
       {...restProps}
     >
-      {words.map((word, wordIndex) => (
-        <Fragment key={wordIndex}>
-          {breakSet.has(wordIndex) && <br />}
-          <span data-word="" style={{ display: 'inline-block', whiteSpace: 'nowrap' }}>
-            {word.map((piece, pieceIndex) => (
+      {words.map((word, wi) => (
+        <Fragment key={wi}>
+          {wi > 0 && ' '}
+          <span data-word="" style={{ display: 'inline-block', whiteSpace: 'nowrap' }} aria-hidden="true">
+            {word.map((piece, pi) => (
               <span
-                key={pieceIndex}
+                key={pi}
                 className={pieceClassName?.(piece)}
                 style={piece.hl >= 0 ? ({ '--i': piece.hl } as CSSProperties) : undefined}
               >
-                {piece.text.split('').map(letter => {
-                  const currentLetterIndex = letterIndex++;
-                  return (
-                    <span
-                      key={currentLetterIndex}
-                      ref={el => {
-                        letterRefs.current[currentLetterIndex] = el;
-                      }}
-                      style={{
-                        display: 'inline-block',
-                        fontVariationSettings: fromFontVariationSettings,
-                        color: fromColor || undefined,
-                        transformOrigin: '50% 80%'
-                      }}
-                      aria-hidden="true"
-                    >
-                      {letter}
-                    </span>
-                  );
-                })}
+                {interactive
+                  ? piece.text.split('').map((letter, li) => (
+                      <span
+                        key={li}
+                        data-l=""
+                        data-h={piece.hl >= 0 ? '1' : '0'}
+                        style={{ display: 'inline-block', textAlign: 'center', transformOrigin: '50% 80%' }}
+                      >
+                        {letter}
+                      </span>
+                    ))
+                  : piece.text}
               </span>
             ))}
-            {wordIndex < words.length - 1 && <span style={{ display: 'inline-block' }}>&nbsp;</span>}
           </span>
         </Fragment>
       ))}
