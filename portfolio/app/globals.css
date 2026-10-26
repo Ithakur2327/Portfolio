@@ -795,7 +795,7 @@ img {
    SPLIT-FLAP QUOTE BOARD  (components/TextFlippingBoard.tsx)
 ═══════════════════════════════════════════════════════════ */
 :root, html.dark {
-  --sfb-board: #171717; --sfb-cell: #171717; --sfb-flap: #262626; --sfb-text: #ffffff;
+  --sfb-board: #000000; --sfb-cell: #000000; --sfb-flap: #000000; --sfb-text: #ffffff;
   --sfb-border: rgba(255,255,255,0.12);
   --sfb-shadow: 0 20px 70px -15px rgba(0,0,0,0.6);
 }
