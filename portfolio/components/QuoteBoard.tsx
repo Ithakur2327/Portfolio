@@ -3,7 +3,7 @@ import { useReveal } from "./useReveal";
 import { TextFlippingBoard } from "./TextFlippingBoard";
 import { BOARD_MESSAGES } from "@/lib/board-messages";
 
-/** Split-flap board of cool quotes & fun facts — sits just above the footer. */
+/** Split-flap board of quotes — sits just above the footer. */
 export function QuoteBoard() {
   const { ref, revealClass } = useReveal();
   return (

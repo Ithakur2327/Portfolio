@@ -99,6 +99,8 @@ const FallingIcon = memo(forwardRef<HTMLDivElement, { name: string }>(function F
           src={tech.logo}
           alt={name}
           draggable={false}
+          loading="lazy"
+          decoding="async"
           className={tech.invert ? "invert-in-dark" : undefined}
           onError={e => { (e.target as HTMLImageElement).style.display = "none"; }}
         />
@@ -144,6 +146,7 @@ function FallingIconsBox({ title, items, index = 0 }: { title: string; items: st
     if (!hasAppeared) return;
     const box = boxRef.current;
     if (!box) return;
+    if (window.matchMedia("(max-width: 767px), (pointer: coarse)").matches) return;
 
     let cancelled = false;
     let cleanup: (() => void) | null = null;
@@ -162,16 +165,11 @@ function FallingIconsBox({ title, items, index = 0 }: { title: string; items: st
       let rect = box.getBoundingClientRect();
       if (rect.width <= 0 || rect.height <= 0) return;
 
-    const isMobile = typeof window !== "undefined" && window.matchMedia("(max-width: 767px)").matches;
     const pointerDownRef = { current: false };
-    // Lighter solver keeps it cheap on phones; no artificial fps cap here —
-    // sleeping bodies + the scroll deadzone (below) do the real work of
-    // keeping this light, so we let rAF run at the display's native rate
-    // (up to 120Hz) for the smoothest feel.
     const engine = Engine.create({
-      positionIterations: isMobile ? 3 : 6,
-      velocityIterations: isMobile ? 2 : 4,
-      constraintIterations: isMobile ? 1 : 2,
+      positionIterations: 6,
+      velocityIterations: 4,
+      constraintIterations: 2,
     });
     engine.enableSleeping = true;
     engine.world.gravity.y = 0;
@@ -568,7 +566,8 @@ export function SkillsSection() {
           .falling-icons-flow { padding: 18px 12px; gap: 8px; }
           .falling-icon-chip {
             width: 54px; height: 58px; border-radius: 12px; gap: 4px; padding: 6px 4px 6px;
-            background: linear-gradient(180deg, #f9fafb 0%, #e7eaee 36%, #dfe3e8 100%);
+              cursor: default; touch-action: pan-y;
+              background: linear-gradient(180deg, #f9fafb 0%, #e7eaee 36%, #dfe3e8 100%);
             box-shadow: inset 0 1px 0 rgba(255,255,255,0.9), inset 0 -4px 0 rgba(0,0,0,0.08), 0 8px 10px -12px rgba(0,0,0,0.38), 0 0 0 1px rgba(255,255,255,0.25);
           }
           .dark .falling-icon-chip {

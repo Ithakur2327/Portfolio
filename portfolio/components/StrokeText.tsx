@@ -41,6 +41,13 @@ export interface StrokeTextProps {
   replayEvery?: number;
   /** Seconds to wait before the very first play (mount trigger). */
   startDelay?: number;
+  /**
+   * The outline is "drawn" by sliding a dash of length `fontSize × dashScale` along each glyph.
+   * 7 (the original value) suits typical fonts; it should be about the length of the longest glyph
+   * outline, otherwise the stroke appears to flash in instead of drawing. Fonts with short outlines
+   * (pixel fonts) want a smaller number.
+   */
+  dashScale?: number;
   /** After a draw, fade the outline + shadow away so the word rests as plain text. */
   settle?: boolean;
   /** While true the word waits (blank) and the first draw is not started — e.g. until an intro finishes. */
@@ -113,6 +120,7 @@ const StrokeText = ({
   fluid = false,
   replayEvery,
   startDelay = 0,
+  dashScale = 7,
   settle = false,
   hold = false,
   className = '',
@@ -133,7 +141,7 @@ const StrokeText = ({
 
   const characters = useMemo(() => Array.from(String(text ?? '')), [text]);
 
-  const dash = Math.max(fontSize * 7, 200);
+  const dash = Math.max(fontSize * dashScale, 200);
   const pattern = getDashPattern(strokeStyle, dashLength, strokeWidth);
   const dashArray = pattern ? pattern.array : null;
   const dashPeriod = pattern ? pattern.period : 0;

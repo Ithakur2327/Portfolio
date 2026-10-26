@@ -85,6 +85,8 @@ function layout(text: string): ParsedCell[][] {
     Array.from({ length: BOARD_COLS }, () => ({ type: "char" as const, value: " " })),
   );
   let lines = wrapText(text, BOARD_COLS);
+  while (lines.length && !lines[0].trim()) lines.shift();
+  while (lines.length && !lines[lines.length - 1].trim()) lines.pop();
   if (lines.length > BOARD_ROWS) {
     lines = wrapParagraph(lines.filter(Boolean).join(" "), BOARD_COLS);
   }
@@ -165,14 +167,23 @@ function flip(cell: Cell, ch: string, flipS: number, animate: boolean) {
   if (!animate) return;
   cell.animation?.cancel();
   cell.flapTop.style.visibility = "visible";
+  cell.flapTop.style.willChange = "transform";
   const topAnimation = cell.flapTop.animate(
     [
       { transform: "rotateX(0deg)" },
+      { transform: "rotateX(-82deg)", offset: 0.72 },
       { transform: "rotateX(-100deg)" },
     ],
-    { duration: flipS * 1000, easing: "cubic-bezier(0.55,0.055,0.675,0.19)", fill: "forwards" },
+    { duration: flipS * 1000, easing: "cubic-bezier(0.22,1,0.36,1)", fill: "forwards" },
   );
   cell.animation = topAnimation;
+  topAnimation.onfinish = () => {
+    if (cell.animation !== topAnimation) return;
+    cell.flapTop.style.visibility = "hidden";
+    cell.flapTop.style.willChange = "auto";
+    cell.animation = null;
+    topAnimation.cancel();
+  };
 }
 
 /* ───────────────────────── the board ───────────────────────── */

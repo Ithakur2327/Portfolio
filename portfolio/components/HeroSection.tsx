@@ -27,8 +27,8 @@ function AnimatedName() {
   useEffect(() => {
     const intro = document.documentElement.classList.contains("intro-active");
     setHold(intro);
-    // mount the SVG once the browser is idle (≤ 0.7s) — not inside the hydration task
-    const cancel = whenIdle(() => setMounted(true), 700);
+    // mount the SVG once the browser is idle (≤ 0.25s) — not inside the hydration task
+    const cancel = whenIdle(() => setMounted(true), 250);
     if (!intro) return cancel;
     const done = () => setHold(false);
     window.addEventListener("intro:complete", done, { once: true });
@@ -46,18 +46,18 @@ function AnimatedName() {
     <StrokeText
       text={NAME}
       fluid
-      shadow
       hold={hold}
       fontSize={100}
       fontFamily="inherit"
       fontWeight="inherit"
       letterSpacing={2}
       strokeColor="#0abab5"
-      strokeWidth={2.6}
+      strokeWidth={2}
+      dashScale={4}
       drawDuration={1.6}
       fillDelay={0.2}
       stagger={0.05}
-      startDelay={NAME_PLAY_ON_LOAD ? 0.35 : NAME_REPLAY_SECONDS}
+      startDelay={NAME_PLAY_ON_LOAD ? 0 : NAME_REPLAY_SECONDS}
       replayEvery={NAME_REPLAY_SECONDS}
     />
   );
