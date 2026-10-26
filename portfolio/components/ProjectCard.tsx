@@ -1,14 +1,12 @@
 "use client";
 import { useRef, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import { motion, useInView } from "motion/react";
+import { motion, useInView, type MotionStyle } from "motion/react";
 import Image from "next/image";
 import type { Project } from "@/lib/projects-data";
 import { TECH_MAP } from "@/lib/projects-data";
 import { useTheme } from "./ThemeProvider";
-import { mq } from "@/lib/breakpoints";
 
-const MONO = "'Geist Mono', 'SF Mono', monospace";
 const SF   = "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', sans-serif";
 
 function techLogoSrc(tech: { logo: string; logoLight?: string }, isDark: boolean) {
@@ -112,7 +110,8 @@ export function ProjectCard({ proj, index, visible, isDesktop, isHidden, onOpen,
         width: "100%",
         visibility: isHidden ? "hidden" : "visible",
         pointerEvents: isHidden ? "none" : undefined,
-      }}
+        ["--acc" as string]: proj.accent,
+      } as MotionStyle}
     >
       <motion.div
         ref={cardRef}
@@ -252,21 +251,6 @@ export function ProjectCard({ proj, index, visible, isDesktop, isHidden, onOpen,
       </div>
       </motion.div>
 
-      <style suppressHydrationWarning>{`
-        .proj-icon-link {
-          color: var(--text-secondary);
-          transition: color 0.15s ease, transform 0.15s cubic-bezier(0.16,1,0.3,1);
-        }
-        .proj-icon-link:hover {
-          color: ${proj.accent};
-          transform: translateY(-1.5px) scale(1.08);
-        }
-
-        .card-expand-btn:hover {
-          color: ${proj.accent};
-          transform: translateY(-1.5px) scale(1.08);
-        }
-      `}</style>
     </motion.div>
   );
 }
@@ -494,119 +478,9 @@ export function ProjectModal({ proj, index, onClose, isDesktop, scope = "grid" }
             overflow: "hidden",
             willChange: "transform, opacity",
             transform: "translateZ(0)",
-          }}
+            ["--pm-dash" as string]: dashColor,
+          } as MotionStyle}
         >
-          <style suppressHydrationWarning>{`
-            .pm-overlay {
-              contain: strict;
-              will-change: opacity;
-            }
-            /* Blur is compositor-heavy and is the main source of jank during
-               the bottom-sheet open animation on phones/tablets, so it's
-               skipped there and only enabled from laptop width up. */
-            ${mq.laptopUp} {
-              .pm-overlay {
-                backdrop-filter: blur(6px);
-                -webkit-backdrop-filter: blur(6px);
-              }
-            }
-
-            .pm-shell {
-              display: flex;
-              flex-direction: column;
-              max-height: 92vh;
-              background: var(--modal-solid-bg);
-              border: 1px solid var(--modal-glass-border);
-            }
-            /* Mobile/tablet gets a fully solid background (above) — no
-               translucency and no backdrop-filter at all, so nothing behind
-               the sheet is ever visible and there's zero blur cost during
-               the open/close slide animation. The glass/blur look is only
-               used from laptop width up, where the modal isn't driven by a
-               full-screen sliding sheet transform. */
-            ${mq.laptopUp} {
-              .pm-shell {
-                max-height: 82vh;
-                background: var(--modal-glass-bg);
-                backdrop-filter: blur(14px) saturate(160%);
-                -webkit-backdrop-filter: blur(14px) saturate(160%);
-              }
-            }
-
-            /* Body is a plain, non-layout-animated div that actually scrolls */
-            .pm-body {
-              width: 100%;
-              flex: 1 1 auto;
-              min-height: 0;
-              display: flex;
-              flex-direction: column;
-              overflow-y: auto;
-              overscroll-behavior: contain;
-              -webkit-overflow-scrolling: touch;
-              scrollbar-width: none;
-            }
-            .pm-body::-webkit-scrollbar { display: none; }
-
-            .pm-tag {
-              display: inline-flex; align-items: center; gap: 6px;
-              font-size: 12.5px; padding: 6px 11px; border-radius: 999px;
-              font-family: ${MONO}; font-weight: 600;
-            }
-            .pm-media-col {
-              display: flex;
-              flex-direction: column;
-              gap: 12px;
-            }
-            .pm-sheet-scroll {
-              display: flex;
-              flex-direction: column;
-            }
-            .pm-media-links {
-              display: flex;
-              flex-direction: column;
-              gap: 12px;
-              padding: 16px 20px 20px;
-            }
-            .pm-image-border {
-              width: 100%;
-              padding: 2px;
-              border-radius: 18px;
-              border: 1px dashed ${dashColor};
-              box-sizing: border-box;
-              overflow: hidden;
-              flex-shrink: 0;
-              background: var(--bg-card);
-            }
-            .pm-image-frame {
-              width: 100%;
-              aspect-ratio: 16 / 9;
-              z-index: 2;
-              overflow: hidden;
-              border-radius: 16px;
-              flex-shrink: 0;
-              background: var(--bg-card);
-            }
-
-            /* Desktop/laptop: horizontal split — media left, info right */
-            ${mq.laptopUp} {
-              .pm-body { flex-direction: row; }
-              .pm-media-col {
-                width: 45%; flex-shrink: 0;
-                gap: 14px;
-                padding: 24px; border-right: 1px solid var(--border);
-                overflow-y: auto; scrollbar-width: none;
-              }
-              .pm-media-col::-webkit-scrollbar { display: none; }
-              .pm-media-links { padding: 0; }
-              .pm-info-col {
-                flex: 1; min-width: 0;
-                padding: 24px; overflow-y: auto; scrollbar-width: none;
-                display: flex; flex-direction: column; gap: 16px;
-              }
-              .pm-info-col::-webkit-scrollbar { display: none; }
-            }
-          `}</style>
-
           <div className="pm-body">
           {sheet ? (
             <>

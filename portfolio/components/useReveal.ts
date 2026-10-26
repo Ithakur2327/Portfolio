@@ -1,55 +1,49 @@
 "use client";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { gsap } from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
-
-gsap.registerPlugin(ScrollTrigger);
 
 const useIsomorphicLayoutEffect = typeof window !== "undefined" ? useLayoutEffect : useEffect;
 
+/**
+ * Section entrance: fade in + rise 100px, 0.8s, ease-out-cubic — the exact
+ * motion the old GSAP/ScrollTrigger version produced, but done with one
+ * IntersectionObserver and CSS transitions (`.reveal` in globals.css), so it
+ * costs no scroll listeners, no JS animation loop and no layout reads. Once it
+ * has played, the class is dropped so the section keeps no transform / layer.
+ */
 export function useReveal<T extends HTMLElement = HTMLElement>(threshold = 0.08) {
   const ref = useRef<T>(null);
-  const [visible, setVisible] = useState(false);
-  const [mounted, setMounted] = useState(false);
+  const [phase, setPhase] = useState<"ssr" | "hidden" | "visible" | "done">("ssr");
 
   useIsomorphicLayoutEffect(() => {
-    setMounted(true);
     const el = ref.current;
     if (!el) return;
 
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      setVisible(true);
+      setPhase("done");
       return;
     }
 
-    const context = gsap.context(() => {
-      gsap.set(el, { autoAlpha: 0, y: 100 });
-      const tween = gsap.to(el, {
-        autoAlpha: 1,
-        y: 0,
-        duration: 0.8,
-        ease: "power3.out",
-        paused: true,
-        clearProps: "opacity,transform,visibility",
-      });
-
-      ScrollTrigger.create({
-        trigger: el,
-        start: `top ${(1 - threshold) * 100}%`,
-        once: true,
-        onEnter: () => {
-          setVisible(true);
-          tween.play();
-        },
-      });
-    }, el);
-
-    return () => context.revert();
+    setPhase("hidden");
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry.isIntersecting) return;
+        io.disconnect();
+        setPhase("visible");
+        timer = setTimeout(() => setPhase("done"), 900);
+      },
+      { rootMargin: `0px 0px -${threshold * 100}% 0px` },
+    );
+    io.observe(el);
+    return () => {
+      io.disconnect();
+      if (timer) clearTimeout(timer);
+    };
   }, [threshold]);
 
   return {
     ref,
-    revealClass: !mounted ? "" : visible ? "reveal visible" : "reveal",
-    visible,
+    revealClass: phase === "hidden" ? "reveal" : phase === "visible" ? "reveal visible" : "",
+    visible: phase === "visible" || phase === "done",
   };
 }

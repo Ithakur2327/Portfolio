@@ -1,4 +1,4 @@
-// Regenerates app/breakpoints.generated.css from lib/breakpoints.json.
+// Generates app/breakpoints.generated.css from lib/breakpoints.json.
 //
 // This runs automatically before every `next dev` and `next build`
 // (see the "predev" / "prebuild" scripts in package.json), so

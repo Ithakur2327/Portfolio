@@ -1,5 +1,5 @@
 {
-  "_comment": "SINGLE SOURCE OF TRUTH for every responsive breakpoint in this app. Change a number here and it propagates everywhere: Tailwind config, every component's inline <style> media query (via lib/breakpoints.ts), and globals.css (via the auto-generated app/breakpoints.generated.css, rebuilt automatically before every dev/build run). Never hardcode a raw pixel number in a @media query anywhere else in the codebase.",
+  "_comment": "SINGLE SOURCE OF TRUTH for every responsive breakpoint in this app. Change a number here and it propagates everywhere: every component's inline <style> media query (via lib/breakpoints.ts), and globals.css (via the auto-generated app/breakpoints.generated.css, rebuilt automatically before every dev/build run). Never hardcode a raw pixel number in a @media query anywhere else in the codebase.",
 
   "_deviceGuide": {
     "mobileTinyMax": "0–340px  — oldest/smallest phones (tightest chip/badge sizing)",
