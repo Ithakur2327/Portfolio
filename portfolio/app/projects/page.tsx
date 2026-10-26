@@ -46,7 +46,7 @@ export default function ProjectsPage() {
           .all-projects-sub  { font-size: 12.5px; }
         }
       `}</style>
-      <main style={{ paddingTop: 52 }}>
+      <main style={{ paddingTop: "var(--nav-h)" }}>
         <div className="page-wrapper">
           <div className="all-projects-wrap">
             <BackToHomeLink />

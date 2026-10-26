@@ -15,13 +15,14 @@ const SkillsSection         = dynamic(() => import("@/components/SkillsSection")
 const ProjectsSection       = dynamic(() => import("@/components/ProjectsSection").then(m => m.ProjectsSection));
 const EducationSection      = dynamic(() => import("@/components/EducationSection").then(m => m.EducationSection));
 const CertificationsSection = dynamic(() => import("@/components/CertificationsSection").then(m => m.CertificationsSection));
+const QuoteBoard            = dynamic(() => import("@/components/QuoteBoard").then(m => m.QuoteBoard));
 const Footer                = dynamic(() => import("@/components/Footer").then(m => m.Footer));
 
 export default function Home() {
   const avatarVersion = getAvatarVersion();
   return (
     <>
-      <main style={{ paddingTop: 52 }}>
+      <main style={{ paddingTop: "var(--nav-h)" }}>
         <SparklesBridge />
         <div className="page-wrapper">
           <HeroSection avatarVersion={avatarVersion} />
@@ -38,6 +39,8 @@ export default function Home() {
           <EducationSection />
           <DotDivider />
           <CertificationsSection />
+          <DotDivider />
+          <QuoteBoard />
           <DotDivider />
           <Footer />
         </div>

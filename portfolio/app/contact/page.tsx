@@ -60,7 +60,7 @@ export default function ContactPage() {
         ${mq.navCollapse} { .contact-page-inner { padding: 44px 22px 80px; } }
         ${mq.mobile} { .contact-page-inner { padding: 44px 13px 80px; } }
       `}</style>
-      <main style={{ paddingTop: 52 }}>
+      <main style={{ paddingTop: "var(--nav-h)" }}>
         <div className="page-wrapper">
           <div className="contact-page-inner">
             <BackToHomeLink />
