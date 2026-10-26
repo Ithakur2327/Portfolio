@@ -105,22 +105,7 @@ export function Timeline({ data }: { data: TimelineEntry[] }) {
 
         .tl-body { min-width: 0; }
 
-        /* soft coloured light behind the cards, so the glass has something to refract */
-        .tl-list::before {
-          content: ""; position: absolute; inset: -44px -26px; z-index: -1; pointer-events: none;
-          /* closest-side → every blob fades to nothing before it reaches the box edge */
-          background:
-            radial-gradient(closest-side at 15% 26%, rgba(10,186,181,0.34), transparent),
-            radial-gradient(closest-side at 86% 52%, rgba(212,175,55,0.26), transparent),
-            radial-gradient(closest-side at 38% 84%, rgba(99,102,241,0.22), transparent);
-        }
         .tl-list { isolation: isolate; }
-        html.light .tl-list::before {
-          background:
-            radial-gradient(closest-side at 15% 26%, rgba(10,186,181,0.36), transparent),
-            radial-gradient(closest-side at 86% 52%, rgba(212,175,55,0.34), transparent),
-            radial-gradient(closest-side at 38% 84%, rgba(99,102,241,0.26), transparent);
-        }
 
         /* glass card: frosted pane, bright rim, specular sheen */
         .xp-card {

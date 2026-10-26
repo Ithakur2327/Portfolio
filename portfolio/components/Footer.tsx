@@ -201,10 +201,13 @@ export function Footer() {
           background: var(--bg-base);
           border-top: 1px solid var(--line);
           margin-top: 0;
-          overflow: hidden;
+          overflow-x: clip;
+          overflow-y: visible;
         }
 
         .footer-bottom-band {
+          position: relative;
+          z-index: 1;
           max-width: var(--content-width);
           margin: 0 auto;
           padding: 22px 28px;

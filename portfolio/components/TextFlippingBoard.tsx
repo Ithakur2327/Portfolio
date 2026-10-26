@@ -5,10 +5,8 @@ import React, { useEffect, useMemo, useRef } from "react";
 /**
  * Split-flap ("airport") board.
  *
- * Same look and behaviour as the original component — every character
- * scrambles through random flaps (some flash a colour) before landing on its
- * letter, top flap folding down, bottom flap rising with a little overshoot —
- * but rebuilt to be cheap:
+ * Characters flip directly to their target, with a short stagger and a
+ * single top-flap fold:
  *  • Plain DOM + Web Animations, driven by ONE rAF loop. No React state per
  *    flap, so a 132-cell board never re-renders while it animates.
  *  • It only runs while it is on screen and goes completely idle afterwards.
@@ -22,11 +20,8 @@ export const BOARD_COLS = 22;
 
 const BASE_COL_DELAY = 8;
 const BASE_ROW_DELAY = 6;
-const BASE_STEP_MS = 40;
 const BASE_FLIP_S = 0.16;
-const BASE_TOTAL_S = ((BOARD_COLS - 1) * BASE_COL_DELAY + (BOARD_ROWS - 1) * BASE_ROW_DELAY + 8 * BASE_STEP_MS) / 1000;
-
-const ACCENTS = 7; // see .sfb-cell[data-ta] in globals.css
+const BASE_TOTAL_S = ((BOARD_COLS - 1) * BASE_COL_DELAY + (BOARD_ROWS - 1) * BASE_ROW_DELAY) / 1000;
 
 const COLOR_MAP: Record<string, string> = {
   "{R}": "#D32F2F",
@@ -65,7 +60,11 @@ function wrapParagraph(paragraph: string, maxCols: number): string[] {
   for (const word of words) {
     if (word.length > maxCols) {
       if (currentLine) { lines.push(currentLine); currentLine = ""; }
-      lines.push(word.slice(0, maxCols));
+      for (let offset = 0; offset < word.length; offset += maxCols) {
+        const part = word.slice(offset, offset + maxCols);
+        if (part.length === maxCols) lines.push(part);
+        else currentLine = part;
+      }
       continue;
     }
     if (!currentLine) currentLine = word;
@@ -85,7 +84,11 @@ function layout(text: string): ParsedCell[][] {
   const grid: ParsedCell[][] = Array.from({ length: BOARD_ROWS }, () =>
     Array.from({ length: BOARD_COLS }, () => ({ type: "char" as const, value: " " })),
   );
-  const lines = wrapText(text, BOARD_COLS).slice(0, BOARD_ROWS);
+  let lines = wrapText(text, BOARD_COLS);
+  if (lines.length > BOARD_ROWS) {
+    lines = wrapParagraph(lines.filter(Boolean).join(" "), BOARD_COLS);
+  }
+  lines = lines.slice(0, BOARD_ROWS);
   const startRow = Math.max(0, Math.floor((BOARD_ROWS - lines.length) / 2));
   lines.forEach((line, i) => {
     const row = startRow + i;
@@ -106,14 +109,10 @@ type Cell = {
   top: HTMLElement;
   bot: HTMLElement;
   flapTop: HTMLElement;
-  flapBot: HTMLElement;
   cur: string;
-  curAccent: number; // -1 = none
   tile: string | null; // colour tile hex
-  // scramble plan
   target: string;
-  step: number;
-  steps: number;
+  animation: Animation | null;
   nextAt: number;
 };
 
@@ -125,7 +124,6 @@ function buildCell(): Cell {
     '<div class="sfb-half sfb-top"></div>' +
     '<div class="sfb-half sfb-bot"></div>' +
     '<div class="sfb-half sfb-flap sfb-flap-top"></div>' +
-    '<div class="sfb-half sfb-flap sfb-flap-bot"></div>' +
     "</div>";
   const q = (sel: string) => root.querySelector(sel) as HTMLElement;
   return {
@@ -133,24 +131,12 @@ function buildCell(): Cell {
     top: q(".sfb-top"),
     bot: q(".sfb-bot"),
     flapTop: q(".sfb-flap-top"),
-    flapBot: q(".sfb-flap-bot"),
     cur: " ",
-    curAccent: -1,
     tile: null,
     target: " ",
-    step: 0,
-    steps: 0,
+    animation: null,
     nextAt: Infinity,
   };
-}
-
-function setAccent(cell: Cell, accent: number) {
-  if (accent < 0) {
-    delete cell.root.dataset.ta;
-  } else {
-    cell.root.dataset.ta = String(accent);
-  }
-  cell.curAccent = accent;
 }
 
 function setTile(cell: Cell, hex: string | null) {
@@ -165,38 +151,28 @@ function setTile(cell: Cell, hex: string | null) {
 }
 
 /** Show `ch` (with `accent`) and fold the previous character away. */
-function flip(cell: Cell, ch: string, accent: number, flipS: number, animate: boolean) {
+function flip(cell: Cell, ch: string, flipS: number, animate: boolean) {
   const prevCh = cell.cur;
-  const prevAccent = cell.curAccent;
 
   // previous glyph → the falling top flap, coloured as it was
   cell.flapTop.dataset.c = prevCh;
-  if (prevAccent >= 0) cell.flapTop.dataset.fa = String(prevAccent);
-  else delete cell.flapTop.dataset.fa;
 
   // new glyph → static halves + the rising bottom flap
   cell.top.dataset.c = ch;
   cell.bot.dataset.c = ch;
-  cell.flapBot.dataset.c = ch;
-  setAccent(cell, accent);
   cell.cur = ch;
 
   if (!animate) return;
-  cell.flapTop.getAnimations().forEach((a) => a.cancel());
-  cell.flapBot.getAnimations().forEach((a) => a.cancel());
+  cell.animation?.cancel();
   cell.flapTop.style.visibility = "visible";
-  cell.flapBot.style.visibility = "visible";
-  cell.flapTop.animate(
+  const topAnimation = cell.flapTop.animate(
     [
       { transform: "rotateX(0deg)" },
       { transform: "rotateX(-100deg)" },
     ],
     { duration: flipS * 1000, easing: "cubic-bezier(0.55,0.055,0.675,0.19)", fill: "forwards" },
   );
-  cell.flapBot.animate(
-    [{ transform: "rotateX(90deg)" }, { transform: "rotateX(0deg)" }],
-    { duration: flipS * 0.85 * 1000, delay: flipS * 0.5 * 1000, easing: "cubic-bezier(0.33,1.55,0.64,1)", fill: "both" },
-  );
+  cell.animation = topAnimation;
 }
 
 /* ───────────────────────── the board ───────────────────────── */
@@ -225,7 +201,6 @@ export function TextFlippingBoard({ messages, hold = 5.5, duration = BASE_TOTAL_
     const scale = duration / BASE_TOTAL_S;
     const colDelay = BASE_COL_DELAY * scale;
     const rowDelay = BASE_ROW_DELAY * scale;
-    const stepMs = BASE_STEP_MS * scale;
     const flipS = Math.min(0.6, Math.max(0.15, BASE_FLIP_S * scale));
 
     // The 132 cells are built the first time the board is about to be seen — not at page load.
@@ -239,7 +214,6 @@ export function TextFlippingBoard({ messages, hold = 5.5, duration = BASE_TOTAL_
         frag.appendChild(c.root);
       }
       host.appendChild(frag);
-      host.dataset.built = "1";
     };
 
     const cleanups: (() => void)[] = [];
@@ -249,7 +223,7 @@ export function TextFlippingBoard({ messages, hold = 5.5, duration = BASE_TOTAL_
     let holdTimer: ReturnType<typeof setTimeout> | undefined;
     let inView = false;
     let due = false; // a hold elapsed while the board was off screen
-    let pending = 0; // cells still scrambling
+    let pending = 0; // cells still waiting to flip
 
     const applyMessage = (idx: number, now: number, animate: boolean) => {
       const grid = grids[idx];
@@ -268,18 +242,16 @@ export function TextFlippingBoard({ messages, hold = 5.5, duration = BASE_TOTAL_
           if (cell.tile) setTile(cell, null);
           const upper = spec.value.toUpperCase();
           const target = FLAP_CHARS.includes(upper) ? upper : " ";
-          if (target === cell.cur && cell.curAccent < 0) {
+          if (target === cell.cur) {
             cell.nextAt = Infinity;
             continue;
           }
           if (!animate) {
-            flip(cell, target, -1, flipS, false);
+            flip(cell, target, flipS, false);
             cell.nextAt = Infinity;
             continue;
           }
           cell.target = target;
-          cell.step = 0;
-          cell.steps = target === " " ? 2 + Math.floor(Math.random() * 3) : 4 + Math.floor(Math.random() * 4);
           cell.nextAt = now + c * colDelay + r * rowDelay;
           pending++;
         }
@@ -308,17 +280,9 @@ export function TextFlippingBoard({ messages, hold = 5.5, duration = BASE_TOTAL_
       for (let i = 0; i < cells.length; i++) {
         const cell = cells[i];
         if (now < cell.nextAt) continue;
-        cell.step += 1;
-        const last = cell.step >= cell.steps;
-        const ch = last ? cell.target : FLAP_CHARS[1 + Math.floor(Math.random() * (FLAP_CHARS.length - 1))];
-        const accent = last ? -1 : Math.random() < 0.2 ? Math.floor(Math.random() * ACCENTS) : -1;
-        flip(cell, ch, accent, flipS, true);
-        if (last) {
-          cell.nextAt = Infinity;
-          pending--;
-        } else {
-          cell.nextAt = now + stepMs;
-        }
+        flip(cell, cell.target, flipS, true);
+        cell.nextAt = Infinity;
+        pending--;
       }
       if (pending > 0) raf = requestAnimationFrame(tick);
       else scheduleNext();
@@ -372,7 +336,6 @@ export function TextFlippingBoard({ messages, hold = 5.5, duration = BASE_TOTAL_
       clearTimeout(holdTimer);
       cleanups.forEach((fn) => fn());
       host.textContent = "";
-      delete host.dataset.built;
     };
   }, [grids, plain, hold, duration]);
 
