@@ -6,7 +6,6 @@ import { SocialRow } from "./ui/SocialRow";
 import { useReveal } from "./useReveal";
 import { BP, mq as MQ } from "@/lib/breakpoints";
 import { useIsMobile } from "@/lib/useBreakpoint";
-import { Panel3D } from "./Panel3D";
 
 const MONO = "'Geist Mono', monospace";
 
@@ -327,12 +326,10 @@ export function Footer() {
       `}</style>
 
       <footer id="site-footer-root" ref={ref} className={`footer-root ${revealClass}`}>
-        <Panel3D tilt={false}>
-          <div className="footer-bottom-band">
-            <span className="footer-copy">© {year} Indresh Thakur. All rights reserved.</span>
-            <SocialRow size={22} gap={16} bright thinBorder />
-          </div>
-        </Panel3D>
+        <div className="footer-bottom-band">
+          <span className="footer-copy">© {year} Indresh Thakur. All rights reserved.</span>
+          <SocialRow size={22} gap={16} bright thinBorder />
+        </div>
 
         <div className="footer-full-line" />
 
