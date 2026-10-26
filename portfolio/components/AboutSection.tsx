@@ -6,7 +6,7 @@ import { useMotionValueEvent } from "motion/react";
 import { useReveal } from "./useReveal";
 import { SectionTitleIcon } from "./SectionIcon";
 import { Panel3D } from "./Panel3D";
-import VariableProximity, { type VariableProximityPiece } from "./Variableproximity";
+import VariableProximity, { type VariableProximityPiece } from "./VariableProximity";
 import { useScrollProgress } from "@/lib/useScrollProgress";
 import { mq } from "@/lib/breakpoints";
 
