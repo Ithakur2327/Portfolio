@@ -806,45 +806,58 @@ html.light {
   --sfb-shadow: 0 20px 28px -8px rgba(20,40,80,0.18), 0 2px 6px rgba(20,40,80,0.08);
 }
 .sfb {
-  display: grid; place-items: center; width: 100%; min-height: clamp(170px, 24vw, 250px);
-  margin: 0 auto; padding: clamp(22px, 5vw, 52px);
-  border: 1px solid var(--sfb-border); border-radius: 16px;
-  background: var(--sfb-board); box-shadow: var(--sfb-shadow);
+  position: relative; width: 100%; margin: 0 auto;
+  padding: 8px; border-radius: 12px; background: var(--sfb-board); box-shadow: var(--sfb-shadow);
 }
-.sfb-quote {
-  max-width: 100%; margin: 0; color: var(--sfb-text); text-align: center;
-  font-family: 'Press Start 2P', 'Geist Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: clamp(10px, 1.35vw, 16px); font-weight: 700; line-height: 2;
-  letter-spacing: 0.01em; text-wrap: balance;
-  animation: sfb-quote-enter 0.35s ease-out both;
+.sfb-grid {
+  display: grid; width: 100%;
+  grid-template-columns: repeat(22, minmax(0, 1fr));
+  grid-template-rows: repeat(9, minmax(0, 1fr));
+  gap: 1px; aspect-ratio: 22 / 9; align-content: center;
 }
-@keyframes sfb-quote-enter {
-  from { opacity: 0; transform: translateY(5px); }
-  to { opacity: 1; transform: translateY(0); }
+.sfb-cell {
+  display: flex; align-items: center; justify-content: center; min-width: 0; min-height: 0;
+  overflow: hidden; border-radius: 2px; border: 1px solid var(--sfb-border);
+  background: var(--sfb-cell); color: var(--sfb-text);
+  font: 700 clamp(6px, 2vw, 22px)/1 'Press Start 2P', 'Geist Mono', ui-monospace, monospace;
+  white-space: pre;
 }
-@media (--tablet-split-down), (pointer: coarse), (prefers-reduced-motion: reduce) {
-  .sfb-quote { animation: none; }
+.sfb-token-keyword { color: #c084fc; }
+.sfb-token-name { color: #60a5fa; }
+.sfb-token-string { color: #a3e635; }
+.sfb-token-function { color: #5eead4; }
+.sfb-token-comment { color: #94a3b8; }
+.sfb-live {
+  position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0;
+  overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0;
 }
-@media (--mobile) {
-  .sfb { min-height: 160px; padding: 20px 14px; border-radius: 12px; }
-  .sfb-quote { font-size: clamp(9px, 2.7vw, 12px); line-height: 2.1; }
+@keyframes sfb-cell-flip {
+  from { transform: rotateX(-78deg); opacity: 0.45; }
+  to { transform: rotateX(0); opacity: 1; }
+}
+@media (min-width: 768px) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .sfb-cell-active {
+    transform-origin: center;
+    animation: sfb-cell-flip 0.24s cubic-bezier(0.22,1,0.36,1) both;
+  }
+}
+@media (min-width: 768px) {
+  .sfb { padding: 16px; border-radius: 16px; }
+  .sfb-grid { gap: 3px; }
+  .sfb-cell { border-width: 2px; border-radius: 3px; }
 }
 .qb-wrap {
-  display: flex; flex-direction: column; align-items: center;
+  display: flex; flex-direction: column; align-items: center; width: 100%;
   max-width: var(--content-width); margin: 0 auto; padding: 30px 16px 38px;
+}
+@media (--mobile) {
+  .qb-wrap { padding: 30px 8px 38px; }
 }
 .quote-board.reveal { transform: translate3d(0, 18px, 0); }
 .quote-board.reveal.visible {
   transition: opacity 0.3s cubic-bezier(0.215, 0.61, 0.355, 1),
               transform 0.3s cubic-bezier(0.215, 0.61, 0.355, 1);
 }
-.qb-kicker {
-  margin: 0 0 18px; text-align: center; font-family: 'Geist Mono', monospace;
-  font-size: 12.5px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--text-muted);
-}
-.qb-kicker b { color: #0abab5; font-weight: 600; }
-
-
 /* ═══════════════════════════════════════════════════════════
    PROJECT CARD + MODAL — static rules (they used to be injected as <style>
    tags when a card rendered / the modal opened, which forced a document-wide
