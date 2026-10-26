@@ -1,19 +1,13 @@
 /**
- * Quotes shown on the split-flap board (see components/QuoteBoard.tsx).
- *
- * The board is 22 columns × 6 rows. Use "\n" to break lines (each line ≤ 22
- * characters); text is centred automatically. Only these characters exist on
- * the flaps — anything else becomes a blank:
- *   A-Z 0-9 ! @ # $ ( ) - + & = ; : ' " % , . / ? °
- * Colour tiles: {R} {O} {Y} {G} {B} {V} {W}
+ * Original English reflections inspired by Bhagavad Gita teachings.
  */
 export const BOARD_MESSAGES: string[] = [
-  `TALK IS CHEAP.\nSHOW ME THE CODE.`,
-  `MAKE IT WORK.\nMAKE IT RIGHT.\nMAKE IT FAST.`,
-  `PREMATURE\nOPTIMIZATION IS THE\nROOT OF ALL EVIL.`,
-  `THE BEST WAY TO\nPREDICT THE FUTURE\nIS TO INVENT IT.`,
-  `FIRST, SOLVE THE\nPROBLEM. THEN,\nWRITE THE CODE.`,
-  `STAY HUNGRY.\nSTAY FOOLISH.`,
-  `SIMPLICITY IS A\nPREREQUISITE FOR\nRELIABILITY.`,
-  `PROGRAMS MUST BE\nWRITTEN FOR PEOPLE\nTO READ.`,
+  `ACT WITH CARE.\nRELEASE YOUR CLAIM\nTO THE FRUIT.`,
+  `MEET JOY AND SORROW\nWITH THE SAME\nSTEADY HEART.`,
+  `DISCIPLINE THE MIND;\nLET IT BECOME\nYOUR ALLY.`,
+  `NO SINCERE EFFORT\nTOWARD THE GOOD\nIS EVER LOST.`,
+  `THE SELF IS UNBORN,\nUNWAVERING,\nAND TIMELESS.`,
+  `OFFER YOUR ACTIONS.\nLET GO OF THE\nOUTCOME.`,
+  `SEE THE SAME LIGHT\nWITHIN EVERY\nLIVING BEING.`,
+  `WHEN DESIRE GROWS QUIET,\nINNER PEACE\nGROWS CLEAR.`,
 ];

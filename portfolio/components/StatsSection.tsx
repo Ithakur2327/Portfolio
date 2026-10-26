@@ -901,6 +901,15 @@ export function StatsSection() {
           .stat-chip { padding: 2px 4px !important; gap: 2px !important; min-width: 0; }
           .stat-chip-label { font-size: 8.5px !important; white-space: nowrap; }
           .stat-chip-value { font-size: 9px !important; }
+          .lc-header-stats { flex-wrap: wrap !important; }
+          .lc-activity-label { flex: 1 0 100%; }
+          .lc-header-stats-chips {
+            flex: 1 1 100% !important; justify-content: flex-start !important;
+            flex-wrap: wrap !important; gap: 4px !important;
+            overflow: visible !important; padding-right: 0 !important;
+          }
+          .lc-solved-box { flex: 0 0 auto !important; }
+          .lc-emh-box { flex: 0 1 auto !important; flex-wrap: wrap !important; }
         }
 
         @keyframes lcPulse { 0%,100%{opacity:1} 50%{opacity:0.7} }
