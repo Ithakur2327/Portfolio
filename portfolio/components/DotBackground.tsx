@@ -60,6 +60,7 @@ function hubBind() {
     { passive: true },
   );
   const off = () => {
+    if (!pointer.active) return; // nothing to clear — don't wake anything on every scroll event
     pointer.active = false;
     hubSchedule();
   };
@@ -122,6 +123,10 @@ export function DotField({ interactive = true }: { interactive?: boolean }) {
       el: root,
       visible: false,
       onPointer(cx, cy, active) {
+        if (!active) {
+          clear();
+          return;
+        }
         const rect = root.getBoundingClientRect();
         const mx = cx - rect.left;
         const my = cy - rect.top;

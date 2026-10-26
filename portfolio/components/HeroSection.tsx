@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import dynamic from "next/dynamic";
+import StrokeText from "./StrokeText";
 import { DotField } from "./DotBackground";
 import { useTheme } from "./ThemeProvider";
 import { usePdfModal } from "./PdfViewerModal";
@@ -10,52 +10,53 @@ import { mq } from "@/lib/breakpoints";
 import { whenIdle } from "@/lib/idle";
 import { Panel3D } from "./Panel3D";
 
-// GSAP + the draw animation load after first paint / the intro, never before.
-const StrokeText = dynamic(() => import("./StrokeText"), { ssr: false });
-
 const NAME = "Indresh Thakur";
 const NAME_REPLAY_SECONDS = 120; // the name re-draws itself every 2 minutes
 const NAME_PLAY_ON_LOAD = true;  // false → first draw happens only after the first 2 minutes
 
 /**
- * The h1's text. Server + first paint = plain text (instant, no layout shift).
- * Once the intro is done and the browser is idle, the outline-draw animation
- * (StrokeText) takes over in place — same font, same size, same baseline —
- * and replays every 2 minutes.
+ * The h1's text, drawn with the StrokeText outline animation (stroke draws
+ * itself, then the fill wipes in and the shadow lifts) — and drawn again
+ * every 2 minutes. Same font / size / baseline as plain text, so nothing
+ * shifts. On the very first visit it waits until the intro has finished.
  */
 function AnimatedName() {
-  const [ready, setReady] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  const [hold, setHold] = useState(false);
 
   useEffect(() => {
-    let cancelIdle: (() => void) | null = null;
-    const go = () => { cancelIdle = whenIdle(() => setReady(true), 1500); };
-    if (document.documentElement.classList.contains("intro-active")) {
-      window.addEventListener("intro:complete", go, { once: true });
-    } else {
-      go();
-    }
+    const intro = document.documentElement.classList.contains("intro-active");
+    setHold(intro);
+    // mount the SVG once the browser is idle (≤ 0.7s) — not inside the hydration task
+    const cancel = whenIdle(() => setMounted(true), 700);
+    if (!intro) return cancel;
+    const done = () => setHold(false);
+    window.addEventListener("intro:complete", done, { once: true });
     return () => {
-      window.removeEventListener("intro:complete", go);
-      cancelIdle?.();
+      cancel();
+      window.removeEventListener("intro:complete", done);
     };
   }, []);
 
-  if (!ready) return <>{NAME}</>;
+  // Server HTML + first paint: the real text (for SEO / no-JS), kept invisible so
+  // there is never a flash of plain text right before the drawing starts.
+  if (!mounted) return <span className="name-plain">{NAME}</span>;
+
   return (
     <StrokeText
       text={NAME}
       fluid
-      settle
       shadow
+      hold={hold}
       fontSize={100}
       fontFamily="inherit"
       fontWeight="inherit"
       letterSpacing={2}
       strokeColor="#0abab5"
-      strokeWidth={5}
-      drawDuration={1.7}
-      stagger={0.055}
-      fillDelay={0.1}
+      strokeWidth={2.6}
+      drawDuration={1.6}
+      fillDelay={0.2}
+      stagger={0.05}
       startDelay={NAME_PLAY_ON_LOAD ? 0.35 : NAME_REPLAY_SECONDS}
       replayEvery={NAME_REPLAY_SECONDS}
     />
@@ -285,6 +286,7 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
         html.light .h-avatar {
           background-image: url(/avatar-light.jpg${avatarVersion ? `?v=${avatarVersion}` : ""});
         }
+        .name-plain { opacity: 0; }
         .h-nameblock {
           flex: 1; display: flex; flex-direction: column;
           justify-content: flex-end; min-width: 0;
@@ -516,6 +518,7 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
         }
       `}</style>
 
+      <noscript><style>{".name-plain{opacity:1!important}"}</style></noscript>
       <section id="home">
         <div style={{ position: "relative", left: "50%", marginLeft: "-50vw", width: "100vw" }}>
           <div style={{ position: "absolute", inset: 0, zIndex: 0 }}>
@@ -559,7 +562,7 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
         <div style={{height:38, maxWidth:CW, margin:"0 auto"}}/>
 
         <div className="h-info-wrap">
-          <Panel3D variant="lift">
+          <Panel3D variant="lift" tilt={false}>
           <HoverBorderGradient>
             <div className="h-info-box" style={{background:BG, border:B, borderRadius:8.5, overflow:"hidden"}}>
 

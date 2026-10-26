@@ -1,6 +1,7 @@
 "use client";
 import { useRef } from "react";
-import { motion, useScroll, useSpring, useTransform, MotionValue, MotionStyle } from "motion/react";
+import { motion, useSpring, useTransform, MotionValue, MotionStyle } from "motion/react";
+import { useScrollProgress } from "@/lib/useScrollProgress";
 import { useReveal } from "./useReveal";
 import { SectionTitleIcon } from "./SectionIcon";
 import { usePdfModal } from "./PdfViewerModal";
@@ -57,10 +58,7 @@ const TILT = -3.5;
 
 function useSharedTilt() {
   const wrapRef = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll({
-    target: wrapRef,
-    offset: ["start end", "start 0.3"],
-  });
+  const scrollYProgress = useScrollProgress(wrapRef, ["start end", "start 0.3"]);
   const smooth = useSpring(scrollYProgress, {
     stiffness: 55,
     damping: 22,

@@ -9,18 +9,20 @@ export type CloudShaderProps = {
   children?: React.ReactNode;
   /** Animation speed multiplier. 1 = default drift. */
   speed?: number;
-  /** Number of clouds (1-6). */
-  count?: number;
   /** Cloud tint color (hex or rgb string). */
   cloudColor?: string;
   /** Sky color at the top (hex or rgb string). */
   skyTopColor?: string;
   /** Sky color at the bottom (hex or rgb string). */
   skyBottomColor?: string;
-  /** Frame-rate cap. The drift is slow, so 30 is visually identical to 60 and half the GPU work. */
-  maxFps?: number;
-  /** Render-resolution cap. Clouds are soft, so rendering below CSS-pixel size is invisible and cheap. */
-  maxDpr?: number;
+  /** Cloud size relative to the strip height. */
+  cloudScale?: number;
+  /**
+   * Draw only while this returns true. Evaluated on every frame and whenever
+   * `html`'s class changes, so a theme switch can start / stop the sky
+   * instantly. Defaults to "always".
+   */
+  isActive?: () => boolean;
 };
 
 const VERT = `
@@ -35,7 +37,8 @@ void main() {
 // Cloud shader (Aceternity UI). Each cloud is an asymmetric envelope (dome
 // top, flat base) filled with domain-warped billow noise. A second density
 // sample above the pixel approximates self-shadowing. Clouds drift
-// horizontally and wrap around.
+// horizontally and wrap around. (Extended with extra passes + a size scale so
+// a wide, short strip can hold more, smaller clouds.)
 const FRAG = `
 precision highp float;
 
@@ -44,6 +47,7 @@ varying vec2 v_uv;
 uniform vec2 u_res;
 uniform float u_time;
 uniform float u_count;
+uniform float u_scale;
 uniform vec3 u_cloud;
 uniform vec3 u_skyTop;
 uniform vec3 u_skyBottom;
@@ -137,6 +141,7 @@ vec3 shadeCloud(vec3 color, vec3 sky, vec2 p, vec2 c, vec2 r, float seed, float 
 // one drifting cloud: horizontal wrap + gentle vertical bob
 vec3 cloudPass(vec3 color, vec3 sky, vec2 p, float aspect, float t,
                float spd, float phase, float y, vec2 r, float seed, float dist) {
+  r *= u_scale;
   float cx = mix(-r.x - 0.25, aspect + r.x + 0.25, fract(t * spd + phase));
   float cy = y + sin(t * 0.05 + phase * 6.2831) * 0.012;
   return shadeCloud(color, sky, p, vec2(cx, cy), r, seed, t, dist);
@@ -166,6 +171,14 @@ void main() {
     color = mix(color, u_cloud * 0.98, wisp * 0.35);
   }
 
+  // extra far / mid / near clouds — only used on wide strips (u_count > 6)
+  if (u_count > 11.5) {
+    color = cloudPass(color, sky, p, aspect, t, 0.007, 0.27, 0.78, vec2(0.18, 0.09), 12.9, 0.95);
+  }
+  if (u_count > 10.5) {
+    color = cloudPass(color, sky, p, aspect, t, 0.009, 0.91, 0.66, vec2(0.22, 0.11), 38.1, 0.80);
+  }
+
   // far layer: small, high, slow
   if (u_count > 5.5) {
     color = cloudPass(color, sky, p, aspect, t, 0.006, 0.10, 0.84, vec2(0.20, 0.10), 43.7, 1.0);
@@ -174,12 +187,26 @@ void main() {
     color = cloudPass(color, sky, p, aspect, t, 0.008, 0.62, 0.73, vec2(0.24, 0.12), 71.3, 0.85);
   }
 
+  if (u_count > 9.5) {
+    color = cloudPass(color, sky, p, aspect, t, 0.012, 0.18, 0.55, vec2(0.30, 0.14), 64.4, 0.50);
+  }
+  if (u_count > 8.5) {
+    color = cloudPass(color, sky, p, aspect, t, 0.014, 0.55, 0.42, vec2(0.34, 0.15), 77.7, 0.40);
+  }
+
   // middle layer
   if (u_count > 3.5) {
     color = cloudPass(color, sky, p, aspect, t, 0.011, 0.33, 0.60, vec2(0.34, 0.16), 17.3, 0.55);
   }
   if (u_count > 2.5) {
     color = cloudPass(color, sky, p, aspect, t, 0.013, 0.80, 0.47, vec2(0.30, 0.15), 29.9, 0.45);
+  }
+
+  if (u_count > 7.5) {
+    color = cloudPass(color, sky, p, aspect, t, 0.017, 0.72, 0.30, vec2(0.40, 0.18), 5.5, 0.20);
+  }
+  if (u_count > 6.5) {
+    color = cloudPass(color, sky, p, aspect, t, 0.019, 0.90, 0.26, vec2(0.46, 0.20), 23.3, 0.10);
   }
 
   // near layer: big, low, fast
@@ -233,19 +260,18 @@ export const CloudShader = ({
   style,
   children,
   speed = 1,
-  count = 6,
   cloudColor = "#fbf8f2",
   skyTopColor = "#3876ba",
   skyBottomColor = "#8cbfe8",
-  maxFps = 30,
-  maxDpr = 0.75,
+  cloudScale = 1.45,
+  isActive,
 }: CloudShaderProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const paramsRef = useRef({ speed, count, cloudColor, skyTopColor, skyBottomColor });
+  const paramsRef = useRef({ speed, cloudColor, skyTopColor, skyBottomColor, cloudScale, isActive });
 
   useEffect(() => {
-    paramsRef.current = { speed, count, cloudColor, skyTopColor, skyBottomColor };
-  }, [speed, count, cloudColor, skyTopColor, skyBottomColor]);
+    paramsRef.current = { speed, cloudColor, skyTopColor, skyBottomColor, cloudScale, isActive };
+  }, [speed, cloudColor, skyTopColor, skyBottomColor, cloudScale, isActive]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -256,140 +282,144 @@ export const CloudShader = ({
     let buffer: WebGLBuffer | null = null;
     let vert: WebGLShader | null = null;
     let frag: WebGLShader | null = null;
-    let loc: Record<"res" | "time" | "count" | "cloud" | "skyTop" | "skyBottom", WebGLUniformLocation | null> | null = null;
+    let loc: Record<"res" | "time" | "count" | "scale" | "cloud" | "skyTop" | "skyBottom", WebGLUniformLocation | null> | null = null;
 
-    let frame = 0;
-    let inView = false;
+    let raf = 0;
     let ready = false;
     let lost = false;
-    let lastDraw = 0;
-    let quality = 1; // multiplier on the render resolution, lowered automatically if frames run slow
-    let lastRaf = 0;
-    let slowAcc = 0;
-    let slowN = 0;
+    let inView = true;
+    let still = false; // software GL / reduced motion → one crisp still frame instead of animating
+    let lastNow = 0;
+    let elapsed = 0; // only advances while we are actually drawing, so there is no jump on resume
+    let cancelIdle: (() => void) | null = null;
     let ro: ResizeObserver | null = null;
+    let mo: MutationObserver | null = null;
     const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const minDelta = 1000 / Math.max(1, maxFps);
-    const start = performance.now();
 
+    const introActive = () => document.documentElement.classList.contains("intro-active");
+    const wanted = () => {
+      const ok = paramsRef.current.isActive ? paramsRef.current.isActive() : true;
+      return ok && inView && !document.hidden && !introActive() && !lost;
+    };
+
+    // Backing store = CSS size × devicePixelRatio (which already includes browser zoom), so the
+    // sky is pixel-sharp on retina / high-DPI screens. Clouds count follows the strip's aspect ratio.
+    let cloudCount = 6;
     const resize = () => {
       if (!gl || !loc) return;
-      const dpr = Math.min(window.devicePixelRatio || 1, maxDpr) * quality;
-      const w = Math.max(1, Math.floor(canvas.clientWidth * dpr));
-      const h = Math.max(1, Math.floor(canvas.clientHeight * dpr));
+      const dpr = Math.min(window.devicePixelRatio || 1, 3);
+      let w = Math.round(canvas.clientWidth * dpr);
+      let h = Math.round(canvas.clientHeight * dpr);
+      w = Math.max(1, w);
+      h = Math.max(1, h);
       if (canvas.width !== w || canvas.height !== h) {
         canvas.width = w;
         canvas.height = h;
       }
       gl.viewport(0, 0, w, h);
       gl.uniform2f(loc.res, w, h);
+      cloudCount = Math.max(5, Math.min(12, Math.round(w / h / 3.3)));
     };
 
-    const render = (now: number) => {
+    const draw = () => {
       if (!gl || !loc) return;
       const p = paramsRef.current;
-      const elapsed = reduceMotion ? 0 : ((now - start) / 1000) * p.speed;
       const cloud = parseColor(p.cloudColor);
       const skyTop = parseColor(p.skyTopColor);
       const skyBottom = parseColor(p.skyBottomColor);
       gl.uniform1f(loc.time, elapsed);
-      gl.uniform1f(loc.count, Math.min(6, Math.max(1, p.count)));
+      gl.uniform1f(loc.count, cloudCount);
+      gl.uniform1f(loc.scale, p.cloudScale);
       gl.uniform3f(loc.cloud, cloud[0], cloud[1], cloud[2]);
       gl.uniform3f(loc.skyTop, skyTop[0], skyTop[1], skyTop[2]);
       gl.uniform3f(loc.skyBottom, skyBottom[0], skyBottom[1], skyBottom[2]);
       gl.drawArrays(gl.TRIANGLES, 0, 3);
     };
 
-    // Safety net for weak GPUs: if the page can't keep ~20fps while the sky is
-    // animating, drop the sky's resolution; if it still can't, freeze it on a
-    // still frame so it can never be the thing that makes scrolling stutter.
-    const watchPace = (now: number) => {
-      if (lastRaf) {
-        slowAcc += now - lastRaf;
-        slowN += 1;
-        if (slowN >= 12) {
-          const avg = slowAcc / slowN;
-          slowAcc = 0;
-          slowN = 0;
-          if (avg > 55) {
-            quality *= 0.6;
-            if (quality < 0.3) {
-              reduceFreeze = true;
-            } else {
-              resize();
-            }
-          }
-        }
-      }
-      lastRaf = now;
-    };
-    let reduceFreeze = false;
-
-    // Measure what a draw really costs (gl.finish() waits for the GPU) for the
-    // first few frames. Fast GPUs: nothing changes. Slow ones: render smaller,
-    // or – if even that is slow – settle on a still sky.
-    let calibrating = 3;
-    const drawCalibrated = (now: number) => {
-      const t0 = performance.now();
-      render(now);
-      gl?.finish();
-      const cost = performance.now() - t0;
-      calibrating -= 1;
-      if (cost > 45) {
-        quality = Math.min(quality, 0.35);
-        reduceFreeze = true;
-        resize();
-        render(now);
-      } else if (cost > 14) {
-        quality *= 0.6;
-        if (quality < 0.3) reduceFreeze = true;
-        resize();
-      }
-    };
-
     const loop = (now: number) => {
-      frame = 0;
-      if (!inView || document.hidden || lost) {
-        lastRaf = 0;
+      raf = 0;
+      if (!wanted()) {
+        lastNow = 0;
         return;
       }
-      watchPace(now);
-      if (reduceFreeze) {
-        render(now);
-        return;
-      }
-      if (now - lastDraw >= minDelta - 1) {
-        lastDraw = now;
-        if (calibrating > 0) drawCalibrated(now);
-        else render(now);
-      }
-      if (!reduceMotion) frame = requestAnimationFrame(loop);
-    };
-    const kick = () => {
-      if (!frame && ready && inView && !document.hidden && !lost) frame = requestAnimationFrame(loop);
+      if (lastNow) elapsed += ((now - lastNow) / 1000) * paramsRef.current.speed;
+      lastNow = now;
+      draw();
+      if (!still) raf = requestAnimationFrame(loop); // every display frame — 60 / 120 / 144 Hz alike
     };
 
-    // The WebGL context + shader compile is deferred until the canvas is
-    // first actually visible (and the browser is idle), so it never competes
-    // with first paint / hydration.
+    const sync = () => {
+      if (!ready) {
+        // theme switched to light before the deferred start → build the sky right now
+        if (!started && wanted()) {
+          cancelIdle?.();
+          clearTimeout(initTimer);
+          init();
+        }
+        return;
+      }
+      if (wanted()) {
+        if (!raf) {
+          lastNow = 0;
+          draw(); // paint right now so a theme switch never shows a stale / blank frame
+          if (!still) raf = requestAnimationFrame(loop);
+        }
+      } else if (raf) {
+        cancelAnimationFrame(raf);
+        raf = 0;
+        lastNow = 0;
+      }
+    };
+
+    let started = false;
+    let initTimer: ReturnType<typeof setTimeout> | undefined;
     const init = () => {
-      if (ready || lost) return;
-      gl = canvas.getContext("webgl", { alpha: false, antialias: false, premultipliedAlpha: false, powerPreference: "low-power" });
+      if (started || ready || lost) return;
+      started = true;
+      gl = canvas.getContext("webgl", { alpha: false, antialias: false, premultipliedAlpha: false, powerPreference: "default" });
       if (!gl) return;
       const hp = gl.getShaderPrecisionFormat(gl.FRAGMENT_SHADER, gl.HIGH_FLOAT);
       const fragSrc = hp && hp.precision > 0 ? FRAG : FRAG.replace("precision highp float;", "precision mediump float;");
-      vert = compile(gl, gl.VERTEX_SHADER, VERT);
-      frag = compile(gl, gl.FRAGMENT_SHADER, fragSrc);
-      if (!vert || !frag) return;
+      // Compile on the GPU process's own threads (KHR_parallel_shader_compile) and only touch the
+      // program once it is ready — otherwise reading COMPILE/LINK_STATUS blocks the main thread
+      // (at first load, often for 100+ ms on a cold shader cache).
+      const par = gl.getExtension("KHR_parallel_shader_compile");
+      const v = gl.createShader(gl.VERTEX_SHADER);
+      const f = gl.createShader(gl.FRAGMENT_SHADER);
+      if (!v || !f) return;
+      gl.shaderSource(v, VERT);
+      gl.shaderSource(f, fragSrc);
+      gl.compileShader(v);
+      gl.compileShader(f);
+      vert = v;
+      frag = f;
       program = gl.createProgram();
       if (!program) return;
       gl.attachShader(program, vert);
       gl.attachShader(program, frag);
       gl.bindAttribLocation(program, 0, "a_pos");
       gl.linkProgram(program);
-      if (!gl.getProgramParameter(program, gl.LINK_STATUS)) return;
-      gl.useProgram(program);
+      const prog = program;
+      const finish = () => {
+        if (!gl || lost) return;
+        if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) return;
+        gl.useProgram(prog);
+        setup();
+      };
+      if (par) {
+        const poll = () => {
+          if (!gl || lost) return;
+          if (gl.getProgramParameter(prog, par.COMPLETION_STATUS_KHR)) finish();
+          else requestAnimationFrame(poll);
+        };
+        requestAnimationFrame(poll);
+      } else {
+        finish();
+      }
+    };
 
+    const setup = () => {
+      if (!gl || !program) return;
       buffer = gl.createBuffer();
       gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
       gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
@@ -400,54 +430,52 @@ export const CloudShader = ({
         res: gl.getUniformLocation(program, "u_res"),
         time: gl.getUniformLocation(program, "u_time"),
         count: gl.getUniformLocation(program, "u_count"),
+        scale: gl.getUniformLocation(program, "u_scale"),
         cloud: gl.getUniformLocation(program, "u_cloud"),
         skyTop: gl.getUniformLocation(program, "u_skyTop"),
         skyBottom: gl.getUniformLocation(program, "u_skyBottom"),
       };
-      ro = new ResizeObserver(() => {
-        resize();
-        if (ready) render(performance.now());
-      });
-      ro.observe(canvas);
-      // Software-rendered WebGL (no real GPU) can't animate a shader smoothly:
-      // show a still, low-res sky instead of fighting the main thread.
+
+      // A CPU-rendered WebGL context can't animate a shader smoothly — show one still frame.
       const dbg = gl.getExtension("WEBGL_debug_renderer_info");
       const gpu = dbg ? String(gl.getParameter(dbg.UNMASKED_RENDERER_WEBGL)) : "";
-      if (/swiftshader|llvmpipe|software|basic render/i.test(gpu)) {
-        quality = 0.4;
-        reduceFreeze = true;
-        calibrating = 0;
-      }
+      still = reduceMotion || /swiftshader|llvmpipe|software|basic render/i.test(gpu);
+      elapsed = 20; // start with the clouds already spread across the strip
+
+      ro = new ResizeObserver(() => {
+        resize();
+        if (ready && !raf) draw(); // keep a crisp frame on screen while resizing / paused
+      });
+      ro.observe(canvas);
       resize();
       ready = true;
-      if (reduceFreeze) render(performance.now());
-      else drawCalibrated(performance.now());
-      kick();
+      draw();
+      sync();
     };
 
-    let cancelIdle: (() => void) | null = null;
-    const scheduleInit = () => {
-      if (ready || cancelIdle) return;
-      cancelIdle = whenIdle(() => {
-        cancelIdle = null;
-        init();
-      }, 400);
-    };
+    // Compile + first frame never happen in the first-paint path. Light theme: as soon as the
+    // browser is idle. Dark theme (the sky is hidden): wait until the page has been quiet for a
+    // few seconds, so the sky is usually already warm if someone switches to light.
+    const lightNow = paramsRef.current.isActive ? paramsRef.current.isActive() : true;
+    if (lightNow) {
+      cancelIdle = whenIdle(init, 1200);
+    } else {
+      initTimer = setTimeout(() => {
+        cancelIdle = whenIdle(init, 4000);
+      }, 4500);
+    }
 
-    const io = new IntersectionObserver(
-      ([entry]) => {
-        inView = !!entry?.isIntersecting;
-        if (inView) {
-          if (!ready) scheduleInit();
-          else kick();
-        }
-      },
-      { threshold: 0 },
-    );
+    const io = new IntersectionObserver(([entry]) => {
+      inView = !!entry?.isIntersecting;
+      sync();
+    });
     io.observe(canvas);
 
-    const onVisibility = () => kick();
-    document.addEventListener("visibilitychange", onVisibility);
+    // Theme / intro changes arrive as class changes on <html>; react in the same task.
+    mo = new MutationObserver(sync);
+    mo.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
+    window.addEventListener("intro:complete", sync);
+    document.addEventListener("visibilitychange", sync);
 
     const onLost = (e: Event) => {
       e.preventDefault();
@@ -456,12 +484,15 @@ export const CloudShader = ({
     canvas.addEventListener("webglcontextlost", onLost);
 
     return () => {
+      cancelIdle?.();
+      clearTimeout(initTimer);
       io.disconnect();
       ro?.disconnect();
-      document.removeEventListener("visibilitychange", onVisibility);
+      mo?.disconnect();
+      window.removeEventListener("intro:complete", sync);
+      document.removeEventListener("visibilitychange", sync);
       canvas.removeEventListener("webglcontextlost", onLost);
-      if (frame) cancelAnimationFrame(frame);
-      cancelIdle?.();
+      if (raf) cancelAnimationFrame(raf);
       if (gl) {
         if (buffer) gl.deleteBuffer(buffer);
         if (program) gl.deleteProgram(program);
@@ -470,7 +501,7 @@ export const CloudShader = ({
         gl.getExtension("WEBGL_lose_context")?.loseContext();
       }
     };
-  }, [maxFps, maxDpr]);
+  }, []);
 
   return (
     <div

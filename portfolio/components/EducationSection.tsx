@@ -1,6 +1,7 @@
 "use client";
 import { useRef } from "react";
-import { motion, useInView, useScroll, useSpring, useTransform } from "motion/react";
+import { motion, useInView, useSpring, useTransform } from "motion/react";
+import { useScrollProgress } from "@/lib/useScrollProgress";
 import { useReveal } from "./useReveal";
 import { SectionIcon, SectionTitleIcon } from "./SectionIcon";
 import { mq } from "@/lib/breakpoints";
@@ -37,10 +38,7 @@ const LANGUAGES = [
 
 function useStickyTilt(fromDeg: number) {
   const wrapRef = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll({
-    target: wrapRef,
-    offset: ["start end", "start 0.3"],
-  });
+  const scrollYProgress = useScrollProgress(wrapRef, ["start end", "start 0.3"]);
   const smooth = useSpring(scrollYProgress, {
     stiffness: 55,
     damping: 22,
