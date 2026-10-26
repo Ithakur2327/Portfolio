@@ -253,12 +253,11 @@ a, button, [role="button"] {
 
 /* ═══════════════════════════════════════════════════════════
    NAVBAR — --nav-h is the single source of truth for its height. The page's
-   top padding and the sky/sparkle bridge below it use the same variable, so
-   all three are the same height on every device by construction.
+   top padding matches it, while the sky/sparkle bridge is about 1.3× taller.
 ═══════════════════════════════════════════════════════════ */
-:root { --nav-h: 52px; }
-@media (--tablet-split-down) { :root { --nav-h: 58px; } }
-@media (--nav-roomy)         { :root { --nav-h: 70px; } }
+:root { --nav-h: 52px; --bridge-h: 68px; }
+@media (--tablet-split-down) { :root { --nav-h: 58px; --bridge-h: 75px; } }
+@media (--nav-roomy)         { :root { --nav-h: 70px; --bridge-h: 91px; } }
 
 .nav-root {
   position: fixed; top: 0; left: 0; right: 0; z-index: 100;
@@ -483,7 +482,7 @@ html.light {
 ═══════════════════════════════════════════════════════════ */
 .bridge {
   position: relative;
-  height: var(--nav-h);   /* strictly the navbar's height, on every device */
+  height: var(--bridge-h);
   background: #000;
   overflow: hidden;
 }

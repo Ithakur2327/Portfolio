@@ -526,9 +526,7 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
           </div>
           <div style={{ position: "relative", zIndex: 1 }}>
 
-        <div style={{
-          background:BG, borderTop:B,
-        }}>
+        <div style={{ background:BG }}>
           <div className="h-profile" style={{maxWidth:CW, margin:"0 auto", borderLeft:B, borderRight:B, borderBottom:B, borderTop:"none", borderRadius:8.5}}>
 
             <div

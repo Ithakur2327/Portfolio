@@ -3,8 +3,8 @@ import { useEffect, useRef } from "react";
 import { CloudShader } from "./CloudShader";
 
 /**
- * The strip between the navbar and the hero — exactly one navbar tall
- * (`--nav-h`, see globals.css) on every device.
+ * The strip between the navbar and the hero — about 1.3× the navbar height
+ * (`--bridge-h`, see globals.css) on every device.
  *   • dark theme  → black sky with slowly breathing sparkles (2D canvas)
  *   • light theme → blue sky + small drifting clouds (WebGL shader)
  * The layer that shows is chosen by CSS (`html.light`), so there is no theme
