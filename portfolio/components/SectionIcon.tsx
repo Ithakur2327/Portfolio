@@ -6,7 +6,7 @@ export type SectionIconType =
   | "home" | "about" | "chart" | "layers" | "box"
   | "badge" | "book" | "mail" | "resume" | "github"
   | "leetcode" | "website" | "institution" | "cap"
-  | "linkedin" | "twitter" | "briefcase" | "language";
+  | "linkedin" | "twitter" | "briefcase" | "language" | "quote";
 
 export function SectionIcon({
   type,
@@ -60,6 +60,8 @@ export function SectionIcon({
       return <svg width={size} height={size} viewBox="0 0 24 24" fill={color} shapeRendering="geometricPrecision"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.255 5.623zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>;
     case "language":
       return <svg {...p}><path d="M4 7h13"/><path d="M13 3l4 4-4 4"/><path d="M20 17H7"/><path d="M11 21l-4-4 4-4"/></svg>;
+    case "quote":
+      return <svg {...p}><path d="M3 21c3 0 7-1 7-8V5c0-1.25-.756-2.017-2-2H4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V21z"/><path d="M15 21c3 0 7-1 7-8V5c0-1.25-.757-2.017-2-2h-4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2h.75c0 2.25.25 4-2.75 4v3z"/></svg>;
     case "briefcase":
       return <svg {...p}><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>;
     default:

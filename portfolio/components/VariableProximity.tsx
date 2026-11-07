@@ -4,19 +4,21 @@ import { whenIdle } from '@/lib/idle';
 import { Fragment, forwardRef, useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type HTMLAttributes } from 'react';
 
 /**
- * Variable Proximity — letters swell (weight, a touch of size + lift) as the
- * pointer comes near them.
+ * Variable Proximity — letters swell (heavier stroke, a little bigger, lifted)
+ * as the pointer comes near them.
  *
- * Built so it costs nothing when it can't be used and very little when it can:
- *  • Touch / coarse-pointer / reduced-motion devices render the plain text — no
- *    per-letter DOM, no listeners, nothing to lag while you scroll.
- *  • On a mouse, every letter is pinned to the width it has at rest, so growing
- *    its weight never re-flows the paragraph. The text wraps naturally inside
- *    whatever box it lives in and always fits it.
- *  • Letter positions are measured once (and on resize / font load), cached in
- *    document coordinates, and the pointer maths per frame is plain arithmetic
- *    — no getBoundingClientRect in the animation loop.
- *  • One shared pointer listener + one rAF loop serves every instance, and an
+ *  • Touch / coarse-pointer / reduced-motion devices render plain text — no
+ *    per-letter DOM, no listeners, nothing to lag while scrolling.
+ *  • On a mouse, every letter is pinned to its resting width, so the effect
+ *    never re-flows the paragraph; text wraps naturally inside its box.
+ *  • The "weight" is a continuous text-stroke + scale, so it is smooth with
+ *    ANY font (a static font like Arial only has 400/700 and would snap).
+ *    If you do use a variable font, pass `maxWeight` to animate real
+ *    font-weight on top.
+ *  • Letter positions are cached RELATIVE to the text block and combined with
+ *    the block's current rect each frame, so scrolling, section-reveal
+ *    transforms and layout shifts can never leave the effect misaligned.
+ *  • One shared pointer listener + one rAF loop for every instance; an
  *    instance only works while it is on screen.
  */
 
@@ -38,10 +40,12 @@ interface VariableProximityProps extends HTMLAttributes<HTMLSpanElement> {
   falloff?: Falloff;
   /** 0 = snap, higher = softer easing (seconds-ish, like the original prop). */
   smoothing?: number;
-  /** font-weight at rest / for highlights at rest / at full proximity. */
+  /** Optional real font-weight animation (variable fonts only): rest / highlight rest / full proximity. */
   baseWeight?: number;
   highlightWeight?: number;
   maxWeight?: number;
+  /** Extra text-stroke (px) at full proximity — the font-independent "weight". */
+  stroke?: number;
   /** Extra scale at full proximity (1 = none). */
   scale?: number;
   /** Lift in em at full proximity. */
@@ -106,13 +110,15 @@ interface Instance {
   smoothing: number;
   baseWeight: number;
   hlWeight: number;
-  maxWeight: number;
+  maxWeight: number | undefined;
+  stroke: number;
   growth: number;
   rise: number;
-  // cached geometry (document coordinates)
+  // letter centres, relative to the text block's top-left (layout-invariant)
   ax: Float32Array;
   ay: Float32Array;
-  box: { l: number; t: number; r: number; b: number };
+  width: number;
+  height: number;
   level: Float32Array;
   written: Int16Array;
   visible: boolean;
@@ -127,13 +133,14 @@ let bound = false;
 
 function stepInstance(inst: Instance, dt: number): boolean {
   const { letters, level, written, ax, ay } = inst;
-  const px = pointer.x + window.scrollX;
-  const py = pointer.y + window.scrollY;
+  // One rect read per instance per frame: where is the text block RIGHT NOW (scroll,
+  // reveal transforms and layout shifts are all already baked into it)?
+  const rr = inst.el.getBoundingClientRect();
+  const px = pointer.x - rr.left;
+  const py = pointer.y - rr.top;
   const R = inst.radius;
   const near =
-    pointer.active &&
-    px > inst.box.l - R && px < inst.box.r + R &&
-    py > inst.box.t - R && py < inst.box.b + R;
+    pointer.active && px > -R && px < inst.width + R && py > -R && py < inst.height + R;
   const ease = inst.smoothing > 0 ? 1 - Math.exp(-dt / (inst.smoothing * 400)) : 1;
   let busy = false;
 
@@ -148,25 +155,27 @@ function stepInstance(inst: Instance, dt: number): boolean {
     const cur = level[i];
     if (cur === 0 && target === 0) continue;
     let next = cur + (target - cur) * ease;
-    if (Math.abs(target - next) < 0.004) next = target;
+    if (Math.abs(target - next) < 0.003) next = target;
     else busy = true;
     level[i] = next;
 
-    // quantise to whole weights so unchanged letters are never rewritten
-    const base = inst.hlFlags[i] ? inst.hlWeight : inst.baseWeight;
-    const w = next === 0 ? 0 : Math.round(base + (inst.maxWeight - base) * next);
-    if (written[i] !== w) {
-      written[i] = w;
+    // quantise so letters that did not visibly change are never rewritten
+    const q = Math.round(next * 48);
+    if (written[i] !== q) {
+      written[i] = q;
       const el = letters[i];
-      if (w === 0) {
-        el.style.fontWeight = '';
+      if (q === 0) {
         el.style.transform = '';
+        el.style.removeProperty('-webkit-text-stroke-width');
+        el.style.fontWeight = '';
       } else {
-        el.style.fontWeight = String(w);
-        el.style.transform =
-          inst.growth || inst.rise
-            ? `translateY(${(-inst.rise * next).toFixed(3)}em) scale(${(1 + inst.growth * next).toFixed(3)})`
-            : '';
+        const lv = q / 48;
+        el.style.transform = `translate3d(0, ${(-inst.rise * lv).toFixed(3)}em, 0) scale(${(1 + inst.growth * lv).toFixed(3)})`;
+        if (inst.stroke) el.style.setProperty('-webkit-text-stroke-width', `${(inst.stroke * lv).toFixed(2)}px`);
+        if (inst.maxWeight) {
+          const base = inst.hlFlags[i] ? inst.hlWeight : inst.baseWeight;
+          el.style.fontWeight = String(Math.round(base + (inst.maxWeight - base) * lv));
+        }
       }
     }
   }
@@ -219,9 +228,10 @@ const VariableProximity = forwardRef<HTMLSpanElement, VariableProximityProps>((p
     smoothing = 0.16,
     baseWeight = 400,
     highlightWeight = 600,
-    maxWeight = 800,
-    scale = 1,
-    lift = 0,
+    maxWeight,
+    stroke = 0.55,
+    scale = 1.2,
+    lift = 0.05,
     startIndex = 0,
     pieceClassName,
     className = '',
@@ -249,7 +259,7 @@ const VariableProximity = forwardRef<HTMLSpanElement, VariableProximityProps>((p
       window.matchMedia('(hover: hover) and (pointer: fine)').matches &&
       !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (!ok) return;
-    return whenIdle(() => setInteractive(true), 2500);
+    return whenIdle(() => setInteractive(true), 700);
   }, []);
 
   const words = useMemo(() => parseLabel(label, startIndex), [label, startIndex]);
@@ -273,68 +283,55 @@ const VariableProximity = forwardRef<HTMLSpanElement, VariableProximityProps>((p
       baseWeight,
       hlWeight: highlightWeight,
       maxWeight,
+      stroke,
       growth: (Number(scale) || 1) - 1,
       rise: Number(lift) || 0,
       ax: new Float32Array(n),
       ay: new Float32Array(n),
-      box: { l: 0, t: 0, r: 0, b: 0 },
+      width: 0,
+      height: 0,
       level: new Float32Array(n),
       written: new Int16Array(n),
       visible: false,
       measure: () => {}
     };
 
-    // Pin each letter to its resting width (so weight changes never re-flow the
-    // text) and cache where every letter sits in document coordinates.
+    // Pin each letter to its resting width (weight/scale changes never re-flow the text) and
+    // cache every letter's centre relative to the block. `getBoundingClientRect` includes any
+    // CSS transform both on the block and on the letters' ancestors in the same way, so the
+    // relative offsets stay valid no matter where the block currently is.
     let measureTimer: ReturnType<typeof setTimeout> | undefined;
-    let refTop = 0;
-    let refLeft = 0;
     let refWidth = 0;
     inst.measure = () => {
-      letters.forEach(l => { l.style.width = ''; });
-      const sx = window.scrollX;
-      const sy = window.scrollY;
+      letters.forEach(l => { l.style.width = ''; l.style.transform = ''; });
+      const rr = root.getBoundingClientRect();
       const rects = letters.map(l => l.getBoundingClientRect());
-      let L = Infinity, T = Infinity, Rr = -Infinity, B = -Infinity;
       rects.forEach((r, i) => {
-        inst.ax[i] = r.left + r.width / 2 + sx;
-        inst.ay[i] = r.top + r.height / 2 + sy;
-        L = Math.min(L, r.left + sx); T = Math.min(T, r.top + sy);
-        Rr = Math.max(Rr, r.right + sx); B = Math.max(B, r.bottom + sy);
+        inst.ax[i] = r.left + r.width / 2 - rr.left;
+        inst.ay[i] = r.top + r.height / 2 - rr.top;
       });
-      inst.box = { l: L, t: T, r: Rr, b: B };
-      letters.forEach((l, i) => { l.style.width = `${rects[i].width}px`; });
-      const rr = root.getBoundingClientRect();
-      refTop = rr.top + sy;
-      refLeft = rr.left + sx;
+      inst.width = rr.width;
+      inst.height = rr.height;
       refWidth = rr.width;
+      letters.forEach((l, i) => { l.style.width = `${rects[i].width}px`; });
+      inst.level.fill(0);
+      inst.written.fill(0);
     };
-    // Something changed (document height, fonts, …). If the text itself kept its
-    // width it only moved — shift the cached coordinates by the offset and skip
-    // the expensive per-letter pass.
+    // The block moved (scroll, reveal, layout shift) → nothing to do, positions are relative.
+    // Only a width change (resize / rotation) or new glyph widths (fonts) needs a re-measure.
     const revalidate = () => {
-      const rr = root.getBoundingClientRect();
-      if (Math.abs(rr.width - refWidth) > 0.5) {
-        inst.measure();
-      } else {
-        const dy = rr.top + window.scrollY - refTop;
-        const dx = rr.left + window.scrollX - refLeft;
-        if (Math.abs(dy) > 0.5 || Math.abs(dx) > 0.5) {
-          for (let i = 0; i < n; i++) { inst.ax[i] += dx; inst.ay[i] += dy; }
-          inst.box = { l: inst.box.l + dx, t: inst.box.t + dy, r: inst.box.r + dx, b: inst.box.b + dy };
-          refTop += dy;
-          refLeft += dx;
-        }
-      }
+      const w = root.getBoundingClientRect().width;
+      if (Math.abs(w - refWidth) > 0.5) inst.measure();
       wake();
     };
     const queueMeasure = () => {
       clearTimeout(measureTimer);
       measureTimer = setTimeout(revalidate, 150);
     };
-    // fonts arriving change glyph widths → a real re-measure is needed
     const onFonts = () => { clearTimeout(measureTimer); measureTimer = setTimeout(() => { inst.measure(); wake(); }, 60); };
 
+    // Measure when the block is in its resting position (not mid reveal-transition).
+    const settle = setTimeout(() => { inst.measure(); }, 0);
     inst.measure();
     instances.add(inst);
     document.fonts?.ready.then(onFonts).catch(() => {});
@@ -347,17 +344,17 @@ const VariableProximity = forwardRef<HTMLSpanElement, VariableProximityProps>((p
 
     // width changes (rotation, resize) and content-height changes both move the letters
     const ro = new ResizeObserver(queueMeasure);
-    ro.observe(document.documentElement);
     if (root.parentElement) ro.observe(root.parentElement);
 
     return () => {
       clearTimeout(measureTimer);
+      clearTimeout(settle);
       io.disconnect();
       ro.disconnect();
       instances.delete(inst);
-      letters.forEach(l => { l.style.width = ''; l.style.fontWeight = ''; l.style.transform = ''; });
+      letters.forEach(l => { l.style.width = ''; l.style.fontWeight = ''; l.style.transform = ''; l.style.removeProperty('-webkit-text-stroke-width'); });
     };
-  }, [interactive, label, radius, falloff, smoothing, baseWeight, highlightWeight, maxWeight, scale, lift]);
+  }, [interactive, label, radius, falloff, smoothing, baseWeight, highlightWeight, maxWeight, stroke, scale, lift]);
 
   return (
     <span

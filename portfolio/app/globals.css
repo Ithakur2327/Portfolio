@@ -213,7 +213,7 @@ a, button, [role="button"] {
    width is controlled from one place.
 ═══════════════════════════════════════════════════════════ */
 :root {
-  --content-width: 890px;
+  --content-width: 950px;
   --content-width-inset: calc(var(--content-width) - 40px);
   --page-pad: 16px;
 }
@@ -236,10 +236,6 @@ a, button, [role="button"] {
   margin-top: 0 !important;
 }
 
-.page-wrapper > #home {
-  margin-top: 0 !important;
-}
-
 
 .page-wrapper > .dot-divider {
   margin-top: 0 !important;
@@ -253,12 +249,12 @@ a, button, [role="button"] {
 
 /* ═══════════════════════════════════════════════════════════
    NAVBAR — --nav-h is the single source of truth for its height. The page's
-   top padding matches it, while the sky/sparkle bridge is about 1.3× taller.
+   top padding and the sky/sparkle bridge below it use the same variable, so
+   all three are the same height on every device by construction.
 ═══════════════════════════════════════════════════════════ */
-:root { --nav-h: 52px; --bridge-h: 68px; }
-@media (--tablet-split-down) { :root { --nav-h: 58px; --bridge-h: 75px; } }
-@media (--nav-roomy)         { :root { --nav-h: 70px; --bridge-h: 91px; } }
-@media (--mobile)            { :root { --bridge-h: 62px; } }
+:root { --nav-h: 52px; }
+@media (--tablet-split-down) { :root { --nav-h: 58px; } }
+@media (--nav-roomy)         { :root { --nav-h: 70px; } }
 
 .nav-root {
   position: fixed; top: 0; left: 0; right: 0; z-index: 100;
@@ -461,8 +457,6 @@ html.light {
   border: 1px solid var(--s3d-edge);
   box-shadow: inset 0 1px 0 var(--s3d-hi), inset 0 -1px 0 var(--s3d-lo);
 }
-.s3d.skills-panel,
-.s3d.xp-panel { --s3d-glow: transparent; }
 /* soft light that follows the pointer across the surface */
 .s3d__gloss {
   position: absolute; inset: 0; border-radius: inherit; overflow: hidden; pointer-events: none; z-index: -1;
@@ -483,7 +477,7 @@ html.light {
 ═══════════════════════════════════════════════════════════ */
 .bridge {
   position: relative;
-  height: var(--bridge-h);
+  height: var(--nav-h);   /* strictly the navbar's height, on every device */
   background: #000;
   overflow: hidden;
 }
@@ -793,71 +787,31 @@ img {
 
 
 /* ═══════════════════════════════════════════════════════════
-   SPLIT-FLAP QUOTE BOARD  (components/TextFlippingBoard.tsx)
+   FLAP BOARD  (components/FlapBoard.tsx) — everything is drawn on one canvas;
+   the CSS only frames it.
 ═══════════════════════════════════════════════════════════ */
-:root, html.dark {
-  --sfb-board: #000000; --sfb-cell: #000000; --sfb-flap: #000000; --sfb-text: #ffffff;
-  --sfb-border: rgba(255,255,255,0.12);
-  --sfb-shadow: 0 20px 70px -15px rgba(0,0,0,0.6);
+.qb-content { padding: 18px 22px 18px; }
+.qb-content .fb { max-width: 860px; margin-inline: auto; }
+@media (--nav-collapse) { .qb-content { padding: 18px 16px; } }
+@media (--mobile) { .qb-content { padding: 16px 8px; } }
+.fb { position: relative; width: 100%; min-height: 365px; cursor: pointer; -webkit-tap-highlight-color: transparent; user-select: none; }
+.fb-tilt { position: relative; transform-origin: 50% 50%; border-radius: 16px; }
+.fb-canvas {
+  display: block; width: 100%; border-radius: 16px;
+  box-shadow: 0 1px 0 rgba(255,255,255,0.06) inset, 0 18px 40px -22px rgba(0,0,0,0.85), 0 0 0 1px rgba(255,255,255,0.07);
 }
-html.light {
-  --sfb-board: #f5f5f5; --sfb-cell: rgba(229,229,229,0.8); --sfb-flap: #f5f5f5; --sfb-text: #262626;
-  --sfb-border: #d4d4d4;
-  --sfb-shadow: 0 20px 28px -8px rgba(20,40,80,0.18), 0 2px 6px rgba(20,40,80,0.08);
+html.light .fb-canvas { box-shadow: 0 18px 34px -20px rgba(36,58,96,0.5), 0 0 0 1px rgba(20,40,80,0.14); }
+/* a slow specular sweep — compositor-only, and only while the board is on screen */
+.fb-sheen { position: absolute; inset: 0; border-radius: 16px; overflow: hidden; pointer-events: none; }
+.fb-sheen::before {
+  content: ""; position: absolute; top: 0; bottom: 0; left: -40%; width: 40%;
+  background: linear-gradient(105deg, transparent 0%, rgba(255,255,255,0.10) 50%, transparent 100%);
+  transform: translate3d(0,0,0); opacity: 0;
 }
-.sfb {
-  position: relative; width: 100%; margin: 0 auto;
-  padding: 8px; border-radius: 12px; background: var(--sfb-board); box-shadow: var(--sfb-shadow);
-}
-.sfb-grid {
-  display: grid; width: 100%;
-  grid-template-columns: repeat(22, minmax(0, 1fr));
-  grid-template-rows: repeat(9, minmax(0, 1fr));
-  gap: 1px; aspect-ratio: 22 / 9; align-content: center;
-}
-.sfb-cell {
-  display: flex; align-items: center; justify-content: center; min-width: 0; min-height: 0;
-  overflow: hidden; border-radius: 2px; border: 1px solid var(--sfb-border);
-  background: var(--sfb-cell); color: var(--sfb-text);
-  font: 700 clamp(6px, 2vw, 22px)/1 'Press Start 2P', 'Geist Mono', ui-monospace, monospace;
-  white-space: pre;
-}
-.sfb-token-keyword { color: #c084fc; }
-.sfb-token-name { color: #60a5fa; }
-.sfb-token-string { color: #a3e635; }
-.sfb-token-function { color: #5eead4; }
-.sfb-token-comment { color: #94a3b8; }
-.sfb-live {
-  position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0;
-  overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0;
-}
-@keyframes sfb-cell-flip {
-  from { transform: rotateX(-78deg); opacity: 0.45; }
-  to { transform: rotateX(0); opacity: 1; }
-}
-@media (min-width: 768px) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
-  .sfb-cell-active {
-    transform-origin: center;
-    animation: sfb-cell-flip 0.24s cubic-bezier(0.22,1,0.36,1) both;
-  }
-}
-@media (min-width: 768px) {
-  .sfb { padding: 16px; border-radius: 16px; }
-  .sfb-grid { gap: 3px; }
-  .sfb-cell { border-width: 2px; border-radius: 3px; }
-}
-.qb-wrap {
-  display: flex; flex-direction: column; align-items: center; width: 100%;
-  max-width: var(--content-width); margin: 0 auto; padding: 30px 16px 38px;
-}
-@media (--mobile) {
-  .qb-wrap { padding: 30px 8px 38px; }
-}
-.quote-board.reveal { transform: translate3d(0, 18px, 0); }
-.quote-board.reveal.visible {
-  transition: opacity 0.3s cubic-bezier(0.215, 0.61, 0.355, 1),
-              transform 0.3s cubic-bezier(0.215, 0.61, 0.355, 1);
-}
+.fb--live .fb-sheen::before { animation: fb-sheen 9s ease-in-out infinite; }
+@keyframes fb-sheen { 0%, 62% { transform: translate3d(0,0,0); opacity: 0; } 70% { opacity: 1; } 100% { transform: translate3d(340%,0,0); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .fb--live .fb-sheen::before { animation: none; } }
+.fb-live { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
 /* ═══════════════════════════════════════════════════════════
    PROJECT CARD + MODAL — static rules (they used to be injected as <style>
    tags when a card rendered / the modal opened, which forced a document-wide
@@ -984,3 +938,41 @@ html.light {
     }
     .pm-info-col::-webkit-scrollbar { display: none; }
   }
+
+
+
+/* ═══════════════════════════════════════════════════════════
+   CONNECTED 3D PANELS — after the hero, down to the footer, every section's
+   panel touches the next one; a dotted joint (DotJoin) sits on top of the seam
+   and is exactly as wide as the panels.
+═══════════════════════════════════════════════════════════ */
+:root { --s3d-gutter: clamp(6px, 1.8vw, 20px); --join-h: 46px; }
+@media (--mobile) { :root { --join-h: 38px; } }
+
+.s3d-stack { position: relative; }
+.s3d-stack > section .s3d { padding-top: 0; padding-bottom: 0; }
+.s3d-stack > section:first-child .s3d { padding-top: clamp(12px, 2.8vw, 26px); }
+.s3d-stack > section:last-child  .s3d { padding-bottom: clamp(18px, 3.4vw, 34px); }
+
+/* squared-off seams: one continuous column, rounded only at its two ends */
+.s3d-stack > section:not(:first-child) :is(.s3d__face, .s3d__wall, .s3d__shadow) { border-top-left-radius: 0; border-top-right-radius: 0; }
+.s3d-stack > section:not(:last-child)  :is(.s3d__face, .s3d__wall, .s3d__shadow) { border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
+.s3d-stack > section:not(:first-child) .s3d__face { border-top-width: 0; }
+.s3d-stack > section:not(:last-child)  .s3d__face { border-bottom-width: 0; }
+/* the extrusion wall + ground shadow only belong under the very last panel */
+.s3d-stack > section:not(:last-child) :is(.s3d__wall, .s3d__shadow) { display: none; }
+
+.dot-join {
+  position: relative; z-index: 3; pointer-events: none;
+  left: 50%; margin-left: -50vw; width: 100vw;
+  height: var(--join-h);
+  margin: 6px 0;
+}
+.dot-join__in { max-width: var(--content-width); margin: 0 auto; padding: 0 var(--s3d-gutter); height: 100%; }
+.dot-join__field { position: relative; height: 100%; overflow: hidden; }
+/* strip after the last panel: nothing to overlap */
+.dot-join--end { margin-top: 0; margin-bottom: 0; }
+
+.page-wrapper > .dot-join--end { margin-top: 0 !important; }
+.page-wrapper > .dot-join--end + *,
+.page-wrapper > .dot-join--end + style + * { margin-top: 0 !important; }
