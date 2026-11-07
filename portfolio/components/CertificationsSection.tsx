@@ -110,7 +110,7 @@ function CertTLCard({ cert, smooth, fromDeg, accent, visible, delay, onOpen }: {
 
 // Certifications section
 export function CertificationsSection() {
-  const { ref, revealClass, visible } = useReveal();
+  const { ref, revealClass, visible } = useReveal(0.08, true);
   const { openPdf } = usePdfModal();
   const { wrapRef, smooth } = useSharedTilt();
 

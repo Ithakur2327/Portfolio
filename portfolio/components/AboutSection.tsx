@@ -54,14 +54,12 @@ function ScrollRevealText() {
           <VariableProximity
             label={para}
             startIndex={STARTS[i]}
-            radius={92}
+            radius={96}
             falloff="gaussian"
             smoothing={0.16}
-            baseWeight={400}
-            highlightWeight={600}
-            maxWeight={800}
-            scale={1.05}
-            lift={0.03}
+            stroke={0.6}
+            scale={1.22}
+            lift={0.055}
             pieceClassName={pieceClass}
           />
         </p>

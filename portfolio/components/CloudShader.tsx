@@ -243,18 +243,6 @@ function parseColor(color: string): [number, number, number] {
   return [0.95, 0.95, 0.95];
 }
 
-function compile(gl: WebGLRenderingContext, type: number, source: string) {
-  const shader = gl.createShader(type);
-  if (!shader) return null;
-  gl.shaderSource(shader, source);
-  gl.compileShader(shader);
-  if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-    gl.deleteShader(shader);
-    return null;
-  }
-  return shader;
-}
-
 export const CloudShader = ({
   className,
   style,
