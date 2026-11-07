@@ -143,7 +143,7 @@ function LangNoteCard({ visible }: { visible: boolean }) {
 
 // Education section
 export function EducationSection() {
-  const { ref, revealClass, visible } = useReveal();
+  const { ref, revealClass, visible } = useReveal(0.08, true);
 
   return (
     <>

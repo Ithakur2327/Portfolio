@@ -222,3 +222,21 @@ export function DotDivider({ height = 38 }: { height?: number }) {
     </div>
   );
 }
+
+/**
+ * The dotted joint between two connected 3D panels. It is exactly as wide as the
+ * panels' faces (same content-width + gutter maths as `.s3d`) and sits ON TOP of
+ * them, overlapping the bottom of the panel above and the top of the panel below.
+ * `end` = the strip after the last panel (nothing to overlap).
+ */
+export function DotJoin({ end = false }: { end?: boolean }) {
+  return (
+    <div aria-hidden="true" className={`dot-join${end ? " dot-join--end" : ""}`}>
+      <div className="dot-join__in">
+        <div className="dot-join__field">
+          <DotField interactive />
+        </div>
+      </div>
+    </div>
+  );
+}
