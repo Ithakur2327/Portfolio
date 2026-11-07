@@ -14,11 +14,11 @@ const FEATURED_COUNT = 6;
 
 // Projects section
 export function ProjectsSection() {
-  const { ref: revealRef, revealClass, visible } = useReveal();
+  const { ref: revealRef, revealClass, visible } = useReveal<HTMLElement>(0.08, true);
   const featured = PROJECTS.slice(0, FEATURED_COUNT);
 
   return (
-    <div id="projects" ref={revealRef as unknown as React.Ref<HTMLDivElement>} className={revealClass}>
+    <section id="projects" ref={revealRef} className={revealClass}>
       <div style={{ position: "relative", left: "50%", marginLeft: "-50vw", width: "100vw", background: "var(--bg-base)" }}>
         <Panel3D tilt={false}>
         <div className="proj-inner" style={{ maxWidth: "var(--content-width)", margin: "0 auto", padding: "26px 20px 26px" }}>
@@ -85,6 +85,6 @@ export function ProjectsSection() {
         </div>
         </Panel3D>
       </div>
-    </div>
+    </section>
   );
 }
