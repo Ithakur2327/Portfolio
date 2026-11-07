@@ -45,7 +45,7 @@ function Sparkles() {
     });
 
     const resize = () => {
-      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      const dpr = Math.min(window.devicePixelRatio || 1, 3);
       W = canvas.clientWidth;
       H = canvas.clientHeight;
       if (!W || !H) return;
@@ -126,6 +126,7 @@ export function SparklesBridge() {
           cloudColor="#ffffff"
           skyTopColor={SKY_TOP}
           skyBottomColor={SKY_BOTTOM}
+          cloudScale={0.55}
           isActive={isLight}
         />
       </div>

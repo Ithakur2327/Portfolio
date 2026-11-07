@@ -61,7 +61,7 @@ export function FlapBoard() {
     const tilt = tiltRef.current;
     const canvas = canvasRef.current;
     if (!host || !tilt || !canvas) return;
-    const ctx = canvas.getContext("2d", { alpha: false });
+    const ctx = canvas.getContext("2d", { alpha: false, desynchronized: true });
     if (!ctx) return;
 
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
