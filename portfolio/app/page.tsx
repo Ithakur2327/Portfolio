@@ -2,7 +2,7 @@ import dynamic from "next/dynamic";
 import { HeroSection }     from "@/components/HeroSection";
 import { SparklesBridge }  from "@/components/SparklesBridge";
 import { AboutSection }    from "@/components/AboutSection";
-import { DotDivider } from "@/components/DotBackground";
+import { DotJoin } from "@/components/DotBackground";
 import { ScrollFadeAndTop } from "@/components/ScrollFadeAndTop";
 import { ExperienceSection } from "@/components/ExperienceSection";
 import { getAvatarVersion }  from "@/lib/avatar";
@@ -26,22 +26,23 @@ export default function Home() {
         <SparklesBridge />
         <div className="page-wrapper">
           <HeroSection avatarVersion={avatarVersion} />
-          <AboutSection />
-          <DotDivider />
-          <ExperienceSection />
-          <DotDivider />
-          <StatsSection />
-          <DotDivider />
-          <SkillsSection />
-          <DotDivider />
-          <ProjectsSection />
-          <DotDivider />
-          <EducationSection />
-          <DotDivider />
-          <CertificationsSection />
-          <DotDivider />
-          <QuoteBoard />
-          <DotDivider />
+          <div className="s3d-stack">
+            <AboutSection />
+            <DotJoin />
+            <ExperienceSection />
+            <DotJoin />
+            <StatsSection />
+            <DotJoin />
+            <SkillsSection />
+            <DotJoin />
+            <ProjectsSection />
+            <DotJoin />
+            <EducationSection />
+            <DotJoin />
+            <CertificationsSection />
+            <DotJoin />
+            <QuoteBoard />
+          </div>
           <Footer />
         </div>
       </main>
