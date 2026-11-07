@@ -942,37 +942,50 @@ html.light .fb-canvas { box-shadow: 0 18px 34px -20px rgba(36,58,96,0.5), 0 0 0 
 
 
 /* ═══════════════════════════════════════════════════════════
-   CONNECTED 3D PANELS — after the hero, down to the footer, every section's
-   panel touches the next one; a dotted joint (DotJoin) sits on top of the seam
-   and is exactly as wide as the panels.
+   SECTION PANELS — each section keeps the same standalone 3D
+   slab treatment; DotJoin separates the panels.
 ═══════════════════════════════════════════════════════════ */
 :root { --s3d-gutter: clamp(6px, 1.8vw, 20px); --join-h: 46px; }
 @media (--mobile) { :root { --join-h: 38px; } }
 
 .s3d-stack { position: relative; }
-.s3d-stack > section .s3d { padding-top: 0; padding-bottom: 0; }
-.s3d-stack > section:first-child .s3d { padding-top: clamp(12px, 2.8vw, 26px); }
-.s3d-stack > section:last-child  .s3d { padding-bottom: clamp(18px, 3.4vw, 34px); }
-
-/* squared-off seams: one continuous column, rounded only at its two ends */
-.s3d-stack > section:not(:first-child) :is(.s3d__face, .s3d__wall, .s3d__shadow) { border-top-left-radius: 0; border-top-right-radius: 0; }
-.s3d-stack > section:not(:last-child)  :is(.s3d__face, .s3d__wall, .s3d__shadow) { border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
-.s3d-stack > section:not(:first-child) .s3d__face { border-top-width: 0; }
-.s3d-stack > section:not(:last-child)  .s3d__face { border-bottom-width: 0; }
-/* the extrusion wall + ground shadow only belong under the very last panel */
-.s3d-stack > section:not(:last-child) :is(.s3d__wall, .s3d__shadow) { display: none; }
+.s3d-stack > section { position: relative; z-index: 1; }
+.s3d-stack > section.reveal {
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+}
 
 .dot-join {
   position: relative; z-index: 3; pointer-events: none;
   left: 50%; margin-left: -50vw; width: 100vw;
-  height: var(--join-h);
-  margin: 6px 0;
+  height: calc(var(--join-h) + 12px);
 }
-.dot-join__in { max-width: var(--content-width); margin: 0 auto; padding: 0 var(--s3d-gutter); height: 100%; }
-.dot-join__field { position: relative; height: 100%; overflow: hidden; }
-/* strip after the last panel: nothing to overlap */
-.dot-join--end { margin-top: 0; margin-bottom: 0; }
-
-.page-wrapper > .dot-join--end { margin-top: 0 !important; }
-.page-wrapper > .dot-join--end + *,
-.page-wrapper > .dot-join--end + style + * { margin-top: 0 !important; }
+.dot-join::before,
+.dot-join::after {
+  content: "";
+  position: absolute;
+  z-index: 1;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: linear-gradient(180deg, var(--s3d-wall-a), var(--s3d-wall-b));
+  pointer-events: none;
+}
+.dot-join::before {
+  left: max(var(--s3d-gutter), calc((100vw - var(--content-width)) / 2 + var(--s3d-gutter)));
+}
+.dot-join::after {
+  right: max(var(--s3d-gutter), calc((100vw - var(--content-width)) / 2 + var(--s3d-gutter)));
+}
+.dot-join__in {
+  max-width: var(--content-width); margin: 0 auto; padding: 0 var(--s3d-gutter);
+  height: 100%; display: flex; align-items: center;
+}
+.dot-join__field { position: relative; height: var(--join-h); flex: 1; overflow: hidden; }
+.dot-join .dot-field {
+  background-image: radial-gradient(circle at center, var(--pattern-dot) 0.85px, transparent 1.15px);
+  background-size: 4.5px 4.5px;
+  background-position: 0 0;
+  background-repeat: repeat;
+}
