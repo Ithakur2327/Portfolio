@@ -9,7 +9,6 @@ import { SectionIcon } from "./SectionIcon";
 import { mq } from "@/lib/breakpoints";
 import { useIsLaptopUp, useIsTablet } from "@/lib/useBreakpoint";
 
-import { Panel3D } from "./Panel3D";
 const SF = "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', sans-serif";
 const MONO = "'SF Mono', 'Geist Mono', monospace";
 
@@ -1025,8 +1024,6 @@ export function StatsSection() {
       `}</style>
 
       <section id="stats" ref={statsRef} className={revealClass}>
-        <div style={{ position: "relative", left: "50%", marginLeft: "-50vw", width: "100vw", background: "var(--bg-base)" }}>
-          <Panel3D tilt={false}>
           <div className="about-content">
             <div>
               <span style={{ display: "inline-flex", alignItems: "center", gap: 10, fontSize: 28, fontWeight: 700, letterSpacing: "-0.03em", lineHeight: 1, fontFamily: SF, color: "var(--text-primary)" }}>
@@ -1050,8 +1047,6 @@ export function StatsSection() {
               </div>
             </div>
           </div>
-          </Panel3D>
-        </div>
       </section>
     </>
   );

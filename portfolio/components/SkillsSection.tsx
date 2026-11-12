@@ -6,7 +6,6 @@ import { useReveal } from "./useReveal";
 import { SectionTitleIcon } from "./SectionIcon";
 import { BP, cond, mq } from "@/lib/breakpoints";
 
-import { Panel3D } from "./Panel3D";
 // Fonts
 const MONO = "'Geist Mono', 'SF Mono', monospace";
 const SF   = "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', sans-serif";
@@ -146,7 +145,6 @@ function FallingIconsBox({ title, items, index = 0 }: { title: string; items: st
     if (!hasAppeared) return;
     const box = boxRef.current;
     if (!box) return;
-    if (window.matchMedia("(max-width: 767px), (pointer: coarse)").matches) return;
 
     let cancelled = false;
     let cleanup: (() => void) | null = null;
@@ -240,23 +238,48 @@ function FallingIconsBox({ title, items, index = 0 }: { title: string; items: st
       }
     );
 
-    const handleTouchStart = (e: TouchEvent) => { pointerDownRef.current = true; wake(); mouse.mousedown(e); };
-    const handleTouchMove = (e: TouchEvent) => {
+    const handlePointerDown = (e: PointerEvent) => {
+      if (e.pointerType !== "touch") return;
+      pointerDownRef.current = true;
+      wake();
+      mouse.mousedown(new MouseEvent("mousedown", {
+        clientX: e.clientX,
+        clientY: e.clientY,
+        button: 0,
+        bubbles: true,
+      }));
+    };
+    const handlePointerMove = (e: PointerEvent) => {
+      if (e.pointerType !== "touch") return;
       if (!mouseConstraint.body) return;
       e.preventDefault();
-      mouse.mousemove(e);
+      mouse.mousemove(new MouseEvent("mousemove", {
+        clientX: e.clientX,
+        clientY: e.clientY,
+        buttons: 1,
+        bubbles: true,
+      }));
     };
-    const handleTouchEnd = (e: TouchEvent) => { pointerDownRef.current = false; mouse.mouseup(e); };
+    const handlePointerEnd = (e: PointerEvent) => {
+      if (e.pointerType !== "touch") return;
+      pointerDownRef.current = false;
+      mouse.mouseup(new MouseEvent("mouseup", {
+        clientX: e.clientX,
+        clientY: e.clientY,
+        button: 0,
+        bubbles: true,
+      }));
+    };
 
     const handleMouseDown = () => { pointerDownRef.current = true; wake(); };
     const handleMouseUp = () => { pointerDownRef.current = false; };
     box.addEventListener("mousedown", handleMouseDown);
     window.addEventListener("mouseup", handleMouseUp);
 
-    box.addEventListener("touchstart", handleTouchStart, { passive: true });
-    box.addEventListener("touchmove", handleTouchMove, { passive: false });
-    box.addEventListener("touchend", handleTouchEnd, { passive: true });
-    box.addEventListener("touchcancel", handleTouchEnd, { passive: true });
+    box.addEventListener("pointerdown", handlePointerDown);
+    box.addEventListener("pointermove", handlePointerMove, { passive: false });
+    box.addEventListener("pointerup", handlePointerEnd);
+    box.addEventListener("pointercancel", handlePointerEnd);
 
     World.add(engine.world, [floor, leftWall, rightWall, ceiling, mouseConstraint, ...pieces.map(p => p.body)]);
 
@@ -370,10 +393,10 @@ function FallingIconsBox({ title, items, index = 0 }: { title: string; items: st
         window.removeEventListener("scroll", handleScroll);
         box.removeEventListener("mousedown", handleMouseDown);
         window.removeEventListener("mouseup", handleMouseUp);
-        box.removeEventListener("touchstart", handleTouchStart);
-        box.removeEventListener("touchmove", handleTouchMove);
-        box.removeEventListener("touchend", handleTouchEnd);
-        box.removeEventListener("touchcancel", handleTouchEnd);
+        box.removeEventListener("pointerdown", handlePointerDown);
+        box.removeEventListener("pointermove", handlePointerMove);
+        box.removeEventListener("pointerup", handlePointerEnd);
+        box.removeEventListener("pointercancel", handlePointerEnd);
         Events.off(mouseConstraint, "startdrag", enableGravity);
         clearTimeout(resizeTimer);
         cancelAnimationFrame(rafId);
@@ -536,7 +559,7 @@ export function SkillsSection() {
         }
         ${mq.tablet} {
           .skills-inner { max-width: 100% !important; padding: 22px 20px 24px !important; }
-          .falling-icons-row { flex-direction: column; gap: 24px; }
+          .falling-icons-row { flex-direction: column; gap: 14px; }
           .falling-icons-panel { width: 100%; }
           .falling-icons-box { min-height: 260px; }
           .falling-icons-flow { padding: 16px 14px; gap: 8px; }
@@ -556,7 +579,7 @@ export function SkillsSection() {
         }
         ${mq.mobile} {
           .skills-inner { padding: 18px 8px 18px !important; }
-          .falling-icons-row { flex-direction: column; gap: 22px; }
+          .falling-icons-row { flex-direction: column; gap: 14px; }
           .falling-icons-box {
             border-radius: 12px;
             min-height: 290px;
@@ -566,7 +589,7 @@ export function SkillsSection() {
           .falling-icons-flow { padding: 18px 12px; gap: 8px; }
           .falling-icon-chip {
             width: 54px; height: 58px; border-radius: 12px; gap: 4px; padding: 6px 4px 6px;
-              cursor: default; touch-action: pan-y;
+              cursor: grab; touch-action: none;
               background: linear-gradient(180deg, #f9fafb 0%, #e7eaee 36%, #dfe3e8 100%);
             box-shadow: inset 0 1px 0 rgba(255,255,255,0.9), inset 0 -4px 0 rgba(0,0,0,0.08), 0 8px 10px -12px rgba(0,0,0,0.38), 0 0 0 1px rgba(255,255,255,0.25);
           }
@@ -593,13 +616,6 @@ export function SkillsSection() {
       `}</style>
 
       <section ref={ref} id="skills" className={revealClass}>
-        <div style={{
-          position:"relative",
-          left:"50%", marginLeft:"-50vw",
-          width:"100vw",
-          background:"var(--bg-base)",
-        }}>
-          <Panel3D tilt={false}>
           <div className="skills-inner" style={{ maxWidth: "var(--content-width)", margin:"0 auto", padding:"26px 20px 24px" }}>
             <div style={{ paddingTop:0, marginBottom:4, display:"flex", alignItems:"center", gap:10 }}>
               <span style={{
@@ -619,8 +635,6 @@ export function SkillsSection() {
               <FallingIconsBox title="GenAI, DevOps & Tools" items={GENAI_DEVOPS_TOOLS_TECH} index={1} />
             </div>
           </div>
-          </Panel3D>
-        </div>
       </section>
     </>
   );

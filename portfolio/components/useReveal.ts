@@ -4,14 +4,12 @@ import { useEffect, useLayoutEffect, useRef, useState } from "react";
 const useIsomorphicLayoutEffect = typeof window !== "undefined" ? useLayoutEffect : useEffect;
 
 /**
- * Section entrance: fade in + rise 100px, 0.8s, ease-out-cubic — the exact
- * motion the old GSAP/ScrollTrigger version produced, done with one
- * IntersectionObserver and CSS transitions (`.reveal` in globals.css).
+ * Section entrance: replay the compositor-friendly CSS transition whenever
+ * the section enters the viewport.
  *
  * The classes are toggled straight on the element, NOT through React state:
  * a section used to re-render its whole subtree (heatmaps, skill chips, …)
- * every time it revealed. Now nothing re-renders. Once the entrance has played
- * the classes are removed, so the section keeps no transform / will-change.
+ * every time it revealed. Now nothing re-renders unless trackVisible is used.
  *
  * Only pass `trackVisible` if the component needs the boolean (it triggers one
  * re-render when the section becomes visible).
@@ -30,22 +28,35 @@ export function useReveal<T extends HTMLElement = HTMLElement>(threshold = 0.08,
     }
 
     el.classList.add("reveal");
-    let timer: ReturnType<typeof setTimeout> | undefined;
+    // Commit the hidden start state before observing; otherwise the first
+    // observer callback can add .visible before the browser paints it.
+    void getComputedStyle(el).opacity;
+    let frame = 0;
+    let finishTimer: ReturnType<typeof setTimeout> | undefined;
     const io = new IntersectionObserver(
       ([entry]) => {
-        if (!entry.isIntersecting) return;
-        io.disconnect();
-        el.classList.add("visible");
-        if (trackVisible) setVisible(true);
-        timer = setTimeout(() => el.classList.remove("reveal", "visible"), 900);
+        cancelAnimationFrame(frame);
+        if (finishTimer) clearTimeout(finishTimer);
+        if (entry.isIntersecting) {
+          frame = requestAnimationFrame(() => {
+            el.classList.add("is-revealing", "visible");
+            finishTimer = setTimeout(() => el.classList.remove("is-revealing"), 500);
+          });
+        } else {
+          el.classList.add("is-revealing");
+          el.classList.remove("visible");
+          finishTimer = setTimeout(() => el.classList.remove("is-revealing"), 500);
+        }
+        if (trackVisible) setVisible(entry.isIntersecting);
       },
       { rootMargin: `0px 0px -${threshold * 100}% 0px` },
     );
     io.observe(el);
     return () => {
       io.disconnect();
-      if (timer) clearTimeout(timer);
-      el.classList.remove("reveal", "visible");
+      cancelAnimationFrame(frame);
+      if (finishTimer) clearTimeout(finishTimer);
+      el.classList.remove("reveal", "visible", "is-revealing");
     };
   }, [threshold, trackVisible]);
 
