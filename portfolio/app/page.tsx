@@ -5,6 +5,7 @@ import { AboutSection }    from "@/components/AboutSection";
 import { DotJoin } from "@/components/DotBackground";
 import { ScrollFadeAndTop } from "@/components/ScrollFadeAndTop";
 import { ExperienceSection } from "@/components/ExperienceSection";
+import { Panel3D } from "@/components/Panel3D";
 import { getAvatarVersion }  from "@/lib/avatar";
 
 // Everything below the first screens is code-split: still server-rendered (so the
@@ -26,22 +27,26 @@ export default function Home() {
         <SparklesBridge />
         <div className="page-wrapper">
           <HeroSection avatarVersion={avatarVersion} />
-          <div className="s3d-stack">
-            <AboutSection />
-            <DotJoin />
-            <ExperienceSection />
-            <DotJoin />
-            <StatsSection />
-            <DotJoin />
-            <SkillsSection />
-            <DotJoin />
-            <ProjectsSection />
-            <DotJoin />
-            <EducationSection />
-            <DotJoin />
-            <CertificationsSection />
-            <DotJoin />
-            <QuoteBoard />
+          <div className="sections-shell">
+            <Panel3D className="sections-panel" tilt={false}>
+              <div className="s3d-stack">
+                <AboutSection />
+                <DotJoin />
+                <ExperienceSection />
+                <DotJoin />
+                <StatsSection />
+                <DotJoin />
+                <SkillsSection />
+                <DotJoin />
+                <ProjectsSection />
+                <DotJoin />
+                <EducationSection />
+                <DotJoin />
+                <CertificationsSection />
+                <DotJoin />
+                <QuoteBoard />
+              </div>
+            </Panel3D>
           </div>
           <Footer />
         </div>

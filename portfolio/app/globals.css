@@ -213,7 +213,7 @@ a, button, [role="button"] {
    width is controlled from one place.
 ═══════════════════════════════════════════════════════════ */
 :root {
-  --content-width: 950px;
+  --content-width: 900px;
   --content-width-inset: calc(var(--content-width) - 40px);
   --page-pad: 16px;
 }
@@ -271,21 +271,40 @@ a, button, [role="button"] {
 
 .nav-inner {
   max-width: var(--content-width); margin: 0 auto;
-  padding: 0 14px; height: calc(var(--nav-h) - 4px);
-  margin-top: 2px;
+  padding: 0 14px; height: var(--nav-h);
   display: flex; align-items: center; justify-content: space-between;
+  position: relative;
+  isolation: isolate;
   border: 1px solid color-mix(in srgb, var(--nav-border) 12%, transparent);
   border-radius: 16px;
+  background: transparent;
+  transition: border-color 0.2s ease;
+}
+.nav-inner::before {
+  content: "";
+  position: absolute;
+  inset: 0 -80px;
+  z-index: 0;
+  border-radius: inherit;
   background: color-mix(in srgb, var(--nav-bg) 1%, transparent);
-  backdrop-filter: blur(2px) saturate(105%);
-  -webkit-backdrop-filter: blur(2px) saturate(105%);
-  transition: background 0.2s ease, backdrop-filter 0.2s ease, border-color 0.2s ease;
+  backdrop-filter: blur(3px) saturate(110%);
+  -webkit-backdrop-filter: blur(3px) saturate(110%);
+  mask-image: linear-gradient(90deg, transparent 0, #000 80px, #000 calc(100% - 80px), transparent 100%);
+  -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 80px, #000 calc(100% - 80px), transparent 100%);
+  pointer-events: none;
+  transition: background 0.2s ease, backdrop-filter 0.2s ease;
+}
+.nav-inner > * {
+  position: relative;
+  z-index: 1;
 }
 .nav-root.scrolled .nav-inner {
   border-color: color-mix(in srgb, var(--nav-border) 28%, transparent);
+}
+.nav-root.scrolled .nav-inner::before {
   background: color-mix(in srgb, var(--nav-bg-scrolled) 16%, transparent);
-  backdrop-filter: blur(10px) saturate(130%);
-  -webkit-backdrop-filter: blur(10px) saturate(130%);
+  backdrop-filter: blur(6px) saturate(120%);
+  -webkit-backdrop-filter: blur(6px) saturate(120%);
 }
 .logo-area { position: relative; width: 47px; height: 47px; flex-shrink: 0; }
 .logo-i {
@@ -432,10 +451,10 @@ html.light {
   container-type: inline-size;
   max-width: var(--content-width);
   margin: 0 auto;
-  padding: clamp(12px, 3.2cqw, 26px) clamp(6px, 1.8vw, 20px) clamp(18px, 4.4cqw, 34px);
+  padding: 0 clamp(6px, 1.8vw, 20px);
 }
 .s3d__body {
-  --d: clamp(3px, 0.8cqw, 8px);      /* thickness of the slab */
+  --d: clamp(2px, 0.5cqw, 4px);      /* thickness of the slab */
   --r: clamp(14px, 2.6cqw, 24px);      /* corner radius */
   position: relative;
   border-radius: var(--r);
@@ -513,22 +532,25 @@ html:not(.light) .bridge-sky { visibility: hidden; }
   background-position: center;
 }
 
-/* Section entrance — fade in + rise 100px over 0.8s (ease-out-cubic): the same
-   motion the old GSAP version produced, now a pure CSS transition so it runs on
-   the compositor. useReveal() drops the class once it has played. */
+/* Keep section entrances to opacity and transform so they stay compositor-friendly. */
 .reveal {
   opacity: 0;
   visibility: hidden;
-  transform: translate3d(0, 100px, 0);
+  transform: translate3d(0, 18px, 0);
+  transition: opacity 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+              transform 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+              visibility 0s linear 0.45s;
+}
+.reveal.is-revealing {
   will-change: opacity, transform;
 }
 .reveal.visible {
   opacity: 1;
   visibility: visible;
   transform: none;
-  transition: opacity 0.8s cubic-bezier(0.215, 0.61, 0.355, 1),
-              transform 0.8s cubic-bezier(0.215, 0.61, 0.355, 1);
-  will-change: auto;
+  transition: opacity 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+              transform 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+              visibility 0s;
 }
 
 
@@ -801,10 +823,10 @@ img {
    the CSS only frames it.
 ═══════════════════════════════════════════════════════════ */
 .qb-content { padding: 16px 18px; }
-.qb-content .fb { max-width: 760px; margin-inline: auto; }
+.qb-content .fb { max-width: 680px; margin-inline: auto; }
 @media (--nav-collapse) { .qb-content { padding: 16px 14px; } }
 @media (--mobile) { .qb-content { padding: 14px 8px; } }
-.fb { position: relative; width: 100%; min-height: 365px; cursor: pointer; -webkit-tap-highlight-color: transparent; user-select: none; }
+.fb { position: relative; width: 100%; min-height: 0; cursor: pointer; -webkit-tap-highlight-color: transparent; user-select: none; }
 .fb-tilt { position: relative; transform-origin: 50% 50%; border-radius: 16px; }
 .fb-canvas {
   display: block; width: 100%; border-radius: 16px;
@@ -955,21 +977,45 @@ html.light .fb-canvas { box-shadow: 0 18px 34px -20px rgba(36,58,96,0.5), 0 0 0 
    SECTION PANELS — each section keeps the same standalone 3D
    slab treatment; DotJoin separates the panels.
 ═══════════════════════════════════════════════════════════ */
-:root { --s3d-gutter: clamp(6px, 1.8vw, 20px); --join-h: 46px; }
-@media (--mobile) { :root { --join-h: 38px; } }
+:root { --s3d-gutter: clamp(6px, 1.8vw, 20px); --join-h: 48px; }
+@media (--mobile) { :root { --join-h: 42px; } }
 
+.sections-shell {
+  position: relative;
+  width: 100%;
+  max-width: var(--content-width-inset);
+  margin-inline: auto;
+}
+.sections-panel.s3d {
+  width: 100%;
+  max-width: var(--content-width-inset);
+  padding: 0;
+}
+.sections-panel .s3d__face { background: var(--bg-base); }
 .s3d-stack { position: relative; }
 .s3d-stack > section { position: relative; z-index: 1; }
-.s3d-stack > section.reveal {
-  opacity: 1;
-  visibility: visible;
-  transform: none;
+.sections-panel .dot-join {
+  left: auto;
+  width: 100%;
+  height: var(--join-h);
+  margin: 0;
+  overflow: hidden;
 }
+.sections-panel .dot-join::before,
+.sections-panel .dot-join::after { display: none; }
+.sections-panel .dot-join__in {
+  max-width: none;
+  padding: 0;
+}
+.sections-panel .dot-join__field { margin-inline: 0; }
+.sections-shell + .footer-root { margin-top: 54px; }
 
 .dot-join {
   position: relative; z-index: 3; pointer-events: none;
   left: 50%; margin-left: -50vw; width: 100vw;
   height: calc(var(--join-h) + 12px);
+  margin-top: calc((var(--join-h) + 12px) / -2);
+  margin-bottom: calc((var(--join-h) + 12px) / -2);
 }
 .dot-join::before,
 .dot-join::after {
@@ -992,7 +1038,13 @@ html.light .fb-canvas { box-shadow: 0 18px 34px -20px rgba(36,58,96,0.5), 0 0 0 
   max-width: var(--content-width); margin: 0 auto; padding: 0 var(--s3d-gutter);
   height: 100%; display: flex; align-items: center;
 }
-.dot-join__field { position: relative; height: var(--join-h); flex: 1; overflow: hidden; }
+.dot-join__field {
+  position: relative;
+  height: 100%;
+  flex: 1;
+  margin-inline: -3px;
+  overflow: hidden;
+}
 .dot-join .dot-field {
   background-image: radial-gradient(circle at center, var(--pattern-dot) 0.85px, transparent 1.15px);
   background-size: 4.5px 4.5px;

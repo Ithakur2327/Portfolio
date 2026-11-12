@@ -5,7 +5,6 @@ import { useMotionValueEvent } from "motion/react";
 
 import { useReveal } from "./useReveal";
 import { SectionTitleIcon } from "./SectionIcon";
-import { Panel3D } from "./Panel3D";
 import VariableProximity, { type VariableProximityPiece } from "./VariableProximity";
 import { useScrollProgress } from "@/lib/useScrollProgress";
 import { mq } from "@/lib/breakpoints";
@@ -19,7 +18,7 @@ const GOLD = "#D4AF37";
 const PARAGRAPHS = [
   `Hi, I'm [[Indresh Thakur]], a [[full-stack developer]] with a growing focus on [[AI-powered products]]. I'm pursuing my [[B.Tech in Computer Science & Engineering (AI)]] at [[NIET, Greater Noida]], and I enjoy turning ideas into things people can actually use.`,
   `Most of my time goes into building [[end-to-end web apps]]: clean React and Next.js interfaces on the front, Node.js and FastAPI behind them, and [[LLMs, RAG and agent workflows]] where they genuinely help. Right now I'm [[freelancing]] with clients, and I recently wrapped up a remote [[full-stack internship]].`,
-  `Away from client work, I keep my fundamentals sharp with [[data structures and algorithms]], contribute to [[open source]], and join hackathons like [[Smart India Hackathon]]. I care about [[clean code]], [[clear communication]] and learning something new every week.`,
+  `Away from client work, I keep my fundamentals sharp with [[data structures and algorithms]], contribute to [[open source]]. I care about [[clean code]], [[clear communication]] and learning something new every week.`,
 ];
 
 const countHighlights = (s: string) => (s.match(/\[\[/g) ?? []).length;
@@ -108,17 +107,13 @@ export function AboutSection() {
       `}</style>
 
       <section id="about" ref={ref} className={revealClass}>
-        <div style={{ position: "relative", left: "50%", marginLeft: "-50vw", width: "100vw", background: "var(--bg-base)" }}>
-          <Panel3D tilt={false}>
-            <div className="ab-content">
-              <span style={{ display: "inline-flex", alignItems: "center", gap: 10, fontSize: 28, fontWeight: 700, letterSpacing: "-0.03em", lineHeight: 1, fontFamily: SF, color: "var(--text-primary)" }}>
-                <SectionTitleIcon type="about" />
-                About
-              </span>
-              <div style={{ height: 1, background: "var(--border)", margin: "18px 0 20px" }} />
-              <ScrollRevealText />
-            </div>
-          </Panel3D>
+        <div className="ab-content">
+          <span style={{ display: "inline-flex", alignItems: "center", gap: 10, fontSize: 28, fontWeight: 700, letterSpacing: "-0.03em", lineHeight: 1, fontFamily: SF, color: "var(--text-primary)" }}>
+            <SectionTitleIcon type="about" />
+            About
+          </span>
+          <div style={{ height: 1, background: "var(--border)", margin: "18px 0 20px" }} />
+          <ScrollRevealText />
         </div>
       </section>
     </>
