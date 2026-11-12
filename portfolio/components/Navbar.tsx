@@ -577,6 +577,12 @@ export function Navbar() {
         .nav-desktop-link:hover { color:var(--nav-link-hover); }
         .nav-desktop-link.active { color:var(--nav-link-hover); }
 
+        html.dark .nav-desktop-link,
+        html.dark .cmdk-trigger {
+          color:rgba(255,255,255,0.68);
+          font-weight:600;
+        }
+
         .nav-sep { width:1px;height:22px;align-self:center;background:var(--nav-border);flex-shrink:0; }
 
         .icon-btn {

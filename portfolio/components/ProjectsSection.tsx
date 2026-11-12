@@ -6,7 +6,6 @@ import { PROJECTS } from "@/lib/projects-data";
 import { ProjectsGrid } from "./ProjectsGrid";
 import { mq } from "@/lib/breakpoints";
 
-import { Panel3D } from "./Panel3D";
 import { MagneticButton } from "./MagneticButton";
 const SF = "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', sans-serif";
 
@@ -19,8 +18,6 @@ export function ProjectsSection() {
 
   return (
     <section id="projects" ref={revealRef} className={revealClass}>
-      <div style={{ position: "relative", left: "50%", marginLeft: "-50vw", width: "100vw", background: "var(--bg-base)" }}>
-        <Panel3D tilt={false}>
         <div className="proj-inner" style={{ maxWidth: "var(--content-width)", margin: "0 auto", padding: "26px 20px 26px" }}>
           <div style={{ paddingTop: 0, marginBottom: 4 }}>
             <span style={{ display: "inline-flex", alignItems: "center", gap: 10, fontSize: 28, fontWeight: 700, letterSpacing: "-0.03em", lineHeight: 1, fontFamily: SF, color: "var(--text-primary)" }}>
@@ -83,8 +80,6 @@ export function ProjectsSection() {
             </div>
           )}
         </div>
-        </Panel3D>
-      </div>
     </section>
   );
 }

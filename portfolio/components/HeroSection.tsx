@@ -281,7 +281,7 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
           background-image: url(/avatar-dark.jpg${avatarVersion ? `?v=${avatarVersion}` : ""});
           background-repeat: no-repeat;
           background-size: 100% auto;
-          background-position: 0 0;
+          background-position: center -4px;
         }
         html.light .h-avatar {
           background-image: url(/avatar-light.jpg${avatarVersion ? `?v=${avatarVersion}` : ""});
