@@ -314,7 +314,7 @@ function FallingIconsBox({ title, items, index = 0 }: { title: string; items: st
         return;
       }
 
-      const delta = Math.min(time - lastTime, 1000 / 30);
+      const delta = Math.min(time - lastTime, 1000 / 60);
       lastTime = time;
       Engine.update(engine, delta);
 
