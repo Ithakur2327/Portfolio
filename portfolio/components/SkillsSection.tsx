@@ -165,13 +165,13 @@ function FallingIconsBox({ title, items, index = 0 }: { title: string; items: st
 
     const pointerDownRef = { current: false };
     const engine = Engine.create({
-      positionIterations: 6,
-      velocityIterations: 4,
-      constraintIterations: 2,
+      positionIterations: 4,
+      velocityIterations: 3,
+      constraintIterations: 1,
     });
     engine.enableSleeping = true;
-    engine.world.gravity.y = 0;
-    let gravityEnabled = false;
+    engine.world.gravity.y = 0.85;
+    let gravityEnabled = true;
 
     const wallOpts = { isStatic: true, friction: 0.4 };
     let floor      = Bodies.rectangle(rect.width / 2, rect.height + 24, rect.width, 48, wallOpts);
@@ -191,7 +191,6 @@ function FallingIconsBox({ title, items, index = 0 }: { title: string; items: st
         chamfer: { radius: 10 },
         inertia: Infinity,
       });
-      Sleeping.set(body, true);
       return { el, body, hw: r.width / 2, hh: r.height / 2, awake: false };
     });
 
@@ -239,42 +238,25 @@ function FallingIconsBox({ title, items, index = 0 }: { title: string; items: st
     );
 
     const handlePointerDown = (e: PointerEvent) => {
-      if (e.pointerType !== "touch") return;
+      if (!(e.target instanceof Element) || !e.target.closest(".falling-icon-chip")) return;
+      box.setPointerCapture(e.pointerId);
       pointerDownRef.current = true;
       wake();
-      mouse.mousedown(new MouseEvent("mousedown", {
-        clientX: e.clientX,
-        clientY: e.clientY,
-        button: 0,
-        bubbles: true,
-      }));
+      mouse.mousedown(e);
     };
     const handlePointerMove = (e: PointerEvent) => {
-      if (e.pointerType !== "touch") return;
-      if (!mouseConstraint.body) return;
-      e.preventDefault();
-      mouse.mousemove(new MouseEvent("mousemove", {
-        clientX: e.clientX,
-        clientY: e.clientY,
-        buttons: 1,
-        bubbles: true,
-      }));
+      if (e.pointerType === "touch" && pointerDownRef.current) e.preventDefault();
+      mouse.mousemove(e);
     };
     const handlePointerEnd = (e: PointerEvent) => {
-      if (e.pointerType !== "touch") return;
       pointerDownRef.current = false;
-      mouse.mouseup(new MouseEvent("mouseup", {
-        clientX: e.clientX,
-        clientY: e.clientY,
-        button: 0,
-        bubbles: true,
-      }));
+      mouse.mouseup(e);
+      if (box.hasPointerCapture(e.pointerId)) box.releasePointerCapture(e.pointerId);
     };
 
-    const handleMouseDown = () => { pointerDownRef.current = true; wake(); };
-    const handleMouseUp = () => { pointerDownRef.current = false; };
-    box.addEventListener("mousedown", handleMouseDown);
-    window.addEventListener("mouseup", handleMouseUp);
+    box.removeEventListener("mousemove", mouse.mousemove);
+    box.removeEventListener("mousedown", mouse.mousedown);
+    box.removeEventListener("mouseup", mouse.mouseup);
 
     box.addEventListener("pointerdown", handlePointerDown);
     box.addEventListener("pointermove", handlePointerMove, { passive: false });
@@ -391,8 +373,6 @@ function FallingIconsBox({ title, items, index = 0 }: { title: string; items: st
       cleanup = () => {
         window.removeEventListener("resize", handleResize);
         window.removeEventListener("scroll", handleScroll);
-        box.removeEventListener("mousedown", handleMouseDown);
-        window.removeEventListener("mouseup", handleMouseUp);
         box.removeEventListener("pointerdown", handlePointerDown);
         box.removeEventListener("pointermove", handlePointerMove);
         box.removeEventListener("pointerup", handlePointerEnd);
@@ -443,7 +423,7 @@ export function SkillsSection() {
         .falling-icons-row {
           display: flex;
           align-items: stretch;
-          gap: 20px;
+          gap: 14px;
         }
         .falling-icons-panel {
           flex: 1 1 0;

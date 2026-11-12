@@ -39,13 +39,16 @@ export function useReveal<T extends HTMLElement = HTMLElement>(threshold = 0.08,
         if (finishTimer) clearTimeout(finishTimer);
         if (entry.isIntersecting) {
           frame = requestAnimationFrame(() => {
-            el.classList.add("is-revealing", "visible");
-            finishTimer = setTimeout(() => el.classList.remove("is-revealing"), 500);
+            el.classList.add("is-revealing");
+            frame = requestAnimationFrame(() => {
+              el.classList.add("visible");
+              finishTimer = setTimeout(() => el.classList.remove("is-revealing"), 700);
+            });
           });
         } else {
           el.classList.add("is-revealing");
           el.classList.remove("visible");
-          finishTimer = setTimeout(() => el.classList.remove("is-revealing"), 500);
+          finishTimer = setTimeout(() => el.classList.remove("is-revealing"), 700);
         }
         if (trackVisible) setVisible(entry.isIntersecting);
       },

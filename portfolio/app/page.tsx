@@ -23,7 +23,7 @@ export default function Home() {
   const avatarVersion = getAvatarVersion();
   return (
     <>
-      <main style={{ paddingTop: "var(--nav-h)" }}>
+      <main style={{ paddingTop: "calc(var(--nav-h) + env(safe-area-inset-top, 0px))" }}>
         <SparklesBridge />
         <div className="page-wrapper">
           <HeroSection avatarVersion={avatarVersion} />
