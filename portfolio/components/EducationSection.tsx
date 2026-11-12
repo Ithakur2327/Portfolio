@@ -6,7 +6,6 @@ import { useReveal } from "./useReveal";
 import { SectionIcon, SectionTitleIcon } from "./SectionIcon";
 import { mq } from "@/lib/breakpoints";
 
-import { Panel3D } from "./Panel3D";
 const SF = "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', sans-serif";
 const MONO = "'Geist Mono', monospace";
 
@@ -148,13 +147,6 @@ export function EducationSection() {
   return (
     <>
       <style suppressHydrationWarning>{`
-        .edu-outer {
-          position: relative;
-          left: 50%;
-          margin-left: -50vw;
-          width: 100vw;
-          background: var(--bg-base);
-        }
         .edu-inner {
           max-width: var(--content-width);
           margin: 0 auto;
@@ -380,8 +372,6 @@ export function EducationSection() {
         ref={ref}
         className={revealClass}
       >
-        <div className="edu-outer">
-          <Panel3D tilt={false}>
           <div className="edu-inner">
             <div className="edu-sec-titlerow">
               <h2 className="edu-sec-title">
@@ -397,8 +387,6 @@ export function EducationSection() {
               <LangNoteCard visible={visible} />
             </div>
           </div>
-          </Panel3D>
-        </div>
       </section>
     </>
   );

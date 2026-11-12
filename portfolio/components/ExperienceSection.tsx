@@ -1,7 +1,6 @@
 "use client";
 import { useReveal } from "./useReveal";
 import { SectionTitleIcon } from "./SectionIcon";
-import { Panel3D } from "./Panel3D";
 import { Timeline, type TimelineEntry } from "./Timeline";
 import { EXPERIENCE, type ExperienceItem } from "@/lib/experience-data";
 import { mq } from "@/lib/breakpoints";
@@ -54,17 +53,13 @@ export function ExperienceSection() {
       `}</style>
 
       <section id="experience" ref={ref} className={revealClass}>
-        <div style={{ position: "relative", left: "50%", marginLeft: "-50vw", width: "100vw", background: "var(--bg-base)" }}>
-          <Panel3D className="xp-panel" tilt={false}>
-            <div className="xp-content">
-              <span style={{ display: "inline-flex", alignItems: "center", gap: 10, fontSize: 28, fontWeight: 700, letterSpacing: "-0.03em", lineHeight: 1, fontFamily: SF, color: "var(--text-primary)" }}>
-                <SectionTitleIcon type="briefcase" />
-                Experience
-              </span>
-              <div style={{ height: 1, background: "var(--border)", margin: "18px 0 24px" }} />
-              <Timeline data={ENTRIES} />
-            </div>
-          </Panel3D>
+        <div className="xp-content">
+          <span style={{ display: "inline-flex", alignItems: "center", gap: 10, fontSize: 28, fontWeight: 700, letterSpacing: "-0.03em", lineHeight: 1, fontFamily: SF, color: "var(--text-primary)" }}>
+            <SectionTitleIcon type="briefcase" />
+            Experience
+          </span>
+          <div style={{ height: 1, background: "var(--border)", margin: "18px 0 24px" }} />
+          <Timeline data={ENTRIES} />
         </div>
       </section>
     </>
