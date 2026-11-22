@@ -2,8 +2,8 @@
  * Scenes for the split-flap board (components/FlapBoard.tsx).
  *
  * A scene is either
- *   • text   — a quote (+ optional attribution), word-wrapped and centred to whatever grid the
- *              board currently has (22×6 on desktop … 14×10 on a phone). Wrap words in [[double
+ *   • text   — a quote, word-wrapped and centred to whatever grid the
+ *              board currently has (22×5 on desktop … 12×8 on a phone). Wrap words in [[double
  *              brackets]] to highlight them.
  *   • code   — a few lines of syntax-coloured code / terminal output.
  *   • puzzle — a pattern of colour tiles.
@@ -18,8 +18,6 @@ export type Scene = {
   kind: "text" | "code" | "puzzle";
   /** text scenes: the quote. */
   text?: string;
-  /** text scenes: who said it / where it is from. */
-  by?: string;
   tone?: "gita" | "dev" | "fact";
   /** code scenes: wide layout, and an optional shorter version for narrow grids. */
   lines?: string[];
@@ -33,65 +31,65 @@ export type Scene = {
 };
 
 export const SCENES: Scene[] = [
-  { id: "g1", kind: "text", tone: "gita", anim: "center", hold: 8, label: "Bhagavad Gita 2.47",
-    text: "Your right is to [[the action alone]], never to its fruits.", by: "Bhagavad Gita 2.47" },
-  { id: "d1", kind: "text", tone: "dev", anim: "ltr", label: "Linus Torvalds",
-    text: "Talk is cheap. [[Show me the code.]]", by: "Linus Torvalds" },
+  { id: "g1", kind: "text", tone: "gita", anim: "center", hold: 8, label: "Wisdom on effort",
+    text: "Give your best to the work; release what you cannot control." },
+  { id: "d1", kind: "text", tone: "dev", anim: "ltr", label: "Build with intention",
+    text: "Build with care; every detail shapes someone's experience." },
   { id: "p1", kind: "puzzle", pattern: "rainbow", anim: "wave", hold: 4.5, label: "Colour puzzle" },
   { id: "c1", kind: "code", anim: "type", hold: 6.5, label: "A few lines of code",
     lines: ["const dev = () => {", "  while (1) learn();", "  ship();", "};"],
     short: ["dev = () => {", "  learn();", "  ship();", "}"] },
-  { id: "g2", kind: "text", tone: "gita", anim: "spiral", hold: 8, label: "Bhagavad Gita 6.5",
-    text: "[[Lift yourself]] by your own effort. You are your own friend or enemy.", by: "Bhagavad Gita 6.5" },
-  { id: "d2", kind: "text", tone: "dev", anim: "ttb", label: "Kent Beck",
-    text: "Make it [[work]]. Make it [[right]]. Make it [[fast]].", by: "Kent Beck" },
+  { id: "g2", kind: "text", tone: "gita", anim: "spiral", hold: 8, label: "Wisdom on self-reliance",
+    text: "[[Lift yourself]] through your own effort; be your own ally." },
+  { id: "d2", kind: "text", tone: "dev", anim: "ttb", label: "Keep it simple",
+    text: "Choose clarity; complexity always asks to be maintained." },
   { id: "p2", kind: "puzzle", pattern: "checker", anim: "diag", hold: 4.5, label: "Colour puzzle" },
-  { id: "g3", kind: "text", tone: "gita", anim: "center", hold: 8, label: "Bhagavad Gita 2.20",
-    text: "The soul is [[never born]], and it [[never dies]].", by: "Bhagavad Gita 2.20" },
+  { id: "g3", kind: "text", tone: "gita", anim: "center", hold: 8, label: "Wisdom on resilience",
+    text: "What is deepest in you is not defined by passing change." },
   { id: "c2", kind: "code", anim: "type", hold: 6, label: "Terminal",
     lines: ['$ git commit -m "wip"', "[main 4f2a9c1] wip", "1 file changed"],
     short: ["$ git push", "pushed: main", "all green"] },
-  { id: "d3", kind: "text", tone: "dev", anim: "diag", label: "Donald Knuth",
-    text: "[[Premature optimization]] is the root of all evil.", by: "Donald Knuth" },
+  { id: "d3", kind: "text", tone: "dev", anim: "diag", label: "Understand before optimizing",
+    text: "Measure first; improve what truly matters." },
   { id: "p3", kind: "puzzle", pattern: "rings", anim: "spiral", hold: 4.5, label: "Colour puzzle" },
-  { id: "g4", kind: "text", tone: "gita", anim: "wave", hold: 8, label: "Bhagavad Gita 2.14",
-    text: "Joy and pain come and go like the seasons. [[Bear them calmly.]]", by: "Bhagavad Gita 2.14" },
+  { id: "g4", kind: "text", tone: "gita", anim: "wave", hold: 8, label: "Wisdom on change",
+    text: "Joy and hardship pass like seasons. [[Meet both with steadiness.]]" },
   { id: "f1", kind: "text", tone: "fact", anim: "random", label: "Fun fact",
-    text: "The first computer bug was a real [[moth]], found in 1947.", by: "Harvard Mark II" },
+    text: "The first recorded computer bug was a real [[moth]], found in 1947." },
   { id: "c3", kind: "code", anim: "type", hold: 5.5, label: "A joke in code",
     lines: ["0.1 + 0.2", "= 0.30000000000000004", "// IEEE 754 magic"],
     short: ["0.1 + 0.2", "= 0.30000000", "// IEEE 754"] },
-  { id: "d4", kind: "text", tone: "dev", anim: "center", label: "Alan Kay",
-    text: "The best way to predict the future is to [[invent it.]]", by: "Alan Kay" },
+  { id: "d4", kind: "text", tone: "dev", anim: "center", label: "Make the future",
+    text: "The future changes when someone chooses to make it." },
   { id: "p4", kind: "puzzle", pattern: "glyph", anim: "random", hold: 5, label: "Colour puzzle" },
-  { id: "g5", kind: "text", tone: "gita", anim: "spiral", hold: 8, label: "Bhagavad Gita 4.38",
-    text: "Nothing in this world purifies like [[knowledge.]]", by: "Bhagavad Gita 4.38" },
-  { id: "d5", kind: "text", tone: "dev", anim: "ltr", label: "Brian Kernighan",
-    text: "[[Debugging]] is twice as hard as writing the code in the first place.", by: "Brian Kernighan" },
+  { id: "g5", kind: "text", tone: "gita", anim: "spiral", hold: 8, label: "Wisdom on learning",
+    text: "Knowledge becomes wisdom when it changes how you act." },
+  { id: "d5", kind: "text", tone: "dev", anim: "ltr", label: "Learn from debugging",
+    text: "A bug is a question; debugging is how you find the answer." },
   { id: "c4", kind: "code", anim: "type", hold: 6, label: "Terminal",
     lines: ["$ npm run dream", "> building...", "done in 0.42s"],
     short: ["$ npm run dev", "> building...", "done in 0.4s"] },
-  { id: "g6", kind: "text", tone: "gita", anim: "center", hold: 8, label: "Bhagavad Gita 6.35",
-    text: "The restless mind is tamed by [[practice]] and [[detachment.]]", by: "Bhagavad Gita 6.35" },
+  { id: "g6", kind: "text", tone: "gita", anim: "center", hold: 8, label: "Wisdom on practice",
+    text: "A restless mind grows steady through [[practice]] and [[patience.]]" },
   { id: "p5", kind: "puzzle", pattern: "mosaic", anim: "random", hold: 4.5, label: "Colour puzzle" },
-  { id: "d6", kind: "text", tone: "dev", anim: "ttb", label: "Phil Karlton",
-    text: "Two hard things in CS: [[cache invalidation]] and [[naming things.]]", by: "Phil Karlton" },
+  { id: "d6", kind: "text", tone: "dev", anim: "ttb", label: "Write for the next person",
+    text: "Clear names let the next reader focus on the real problem." },
   { id: "c5", kind: "code", anim: "type", hold: 6, label: "try / catch / finally",
     lines: ["try { build(); }", "catch { learn(); }", "finally { ship(); }"],
     short: ["try {", "  build();", "} catch {", "  learn();", "} finally {", "  ship();", "}"] },
-  { id: "g7", kind: "text", tone: "gita", anim: "wave", hold: 8, label: "Bhagavad Gita 2.48",
-    text: "Stay steady in success and failure. [[That evenness is yoga.]]", by: "Bhagavad Gita 2.48" },
+  { id: "g7", kind: "text", tone: "gita", anim: "wave", hold: 8, label: "Wisdom on balance",
+    text: "Stay steady in success and failure; [[keep your balance.]]" },
   { id: "p6", kind: "puzzle", pattern: "sunrise", anim: "center", hold: 4.5, label: "Colour puzzle" },
-  { id: "d7", kind: "text", tone: "dev", anim: "diag", label: "Edsger Dijkstra",
-    text: "[[Simplicity]] is prerequisite for [[reliability.]]", by: "Edsger W. Dijkstra" },
-  { id: "g8", kind: "text", tone: "gita", anim: "spiral", hold: 8, label: "Bhagavad Gita 17.3",
-    text: "A person is made by their faith. [[As they believe, so they become.]]", by: "Bhagavad Gita 17.3" },
+  { id: "d7", kind: "text", tone: "dev", anim: "diag", label: "Simplicity and reliability",
+    text: "[[Simplicity]] makes room for [[reliability.]]" },
+  { id: "g8", kind: "text", tone: "gita", anim: "spiral", hold: 8, label: "Wisdom on conviction",
+    text: "What you trust shapes the person you become." },
   { id: "c6", kind: "code", anim: "type", hold: 5.5, label: "404",
     lines: ["404", "BUG NOT FOUND", "// it's a feature"],
     short: ["404", "BUG NOT FOUND", "// a feature"] },
   { id: "p7", kind: "puzzle", pattern: "waves", anim: "ltr", hold: 4.5, label: "Colour puzzle" },
-  { id: "d8", kind: "text", tone: "dev", anim: "random", label: "Marc Andreessen",
-    text: "[[Software]] is eating the world.", by: "Marc Andreessen" },
+  { id: "d8", kind: "text", tone: "dev", anim: "random", label: "Technology and people",
+    text: "Technology matters most when it helps people do more." },
 ];
 
 /* ───────────────────────── palette ───────────────────────── */
@@ -146,6 +144,8 @@ export type Laid = {
 /* a word with one colour per character, so a highlight followed by punctuation stays glued together */
 type Word = { w: string; fg: number[] };
 
+const mono = (w: string, fg: number): Word => ({ w, fg: Array.from({ length: w.length }, () => fg) });
+
 function wrapWords(words: Word[], cols: number): Word[][] {
   const lines: Word[][] = [];
   let line: Word[] = [];
@@ -165,8 +165,6 @@ function wrapWords(words: Word[], cols: number): Word[][] {
   if (line.length) lines.push(line);
   return lines;
 }
-
-const mono = (w: string, fg: number): Word => ({ w, fg: Array.from({ length: w.length }, () => fg) });
 
 function parseHighlights(text: string, hlFg: number, baseFg: number): Word[] {
   const out: Word[] = [];
@@ -290,12 +288,9 @@ export function layoutScene(scene: Scene, cols: number, rows: number, cellAspect
   // text
   const tone = scene.tone ?? "dev";
   const hl = tone === "gita" ? FG.gold : tone === "fact" ? FG.pink : FG.teal;
-  const byFg = tone === "gita" ? FG.orange : FG.dim;
   const wrapCols = Math.max(8, cols - 2); // keep a one-flap margin on both sides
   const body = wrapWords(parseHighlights(scene.text ?? "", hl, FG.text), wrapCols);
-  const by = scene.by ? wrapWords([mono("-", byFg), ...scene.by.toUpperCase().split(/\s+/).map(w => mono(w, byFg))], wrapCols) : [];
-  const all: Word[][] = [...body, ...(by.length ? [[], ...by] : [])];
-  const lines = all.slice(0, rows);
+  const lines = body.slice(0, rows);
   const startRow = Math.max(0, Math.floor((rows - lines.length) / 2));
   lines.forEach((line, li) => {
     const len = line.reduce((a, w, i) => a + w.w.length + (i ? 1 : 0), 0);
@@ -313,7 +308,7 @@ export function layoutScene(scene: Scene, cols: number, rows: number, cellAspect
 
 /** Grid for a given board width (CSS px). Phones get fewer, bigger, easier-to-read cells. */
 export function gridFor(width: number) {
-  if (width >= 640) return { cols: 22, rows: 6, aspect: 1.7 };
-  if (width >= 440) return { cols: 18, rows: 8, aspect: 1.6 };
-  return { cols: 14, rows: 10, aspect: 1.5 };
+  if (width >= 640) return { cols: 22, rows: 5, aspect: 1.7 };
+  if (width >= 440) return { cols: 16, rows: 6, aspect: 1.6 };
+  return { cols: 12, rows: 8, aspect: 1.3 };
 }

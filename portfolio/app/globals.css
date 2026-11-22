@@ -213,7 +213,7 @@ a, button, [role="button"] {
    width is controlled from one place.
 ═══════════════════════════════════════════════════════════ */
 :root {
-  --content-width: 900px;
+  --content-width: 850px;
   --content-width-inset: calc(var(--content-width) - 40px);
   --page-pad: 16px;
 }
@@ -553,10 +553,10 @@ html:not(.light) .bridge-sky { visibility: hidden; }
 .reveal {
   opacity: 0;
   visibility: hidden;
-  transform: translate3d(0, 24px, 0);
-  transition: opacity 0.6s cubic-bezier(0.22, 1, 0.36, 1),
-              transform 0.6s cubic-bezier(0.22, 1, 0.36, 1),
-              visibility 0s linear 0.6s;
+  transform: translate3d(0, 18px, 0);
+  transition: opacity 0.58s var(--spring-fast),
+              transform 0.58s var(--spring-fast),
+              visibility 0s linear 0.58s;
 }
 .reveal.is-revealing {
   will-change: opacity, transform;
@@ -565,8 +565,8 @@ html:not(.light) .bridge-sky { visibility: hidden; }
   opacity: 1;
   visibility: visible;
   transform: none;
-  transition: opacity 0.6s cubic-bezier(0.22, 1, 0.36, 1),
-              transform 0.6s cubic-bezier(0.22, 1, 0.36, 1),
+  transition: opacity 0.58s var(--spring-fast),
+              transform 0.58s var(--spring-fast),
               visibility 0s;
 }
 
@@ -1002,6 +1002,7 @@ html.light .fb-canvas { box-shadow: 0 18px 34px -20px rgba(36,58,96,0.5), 0 0 0 
   width: 100%;
   max-width: var(--content-width-inset);
   margin-inline: auto;
+  background-color: var(--bg-base);
 }
 .sections-panel.s3d {
   width: 100%;

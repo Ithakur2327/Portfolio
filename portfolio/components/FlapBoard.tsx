@@ -7,7 +7,7 @@ import {
 } from "@/lib/board-scenes";
 
 /**
- * Split-flap board — gita verses, developer quotes, code and colour puzzles.
+ * Split-flap board — reflective quotes, code and colour puzzles.
  *
  * One <canvas>, drawn in whole device pixels (razor-sharp on retina / 4K
  * phones). Every distinct flap face (character + colour) is rendered ONCE into
@@ -23,14 +23,14 @@ const SCRAMBLE = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789#%&$?+=/<>{}";
 
 type Motion = { maxDelay: number; steps: [number, number]; stepMs: number; flipMs: number };
 const MOTION: Record<Anim, Motion> = {
-  center: { maxDelay: 1150, steps: [7, 11], stepMs: 135, flipMs: 128 },
-  ltr:    { maxDelay: 900,  steps: [6, 10], stepMs: 108, flipMs: 100 },
-  ttb:    { maxDelay: 900,  steps: [6, 10], stepMs: 108, flipMs: 100 },
-  diag:   { maxDelay: 950,  steps: [6, 10], stepMs: 108, flipMs: 100 },
-  random: { maxDelay: 950,  steps: [6, 11], stepMs: 108, flipMs: 100 },
-  spiral: { maxDelay: 1200, steps: [6, 10], stepMs: 112, flipMs: 104 },
-  wave:   { maxDelay: 1000, steps: [6, 10], stepMs: 108, flipMs: 100 },
-  type:   { maxDelay: 0,    steps: [2, 3],  stepMs: 78,  flipMs: 74 },
+  center: { maxDelay: 1150, steps: [7, 11], stepMs: 145, flipMs: 136 },
+  ltr:    { maxDelay: 900,  steps: [6, 10], stepMs: 120, flipMs: 112 },
+  ttb:    { maxDelay: 900,  steps: [6, 10], stepMs: 120, flipMs: 112 },
+  diag:   { maxDelay: 950,  steps: [6, 10], stepMs: 120, flipMs: 112 },
+  random: { maxDelay: 950,  steps: [6, 11], stepMs: 120, flipMs: 112 },
+  spiral: { maxDelay: 1200, steps: [6, 10], stepMs: 124, flipMs: 116 },
+  wave:   { maxDelay: 1000, steps: [6, 10], stepMs: 120, flipMs: 112 },
+  type:   { maxDelay: 0,    steps: [2, 3],  stepMs: 100, flipMs: 92 },
 };
 
 const rand = (a: number, b: number) => a + Math.floor(Math.random() * (b - a + 1));
@@ -131,7 +131,7 @@ export function FlapBoard() {
       padXP = Math.floor((WP - (cwP * cols + gapP * (cols - 1))) / 2);
       padYP = padMin;
       const HP = padYP * 2 + rows * chP + (rows - 1) * gapP;
-      fsP = Math.min(cwP * 1.12, chP * 0.6);
+      fsP = Math.min(cwP * 1.12, chP * (width < 440 ? 0.69 : 0.6));
       cssH = HP / dpr;
       canvas.width = WP;
       canvas.height = HP;
@@ -254,7 +254,7 @@ export function FlapBoard() {
 
     const announce = (s: Scene) => {
       if (!liveRef.current) return;
-      const text = s.kind === "text" ? `${(s.text ?? "").replace(/\[\[|\]\]/g, "")} — ${s.by ?? ""}` : s.kind === "code" ? (s.lines ?? []).join(" ") : s.label;
+      const text = s.kind === "text" ? (s.text ?? "").replace(/\[\[|\]\]/g, "") : s.kind === "code" ? (s.lines ?? []).join(" ") : s.label;
       liveRef.current.textContent = text;
     };
 
@@ -477,7 +477,7 @@ export function FlapBoard() {
   }, []);
 
   return (
-    <div ref={hostRef} className="fb" role="img" aria-label="Rotating board of Bhagavad Gita verses, developer quotes, code snippets and colour puzzles. Click to flip to the next card.">
+    <div ref={hostRef} className="fb" role="img" aria-label="Rotating board of reflective quotes, code snippets and colour puzzles. Click to flip to the next card.">
       <div ref={tiltRef} className="fb-tilt">
         <canvas ref={canvasRef} className="fb-canvas" />
         <span className="fb-sheen" aria-hidden="true" />
