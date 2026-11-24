@@ -32,7 +32,6 @@
 :root, html.dark {
   --bg-base:        #000000;
   --bg-base-edge:   #0a0a0a;
-  --page-surrounding: #18181b;
   --bg-secondary:   rgba(10,10,12,0.55);
   --bg-hover:       rgba(22,22,25,0.80);
   --bg-card:        #0d0d0f;
@@ -52,8 +51,8 @@
   --pattern-dot:    rgba(255,255,255,0.08);
   --pattern-dot-active: rgba(255,255,255,0.18);
  
-  --nav-bg:         rgba(24,24,27,0.32);
-  --nav-bg-scrolled: rgba(24,24,27,0.55);
+  --nav-bg:         rgba(0,0,0,0.32);
+  --nav-bg-scrolled: rgba(0,0,0,0.55);
   --nav-border:     rgba(255,255,255,0.06);
   --nav-link-color: rgba(255,255,255,0.45);
   --nav-link-hover: #fafafa;
@@ -82,7 +81,6 @@
 html.light {
   --bg-base:        #edf1f5;
   --bg-base-edge:   #e6e6e2;
-  --page-surrounding: #f5f0e6;
   --bg-secondary:   rgba(255,255,255,0.92);
   --bg-hover:       rgba(242,242,240,0.95);
   --bg-card:        #ffffff;
@@ -102,8 +100,8 @@ html.light {
   --pattern-dot:    rgba(0,0,0,0.10);
   --pattern-dot-active: rgba(0,0,0,0.22);
  
-  --nav-bg:         rgba(245,240,230,0.32);
-  --nav-bg-scrolled: rgba(245,240,230,0.55);
+  --nav-bg:         rgba(237,241,245,0.32);
+  --nav-bg-scrolled: rgba(237,241,245,0.55);
   --nav-border:     rgba(0,0,0,0.06);
   --nav-link-color: rgba(0,0,0,0.45);
   --nav-link-hover: #1a1a1a;
@@ -120,7 +118,10 @@ html.light {
 }
  
 html {
-  background: var(--page-surrounding);
+  background: #000000;
+}
+html.light {
+  background: #edf1f5;
 }
 /* ═══════════════════════════════════════════════════════════
    RESET
@@ -212,7 +213,7 @@ a, button, [role="button"] {
    width is controlled from one place.
 ═══════════════════════════════════════════════════════════ */
 :root {
-  --content-width: 950px;
+  --content-width: 900px;
   --content-width-inset: calc(var(--content-width) - 40px);
   --page-pad: 16px;
 }
@@ -1004,7 +1005,7 @@ html.light .fb-canvas { box-shadow: 0 18px 34px -20px rgba(36,58,96,0.5), 0 0 0 
   width: 100%;
   max-width: var(--content-width-inset);
   margin-inline: auto;
-  background: var(--page-surrounding);
+  background: var(--bg-base);
 }
 .sections-panel.s3d {
   width: 100%;

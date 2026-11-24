@@ -110,34 +110,40 @@ export function Timeline({ data }: { data: TimelineEntry[] }) {
         /* glass card: frosted pane, bright rim, specular sheen */
         .xp-card {
           position: relative; padding: 16px 18px 16px; border-radius: 16px; overflow: hidden;
-          background: linear-gradient(135deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.04) 46%, rgba(255,255,255,0.08) 100%);
-          border: 1px solid rgba(255,255,255,0.16);
+          background: linear-gradient(135deg, rgba(190,205,225,0.12) 0%, rgba(130,150,175,0.045) 46%, rgba(175,195,220,0.09) 100%);
+          border: 1px solid rgba(230,242,255,0.18);
           box-shadow:
             inset 0 1px 0 rgba(255,255,255,0.30),
             inset 0 -1px 0 rgba(255,255,255,0.05),
-            inset 0 0 28px rgba(255,255,255,0.03),
+            inset 0 0 28px rgba(255,255,255,0.04),
             0 16px 34px -16px rgba(0,0,0,0.75);
-          -webkit-backdrop-filter: blur(16px) saturate(155%);
-          backdrop-filter: blur(16px) saturate(155%);
+          -webkit-backdrop-filter: blur(20px) saturate(160%);
+          backdrop-filter: blur(20px) saturate(160%);
           transition: border-color 0.2s ease, box-shadow 0.2s ease;
         }
         .xp-card::before {
           content: ""; position: absolute; inset: 0; pointer-events: none; border-radius: inherit;
-          background: linear-gradient(115deg, rgba(255,255,255,0.20) 0%, rgba(255,255,255,0.05) 22%, rgba(255,255,255,0) 40%);
+          background: linear-gradient(115deg, rgba(255,255,255,0.20) 0%, rgba(255,255,255,0.045) 22%, rgba(255,255,255,0) 43%);
         }
         .xp-card > * { position: relative; }
-        .xp-card:hover { border-color: rgba(10,186,181,0.55); box-shadow: inset 0 1px 0 rgba(255,255,255,0.4), inset 0 0 28px rgba(10,186,181,0.07), 0 18px 38px -16px rgba(0,0,0,0.8); }
+        .xp-card:hover { border-color: rgba(10,186,181,0.55); box-shadow: inset 0 1px 0 rgba(255,255,255,0.34), inset 0 0 28px rgba(10,186,181,0.08), 0 18px 38px -16px rgba(0,0,0,0.8); }
         html.light .xp-card {
-          background: linear-gradient(135deg, rgba(255,255,255,0.72) 0%, rgba(255,255,255,0.38) 50%, rgba(255,255,255,0.6) 100%);
-          border-color: rgba(255,255,255,0.95);
+          background: linear-gradient(135deg, rgba(255,255,255,0.62) 0%, rgba(216,231,250,0.32) 50%, rgba(246,250,255,0.52) 100%);
+          border-color: rgba(255,255,255,0.86);
           box-shadow:
-            inset 0 1px 0 rgba(255,255,255,1),
-            inset 0 -1px 0 rgba(20,40,80,0.05),
-            0 14px 30px -14px rgba(36,58,96,0.35),
-            0 0 0 1px rgba(20,40,80,0.06);
+            inset 0 1px 0 rgba(255,255,255,0.92),
+            inset 0 -1px 0 rgba(20,40,80,0.09),
+            inset 0 0 28px rgba(255,255,255,0.38),
+            0 16px 34px -14px rgba(36,58,96,0.27),
+            0 0 0 1px rgba(70,105,155,0.12);
+          -webkit-backdrop-filter: blur(24px) saturate(180%);
+          backdrop-filter: blur(24px) saturate(180%);
         }
-        html.light .xp-card::before { background: linear-gradient(115deg, rgba(255,255,255,0.85) 0%, rgba(255,255,255,0.25) 24%, rgba(255,255,255,0) 42%); }
-        html.light .xp-card:hover { border-color: rgba(10,186,181,0.7); }
+        html.light .xp-card::before { background: linear-gradient(115deg, rgba(255,255,255,0.92) 0%, rgba(255,255,255,0.28) 24%, rgba(255,255,255,0) 44%); }
+        html.light .xp-card:hover {
+          border-color: rgba(10,186,181,0.7);
+          box-shadow: inset 0 1px 0 rgba(255,255,255,0.96), inset 0 0 28px rgba(10,186,181,0.09), 0 18px 36px -14px rgba(36,58,96,0.38);
+        }
         .xp-period-inline { display: none; }
         .xp-head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; }
         .xp-role { font-family: ${SF}; font-size: 17px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.25; color: var(--text-primary); }

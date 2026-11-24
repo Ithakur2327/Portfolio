@@ -258,33 +258,33 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
         }
 
         .h-full-divider {
-          width: calc(100% + var(--h-avatar-w));
-          margin-left: calc(-1 * var(--h-avatar-w));
+          width: 100%;
         }
 
         .h-avatar {
           width: 141px;
           min-width: 141px;
-          height: 130px;
-          min-height: 130px;
+          height: 141px;
+          min-height: 141px;
+          position: relative;
           flex-shrink: 0;
-          border-right: 1px solid var(--border);
           overflow: hidden;
           padding: 0;
-          display: flex;
-          align-items: flex-start;
-          justify-content: stretch;
-          border-radius: 22px;
+          border-radius: 50%;
           background-color: var(--bg-base);
-          /* Theme-switched in CSS: only the matching photo is ever fetched and
-             there is no flash on load. The photo is square and top-aligned. */
-          background-image: url(/avatar-dark.jpg${avatarVersion ? `?v=${avatarVersion}` : ""});
-          background-repeat: no-repeat;
-          background-size: 100% auto;
-          background-position: center -4px;
         }
-        html.light .h-avatar {
-          background-image: url(/avatar-light.jpg${avatarVersion ? `?v=${avatarVersion}` : ""});
+        .h-avatar::before {
+          content: "";
+          position: absolute;
+          inset: 0;
+          border: 1px solid var(--border);
+          border-radius: 50%;
+          background: url(/avatar-dark-8k.webp${avatarVersion ? `?v=${avatarVersion}` : ""}) center / cover no-repeat;
+          background-size: 108% 108%;
+          background-position: 55% 0%;
+        }
+        html.light .h-avatar::before {
+          background-image: url(/avatar-light-8k.webp${avatarVersion ? `?v=${avatarVersion}` : ""});
         }
         .name-plain { opacity: 0; }
         .h-nameblock {
@@ -356,9 +356,9 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
           .h-avatar {
             width: clamp(220px, 32vw, 300px) !important;
             min-width: clamp(220px, 32vw, 300px) !important;
-            height: calc(clamp(220px, 32vw, 300px) - 14px) !important;
-            min-height: calc(clamp(220px, 32vw, 300px) - 14px) !important;
-            border-radius: 28px !important;
+            height: clamp(220px, 32vw, 300px) !important;
+            min-height: clamp(220px, 32vw, 300px) !important;
+            border-radius: 50% !important;
           }
           .h-nameblock h1 {
             font-size: clamp(32px, 5.8vw, 56px) !important;
@@ -370,6 +370,10 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
           .h-verified-badge { width: clamp(20px, 4vw, 28px) !important; height: clamp(20px, 4vw, 28px) !important; }
           .h-nameblock {
             padding: 0 8px !important;
+          }
+          .h-full-divider {
+            width: calc(100% + 16px);
+            margin-left: -8px;
           }
           .h-nameblock > div:nth-child(2) {
             padding-top: 14px !important;
@@ -414,8 +418,8 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
           .h-avatar {
             width: clamp(178px, 19.5vw, 199px) !important;
             min-width: clamp(178px, 19.5vw, 199px) !important;
-            height: calc(clamp(178px, 19.5vw, 199px) - 14px) !important;
-            min-height: calc(clamp(178px, 19.5vw, 199px) - 14px) !important;
+            height: clamp(178px, 19.5vw, 199px) !important;
+            min-height: clamp(178px, 19.5vw, 199px) !important;
           }
           .h-nameblock h1 {
             font-size: clamp(30px, 3.7vw, 42px) !important;
@@ -437,8 +441,8 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
           .h-avatar {
             width: clamp(138px, calc(376.3px - 15.1vw), 198px) !important;
             min-width: clamp(138px, calc(376.3px - 15.1vw), 198px) !important;
-            height: clamp(125px, calc(363.3px - 15.1vw), 185px) !important;
-            min-height: clamp(125px, calc(363.3px - 15.1vw), 185px) !important;
+            height: clamp(138px, calc(376.3px - 15.1vw), 198px) !important;
+            min-height: clamp(138px, calc(376.3px - 15.1vw), 198px) !important;
           }
           .h-nameblock h1 {
             font-size: clamp(26px, calc(96px - 4.44vw), 42px) !important;
@@ -457,13 +461,11 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
           .h-avatar {
             width: clamp(110px, calc(52px + 19.4vw), 168px) !important;
             min-width: clamp(110px, calc(52px + 19.4vw), 168px) !important;
-            height: calc(clamp(110px, calc(52px + 19.4vw), 168px) - 8px) !important;
-            min-height: calc(clamp(110px, calc(52px + 19.4vw), 168px) - 8px) !important;
-            border-right: 1px solid var(--border) !important;
-            border-bottom: none !important;
+            height: clamp(110px, calc(52px + 19.4vw), 168px) !important;
+            min-height: clamp(110px, calc(52px + 19.4vw), 168px) !important;
             overflow: hidden !important;
             padding: 0 !important;
-            border-radius: 18px !important;
+            border-radius: 50% !important;
           }
           .h-nameblock {
             flex: 1 !important;

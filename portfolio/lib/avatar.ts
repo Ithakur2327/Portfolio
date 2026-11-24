@@ -11,8 +11,8 @@ export function getAvatarVersion(): string {
   try {
     const dir = path.join(process.cwd(), "public");
     return createHash("md5")
-      .update(readFileSync(path.join(dir, "avatar-dark.jpg")))
-      .update(readFileSync(path.join(dir, "avatar-light.jpg")))
+      .update(readFileSync(path.join(dir, "avatar-dark-8k.webp")))
+      .update(readFileSync(path.join(dir, "avatar-light-8k.webp")))
       .digest("hex")
       .slice(0, 10);
   } catch {
