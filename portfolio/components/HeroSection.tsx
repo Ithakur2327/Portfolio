@@ -520,7 +520,7 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
 
       <noscript><style>{".name-plain{opacity:1!important}"}</style></noscript>
       <section id="home">
-        <div style={{ position: "relative", left: "50%", marginLeft: "-50vw", width: "100vw" }}>
+        <div style={{ position: "relative", left: "50%", marginLeft: "-50vw", width: "100vw", background: "var(--bg-base)" }}>
           <div style={{ position: "absolute", inset: 0, zIndex: 0 }}>
             <DotField interactive />
           </div>

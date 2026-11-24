@@ -116,11 +116,7 @@ export default function RootLayout({
             @font-face) instead of a Google Fonts request. */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        {/* Loaded as non-blocking: preload the stylesheet, then swap its
-            media to "all" once it's fetched. This removes the render-blocking
-            round trip to Google Fonts that was stalling first paint — the
-            fonts, weights, and fallback behavior are identical, just applied
-            a beat sooner instead of holding up the page. */}
+        {/* Preload the stylesheet so its request starts before it is applied. */}
         {/* eslint-disable @next/next/no-page-custom-font -- that rule targets
             Pages Router per-page `_document.js` overrides, which only load
             fonts on one route; it doesn't apply to the App Router root
@@ -134,13 +130,7 @@ export default function RootLayout({
           id="gfonts-stylesheet"
           rel="stylesheet"
           href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&family=Fraunces:opsz,wght,SOFT@9..144,100..900,0..100&family=Press+Start+2P&display=swap"
-          media="print"
-        />
-        <script
-          dangerouslySetInnerHTML={{
-            __html:
-              "document.getElementById('gfonts-stylesheet').addEventListener('load',function(){this.media='all';});",
-          }}
+          media="all"
         />
         <noscript>
           <link

@@ -435,7 +435,7 @@ function LeetCodeStats({ username = "IThakur09" }: { username?: string }) {
         </a>
         <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
           <span style={{ fontSize: 10, color: "var(--text-muted)", fontFamily: MONO }}>Rank</span>
-          <span style={{ fontSize: 16, fontWeight: 800, color: "var(--text-primary)", fontFamily: MONO, letterSpacing: "-0.04em" }}>#{(d.ranking || GLOBAL_RANK).toLocaleString()}</span>
+          <span style={{ fontSize: 16, fontWeight: 800, color: "var(--text-primary)", fontFamily: MONO, letterSpacing: "-0.04em" }}>#{(d.ranking || GLOBAL_RANK).toLocaleString("en-IN")}</span>
         </div>
       </div>
       <div style={{ height: 1, background: "var(--border)", marginBottom: 10 }} />
@@ -675,7 +675,7 @@ function GitHubGraph({ username = "Ithakur2327" }: { username?: string }) {
         </a>
         {isLive && total !== null && total > 0 ? (
           <div style={{ textAlign: "right" }}>
-            <div style={{ fontSize: 20, fontWeight: 800, color: contribColor, fontFamily: MONO, letterSpacing: "-0.05em", lineHeight: 1 }}>{total.toLocaleString()}</div>
+            <div style={{ fontSize: 20, fontWeight: 800, color: contribColor, fontFamily: MONO, letterSpacing: "-0.05em", lineHeight: 1 }}>{total.toLocaleString("en-IN")}</div>
             <div style={{ fontSize: 9, color: "var(--text-muted)", fontFamily: MONO, marginTop: 2 }}>contributions this year</div>
           </div>
         ) : !loading ? (

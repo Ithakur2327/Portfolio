@@ -4,19 +4,16 @@ import React, { useEffect, useRef } from "react";
 import { useMotionValueEvent } from "motion/react";
 
 import { useReveal } from "./useReveal";
-import { SectionTitleIcon } from "./SectionIcon";
 import VariableProximity, { type VariableProximityPiece } from "./VariableProximity";
 import { useScrollProgress } from "@/lib/useScrollProgress";
 import { mq } from "@/lib/breakpoints";
-
-const SF = "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', sans-serif";
 
 const TIFFANY = "#0ABAB5";
 const GOLD = "#D4AF37";
 
 // [[double brackets]] = highlighted words (they light up one after another as you scroll)
 const PARAGRAPHS = [
-  `Hi, I'm [[Indresh Thakur]], a [[full-stack developer]] with a growing focus on [[AI-powered products]]. I'm pursuing my [[B.Tech in Computer Science & Engineering (AI)]] at [[NIET, Greater Noida]], and I enjoy turning ideas into things people can actually use.`,
+  `I'm [[Indresh Thakur]], a [[full-stack developer]] with a growing focus on [[AI-powered products]]. I'm pursuing my [[B.Tech in Computer Science & Engineering (AI)]] at [[NIET, Greater Noida]], and I enjoy turning ideas into things people can actually use.`,
   `Most of my time goes into building [[end-to-end web apps]]: clean React and Next.js interfaces on the front, Node.js and FastAPI behind them, and [[LLMs, RAG and agent workflows]] where they genuinely help. Right now I'm [[freelancing]] with clients, and I recently wrapped up a remote [[full-stack internship]].`,
   `Away from client work, I keep my fundamentals sharp with [[data structures and algorithms]], contribute to [[open source]]. I care about [[clean code]], [[clear communication]] and learning something new every week.`,
 ];
@@ -70,6 +67,12 @@ function ScrollRevealText() {
 // About section
 export function AboutSection() {
   const { ref, revealClass } = useReveal();
+  const [greeting, setGreeting] = React.useState("Good morning");
+
+  useEffect(() => {
+    const hour = new Date().getHours();
+    setGreeting(hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening");
+  }, []);
 
   return (
     <>
@@ -98,6 +101,15 @@ export function AboutSection() {
         html.light .ab-gold { color: #b8860b; text-shadow: none; }
 
         .ab-content { padding: 26px 24px 28px; }
+        .ab-greeting {
+          display: inline-block;
+          font-family: "Fraunces", "Iowan Old Style", Georgia, serif;
+          font-size: 28px;
+          font-weight: 700;
+          line-height: 1;
+          letter-spacing: -0.03em;
+          color: var(--text-primary);
+        }
         ${mq.navCollapse} { .ab-content { padding: 22px 18px 24px; } }
         ${mq.mobile} {
           .ab-content { padding: 18px 12px 20px; }
@@ -108,10 +120,7 @@ export function AboutSection() {
 
       <section id="about" ref={ref} className={revealClass}>
         <div className="ab-content">
-          <span style={{ display: "inline-flex", alignItems: "center", gap: 10, fontSize: 28, fontWeight: 700, letterSpacing: "-0.03em", lineHeight: 1, fontFamily: SF, color: "var(--text-primary)" }}>
-            <SectionTitleIcon type="about" />
-            About
-          </span>
+          <span className="ab-greeting">{greeting}</span>
           <div style={{ height: 1, background: "var(--border)", margin: "18px 0 20px" }} />
           <ScrollRevealText />
         </div>
