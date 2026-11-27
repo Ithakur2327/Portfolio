@@ -281,8 +281,8 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
           border: 1px solid var(--border);
           border-radius: 50%;
           background: url(/avatar-dark.jpg${avatarVersion ? `?v=${avatarVersion}` : ""}) center / cover no-repeat;
-          background-size: 132% 132%;
-          background-position: 50% 44%;
+          background-size: 104% 104%;
+          background-position: center;
         }
         html.light .h-avatar::before {
           background-image: url(/avatar-light.jpg${avatarVersion ? `?v=${avatarVersion}` : ""});
