@@ -5,6 +5,7 @@ import type Matter from "matter-js";
 import { useReveal } from "./useReveal";
 import { SectionTitleIcon } from "./SectionIcon";
 import { BP, cond, mq } from "@/lib/breakpoints";
+import { whenIdle } from "@/lib/idle";
 
 // Fonts
 const MONO = "'Geist Mono', 'SF Mono', monospace";
@@ -170,8 +171,8 @@ function FallingIconsBox({ title, items, index = 0 }: { title: string; items: st
       constraintIterations: 1,
     });
     engine.enableSleeping = true;
-    engine.world.gravity.y = 0.85;
-    let gravityEnabled = true;
+    engine.world.gravity.y = 0;
+    let gravityEnabled = false;
 
     const wallOpts = { isStatic: true, friction: 0.4 };
     let floor      = Bodies.rectangle(rect.width / 2, rect.height + 24, rect.width, 48, wallOpts);
@@ -191,6 +192,7 @@ function FallingIconsBox({ title, items, index = 0 }: { title: string; items: st
         chamfer: { radius: 10 },
         inertia: Infinity,
       });
+      Sleeping.set(body, true);
       return { el, body, hw: r.width / 2, hh: r.height / 2, awake: false };
     });
 
@@ -265,25 +267,6 @@ function FallingIconsBox({ title, items, index = 0 }: { title: string; items: st
 
     World.add(engine.world, [floor, leftWall, rightWall, ceiling, mouseConstraint, ...pieces.map(p => p.body)]);
 
-    let lastScrollY = window.scrollY;
-    let scrollImpulse = 0;
-    const handleScroll = () => {
-      const currentY = window.scrollY;
-      if (!inViewRef.current) {
-        // Off-screen: just track position, don't bank up an impulse that
-        // would otherwise dump itself as one big kick the instant this
-        // box scrolls into view.
-        lastScrollY = currentY;
-        scrollImpulse = 0;
-        return;
-      }
-      const delta = Math.max(-80, Math.min(80, currentY - lastScrollY));
-      lastScrollY = currentY;
-      scrollImpulse += delta;
-      wake();
-    };
-    window.addEventListener("scroll", handleScroll, { passive: true });
-
     let rafId = 0;
     let lastTime = performance.now();
     let running = true;
@@ -301,13 +284,7 @@ function FallingIconsBox({ title, items, index = 0 }: { title: string; items: st
         return;
       }
 
-      const rawKick = scrollImpulse !== 0 ? Math.max(-2.5, Math.min(2.5, -scrollImpulse * 0.045)) : 0;
-     
-      const kick = Math.abs(rawKick) > 0.4 ? rawKick : 0;
-      scrollImpulse = 0;
-
-   
-      const anyAwake = kick !== 0 || pieces.some(p => !p.body.isSleeping) || !!mouseConstraint.body || pointerDownRef.current;
+      const anyAwake = pieces.some(p => !p.body.isSleeping) || !!mouseConstraint.body || pointerDownRef.current;
       if (!anyAwake) {
         lastTime = time;
         running = false;
@@ -320,8 +297,7 @@ function FallingIconsBox({ title, items, index = 0 }: { title: string; items: st
 
       pieces.forEach((piece) => {
         const { el, body, hw, hh } = piece;
-        // Idle icon, no scroll kick this frame — nothing to compute or paint.
-        if (body.isSleeping && kick === 0) {
+        if (body.isSleeping) {
           if (piece.awake) {
             piece.awake = false;
             el.style.willChange = "auto";
@@ -333,11 +309,6 @@ function FallingIconsBox({ title, items, index = 0 }: { title: string; items: st
           el.style.willChange = "transform";
         }
 
-        if (kick !== 0 && body !== mouseConstraint.body) {
-          if (!gravityEnabled) enableGravity();
-          if (body.isSleeping) Sleeping.set(body, false);
-          Body.setVelocity(body, { x: body.velocity.x, y: body.velocity.y + kick });
-        }
         const maxX = Math.max(hw, rect.width - hw);
         const maxY = Math.max(hh, rect.height - hh);
         const clampedX = Math.min(Math.max(body.position.x, hw), maxX);
@@ -372,7 +343,6 @@ function FallingIconsBox({ title, items, index = 0 }: { title: string; items: st
 
       cleanup = () => {
         window.removeEventListener("resize", handleResize);
-        window.removeEventListener("scroll", handleScroll);
         box.removeEventListener("pointerdown", handlePointerDown);
         box.removeEventListener("pointermove", handlePointerMove);
         box.removeEventListener("pointerup", handlePointerEnd);
@@ -386,10 +356,25 @@ function FallingIconsBox({ title, items, index = 0 }: { title: string; items: st
       };
     };
 
-    const timer = setTimeout(() => requestAnimationFrame(start), 150 + index * 120);
+    let started = false;
+    let timer: ReturnType<typeof setTimeout>;
+    const startWhenIdle = () => {
+      if (cancelled || started) return;
+      started = true;
+      window.removeEventListener("scroll", deferStart);
+      void start().catch(error => console.error("Unable to initialize skill physics", error));
+    };
+    const deferStart = () => {
+      if (started) return;
+      clearTimeout(timer);
+      timer = setTimeout(startWhenIdle, 200 + index * 120);
+    };
+    timer = setTimeout(startWhenIdle, 150 + index * 120);
+    window.addEventListener("scroll", deferStart, { passive: true });
 
     return () => {
       cancelled = true;
+      window.removeEventListener("scroll", deferStart);
       clearTimeout(timer);
       cleanup?.();
     };
@@ -416,6 +401,17 @@ function FallingIconsBox({ title, items, index = 0 }: { title: string; items: st
 // Export
 export function SkillsSection() {
   const { ref, revealClass } = useReveal();
+
+  useEffect(() => {
+    let active = true;
+    const cancel = whenIdle(() => {
+      if (active) void import("matter-js").catch(error => console.error("Unable to preload skill physics", error));
+    }, 2500);
+    return () => {
+      active = false;
+      cancel();
+    };
+  }, []);
 
   return (
     <>

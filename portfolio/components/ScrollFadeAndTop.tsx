@@ -15,6 +15,8 @@ export function ScrollFadeAndTop() {
   const [dimmed, setDimmed] = useState(false);
   const [footerVisible, setFooterVisible] = useState(false);
   const lastY = useRef(0);
+  const scrolledPastRef = useRef(false);
+  const dimmedRef = useRef(false);
   const [hovered, setHovered] = useState(false);
 
   useEffect(() => {
@@ -33,8 +35,16 @@ export function ScrollFadeAndTop() {
       if (raf) return;
       raf = requestAnimationFrame(() => {
         const y = window.scrollY;
-        setScrolledPast(y > 400);
-        setDimmed(y > lastY.current + 1);
+        const nextScrolledPast = y > 400;
+        if (nextScrolledPast !== scrolledPastRef.current) {
+          scrolledPastRef.current = nextScrolledPast;
+          setScrolledPast(nextScrolledPast);
+        }
+        const nextDimmed = y > lastY.current + 1;
+        if (nextDimmed !== dimmedRef.current) {
+          dimmedRef.current = nextDimmed;
+          setDimmed(nextDimmed);
+        }
         lastY.current = y;
         raf = null;
       });

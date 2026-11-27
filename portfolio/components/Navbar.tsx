@@ -452,6 +452,7 @@ export function Navbar() {
   const { openPdf } = usePdfModal();
   const [mounted,  setMounted]  = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const scrolledRef = useRef(false);
   const [cmdOpen,  setCmdOpen]  = useState(false);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const activeSection = useActiveSection();
@@ -463,7 +464,12 @@ export function Navbar() {
   useEffect(() => { setMounted(true); }, []);
 
   useEffect(() => {
-    const fn = () => setScrolled(window.scrollY > 40);
+    const fn = () => {
+      const next = window.scrollY > 40;
+      if (next === scrolledRef.current) return;
+      scrolledRef.current = next;
+      setScrolled(next);
+    };
     window.addEventListener("scroll", fn, { passive: true });
     return () => window.removeEventListener("scroll", fn);
   }, []);
