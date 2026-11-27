@@ -58,9 +58,9 @@ export function ScrollFadeAndTop() {
         aria-hidden="true"
         style={{
           position: "fixed", left: 0, right: 0, bottom: 0,
-          height: "calc(44px + env(safe-area-inset-bottom, 0px))",
+          height: "calc(60px + env(safe-area-inset-bottom, 0px))",
           zIndex: 40, pointerEvents: "none",
-          background: "linear-gradient(to top, color-mix(in srgb, var(--bg-base) 82%, transparent), transparent)",
+          background: "linear-gradient(to top, color-mix(in srgb, var(--bg-base) 42%, transparent), transparent), radial-gradient(ellipse at 50% 100%, color-mix(in srgb, #0abab5 7%, transparent), transparent 72%)",
           opacity: footerVisible ? 0 : 1,
           transition: "opacity 0.25s ease",
         }}

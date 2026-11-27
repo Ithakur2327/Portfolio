@@ -254,7 +254,7 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
           flex-direction: row;
           align-items: stretch;
           overflow: hidden;
-          --h-avatar-w: 142px;
+          --h-avatar-w: 133px;
         }
 
         .h-full-divider {
@@ -262,11 +262,12 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
         }
 
         .h-avatar {
-          width: 141px;
-          min-width: 141px;
-          height: 141px;
-          min-height: 141px;
+          width: 132px;
+          min-width: 132px;
+          height: 132px;
+          min-height: 132px;
           position: relative;
+          align-self: center;
           flex-shrink: 0;
           overflow: hidden;
           padding: 0;
@@ -280,11 +281,12 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
           border: 1px solid var(--border);
           border-radius: 50%;
           background: url(/avatar-dark-8k.webp${avatarVersion ? `?v=${avatarVersion}` : ""}) center / cover no-repeat;
-          background-size: 108% 108%;
-          background-position: 55% 0%;
+          background-size: 104% 104%;
+          background-position: center;
         }
         html.light .h-avatar::before {
           background-image: url(/avatar-light-8k.webp${avatarVersion ? `?v=${avatarVersion}` : ""});
+          filter: brightness(0.94) saturate(1.04);
         }
         .name-plain { opacity: 0; }
         .h-nameblock {
@@ -352,12 +354,12 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
         }
 
         ${mq.tabletThroughLaptopNarrow} {
-          .h-profile { --h-avatar-w: calc(clamp(220px, 32vw, 300px) + 1px); }
+          .h-profile { --h-avatar-w: calc(clamp(200px, 30vw, 276px) + 1px); }
           .h-avatar {
-            width: clamp(220px, 32vw, 300px) !important;
-            min-width: clamp(220px, 32vw, 300px) !important;
-            height: clamp(220px, 32vw, 300px) !important;
-            min-height: clamp(220px, 32vw, 300px) !important;
+            width: clamp(200px, 30vw, 276px) !important;
+            min-width: clamp(200px, 30vw, 276px) !important;
+            height: clamp(200px, 30vw, 276px) !important;
+            min-height: clamp(200px, 30vw, 276px) !important;
             border-radius: 50% !important;
           }
           .h-nameblock h1 {
@@ -413,13 +415,13 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
         ${mq.laptopNarrow} {
           .h-profile {
             min-height: calc(clamp(220px, 24vw, 250px) - 14px) !important;
-            --h-avatar-w: calc(clamp(178px, 19.5vw, 199px) + 1px);
+            --h-avatar-w: calc(clamp(164px, 17.7vw, 184px) + 1px);
           }
           .h-avatar {
-            width: clamp(178px, 19.5vw, 199px) !important;
-            min-width: clamp(178px, 19.5vw, 199px) !important;
-            height: clamp(178px, 19.5vw, 199px) !important;
-            min-height: clamp(178px, 19.5vw, 199px) !important;
+            width: clamp(164px, 17.7vw, 184px) !important;
+            min-width: clamp(164px, 17.7vw, 184px) !important;
+            height: clamp(164px, 17.7vw, 184px) !important;
+            min-height: clamp(164px, 17.7vw, 184px) !important;
           }
           .h-nameblock h1 {
             font-size: clamp(30px, 3.7vw, 42px) !important;
@@ -437,12 +439,12 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
         }
 
         ${mq.laptopWide} {
-          .h-profile { --h-avatar-w: calc(clamp(138px, calc(376.3px - 15.1vw), 198px) + 1px); }
+          .h-profile { --h-avatar-w: calc(clamp(130px, calc(355px - 14.2vw), 184px) + 1px); }
           .h-avatar {
-            width: clamp(138px, calc(376.3px - 15.1vw), 198px) !important;
-            min-width: clamp(138px, calc(376.3px - 15.1vw), 198px) !important;
-            height: clamp(138px, calc(376.3px - 15.1vw), 198px) !important;
-            min-height: clamp(138px, calc(376.3px - 15.1vw), 198px) !important;
+            width: clamp(130px, calc(355px - 14.2vw), 184px) !important;
+            min-width: clamp(130px, calc(355px - 14.2vw), 184px) !important;
+            height: clamp(130px, calc(355px - 14.2vw), 184px) !important;
+            min-height: clamp(130px, calc(355px - 14.2vw), 184px) !important;
           }
           .h-nameblock h1 {
             font-size: clamp(26px, calc(96px - 4.44vw), 42px) !important;
@@ -456,13 +458,13 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
         }
 
         ${mq.mobile} {
-          .h-profile { flex-direction: row !important; --h-avatar-w: calc(clamp(110px, calc(52px + 19.4vw), 168px) + 1px); }
+          .h-profile { flex-direction: row !important; --h-avatar-w: calc(clamp(100px, calc(48px + 17.4vw), 150px) + 1px); }
 
           .h-avatar {
-            width: clamp(110px, calc(52px + 19.4vw), 168px) !important;
-            min-width: clamp(110px, calc(52px + 19.4vw), 168px) !important;
-            height: clamp(110px, calc(52px + 19.4vw), 168px) !important;
-            min-height: clamp(110px, calc(52px + 19.4vw), 168px) !important;
+            width: clamp(100px, calc(48px + 17.4vw), 150px) !important;
+            min-width: clamp(100px, calc(48px + 17.4vw), 150px) !important;
+            height: clamp(100px, calc(48px + 17.4vw), 150px) !important;
+            min-height: clamp(100px, calc(48px + 17.4vw), 150px) !important;
             overflow: hidden !important;
             padding: 0 !important;
             border-radius: 50% !important;

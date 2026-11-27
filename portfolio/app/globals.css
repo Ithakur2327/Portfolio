@@ -301,18 +301,18 @@ a, button, [role="button"] {
   z-index: 0;
   border-radius: inherit;
   background: color-mix(in srgb, var(--nav-bg) 1%, transparent);
-  backdrop-filter: blur(3px) saturate(110%);
-  -webkit-backdrop-filter: blur(3px) saturate(110%);
+  backdrop-filter: blur(4px) saturate(110%);
+  -webkit-backdrop-filter: blur(4px) saturate(110%);
   mask-image:
     linear-gradient(90deg, transparent 0, #000 80px, #000 calc(100% - 80px), transparent 100%),
-    linear-gradient(180deg, #000 calc(100% - 5px), transparent 100%);
+    linear-gradient(180deg, #000 0%, #000 calc(100% - 16px), transparent 100%);
   mask-composite: intersect;
   -webkit-mask-image:
     linear-gradient(90deg, transparent 0, #000 80px, #000 calc(100% - 80px), transparent 100%),
-    linear-gradient(180deg, #000 calc(100% - 5px), transparent 100%);
+    linear-gradient(180deg, #000 0%, #000 calc(100% - 16px), transparent 100%);
   -webkit-mask-composite: source-in;
   pointer-events: none;
-  transition: background 0.2s ease, backdrop-filter 0.2s ease;
+  transition: background-color 0.2s ease;
 }
 .nav-inner > * {
   position: relative;
@@ -322,9 +322,7 @@ a, button, [role="button"] {
   border-color: color-mix(in srgb, var(--nav-border) 28%, transparent);
 }
 .nav-root.scrolled .nav-inner::before {
-  background: color-mix(in srgb, var(--nav-bg-scrolled) 16%, transparent);
-  backdrop-filter: blur(6px) saturate(120%);
-  -webkit-backdrop-filter: blur(6px) saturate(120%);
+  background: color-mix(in srgb, var(--nav-bg-scrolled) 12%, transparent);
 }
 .logo-area { position: relative; width: 47px; height: 47px; flex-shrink: 0; }
 .logo-i {
@@ -354,6 +352,7 @@ a, button, [role="button"] {
   border-radius: 12px;
   display: block;
 }
+html.light .logo-avatar img { filter: brightness(0.94) saturate(1.04); }
 
 html.intro-active { overflow: hidden; }
 html.intro-active body { overflow: hidden; }
@@ -603,27 +602,20 @@ html:not(.light) .bridge-sky { visibility: hidden; }
 }
 
 ::view-transition-group(root) {
-  animation-timing-function: var(--expo-out);
+  animation-duration: 180ms;
+  animation-timing-function: ease-out;
 }
-::view-transition-new(root) {
-  mask: url('data:image/svg+xml,<svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M0 0H40L0 40V0Z" fill="url(%23paint0_linear_16_14)"/><defs><linearGradient id="paint0_linear_16_14" x1="0" y1="0" x2="20.5" y2="20.5" gradientUnits="userSpaceOnUse"><stop stop-color="current"/><stop offset="0.84506" stop-color="current" stop-opacity="0.99"/><stop offset="0.9506" stop-color="current" stop-opacity="0"/><stop offset="1" stop-color="current" stop-opacity="0"/></linearGradient></defs></svg>')
-    top left / 0 no-repeat;
-  mask-origin: top left;
-  animation: scale 1.5s;
-  animation-fill-mode: both;
+::view-transition-new(root),
+::view-transition-old(root) {
+  animation-duration: 180ms;
 }
-::view-transition-old(root),
-.dark::view-transition-old(root) {
-  animation: scale 1.5s;
-  animation-fill-mode: both;
-  z-index: -1;
-  transform-origin: top left;
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(root),
+  ::view-transition-new(root),
+  ::view-transition-old(root) {
+    animation-duration: 0.01ms;
+  }
 }
-
-@keyframes scale {
-  to { mask-size: 200vmax; }
-}
-
 
 
   body { -webkit-font-smoothing: subpixel-antialiased; }
@@ -740,6 +732,10 @@ img {
 ═══════════════════════════════════════════════════════════ */
 @media (--nav-collapse) {
   .page-wrapper { padding: 0; }
+  .nav-inner::before {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
 }
 
 @media (--nav-collapse) {
