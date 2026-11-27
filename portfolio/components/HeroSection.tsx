@@ -280,12 +280,12 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
           inset: 0;
           border: 1px solid var(--border);
           border-radius: 50%;
-          background: url(/avatar-dark-8k.webp${avatarVersion ? `?v=${avatarVersion}` : ""}) center / cover no-repeat;
-          background-size: 104% 104%;
-          background-position: center;
+          background: url(/avatar-dark.jpg${avatarVersion ? `?v=${avatarVersion}` : ""}) center / cover no-repeat;
+          background-size: 132% 132%;
+          background-position: 50% 44%;
         }
         html.light .h-avatar::before {
-          background-image: url(/avatar-light-8k.webp${avatarVersion ? `?v=${avatarVersion}` : ""});
+          background-image: url(/avatar-light.jpg${avatarVersion ? `?v=${avatarVersion}` : ""});
           filter: brightness(0.94) saturate(1.04);
         }
         .name-plain { opacity: 0; }

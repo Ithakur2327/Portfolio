@@ -102,7 +102,7 @@ export default function RootLayout({
             is fetched in parallel with JS instead of after hydration. */}
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{var t=localStorage.getItem('theme');var d=t?t==='dark':true;var l=document.createElement('link');l.rel='preload';l.as='image';l.fetchPriority='high';l.href='/avatar-'+(d?'dark':'light')+'-8k.webp?v=${avatarVersion}';document.head.appendChild(l);}catch(e){}})();`,
+            __html: `(function(){try{var t=localStorage.getItem('theme');var d=t?t==='dark':true;var l=document.createElement('link');l.rel='preload';l.as='image';l.fetchPriority='high';l.href='/avatar-'+(d?'dark':'light')+'.jpg?v=${avatarVersion}';document.head.appendChild(l);}catch(e){}})();`,
           }}
         />
 
@@ -173,7 +173,7 @@ export default function RootLayout({
                 var stored = null;
                 try { stored = localStorage.getItem('theme'); } catch (e) {}
                 var isDark = stored ? stored === 'dark' : true;
-                var src = (isDark ? '/avatar-dark-8k.webp' : '/avatar-light-8k.webp') + '?v=${avatarVersion}';
+                var src = (isDark ? '/avatar-dark.jpg' : '/avatar-light.jpg') + '?v=${avatarVersion}';
                 var shell = document.createElement('div');
                 shell.id = 'intro-shell';
                 // This shell owns the entire loading-hold visual by

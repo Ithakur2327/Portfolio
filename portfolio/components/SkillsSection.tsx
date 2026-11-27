@@ -171,8 +171,7 @@ function FallingIconsBox({ title, items, index = 0 }: { title: string; items: st
       constraintIterations: 1,
     });
     engine.enableSleeping = true;
-    engine.world.gravity.y = 0;
-    let gravityEnabled = false;
+    engine.world.gravity.y = 0.85;
 
     const wallOpts = { isStatic: true, friction: 0.4 };
     let floor      = Bodies.rectangle(rect.width / 2, rect.height + 24, rect.width, 48, wallOpts);
@@ -192,7 +191,8 @@ function FallingIconsBox({ title, items, index = 0 }: { title: string; items: st
         chamfer: { radius: 10 },
         inertia: Infinity,
       });
-      Sleeping.set(body, true);
+      Sleeping.set(body, false);
+      Body.setVelocity(body, { x: 0, y: 3 });
       return { el, body, hw: r.width / 2, hh: r.height / 2, awake: false };
     });
 
@@ -224,17 +224,10 @@ function FallingIconsBox({ title, items, index = 0 }: { title: string; items: st
       constraint: { stiffness: 0.2, render: { visible: false } },
     });
 
-    // Turn on gravity the first time the user actually drags an icon.
-    const enableGravity = () => {
-      if (gravityEnabled) return;
-      gravityEnabled = true;
-      engine.world.gravity.y = 0.85;
-    };
     Events.on(
       mouseConstraint,
       "startdrag",
       (event: Matter.IEvent<Matter.MouseConstraint> & { body?: Matter.Body }) => {
-        enableGravity();
         if (event?.body) Sleeping.set(event.body, false);
       }
     );
@@ -347,7 +340,6 @@ function FallingIconsBox({ title, items, index = 0 }: { title: string; items: st
         box.removeEventListener("pointermove", handlePointerMove);
         box.removeEventListener("pointerup", handlePointerEnd);
         box.removeEventListener("pointercancel", handlePointerEnd);
-        Events.off(mouseConstraint, "startdrag", enableGravity);
         clearTimeout(resizeTimer);
         cancelAnimationFrame(rafId);
         wakeRef.current = () => {};
