@@ -299,7 +299,7 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
           inset: 0;
           border: 1px solid var(--border);
           border-radius: 50%;
-          background: url(/avatar-dark-8k.webp${avatarVersion ? `?v=${avatarVersion}` : ""}) center 70% / 96% 96% no-repeat;
+          background: url(/avatar-dark-8k.webp${avatarVersion ? `?v=${avatarVersion}` : ""}) center bottom / 92% 92% no-repeat;
           background-color: #030303;
         }
         html.light .h-avatar::before {

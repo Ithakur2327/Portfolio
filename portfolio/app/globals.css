@@ -213,7 +213,7 @@ a, button, [role="button"] {
    width is controlled from one place.
 ═══════════════════════════════════════════════════════════ */
 :root {
-  --content-width: 900px;
+  --content-width: 1000px;
   --content-width-inset: calc(var(--content-width) - 40px);
   --page-pad: 16px;
 }
