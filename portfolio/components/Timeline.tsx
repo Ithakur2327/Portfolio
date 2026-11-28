@@ -128,18 +128,18 @@ export function Timeline({ data }: { data: TimelineEntry[] }) {
         .xp-card > * { position: relative; }
         .xp-card:hover { border-color: rgba(10,186,181,0.55); box-shadow: inset 0 1px 0 rgba(255,255,255,0.34), inset 0 0 28px rgba(10,186,181,0.08), 0 18px 38px -16px rgba(0,0,0,0.8); }
         html.light .xp-card {
-          background: linear-gradient(135deg, rgba(255,255,255,0.62) 0%, rgba(216,231,250,0.32) 50%, rgba(246,250,255,0.52) 100%);
-          border-color: rgba(255,255,255,0.86);
+          background: linear-gradient(135deg, rgba(194,210,232,0.78) 0%, rgba(177,196,222,0.62) 50%, rgba(207,223,241,0.74) 100%);
+          border-color: rgba(111,135,166,0.38);
           box-shadow:
-            inset 0 1px 0 rgba(255,255,255,0.92),
-            inset 0 -1px 0 rgba(20,40,80,0.09),
-            inset 0 0 28px rgba(255,255,255,0.38),
-            0 16px 34px -14px rgba(36,58,96,0.27),
-            0 0 0 1px rgba(70,105,155,0.12);
+            inset 0 1px 0 rgba(255,255,255,0.78),
+            inset 0 -1px 0 rgba(20,40,80,0.12),
+            inset 0 0 28px rgba(255,255,255,0.24),
+            0 16px 34px -14px rgba(36,58,96,0.32),
+            0 0 0 1px rgba(70,105,155,0.16);
           -webkit-backdrop-filter: blur(24px) saturate(180%);
           backdrop-filter: blur(24px) saturate(180%);
         }
-        html.light .xp-card::before { background: linear-gradient(115deg, rgba(255,255,255,0.92) 0%, rgba(255,255,255,0.28) 24%, rgba(255,255,255,0) 44%); }
+        html.light .xp-card::before { background: linear-gradient(115deg, rgba(255,255,255,0.68) 0%, rgba(255,255,255,0.16) 24%, rgba(255,255,255,0) 44%); }
         html.light .xp-card:hover {
           border-color: rgba(10,186,181,0.7);
           box-shadow: inset 0 1px 0 rgba(255,255,255,0.96), inset 0 0 28px rgba(10,186,181,0.09), 0 18px 36px -14px rgba(36,58,96,0.38);
