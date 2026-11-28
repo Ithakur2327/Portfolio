@@ -289,10 +289,9 @@ a, button, [role="button"] {
   display: flex; align-items: center; justify-content: space-between;
   position: relative;
   isolation: isolate;
-  border: 1px solid color-mix(in srgb, var(--nav-border) 12%, transparent);
+  border: none;
   border-radius: 0 0 16px 16px;
   background: transparent;
-  transition: border-color 0.2s ease;
 }
 .nav-inner::before {
   content: "";
@@ -317,9 +316,6 @@ a, button, [role="button"] {
 .nav-inner > * {
   position: relative;
   z-index: 1;
-}
-.nav-root.scrolled .nav-inner {
-  border-color: color-mix(in srgb, var(--nav-border) 28%, transparent);
 }
 .nav-root.scrolled .nav-inner::before {
   background: color-mix(in srgb, var(--nav-bg-scrolled) 12%, transparent);
@@ -732,10 +728,6 @@ img {
 ═══════════════════════════════════════════════════════════ */
 @media (--nav-collapse) {
   .page-wrapper { padding: 0; }
-  .nav-inner::before {
-    backdrop-filter: none;
-    -webkit-backdrop-filter: none;
-  }
 }
 
 @media (--nav-collapse) {

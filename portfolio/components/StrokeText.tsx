@@ -296,6 +296,7 @@ const StrokeText = ({
     let redraw: gsap.core.Timeline | null = null;
     let startTimer: ReturnType<typeof setTimeout> | undefined;
     let replayTimer: ReturnType<typeof setInterval> | undefined;
+    let visibilityListener: (() => void) | null = null;
     const listeners: (() => void)[] = [];
 
     const listen = (handler: () => void) => {
@@ -323,6 +324,10 @@ const StrokeText = ({
         timeline.play(0);
       };
       startTimer = setTimeout(play, Math.max(0, startDelay) * 1000);
+      visibilityListener = () => {
+        if (!document.hidden && !timeline) play();
+      };
+      document.addEventListener('visibilitychange', visibilityListener);
 
       if (replayEvery && replayEvery > 0 && trigger !== 'loop') {
         replayTimer = setInterval(play, replayEvery * 1000);
@@ -352,6 +357,7 @@ const StrokeText = ({
 
     return () => {
       listeners.forEach(handler => root.removeEventListener('pointerenter', handler));
+      if (visibilityListener) document.removeEventListener('visibilitychange', visibilityListener);
       if (startTimer) clearTimeout(startTimer);
       if (replayTimer) clearInterval(replayTimer);
       timeline?.kill();

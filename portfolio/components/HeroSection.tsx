@@ -32,6 +32,7 @@ function AnimatedName() {
     if (!intro) return cancel;
     const done = () => setHold(false);
     window.addEventListener("intro:complete", done, { once: true });
+    if (!document.documentElement.classList.contains("intro-active")) done();
     return () => {
       cancel();
       window.removeEventListener("intro:complete", done);
@@ -100,7 +101,12 @@ function LiveClock() {
     );
     update(); const id = setInterval(update, 30000); return () => clearInterval(id);
   },[]);
-  return <span style={{fontFamily:"'Geist Mono',monospace"}}>{time||"--:-- IST"}</span>;
+  const [hours, remainder] = (time || "--:-- IST").split(":");
+  return (
+    <span style={{fontFamily:"'Geist Mono',monospace", fontVariantNumeric:"tabular-nums"}}>
+      {hours}<span className="clock-colon" aria-hidden="true">:</span>{remainder}
+    </span>
+  );
 }
 
 function IBox({color, children}:{color?:string; children:React.ReactNode}) {
@@ -224,8 +230,21 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
       <style suppressHydrationWarning>{`
         @keyframes fsIn  { from{transform:translateY(7px);opacity:0} to{transform:none;opacity:1} }
         @keyframes fsOut { from{transform:none;opacity:1} to{transform:translateY(-7px);opacity:0} }
+        @keyframes clock-colon-blink {
+          0%, 49.9% { opacity:1; }
+          50%, 100% { opacity:0; }
+        }
         .fs-in  { animation: fsIn  0.28s cubic-bezier(0.16,1,0.3,1) forwards }
         .fs-out { animation: fsOut 0.22s ease-in forwards }
+        .clock-colon {
+          display:inline-block;
+          line-height:1;
+          vertical-align:baseline;
+          animation:clock-colon-blink 1s steps(1,end) infinite;
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .clock-colon { animation:none; }
+        }
 
         .subtitle-shine {
           background: linear-gradient(
@@ -280,12 +299,12 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
           inset: 0;
           border: 1px solid var(--border);
           border-radius: 50%;
-          background: url(/avatar-dark.jpg${avatarVersion ? `?v=${avatarVersion}` : ""}) center / cover no-repeat;
-          background-size: 104% 104%;
-          background-position: center;
+          background: url(/avatar-dark-8k.webp${avatarVersion ? `?v=${avatarVersion}` : ""}) center 70% / 96% 96% no-repeat;
+          background-color: #030303;
         }
         html.light .h-avatar::before {
-          background-image: url(/avatar-light.jpg${avatarVersion ? `?v=${avatarVersion}` : ""});
+          background-image: url(/avatar-light-8k.webp${avatarVersion ? `?v=${avatarVersion}` : ""});
+          background-color: #65bde0;
           filter: brightness(0.94) saturate(1.04);
         }
         .name-plain { opacity: 0; }
@@ -363,7 +382,7 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
             border-radius: 50% !important;
           }
           .h-nameblock h1 {
-            font-size: clamp(32px, 5.8vw, 56px) !important;
+            font-size: clamp(30px, 5.5vw, 52px) !important;
             font-weight: 800 !important;
             line-height: 1 !important;
             letter-spacing: 0.02em !important;
@@ -424,7 +443,7 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
             min-height: clamp(164px, 17.7vw, 184px) !important;
           }
           .h-nameblock h1 {
-            font-size: clamp(30px, 3.7vw, 42px) !important;
+            font-size: clamp(28px, 3.5vw, 40px) !important;
             font-weight: 800 !important;
             line-height: 1 !important;
           }
@@ -447,7 +466,7 @@ export function HeroSection({ avatarVersion }: { avatarVersion?: string } = {}) 
             min-height: clamp(130px, calc(355px - 14.2vw), 184px) !important;
           }
           .h-nameblock h1 {
-            font-size: clamp(26px, calc(96px - 4.44vw), 42px) !important;
+            font-size: clamp(24px, calc(92px - 4.25vw), 40px) !important;
             font-weight: 900 !important;
           }
           .h-verified-badge {

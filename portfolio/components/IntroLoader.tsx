@@ -135,7 +135,7 @@ export function IntroLoader() {
   if (!mounted || phase === "done" || phase === "loading") return null;
 
   const isDark = isDarkRef.current;
-  const src = isDark ? "/avatar-dark.jpg" : "/avatar-light.jpg";
+  const src = isDark ? "/avatar-dark-8k.webp" : "/avatar-light-8k.webp";
 
   return (
     <div className={`intro-overlay${exiting ? " intro-overlay--exit" : ""}`} aria-hidden>

@@ -661,7 +661,7 @@ export function Navbar() {
               <div className={`logo-avatar${showCornerAvatar ? " show" : ""}`}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src={isDark ? "/avatar-dark.jpg" : "/avatar-light.jpg"}
+                  src={isDark ? "/avatar-dark-8k.webp" : "/avatar-light-8k.webp"}
                   alt="IT"
                   onError={e => {
                     (e.currentTarget as HTMLImageElement).style.display = "none";
